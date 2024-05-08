@@ -2,23 +2,19 @@ import React, { useState } from "react";
 import "./App.css";
 
 function ProjectDropdown({
+  options,
   value,
   onChange,
 }: {
+  options: string[];
   value: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }) {
-  const options = [
-    { value: "", label: "" },
-    { value: "project_1", label: "Project 1" },
-    { value: "project_2", label: "Project 2" },
-  ];
-
   return (
     <select value={value} onChange={onChange}>
       {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
+        <option key={option} value={option}>
+          {option}
         </option>
       ))}
     </select>
@@ -26,24 +22,19 @@ function ProjectDropdown({
 }
 
 function FieldDropdown({
+  options,
   value,
   onChange,
 }: {
+  options: string[];
   value: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }) {
-  const options = [
-    { value: "", label: "" },
-    { value: "climb_id", label: "climb_id" },
-    { value: "biosample_id", label: "biosample_id" },
-    { value: "run_id", label: "run_id" },
-  ];
-
   return (
     <select value={value} onChange={onChange}>
       {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
+        <option key={option} value={option}>
+          {option}
         </option>
       ))}
     </select>
@@ -51,24 +42,22 @@ function FieldDropdown({
 }
 
 function LookupDropdown({
+  options,
   value,
   onChange,
 }: {
+  options: string[] | undefined;
   value: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }) {
-  const options = [
-    { value: "", label: "" },
-    { value: "exact", label: "exact" },
-    { value: "ne", label: "ne" },
-    { value: "contains", label: "contains" },
-  ];
-
+  if (options === undefined) {
+    options = [];
+  }
   return (
     <select value={value} onChange={onChange}>
       {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
+        <option key={option} value={option}>
+          {option}
         </option>
       ))}
     </select>
@@ -87,18 +76,130 @@ function ValueInput({
   );
 }
 
+const TableComponent = ({
+  data,
+}: {
+  data: Record<string, string | number | boolean | null>[];
+}) => {
+  const headers = () => {
+    if (data.length > 0) {
+      return Object.keys(data[0]);
+    } else {
+      return [];
+    }
+  };
+  const rows = data.map((item) => Object.values(item));
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          {headers().map((header) => (
+            <th key={header}>{header}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, index) => (
+          <tr key={index}>
+            {row.map((cell, index) => (
+              <td key={index}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+interface Filter {
+  field: string;
+  lookup: string;
+  value: string;
+}
+
 function App() {
   const [domain, setDomain] = useState("");
   const [token, setToken] = useState("");
   const [project, setProject] = useState("");
-  const [filterList, setFilterList] = useState([
-    { field: "", lookup: "", value: "" },
-  ]);
+  const [projectOptions, setProjectOptions] = useState([] as string[]);
+  const [fieldOptions, setFieldOptions] = useState([] as string[]);
+  const [lookupOptions, setLookupOptions] = useState(
+    {} as Map<string, string[]>
+  );
+  const [filterList, setFilterList] = useState([] as Filter[]);
+  const [resultCount, setResultCount] = useState(0);
+  const [resultData, setResultData] = useState([{}]);
+
+  const handleAuthenticate = () => {
+    fetch(domain + "/projects", {
+      headers: { Authorization: "Token " + token },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const projects = [
+          ...new Set(
+            data["data"].map(
+              (project: Record<string, unknown>) => project.project
+            )
+          ),
+        ] as string[];
+        setProjectOptions(projects);
+        if (projects.length > 0) {
+          const project = projects[0];
+          setProject(project);
+          fetch(domain + "/projects/" + project + "/fields", {
+            headers: { Authorization: "Token " + token },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              const fields = data["data"]["fields"];
+              setFieldOptions([""].concat(Object.keys(fields)));
+            })
+            .catch((err) => {
+              console.log(err.message);
+            });
+        }
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+
+    fetch(domain + "/projects/types", {
+      headers: { Authorization: "Token " + token },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const lookups = new Map(
+          data["data"].map((type: Record<string, unknown>) => [
+            type.type,
+            type.lookups,
+          ])
+        ) as Map<string, string[]>;
+        setLookupOptions(lookups);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  };
 
   const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setProject(e.target.value);
-    const list = [{ field: "", lookup: "", value: "" }];
-    setFilterList(list);
+    setFilterList([] as Filter[]);
+    setResultCount(0);
+    setResultData([{}]);
+
+    fetch(domain + "/projects/" + e.target.value + "/fields", {
+      headers: { Authorization: "Token " + token },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const fields = data["data"]["fields"];
+        setFieldOptions([""].concat(Object.keys(fields)));
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
   };
 
   const handleFieldChange = (
@@ -128,8 +229,12 @@ function App() {
     setFilterList(list);
   };
 
-  const handleFilterAdd = () => {
-    setFilterList([...filterList, { field: "", lookup: "", value: "" }]);
+  const handleFilterAdd = (index: number) => {
+    setFilterList([
+      ...filterList.slice(0, index),
+      { field: "", lookup: "", value: "" },
+      ...filterList.slice(index),
+    ]);
   };
 
   const handleFilterRemove = (index: number) => {
@@ -139,85 +244,118 @@ function App() {
   };
 
   const handleFilterClear = () => {
-    const list = [{ field: "", lookup: "", value: "" }];
+    const list = [] as Filter[];
     setFilterList(list);
+  };
+
+  const handleSearch = () => {
+    const params = new URLSearchParams(
+      filterList
+        .filter((filter) => filter.field)
+        .map((filter) => {
+          if (filter.lookup) {
+            return [filter.field + "__" + filter.lookup, filter.value];
+          } else {
+            return [filter.field, filter.value];
+          }
+        })
+    );
+    fetch(domain + "/" + "projects" + "/" + project + "?" + params, {
+      headers: { Authorization: "Token " + token },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setResultCount(data["data"].length);
+        setResultData(data["data"]);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
   };
 
   return (
     <form className="App" autoComplete="off">
-      <div className="form-field">
-        <label>Onyx: API for pathogen metadata</label>
-        <div>
-          <span>Domain: </span>
+      <label>Onyx: API for pathogen metadata</label>
+      <div>
+        <span>Domain: </span>
+        <ValueInput
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+        />
+        <span> Token: </span>
+        <ValueInput value={token} onChange={(e) => setToken(e.target.value)} />
+        <button
+          type="button"
+          className="authenticate-btn"
+          onClick={() => handleAuthenticate()}
+        >
+          <span>Authenticate</span>
+        </button>
+      </div>
+      <div className="project">
+        <span>Project: </span>
+        <ProjectDropdown
+          options={projectOptions}
+          value={project}
+          onChange={(e) => handleProjectChange(e)}
+        />
+      </div>
+      {filterList.map((filter, index) => (
+        <div key={index} className="filter">
+          <FieldDropdown
+            options={fieldOptions}
+            value={filter.field}
+            onChange={(e) => handleFieldChange(e, index)}
+          />
+          <LookupDropdown
+            options={lookupOptions.get("text")}
+            value={filter.lookup}
+            onChange={(e) => handleLookupChange(e, index)}
+          />
           <ValueInput
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
+            value={filter.value}
+            onChange={(e) => handleValueChange(e, index)}
           />
+          <button
+            type="button"
+            className="add-filter-btn"
+            onClick={() => handleFilterAdd(index + 1)}
+          >
+            <span>+</span>
+          </button>
+          <button
+            type="button"
+            className="remove-filter-btn"
+            onClick={() => handleFilterRemove(index)}
+          >
+            <span>-</span>
+          </button>
         </div>
-        <div>
-          <span>Token: </span>
-          <ValueInput
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-          />
-        </div>
-        <div>
-          <span>Project: </span>
-          <ProjectDropdown
-            value={project}
-            onChange={(e) => handleProjectChange(e)}
-          />
-        </div>
-        {filterList.map((singleFilter, index) => (
-          <div key={index} className="onyx-filter">
-            <div>
-              <FieldDropdown
-                value={singleFilter.field}
-                onChange={(e) => handleFieldChange(e, index)}
-              />
-              <LookupDropdown
-                value={singleFilter.lookup}
-                onChange={(e) => handleLookupChange(e, index)}
-              />
-              <ValueInput
-                value={singleFilter.value}
-                onChange={(e) => handleValueChange(e, index)}
-              />
-              {filterList.length > 1 && (
-                <button
-                  type="button"
-                  className="remove-btn"
-                  onClick={() => handleFilterRemove(index)}
-                >
-                  <span>Remove</span>
-                </button>
-              )}
-            </div>
-            <div>
-              {filterList.length - 1 === index && (
-                <div>
-                  <button
-                    type="button"
-                    className="add-btn"
-                    onClick={handleFilterAdd}
-                  >
-                    <span>Add Filter</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="clear-btn"
-                    onClick={handleFilterClear}
-                  >
-                    <span>Clear Filters</span>
-                  </button>
-                  <button type="button" className="search-btn">
-                    <span>Search</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+      ))}
+      <div className="search">
+        <button
+          type="button"
+          className="add-filter-btn"
+          onClick={() => handleFilterAdd(filterList.length)}
+        >
+          <span>Add Filter</span>
+        </button>
+        <button
+          type="button"
+          className="clear-filter-btn"
+          onClick={handleFilterClear}
+        >
+          <span>Clear Filters</span>
+        </button>
+        <button type="button" className="search-btn" onClick={handleSearch}>
+          <span>Search</span>
+        </button>
+      </div>
+      <div className="result-count">
+        <span>Results: {resultCount}</span>
+      </div>
+      <div className="result-table">
+        <TableComponent data={resultData} />
       </div>
     </form>
   );
