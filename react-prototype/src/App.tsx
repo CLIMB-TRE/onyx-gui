@@ -4,6 +4,9 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import Badge from "react-bootstrap/Badge";
+import Container from "react-bootstrap/Container";
+import Navbar from "react-bootstrap/Navbar";
+import { ThemeProvider } from "react-bootstrap";
 
 import "./App.css";
 
@@ -184,6 +187,18 @@ function StatusComponent({ status }: { status: string }) {
     >
       Status: {status}
     </Badge>
+  );
+}
+
+function Header() {
+  return (
+    <ThemeProvider breakpoint="lg" theme="dark">
+      <Navbar bg="dark" variant="dark">
+        <Container>
+          <Navbar.Brand>Onyx</Navbar.Brand>
+        </Container>
+      </Navbar>
+    </ThemeProvider>
   );
 }
 
@@ -373,52 +388,54 @@ function App() {
   };
 
   return (
-    <form className="App" autoComplete="off">
-      <label>Onyx: API for pathogen metadata</label>
-      <div>
-        <span>Domain: </span>
-        <InputComponent value={domain} onChange={handleDomainChange} />
-        <span> Token: </span>
-        <InputComponent value={token} onChange={handleTokenChange} />
-        <ButtonComponent text="Authenticate" onClick={handleAuthenticate} />
-      </div>
-      <div>
-        <span>Project: </span>
-        <DropdownComponent
-          options={projectOptions}
-          value={project}
-          onChange={handleProjectChange}
-        />
-      </div>
-      <div>
-        <ButtonComponent
-          text="Add Filter"
-          onClick={() => handleFilterAdd(filterList.length)}
-        />
-        <ButtonComponent text="Clear Filters" onClick={handleFilterClear} />
-      </div>
-      {filterList.map((filter, index) => (
-        <FilterComponent
-          filter={filter}
-          index={index}
-          fieldOptions={fieldOptions}
-          lookupOptions={lookupOptions}
-          handleFieldChange={handleFieldChange}
-          handleLookupChange={handleLookupChange}
-          handleValueChange={handleValueChange}
-          handleFilterAdd={handleFilterAdd}
-          handleFilterRemove={handleFilterRemove}
-        />
-      ))}
-      <div>
-        <SearchButtonComponent text="Search" onClick={handleSearch} />
-        <StatusComponent status={status} />
-        <Badge bg="secondary" pill>
-          Results: {resultCount}
-        </Badge>
-      </div>
-      <TableComponent data={resultData} />
-    </form>
+    <div className="App">
+      <Header />
+      <form className="body" autoComplete="off">
+        <div>
+          <span>Domain: </span>
+          <InputComponent value={domain} onChange={handleDomainChange} />
+          <span> Token: </span>
+          <InputComponent value={token} onChange={handleTokenChange} />
+          <ButtonComponent text="Authenticate" onClick={handleAuthenticate} />
+        </div>
+        <div>
+          <span>Project: </span>
+          <DropdownComponent
+            options={projectOptions}
+            value={project}
+            onChange={handleProjectChange}
+          />
+        </div>
+        <div>
+          <ButtonComponent
+            text="Add Filter"
+            onClick={() => handleFilterAdd(filterList.length)}
+          />
+          <ButtonComponent text="Clear Filters" onClick={handleFilterClear} />
+        </div>
+        {filterList.map((filter, index) => (
+          <FilterComponent
+            filter={filter}
+            index={index}
+            fieldOptions={fieldOptions}
+            lookupOptions={lookupOptions}
+            handleFieldChange={handleFieldChange}
+            handleLookupChange={handleLookupChange}
+            handleValueChange={handleValueChange}
+            handleFilterAdd={handleFilterAdd}
+            handleFilterRemove={handleFilterRemove}
+          />
+        ))}
+        <div>
+          <SearchButtonComponent text="Search" onClick={handleSearch} />
+          <StatusComponent status={status} />
+          <Badge bg="secondary" pill>
+            Results: {resultCount}
+          </Badge>
+        </div>
+        <TableComponent data={resultData} />
+      </form>
+    </div>
   );
 }
 
