@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
+import Badge from "react-bootstrap/Badge";
 
 import "./App.css";
 
@@ -65,6 +66,22 @@ function ButtonComponent({
   );
 }
 
+function SearchButtonComponent({
+  text,
+  onClick,
+}: {
+  text: string;
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+}) {
+  return (
+    <div className="custom-button-container">
+      <Button type="button" onClick={onClick} size="sm">
+        <span>{text}</span>
+      </Button>
+    </div>
+  );
+}
+
 function FilterComponent({
   filter,
   index,
@@ -96,7 +113,7 @@ function FilterComponent({
   handleFilterRemove: (index: number) => void;
 }) {
   return (
-    <div key={index} className="filter">
+    <div key={index}>
       <DropdownComponent
         options={[""].concat(Array.from(fieldOptions.keys()))}
         value={filter.field}
@@ -132,7 +149,7 @@ function TableComponent({
   const rows = data.map((item) => Object.values(item));
 
   return (
-    <Table striped bordered hover responsive>
+    <Table striped bordered hover responsive size="sm">
       <thead>
         <tr>
           {headers().map((header) => (
@@ -150,6 +167,23 @@ function TableComponent({
         ))}
       </tbody>
     </Table>
+  );
+}
+
+function StatusComponent({ status }: { status: string }) {
+  return (
+    <Badge
+      bg={
+        status === "Success"
+          ? "success"
+          : status === "Error"
+          ? "danger"
+          : "secondary"
+      }
+      pill
+    >
+      Status: {status}
+    </Badge>
   );
 }
 
@@ -348,13 +382,20 @@ function App() {
         <InputComponent value={token} onChange={handleTokenChange} />
         <ButtonComponent text="Authenticate" onClick={handleAuthenticate} />
       </div>
-      <div className="project">
+      <div>
         <span>Project: </span>
         <DropdownComponent
           options={projectOptions}
           value={project}
           onChange={handleProjectChange}
         />
+      </div>
+      <div>
+        <ButtonComponent
+          text="Add Filter"
+          onClick={() => handleFilterAdd(filterList.length)}
+        />
+        <ButtonComponent text="Clear Filters" onClick={handleFilterClear} />
       </div>
       {filterList.map((filter, index) => (
         <FilterComponent
@@ -369,21 +410,14 @@ function App() {
           handleFilterRemove={handleFilterRemove}
         />
       ))}
-      <div className="search">
-        <ButtonComponent
-          text="Add Filter"
-          onClick={() => handleFilterAdd(filterList.length)}
-        />
-        <ButtonComponent text="Clear Filters" onClick={handleFilterClear} />
-        <ButtonComponent text="Search" onClick={handleSearch} />
+      <div>
+        <SearchButtonComponent text="Search" onClick={handleSearch} />
+        <StatusComponent status={status} />
+        <Badge bg="secondary" pill>
+          Results: {resultCount}
+        </Badge>
       </div>
-      <div className="result-status">
-        <span>Status: {status}</span>
-        <span> | Results: {resultCount}</span>
-      </div>
-      <div className="result-table">
-        <TableComponent data={resultData} />
-      </div>
+      <TableComponent data={resultData} />
     </form>
   );
 }
