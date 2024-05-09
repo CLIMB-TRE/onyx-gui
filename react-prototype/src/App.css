@@ -5,38 +5,32 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+
+table {
+  display: block;
+  margin: 0 auto;
+  overflow-x: auto;
+  overflow-y: scroll;
+  min-height: auto;
+  max-height: 70vh;
+  min-width: auto;
+  max-width: fit-content;
+  white-space: nowrap;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.custom-select-container {
+  width: 200px; /* Adjust the width as needed */
+  padding: 1px; /* Optional padding for better aesthetics */
+  display: inline-block;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.custom-input-container {
+  width: 200px; /* Adjust the width as needed */
+  padding: 1px; /* Optional padding for better aesthetics */
+  display: inline-block;
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+.custom-button-container {
+  padding: 1px; /* Optional padding for better aesthetics */
+  display: inline-block;
 }

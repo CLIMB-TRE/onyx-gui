@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Table from "react-bootstrap/Table";
+
 import "./App.css";
 
 function DropdownComponent({
@@ -11,13 +16,15 @@ function DropdownComponent({
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }) {
   return (
-    <select value={value} onChange={onChange}>
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
+    <div className="custom-select-container">
+      <Form.Select value={value} onChange={onChange} size="sm">
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </Form.Select>
+    </div>
   );
 }
 
@@ -29,7 +36,32 @@ function InputComponent({
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
-    <input type="text" id="value" required value={value} onChange={onChange} />
+    <div className="custom-input-container">
+      <Form.Control
+        type="text"
+        id="value"
+        required
+        value={value}
+        onChange={onChange}
+        size="sm"
+      />
+    </div>
+  );
+}
+
+function ButtonComponent({
+  text,
+  onClick,
+}: {
+  text: string;
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+}) {
+  return (
+    <div className="custom-button-container">
+      <Button type="button" onClick={onClick} size="sm" variant="dark">
+        <span>{text}</span>
+      </Button>
+    </div>
   );
 }
 
@@ -79,20 +111,8 @@ function FilterComponent({
         value={filter.value}
         onChange={(e) => handleValueChange(e, index)}
       />
-      <button
-        type="button"
-        className="add-filter-btn"
-        onClick={() => handleFilterAdd(index + 1)}
-      >
-        <span>+</span>
-      </button>
-      <button
-        type="button"
-        className="remove-filter-btn"
-        onClick={() => handleFilterRemove(index)}
-      >
-        <span>-</span>
-      </button>
+      <ButtonComponent text="+" onClick={() => handleFilterAdd(index + 1)} />
+      <ButtonComponent text="-" onClick={() => handleFilterRemove(index)} />
     </div>
   );
 }
@@ -112,7 +132,7 @@ function TableComponent({
   const rows = data.map((item) => Object.values(item));
 
   return (
-    <table>
+    <Table striped bordered hover responsive>
       <thead>
         <tr>
           {headers().map((header) => (
@@ -129,7 +149,7 @@ function TableComponent({
           </tr>
         ))}
       </tbody>
-    </table>
+    </Table>
   );
 }
 
@@ -326,13 +346,7 @@ function App() {
         <InputComponent value={domain} onChange={handleDomainChange} />
         <span> Token: </span>
         <InputComponent value={token} onChange={handleTokenChange} />
-        <button
-          type="button"
-          className="authenticate-btn"
-          onClick={handleAuthenticate}
-        >
-          <span>Authenticate</span>
-        </button>
+        <ButtonComponent text="Authenticate" onClick={handleAuthenticate} />
       </div>
       <div className="project">
         <span>Project: </span>
@@ -356,23 +370,12 @@ function App() {
         />
       ))}
       <div className="search">
-        <button
-          type="button"
-          className="add-filter-btn"
+        <ButtonComponent
+          text="Add Filter"
           onClick={() => handleFilterAdd(filterList.length)}
-        >
-          <span>Add Filter</span>
-        </button>
-        <button
-          type="button"
-          className="clear-filter-btn"
-          onClick={handleFilterClear}
-        >
-          <span>Clear Filters</span>
-        </button>
-        <button type="button" className="search-btn" onClick={handleSearch}>
-          <span>Search</span>
-        </button>
+        />
+        <ButtonComponent text="Clear Filters" onClick={handleFilterClear} />
+        <ButtonComponent text="Search" onClick={handleSearch} />
       </div>
       <div className="result-status">
         <span>Status: {status}</span>
