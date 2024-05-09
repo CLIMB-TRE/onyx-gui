@@ -71,6 +71,10 @@ table {
   white-space: nowrap;
 }
 
+select {
+  width: 200px;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

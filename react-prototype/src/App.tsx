@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./App.css";
 
-function ProjectDropdown({
+function DropdownComponent({
   options,
   value,
   onChange,
@@ -21,50 +21,7 @@ function ProjectDropdown({
   );
 }
 
-function FieldDropdown({
-  options,
-  value,
-  onChange,
-}: {
-  options: string[];
-  value: string;
-  onChange: React.ChangeEventHandler<HTMLSelectElement>;
-}) {
-  return (
-    <select value={value} onChange={onChange}>
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function LookupDropdown({
-  options,
-  value,
-  onChange,
-}: {
-  options: string[] | undefined;
-  value: string;
-  onChange: React.ChangeEventHandler<HTMLSelectElement>;
-}) {
-  if (options === undefined) {
-    options = [];
-  }
-  return (
-    <select value={value} onChange={onChange}>
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function ValueInput({
+function InputComponent({
   value,
   onChange,
 }: {
@@ -76,11 +33,75 @@ function ValueInput({
   );
 }
 
-const TableComponent = ({
+function FilterComponent({
+  filter,
+  index,
+  fieldOptions,
+  lookupOptions,
+  handleFieldChange,
+  handleLookupChange,
+  handleValueChange,
+  handleFilterAdd,
+  handleFilterRemove,
+}: {
+  filter: Filter;
+  index: number;
+  fieldOptions: Map<string, string>;
+  lookupOptions: Map<string, string[]>;
+  handleFieldChange: (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    index: number
+  ) => void;
+  handleLookupChange: (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    index: number
+  ) => void;
+  handleValueChange: (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => void;
+  handleFilterAdd: (index: number) => void;
+  handleFilterRemove: (index: number) => void;
+}) {
+  return (
+    <div key={index} className="filter">
+      <DropdownComponent
+        options={[""].concat(Array.from(fieldOptions.keys()))}
+        value={filter.field}
+        onChange={(e) => handleFieldChange(e, index)}
+      />
+      <DropdownComponent
+        options={lookupOptions.get(fieldOptions.get(filter.field) || "") || []}
+        value={filter.lookup}
+        onChange={(e) => handleLookupChange(e, index)}
+      />
+      <InputComponent
+        value={filter.value}
+        onChange={(e) => handleValueChange(e, index)}
+      />
+      <button
+        type="button"
+        className="add-filter-btn"
+        onClick={() => handleFilterAdd(index + 1)}
+      >
+        <span>+</span>
+      </button>
+      <button
+        type="button"
+        className="remove-filter-btn"
+        onClick={() => handleFilterRemove(index)}
+      >
+        <span>-</span>
+      </button>
+    </div>
+  );
+}
+
+function TableComponent({
   data,
 }: {
   data: Record<string, string | number | boolean | null>[];
-}) => {
+}) {
   const headers = () => {
     if (data.length > 0) {
       return Object.keys(data[0]);
@@ -110,7 +131,34 @@ const TableComponent = ({
       </tbody>
     </table>
   );
-};
+}
+
+function refreshFieldOptions({
+  domain,
+  token,
+  project,
+  setFieldOptions,
+}: {
+  domain: string;
+  token: string;
+  project: string;
+  setFieldOptions: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+}) {
+  fetch(domain + "/projects/" + project + "/fields", {
+    headers: { Authorization: "Token " + token },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      const fields = data["data"]["fields"];
+      const fieldMap = new Map(
+        Object.keys(fields).map((field) => [field, fields[field].type])
+      );
+      setFieldOptions(fieldMap);
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+}
 
 interface Filter {
   field: string;
@@ -123,7 +171,7 @@ function App() {
   const [token, setToken] = useState("");
   const [project, setProject] = useState("");
   const [projectOptions, setProjectOptions] = useState([] as string[]);
-  const [fieldOptions, setFieldOptions] = useState([] as string[]);
+  const [fieldOptions, setFieldOptions] = useState({} as Map<string, string>);
   const [lookupOptions, setLookupOptions] = useState(
     {} as Map<string, string[]>
   );
@@ -149,17 +197,7 @@ function App() {
         if (projects.length > 0) {
           const project = projects[0];
           setProject(project);
-          fetch(domain + "/projects/" + project + "/fields", {
-            headers: { Authorization: "Token " + token },
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              const fields = data["data"]["fields"];
-              setFieldOptions([""].concat(Object.keys(fields)));
-            })
-            .catch((err) => {
-              console.log(err.message);
-            });
+          refreshFieldOptions({ domain, token, project, setFieldOptions });
         }
       })
       .catch((err) => {
@@ -198,18 +236,12 @@ function App() {
     setResultCount(0);
     setResultData([{}]);
     setStatus("None");
-
-    fetch(domain + "/projects/" + e.target.value + "/fields", {
-      headers: { Authorization: "Token " + token },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const fields = data["data"]["fields"];
-        setFieldOptions([""].concat(Object.keys(fields)));
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+    refreshFieldOptions({
+      domain,
+      token,
+      project: e.target.value,
+      setFieldOptions,
+    });
   };
 
   const handleFieldChange = (
@@ -218,6 +250,8 @@ function App() {
   ) => {
     const list = [...filterList];
     list[index].field = e.target.value;
+    list[index].lookup =
+      lookupOptions.get(fieldOptions.get(e.target.value) || "")?.[0] || "";
     setFilterList(list);
   };
 
@@ -289,56 +323,37 @@ function App() {
       <label>Onyx: API for pathogen metadata</label>
       <div>
         <span>Domain: </span>
-        <ValueInput value={domain} onChange={(e) => handleDomainChange(e)} />
+        <InputComponent value={domain} onChange={handleDomainChange} />
         <span> Token: </span>
-        <ValueInput value={token} onChange={(e) => handleTokenChange(e)} />
+        <InputComponent value={token} onChange={handleTokenChange} />
         <button
           type="button"
           className="authenticate-btn"
-          onClick={() => handleAuthenticate()}
+          onClick={handleAuthenticate}
         >
           <span>Authenticate</span>
         </button>
       </div>
       <div className="project">
         <span>Project: </span>
-        <ProjectDropdown
+        <DropdownComponent
           options={projectOptions}
           value={project}
-          onChange={(e) => handleProjectChange(e)}
+          onChange={handleProjectChange}
         />
       </div>
       {filterList.map((filter, index) => (
-        <div key={index} className="filter">
-          <FieldDropdown
-            options={fieldOptions}
-            value={filter.field}
-            onChange={(e) => handleFieldChange(e, index)}
-          />
-          <LookupDropdown
-            options={lookupOptions.get("text")}
-            value={filter.lookup}
-            onChange={(e) => handleLookupChange(e, index)}
-          />
-          <ValueInput
-            value={filter.value}
-            onChange={(e) => handleValueChange(e, index)}
-          />
-          <button
-            type="button"
-            className="add-filter-btn"
-            onClick={() => handleFilterAdd(index + 1)}
-          >
-            <span>+</span>
-          </button>
-          <button
-            type="button"
-            className="remove-filter-btn"
-            onClick={() => handleFilterRemove(index)}
-          >
-            <span>-</span>
-          </button>
-        </div>
+        <FilterComponent
+          filter={filter}
+          index={index}
+          fieldOptions={fieldOptions}
+          lookupOptions={lookupOptions}
+          handleFieldChange={handleFieldChange}
+          handleLookupChange={handleLookupChange}
+          handleValueChange={handleValueChange}
+          handleFilterAdd={handleFilterAdd}
+          handleFilterRemove={handleFilterRemove}
+        />
       ))}
       <div className="search">
         <button
