@@ -144,7 +144,7 @@ function TableComponent({
         {rows.map((row, index) => (
           <tr key={index}>
             {row.map((cell, index) => (
-              <td key={index}>{cell}</td>
+              <td key={index}>{cell?.toString()}</td>
             ))}
           </tr>
         ))}
