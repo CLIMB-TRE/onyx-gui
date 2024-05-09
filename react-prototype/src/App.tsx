@@ -130,6 +130,7 @@ function App() {
   const [filterList, setFilterList] = useState([] as Filter[]);
   const [resultCount, setResultCount] = useState(0);
   const [resultData, setResultData] = useState([{}]);
+  const [status, setStatus] = useState("None");
 
   const handleAuthenticate = () => {
     fetch(domain + "/projects", {
@@ -183,11 +184,20 @@ function App() {
       });
   };
 
+  const handleDomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDomain(e.target.value);
+  };
+
+  const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setToken(e.target.value);
+  };
+
   const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setProject(e.target.value);
     setFilterList([] as Filter[]);
     setResultCount(0);
     setResultData([{}]);
+    setStatus("None");
 
     fetch(domain + "/projects/" + e.target.value + "/fields", {
       headers: { Authorization: "Token " + token },
@@ -244,8 +254,7 @@ function App() {
   };
 
   const handleFilterClear = () => {
-    const list = [] as Filter[];
-    setFilterList(list);
+    setFilterList([] as Filter[]);
   };
 
   const handleSearch = () => {
@@ -260,15 +269,17 @@ function App() {
           }
         })
     );
-    fetch(domain + "/" + "projects" + "/" + project + "?" + params, {
+    fetch(domain + "/projects/" + project + "?" + params, {
       headers: { Authorization: "Token " + token },
     })
       .then((response) => response.json())
       .then((data) => {
         setResultCount(data["data"].length);
         setResultData(data["data"]);
+        setStatus("Success");
       })
       .catch((err) => {
+        setStatus("Error");
         console.log(err.message);
       });
   };
@@ -278,12 +289,9 @@ function App() {
       <label>Onyx: API for pathogen metadata</label>
       <div>
         <span>Domain: </span>
-        <ValueInput
-          value={domain}
-          onChange={(e) => setDomain(e.target.value)}
-        />
+        <ValueInput value={domain} onChange={(e) => handleDomainChange(e)} />
         <span> Token: </span>
-        <ValueInput value={token} onChange={(e) => setToken(e.target.value)} />
+        <ValueInput value={token} onChange={(e) => handleTokenChange(e)} />
         <button
           type="button"
           className="authenticate-btn"
@@ -351,8 +359,9 @@ function App() {
           <span>Search</span>
         </button>
       </div>
-      <div className="result-count">
-        <span>Results: {resultCount}</span>
+      <div className="result-status">
+        <span>Status: {status}</span>
+        <span> | Results: {resultCount}</span>
       </div>
       <div className="result-table">
         <TableComponent data={resultData} />
