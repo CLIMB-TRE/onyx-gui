@@ -5,7 +5,7 @@ import { EXTENSION_CSS_CLASSNAME } from './enums'
 
 
 function MyComponent() {
-  return <div>My Widget</div>;
+  return <div>Onyx Extension</div>;
 }
 
 export class ReactAppWidget extends ReactWidget {

@@ -36,14 +36,14 @@ export const activate = (app: JupyterFrontEnd, palette: ICommandPalette, restore
   })
 
   // Add the command to the palette.
-  palette.addItem({ command, category: 'React Redux Extension' })
+  palette.addItem({ command, category: EXTENSION_NAME })
 
   const launcher_item : ILauncher.IItemOptions = {
     command: command,
     args: {
       newBrowserTab: true,
-      title: 'Climb UI',
-      id: 'climb-ui'
+      title: EXTENSION_NAME,
+      id: EXTENSION_ID
     },
     category: 'Other',
     rank: 10
