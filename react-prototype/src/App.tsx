@@ -4,7 +4,6 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import Badge from "react-bootstrap/Badge";
-import Container from "react-bootstrap/Container";
 import Navbar from "react-bootstrap/Navbar";
 import { ThemeProvider } from "react-bootstrap";
 
@@ -194,9 +193,9 @@ function Header() {
   return (
     <ThemeProvider breakpoint="lg" theme="dark">
       <Navbar bg="dark" variant="dark">
-        <Container>
+        <div className="header">
           <Navbar.Brand>Onyx</Navbar.Brand>
-        </Container>
+        </div>
       </Navbar>
     </ThemeProvider>
   );
@@ -238,6 +237,7 @@ interface Filter {
 function App() {
   const [domain, setDomain] = useState("");
   const [token, setToken] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
   const [project, setProject] = useState("");
   const [projectOptions, setProjectOptions] = useState([] as string[]);
   const [fieldOptions, setFieldOptions] = useState({} as Map<string, string>);
@@ -268,8 +268,10 @@ function App() {
           setProject(project);
           refreshFieldOptions({ domain, token, project, setFieldOptions });
         }
+        setAuthenticated(true);
       })
       .catch((err) => {
+        setAuthenticated(false);
         console.log(err.message);
       });
 
@@ -398,42 +400,49 @@ function App() {
           <InputComponent value={token} onChange={handleTokenChange} />
           <ButtonComponent text="Authenticate" onClick={handleAuthenticate} />
         </div>
-        <div>
-          <span>Project: </span>
-          <DropdownComponent
-            options={projectOptions}
-            value={project}
-            onChange={handleProjectChange}
-          />
-        </div>
-        <div>
-          <ButtonComponent
-            text="Add Filter"
-            onClick={() => handleFilterAdd(filterList.length)}
-          />
-          <ButtonComponent text="Clear Filters" onClick={handleFilterClear} />
-        </div>
-        {filterList.map((filter, index) => (
-          <FilterComponent
-            filter={filter}
-            index={index}
-            fieldOptions={fieldOptions}
-            lookupOptions={lookupOptions}
-            handleFieldChange={handleFieldChange}
-            handleLookupChange={handleLookupChange}
-            handleValueChange={handleValueChange}
-            handleFilterAdd={handleFilterAdd}
-            handleFilterRemove={handleFilterRemove}
-          />
-        ))}
-        <div>
-          <SearchButtonComponent text="Search" onClick={handleSearch} />
-          <StatusComponent status={status} />
-          <Badge bg="secondary" pill>
-            Results: {resultCount}
-          </Badge>
-        </div>
-        <TableComponent data={resultData} />
+        {authenticated && (
+          <div>
+            <div>
+              <span>Project: </span>
+              <DropdownComponent
+                options={projectOptions}
+                value={project}
+                onChange={handleProjectChange}
+              />
+            </div>
+            <div>
+              <ButtonComponent
+                text="Add Filter"
+                onClick={() => handleFilterAdd(filterList.length)}
+              />
+              <ButtonComponent
+                text="Clear Filters"
+                onClick={handleFilterClear}
+              />
+            </div>
+            {filterList.map((filter, index) => (
+              <FilterComponent
+                filter={filter}
+                index={index}
+                fieldOptions={fieldOptions}
+                lookupOptions={lookupOptions}
+                handleFieldChange={handleFieldChange}
+                handleLookupChange={handleLookupChange}
+                handleValueChange={handleValueChange}
+                handleFilterAdd={handleFilterAdd}
+                handleFilterRemove={handleFilterRemove}
+              />
+            ))}
+            <div>
+              <SearchButtonComponent text="Search" onClick={handleSearch} />
+              <StatusComponent status={status} />
+              <Badge bg="secondary" pill>
+                Results: {resultCount}
+              </Badge>
+            </div>
+            <TableComponent data={resultData} />
+          </div>
+        )}
       </form>
     </div>
   );
