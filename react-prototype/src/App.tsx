@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ChangeEventHandler, useState } from "react";
 import {
   Container,
   Row,
@@ -15,14 +15,14 @@ import "./App.css";
 
 function NavbarComponent({
   project,
-  projects,
+  projectOptions,
   handleDomainChange,
   handleTokenChange,
   handleAuthenticate,
   handleProjectChange,
 }: {
   project: string;
-  projects: string[];
+  projectOptions: string[];
   handleDomainChange: React.ChangeEventHandler<HTMLInputElement>;
   handleTokenChange: React.ChangeEventHandler<HTMLInputElement>;
   handleAuthenticate: React.MouseEventHandler<HTMLButtonElement>;
@@ -36,7 +36,7 @@ function NavbarComponent({
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto my-2 my-lg-0">
             <NavDropdown title={project} id="collasible-nav-dropdown">
-              {projects.map((p) => (
+              {projectOptions.map((p) => (
                 <NavDropdown.Item
                   key={p}
                   onClick={() => handleProjectChange(p)}
@@ -146,7 +146,6 @@ interface Filter {
 
 function FilterComponent({
   filter,
-  index,
   fieldOptions,
   lookupOptions,
   lookupDescriptions,
@@ -157,24 +156,14 @@ function FilterComponent({
   handleFilterRemove,
 }: {
   filter: Filter;
-  index: number;
   fieldOptions: Map<string, FieldOptions>;
   lookupOptions: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
-  handleFieldChange: (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    index: number
-  ) => void;
-  handleLookupChange: (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    index: number
-  ) => void;
-  handleValueChange: (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) => void;
-  handleFilterAdd: (index: number) => void;
-  handleFilterRemove: (index: number) => void;
+  handleFieldChange: ChangeEventHandler<HTMLSelectElement>;
+  handleLookupChange: ChangeEventHandler<HTMLSelectElement>;
+  handleValueChange: ChangeEventHandler<HTMLInputElement>;
+  handleFilterAdd: () => void;
+  handleFilterRemove: () => void;
 }) {
   return (
     <div>
@@ -189,7 +178,7 @@ function FilterComponent({
           )
         }
         value={filter.field}
-        onChange={(e) => handleFieldChange(e, index)}
+        onChange={handleFieldChange}
       />
       <DropdownComponent
         options={
@@ -197,22 +186,11 @@ function FilterComponent({
         }
         titles={lookupDescriptions}
         value={filter.lookup}
-        onChange={(e) => handleLookupChange(e, index)}
+        onChange={handleLookupChange}
       />
-      <InputComponent
-        value={filter.value}
-        onChange={(e) => handleValueChange(e, index)}
-      />
-      <ButtonComponent
-        text="+"
-        variant="primary"
-        onClick={() => handleFilterAdd(index + 1)}
-      />
-      <ButtonComponent
-        text="-"
-        variant="danger"
-        onClick={() => handleFilterRemove(index)}
-      />
+      <InputComponent value={filter.value} onChange={handleValueChange} />
+      <ButtonComponent text="+" variant="primary" onClick={handleFilterAdd} />
+      <ButtonComponent text="-" variant="danger" onClick={handleFilterRemove} />
     </div>
   );
 }
@@ -494,7 +472,7 @@ function App() {
           <Row>
             <NavbarComponent
               project={project}
-              projects={projectOptions}
+              projectOptions={projectOptions}
               handleDomainChange={handleDomainChange}
               handleTokenChange={handleTokenChange}
               handleAuthenticate={handleAuthenticate}
@@ -531,15 +509,14 @@ function App() {
                   {filterList.map((filter, index) => (
                     <FilterComponent
                       filter={filter}
-                      index={index}
                       fieldOptions={fieldOptions}
                       lookupOptions={lookupOptions}
                       lookupDescriptions={lookupDescriptions}
-                      handleFieldChange={handleFieldChange}
-                      handleLookupChange={handleLookupChange}
-                      handleValueChange={handleValueChange}
-                      handleFilterAdd={handleFilterAdd}
-                      handleFilterRemove={handleFilterRemove}
+                      handleFieldChange={(e) => handleFieldChange(e, index)}
+                      handleLookupChange={(e) => handleLookupChange(e, index)}
+                      handleValueChange={(e) => handleValueChange(e, index)}
+                      handleFilterAdd={() => handleFilterAdd(index + 1)}
+                      handleFilterRemove={() => handleFilterRemove(index)}
                     />
                   ))}
                 </div>
