@@ -1,29 +1,19 @@
 #root {
   margin: 0 auto;
- 
 }
-
-.body {
-  padding: 2rem;
-  padding-top: 1rem;
-}
-
-.header {
-  padding: 0.5rem; 
-  padding-left: 2rem;
- }
- 
 
 table {
   display: block;
-  margin: 0 auto;
   overflow-x: auto;
   overflow-y: scroll;
-  min-height: auto;
-  max-height: 70vh;
-  min-width: auto;
-  max-width: fit-content;
+  overscroll-behavior-x: none; 
+  max-height: 67vh;
   white-space: nowrap;
+}
+
+.filter-list {
+  height: 15vh;
+  overflow-y: scroll;
 }
 
 .custom-select-container {
@@ -42,3 +32,4 @@ table {
   padding: 1px; /* Optional padding for better aesthetics */
   display: inline-block;
 }
+

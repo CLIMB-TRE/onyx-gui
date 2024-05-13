@@ -1,20 +1,88 @@
 import React, { useState } from "react";
-
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import Table from "react-bootstrap/Table";
-import Badge from "react-bootstrap/Badge";
-import Navbar from "react-bootstrap/Navbar";
-import { ThemeProvider } from "react-bootstrap";
-
+import {
+  Container,
+  Row,
+  Stack,
+  Button,
+  Form,
+  Table,
+  Badge,
+  Nav,
+  Navbar,
+  NavDropdown,
+} from "react-bootstrap";
 import "./App.css";
+
+function NavbarComponent({
+  project,
+  projects,
+  handleDomainChange,
+  handleTokenChange,
+  handleAuthenticate,
+  handleProjectChange,
+}: {
+  project: string;
+  projects: string[];
+  handleDomainChange: React.ChangeEventHandler<HTMLInputElement>;
+  handleTokenChange: React.ChangeEventHandler<HTMLInputElement>;
+  handleAuthenticate: React.MouseEventHandler<HTMLButtonElement>;
+  handleProjectChange: (p: string) => void;
+}) {
+  return (
+    <Navbar bg="dark" variant="dark">
+      <Container fluid>
+        <Navbar.Brand>Onyx</Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto my-2 my-lg-0">
+            <NavDropdown title={project} id="collasible-nav-dropdown">
+              {projects.map((p) => (
+                <NavDropdown.Item
+                  key={p}
+                  onClick={() => handleProjectChange(p)}
+                >
+                  {p}
+                </NavDropdown.Item>
+              ))}
+            </NavDropdown>
+          </Nav>
+        </Navbar.Collapse>
+        <Form className="d-flex">
+          <Form.Control
+            type="text"
+            placeholder="Domain"
+            className="me-2"
+            size="sm"
+            onChange={handleDomainChange}
+          />
+          <Form.Control
+            type="text"
+            placeholder="Token"
+            className="me-2"
+            size="sm"
+            onChange={handleTokenChange}
+          />
+          <Button
+            variant="outline-success"
+            size="sm"
+            onClick={handleAuthenticate}
+          >
+            Authenticate
+          </Button>
+        </Form>
+      </Container>
+    </Navbar>
+  );
+}
 
 function DropdownComponent({
   options,
+  titles,
   value,
   onChange,
 }: {
   options: string[];
+  titles: Map<string, string> | null;
   value: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }) {
@@ -22,7 +90,7 @@ function DropdownComponent({
     <div className="custom-select-container">
       <Form.Select value={value} onChange={onChange} size="sm">
         {options.map((option) => (
-          <option key={option} value={option}>
+          <option key={option} value={option} title={titles?.get(option)}>
             {option}
           </option>
         ))}
@@ -54,34 +122,26 @@ function InputComponent({
 
 function ButtonComponent({
   text,
+  variant,
   onClick,
 }: {
   text: string;
+  variant: string;
   onClick: React.MouseEventHandler<HTMLButtonElement>;
 }) {
   return (
     <div className="custom-button-container">
-      <Button type="button" onClick={onClick} size="sm" variant="dark">
+      <Button type="button" onClick={onClick} size="sm" variant={variant}>
         <span>{text}</span>
       </Button>
     </div>
   );
 }
 
-function SearchButtonComponent({
-  text,
-  onClick,
-}: {
-  text: string;
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
-}) {
-  return (
-    <div className="custom-button-container">
-      <Button type="button" onClick={onClick} size="sm">
-        <span>{text}</span>
-      </Button>
-    </div>
-  );
+interface Filter {
+  field: string;
+  lookup: string;
+  value: string;
 }
 
 function FilterComponent({
@@ -89,6 +149,7 @@ function FilterComponent({
   index,
   fieldOptions,
   lookupOptions,
+  lookupDescriptions,
   handleFieldChange,
   handleLookupChange,
   handleValueChange,
@@ -97,8 +158,9 @@ function FilterComponent({
 }: {
   filter: Filter;
   index: number;
-  fieldOptions: Map<string, string>;
+  fieldOptions: Map<string, FieldOptions>;
   lookupOptions: Map<string, string[]>;
+  lookupDescriptions: Map<string, string>;
   handleFieldChange: (
     e: React.ChangeEvent<HTMLSelectElement>,
     index: number
@@ -115,14 +177,25 @@ function FilterComponent({
   handleFilterRemove: (index: number) => void;
 }) {
   return (
-    <div key={index}>
+    <div>
       <DropdownComponent
         options={[""].concat(Array.from(fieldOptions.keys()))}
+        titles={
+          new Map(
+            Array.from(fieldOptions.entries()).map(([field, options]) => [
+              field,
+              options.description,
+            ])
+          )
+        }
         value={filter.field}
         onChange={(e) => handleFieldChange(e, index)}
       />
       <DropdownComponent
-        options={lookupOptions.get(fieldOptions.get(filter.field) || "") || []}
+        options={
+          lookupOptions.get(fieldOptions.get(filter.field)?.type || "") || []
+        }
+        titles={lookupDescriptions}
         value={filter.lookup}
         onChange={(e) => handleLookupChange(e, index)}
       />
@@ -130,8 +203,16 @@ function FilterComponent({
         value={filter.value}
         onChange={(e) => handleValueChange(e, index)}
       />
-      <ButtonComponent text="+" onClick={() => handleFilterAdd(index + 1)} />
-      <ButtonComponent text="-" onClick={() => handleFilterRemove(index)} />
+      <ButtonComponent
+        text="+"
+        variant="primary"
+        onClick={() => handleFilterAdd(index + 1)}
+      />
+      <ButtonComponent
+        text="-"
+        variant="danger"
+        onClick={() => handleFilterRemove(index)}
+      />
     </div>
   );
 }
@@ -189,16 +270,10 @@ function StatusComponent({ status }: { status: string }) {
   );
 }
 
-function Header() {
-  return (
-    <ThemeProvider breakpoint="lg" theme="dark">
-      <Navbar bg="dark" variant="dark">
-        <div className="header">
-          <Navbar.Brand>Onyx</Navbar.Brand>
-        </div>
-      </Navbar>
-    </ThemeProvider>
-  );
+interface FieldOptions {
+  type: string;
+  description: string;
+  actions: string[];
 }
 
 function refreshFieldOptions({
@@ -210,7 +285,9 @@ function refreshFieldOptions({
   domain: string;
   token: string;
   project: string;
-  setFieldOptions: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+  setFieldOptions: React.Dispatch<
+    React.SetStateAction<Map<string, FieldOptions>>
+  >;
 }) {
   fetch(domain + "/projects/" + project + "/fields", {
     headers: { Authorization: "Token " + token },
@@ -219,7 +296,14 @@ function refreshFieldOptions({
     .then((data) => {
       const fields = data["data"]["fields"];
       const fieldMap = new Map(
-        Object.keys(fields).map((field) => [field, fields[field].type])
+        Object.keys(fields).map((field) => [
+          field,
+          {
+            type: fields[field].type,
+            description: fields[field].description,
+            actions: fields[field].actions,
+          },
+        ])
       );
       setFieldOptions(fieldMap);
     })
@@ -228,25 +312,24 @@ function refreshFieldOptions({
     });
 }
 
-interface Filter {
-  field: string;
-  lookup: string;
-  value: string;
-}
-
 function App() {
   const [domain, setDomain] = useState("");
   const [token, setToken] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [project, setProject] = useState("");
   const [projectOptions, setProjectOptions] = useState([] as string[]);
-  const [fieldOptions, setFieldOptions] = useState({} as Map<string, string>);
+  const [fieldOptions, setFieldOptions] = useState(
+    {} as Map<string, FieldOptions>
+  );
   const [lookupOptions, setLookupOptions] = useState(
     {} as Map<string, string[]>
   );
+  const [lookupDescriptions, setLookupDescriptions] = useState(
+    {} as Map<string, string>
+  );
   const [filterList, setFilterList] = useState([] as Filter[]);
-  const [resultCount, setResultCount] = useState(0);
-  const [resultData, setResultData] = useState([{}]);
+  const [resultData, setResultData] = useState([]);
+  const resultCount = resultData.length;
   const [status, setStatus] = useState("None");
 
   const handleAuthenticate = () => {
@@ -279,14 +362,30 @@ function App() {
       headers: { Authorization: "Token " + token },
     })
       .then((response) => response.json())
-      .then((data) => {
-        const lookups = new Map(
-          data["data"].map((type: Record<string, unknown>) => [
-            type.type,
-            type.lookups,
-          ])
-        ) as Map<string, string[]>;
-        setLookupOptions(lookups);
+      .then((typeData) => {
+        fetch(domain + "/projects/lookups", {
+          headers: { Authorization: "Token " + token },
+        })
+          .then((response) => response.json())
+          .then((lookupData) => {
+            const lookups = new Map(
+              typeData["data"].map((type: Record<string, unknown>) => [
+                type.type,
+                type.lookups,
+              ])
+            ) as Map<string, string[]>;
+            const descriptions = new Map(
+              lookupData["data"].map((lookup: Record<string, unknown>) => [
+                lookup.lookup,
+                lookup.description,
+              ])
+            ) as Map<string, string>;
+            setLookupOptions(lookups);
+            setLookupDescriptions(descriptions);
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
       })
       .catch((err) => {
         console.log(err.message);
@@ -301,16 +400,15 @@ function App() {
     setToken(e.target.value);
   };
 
-  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setProject(e.target.value);
+  const handleProjectChange = (p: string) => {
+    setProject(p);
     setFilterList([] as Filter[]);
-    setResultCount(0);
-    setResultData([{}]);
+    setResultData([]);
     setStatus("None");
     refreshFieldOptions({
       domain,
       token,
-      project: e.target.value,
+      project: p,
       setFieldOptions,
     });
   };
@@ -322,7 +420,8 @@ function App() {
     const list = [...filterList];
     list[index].field = e.target.value;
     list[index].lookup =
-      lookupOptions.get(fieldOptions.get(e.target.value) || "")?.[0] || "";
+      lookupOptions.get(fieldOptions.get(e.target.value)?.type || "")?.[0] ||
+      "";
     setFilterList(list);
   };
 
@@ -379,7 +478,6 @@ function App() {
     })
       .then((response) => response.json())
       .then((data) => {
-        setResultCount(data["data"].length);
         setResultData(data["data"]);
         setStatus("Success");
       })
@@ -390,61 +488,70 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <Header />
-      <form className="body" autoComplete="off">
-        <div>
-          <span>Domain: </span>
-          <InputComponent value={domain} onChange={handleDomainChange} />
-          <span> Token: </span>
-          <InputComponent value={token} onChange={handleTokenChange} />
-          <ButtonComponent text="Authenticate" onClick={handleAuthenticate} />
-        </div>
-        {authenticated && (
-          <div>
-            <div>
-              <span>Project: </span>
-              <DropdownComponent
-                options={projectOptions}
-                value={project}
-                onChange={handleProjectChange}
-              />
-            </div>
-            <div>
-              <ButtonComponent
-                text="Add Filter"
-                onClick={() => handleFilterAdd(filterList.length)}
-              />
-              <ButtonComponent
-                text="Clear Filters"
-                onClick={handleFilterClear}
-              />
-            </div>
-            {filterList.map((filter, index) => (
-              <FilterComponent
-                filter={filter}
-                index={index}
-                fieldOptions={fieldOptions}
-                lookupOptions={lookupOptions}
-                handleFieldChange={handleFieldChange}
-                handleLookupChange={handleLookupChange}
-                handleValueChange={handleValueChange}
-                handleFilterAdd={handleFilterAdd}
-                handleFilterRemove={handleFilterRemove}
-              />
-            ))}
-            <div>
-              <SearchButtonComponent text="Search" onClick={handleSearch} />
-              <StatusComponent status={status} />
-              <Badge bg="secondary" pill>
-                Results: {resultCount}
-              </Badge>
-            </div>
+    <form className="App" autoComplete="off">
+      <Container fluid>
+        <Stack gap={3}>
+          <Row>
+            <NavbarComponent
+              project={project}
+              projects={projectOptions}
+              handleDomainChange={handleDomainChange}
+              handleTokenChange={handleTokenChange}
+              handleAuthenticate={handleAuthenticate}
+              handleProjectChange={handleProjectChange}
+            />
+          </Row>
+          <Row>
+            {authenticated && (
+              <div>
+                <div>
+                  <ButtonComponent
+                    text="Search"
+                    variant="primary"
+                    onClick={handleSearch}
+                  />
+                  <StatusComponent status={status} />
+                  <Badge bg="secondary" pill>
+                    Results: {resultCount}
+                  </Badge>
+                </div>
+                <div>
+                  <ButtonComponent
+                    text="Add Filter"
+                    variant="dark"
+                    onClick={() => handleFilterAdd(filterList.length)}
+                  />
+                  <ButtonComponent
+                    text="Clear Filters"
+                    variant="dark"
+                    onClick={handleFilterClear}
+                  />
+                </div>
+                <div className="filter-list">
+                  {filterList.map((filter, index) => (
+                    <FilterComponent
+                      filter={filter}
+                      index={index}
+                      fieldOptions={fieldOptions}
+                      lookupOptions={lookupOptions}
+                      lookupDescriptions={lookupDescriptions}
+                      handleFieldChange={handleFieldChange}
+                      handleLookupChange={handleLookupChange}
+                      handleValueChange={handleValueChange}
+                      handleFilterAdd={handleFilterAdd}
+                      handleFilterRemove={handleFilterRemove}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </Row>
+          <Row>
             <TableComponent data={resultData} />
-          </div>
-        )}
-      </form>
-    </div>
+          </Row>
+        </Stack>
+      </Container>
+    </form>
   );
 }
 
