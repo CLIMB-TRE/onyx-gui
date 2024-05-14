@@ -1,19 +1,19 @@
 {
     "name": "onyx_extension",
-    "version": "0.1.0",
+    "version": "0.1.4",
     "description": "A JupyterLab extension to make use of the onyx interface to CLIMB-TRE",
     "keywords": [
         "jupyter",
         "jupyterlab",
         "jupyterlab-extension"
     ],
-    "homepage": "",
+    "homepage": "http://example.com",
     "bugs": {
-        "url": "/issues"
+        "url": "http://example.com"
     },
     "license": "BSD-3-Clause",
     "author": {
-        "name": "University of Birmingham",
+        "name": "Neil Butcher",
         "email": "n.a.butcher@bham.ac.uk"
     },
     "files": [
@@ -26,7 +26,7 @@
     "style": "style/index.css",
     "repository": {
         "type": "git",
-        "url": ".git"
+        "url": "http://example.com"
     },
     "scripts": {
         "build": "jlpm build:lib && jlpm build:labextension:dev",

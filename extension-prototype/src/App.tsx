@@ -5,7 +5,8 @@ import { EXTENSION_CSS_CLASSNAME } from './enums'
 
 
 function MyComponent() {
-  return <div>Onyx Extension</div>;
+  return <div>Onyx Extension\nONYX_DOMAIN: {process.env.ONYX_DOMAIN}\n
+  ONYX_TOKEN: {process.env.ONYX_TOKEN}</div>;
 }
 
 export class ReactAppWidget extends ReactWidget {
