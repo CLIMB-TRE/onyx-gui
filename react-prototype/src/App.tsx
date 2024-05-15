@@ -2,6 +2,7 @@ import React, { ChangeEventHandler, useState } from "react";
 import {
   Container,
   Row,
+  Col,
   Stack,
   Button,
   Form,
@@ -10,10 +11,15 @@ import {
   Nav,
   Navbar,
   NavDropdown,
+  Card,
 } from "react-bootstrap";
+import Select from "react-select";
+import Creatable from "react-select/creatable";
+import { mkConfig, generateCsv, download } from "export-to-csv";
 import "./App.css";
 
 function NavbarComponent({
+  username,
   project,
   projectOptions,
   handleDomainChange,
@@ -21,6 +27,7 @@ function NavbarComponent({
   handleAuthenticate,
   handleProjectChange,
 }: {
+  username: string;
   project: string;
   projectOptions: string[];
   handleDomainChange: React.ChangeEventHandler<HTMLInputElement>;
@@ -35,7 +42,7 @@ function NavbarComponent({
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto my-2 my-lg-0">
-            <NavDropdown title={project} id="collasible-nav-dropdown">
+            <NavDropdown title={project} id="collapsible-nav-dropdown">
               {projectOptions.map((p) => (
                 <NavDropdown.Item
                   key={p}
@@ -47,47 +54,46 @@ function NavbarComponent({
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>
-        <Form className="d-flex">
-          <Form.Control
-            type="text"
-            placeholder="Domain"
-            className="me-2"
-            size="sm"
-            onChange={handleDomainChange}
-          />
-          <Form.Control
-            type="text"
-            placeholder="Token"
-            className="me-2"
-            size="sm"
-            onChange={handleTokenChange}
-          />
-          <Button
-            variant="outline-success"
-            size="sm"
-            onClick={handleAuthenticate}
-          >
-            Authenticate
-          </Button>
-        </Form>
+        <Container>
+          <Navbar.Text>
+            Signed in as: <span className="text-light">{username}</span>
+          </Navbar.Text>
+        </Container>
+        <InputComponent
+          type="text"
+          placeholder="Domain"
+          onChange={handleDomainChange}
+        />
+        <InputComponent
+          type="text"
+          placeholder="Token"
+          onChange={handleTokenChange}
+        />
+        <ButtonComponent
+          text="Authenticate"
+          variant="outline-success"
+          onClick={handleAuthenticate}
+        />
       </Container>
     </Navbar>
   );
 }
 
 function DropdownComponent({
+  className,
   options,
   titles,
   value,
   onChange,
 }: {
+  className: string;
   options: string[];
   titles: Map<string, string> | null;
   value: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }) {
   return (
-    <div className="custom-select-container">
+    <div className={className}>
       <Form.Select value={value} onChange={onChange} size="sm">
         {options.map((option) => (
           <option key={option} value={option} title={titles?.get(option)}>
@@ -99,22 +105,84 @@ function DropdownComponent({
   );
 }
 
-function InputComponent({
-  value,
+function MultiDropdownComponent({
+  className,
+  options,
   onChange,
 }: {
-  value: string;
+  className: string;
+  options: string[];
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+}) {
+  return (
+    <div className={className}>
+      <Select
+        isMulti
+        menuPortalTarget={document.body}
+        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+        options={options.map((option) => ({
+          value: option,
+          label: option,
+        }))}
+        delimiter=","
+        onChange={(e) =>
+          onChange({
+            target: {
+              value: e.map((option) => option.value).join(","),
+            },
+          } as React.ChangeEvent<HTMLInputElement>)
+        }
+      />
+    </div>
+  );
+}
+
+function InputComponent({
+  type,
+  placeholder,
+  onChange,
+}: {
+  type: string;
+  placeholder: string;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
     <div className="custom-input-container">
       <Form.Control
-        type="text"
-        id="value"
-        required
-        value={value}
+        type={type}
+        placeholder={placeholder}
         onChange={onChange}
         size="sm"
+      />
+    </div>
+  );
+}
+
+function MultiInputComponent({
+  options,
+  onChange,
+}: {
+  options: string[];
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+}) {
+  return (
+    <div className="custom-select-container">
+      <Creatable
+        isMulti
+        menuPortalTarget={document.body}
+        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+        options={options.map((option) => ({
+          value: option,
+          label: option,
+        }))}
+        delimiter=","
+        onChange={(e) =>
+          onChange({
+            target: {
+              value: e.map((option) => option.value).join(","),
+            },
+          } as React.ChangeEvent<HTMLInputElement>)
+        }
       />
     </div>
   );
@@ -161,13 +229,82 @@ function FilterComponent({
   lookupDescriptions: Map<string, string>;
   handleFieldChange: ChangeEventHandler<HTMLSelectElement>;
   handleLookupChange: ChangeEventHandler<HTMLSelectElement>;
-  handleValueChange: ChangeEventHandler<HTMLInputElement>;
+  handleValueChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
   handleFilterAdd: () => void;
   handleFilterRemove: () => void;
 }) {
+  let f: JSX.Element;
+  if (filter.lookup === "isnull") {
+    f = (
+      <DropdownComponent
+        className="custom-select-container"
+        options={["true", "false"]}
+        titles={null}
+        value={filter.value}
+        onChange={handleValueChange}
+      />
+    );
+  } else if (fieldOptions.get(filter.field)?.type === "choice") {
+    if (filter.lookup === "in" || filter.lookup === "notin") {
+      f = (
+        <MultiDropdownComponent
+          className="custom-select-container"
+          options={fieldOptions.get(filter.field)?.choices || []}
+          onChange={handleValueChange}
+        />
+      );
+    } else {
+      f = (
+        <DropdownComponent
+          className="custom-select-container"
+          options={fieldOptions.get(filter.field)?.choices || []}
+          titles={null}
+          value={filter.value}
+          onChange={handleValueChange}
+        />
+      );
+    }
+  } else if (filter.lookup === "in" || filter.lookup === "notin") {
+    f = (
+      <MultiInputComponent
+        options={fieldOptions.get(filter.field)?.choices || []}
+        onChange={handleValueChange}
+      />
+    );
+  } else if (
+    fieldOptions.get(filter.field)?.type === "integer" ||
+    fieldOptions.get(filter.field)?.type === "decimal"
+  ) {
+    f = (
+      <InputComponent
+        type="number"
+        placeholder="Value"
+        onChange={handleValueChange}
+      />
+    );
+  } else if (fieldOptions.get(filter.field)?.type === "bool") {
+    f = (
+      <DropdownComponent
+        className="custom-select-container"
+        options={["true", "false"]}
+        titles={null}
+        value={filter.value}
+        onChange={handleValueChange}
+      />
+    );
+  } else {
+    f = (
+      <InputComponent
+        type="text"
+        placeholder="Value"
+        onChange={handleValueChange}
+      />
+    );
+  }
   return (
     <div>
       <DropdownComponent
+        className="custom-select-container"
         options={[""].concat(Array.from(fieldOptions.keys()))}
         titles={
           new Map(
@@ -181,6 +318,7 @@ function FilterComponent({
         onChange={handleFieldChange}
       />
       <DropdownComponent
+        className="custom-select-container"
         options={
           lookupOptions.get(fieldOptions.get(filter.field)?.type || "") || []
         }
@@ -188,7 +326,7 @@ function FilterComponent({
         value={filter.lookup}
         onChange={handleLookupChange}
       />
-      <InputComponent value={filter.value} onChange={handleValueChange} />
+      {f}
       <ButtonComponent text="+" variant="primary" onClick={handleFilterAdd} />
       <ButtonComponent text="-" variant="danger" onClick={handleFilterRemove} />
     </div>
@@ -252,6 +390,7 @@ interface FieldOptions {
   type: string;
   description: string;
   actions: string[];
+  choices: string[];
 }
 
 function refreshFieldOptions({
@@ -280,6 +419,7 @@ function refreshFieldOptions({
             type: fields[field].type,
             description: fields[field].description,
             actions: fields[field].actions,
+            choices: fields[field].values,
           },
         ])
       );
@@ -293,6 +433,7 @@ function refreshFieldOptions({
 function App() {
   const [domain, setDomain] = useState("");
   const [token, setToken] = useState("");
+  const [username, setUsername] = useState("None");
   const [authenticated, setAuthenticated] = useState(false);
   const [project, setProject] = useState("");
   const [projectOptions, setProjectOptions] = useState([] as string[]);
@@ -306,11 +447,26 @@ function App() {
     {} as Map<string, string>
   );
   const [filterList, setFilterList] = useState([] as Filter[]);
+  const [includeList, setIncludeList] = useState([] as string[]);
+  const [summariseList, setSummariseList] = useState([] as string[]);
   const [resultData, setResultData] = useState([]);
   const resultCount = resultData.length;
   const [status, setStatus] = useState("None");
 
   const handleAuthenticate = () => {
+    fetch(domain + "/accounts/profile", {
+      headers: { Authorization: "Token " + token },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setUsername(data["data"].username);
+        setAuthenticated(true);
+      })
+      .catch((err) => {
+        setAuthenticated(false);
+        console.log(err.message);
+      });
+
     fetch(domain + "/projects", {
       headers: { Authorization: "Token " + token },
     })
@@ -329,10 +485,8 @@ function App() {
           setProject(project);
           refreshFieldOptions({ domain, token, project, setFieldOptions });
         }
-        setAuthenticated(true);
       })
       .catch((err) => {
-        setAuthenticated(false);
         console.log(err.message);
       });
 
@@ -400,7 +554,18 @@ function App() {
     list[index].lookup =
       lookupOptions.get(fieldOptions.get(e.target.value)?.type || "")?.[0] ||
       "";
+    list[index].value = "";
+
+    if (fieldOptions.get(e.target.value)?.type === "choice") {
+      list[index].value = fieldOptions.get(e.target.value)?.choices[0] || "";
+    } else if (
+      fieldOptions.get(e.target.value)?.type === "bool" ||
+      list[index].lookup === "isnull"
+    ) {
+      list[index].value = "true";
+    }
     setFilterList(list);
+    console.log(list);
   };
 
   const handleLookupChange = (
@@ -409,11 +574,21 @@ function App() {
   ) => {
     const list = [...filterList];
     list[index].lookup = e.target.value;
+    list[index].value = "";
+
+    if (fieldOptions.get(e.target.value)?.type === "choice") {
+      list[index].value = fieldOptions.get(e.target.value)?.choices[0] || "";
+    } else if (
+      fieldOptions.get(e.target.value)?.type === "bool" ||
+      list[index].lookup === "isnull"
+    ) {
+      list[index].value = "true";
+    }
     setFilterList(list);
   };
 
   const handleValueChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     index: number
   ) => {
     const list = [...filterList];
@@ -450,19 +625,45 @@ function App() {
             return [filter.field, filter.value];
           }
         })
+        .concat(
+          includeList
+            .filter((include) => include)
+            .map((field) => ["include", field])
+        )
+        .concat(
+          summariseList
+            .filter((summarise) => summarise)
+            .map((field) => ["summarise", field])
+        )
     );
     fetch(domain + "/projects/" + project + "?" + params, {
       headers: { Authorization: "Token " + token },
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          setStatus("Error");
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then((data) => {
         setResultData(data["data"]);
         setStatus("Success");
       })
       .catch((err) => {
-        setStatus("Error");
         console.log(err.message);
+        setStatus("Error");
       });
+  };
+
+  const csvConfig = mkConfig({
+    filename: project,
+    useKeysAsHeaders: true,
+  });
+
+  const handleExportToCSV = () => {
+    const csv = generateCsv(csvConfig)(resultData);
+    download(csvConfig)(csv);
   };
 
   return (
@@ -471,6 +672,7 @@ function App() {
         <Stack gap={3}>
           <Row>
             <NavbarComponent
+              username={username}
               project={project}
               projectOptions={projectOptions}
               handleDomainChange={handleDomainChange}
@@ -479,53 +681,106 @@ function App() {
               handleProjectChange={handleProjectChange}
             />
           </Row>
-          <Row>
-            {authenticated && (
-              <div>
-                <div>
-                  <ButtonComponent
-                    text="Search"
-                    variant="primary"
-                    onClick={handleSearch}
-                  />
-                  <StatusComponent status={status} />
-                  <Badge bg="secondary" pill>
-                    Results: {resultCount}
-                  </Badge>
-                </div>
-                <div>
-                  <ButtonComponent
-                    text="Add Filter"
-                    variant="dark"
-                    onClick={() => handleFilterAdd(filterList.length)}
-                  />
-                  <ButtonComponent
-                    text="Clear Filters"
-                    variant="dark"
-                    onClick={handleFilterClear}
-                  />
-                </div>
-                <div className="filter-list">
-                  {filterList.map((filter, index) => (
-                    <FilterComponent
-                      filter={filter}
-                      fieldOptions={fieldOptions}
-                      lookupOptions={lookupOptions}
-                      lookupDescriptions={lookupDescriptions}
-                      handleFieldChange={(e) => handleFieldChange(e, index)}
-                      handleLookupChange={(e) => handleLookupChange(e, index)}
-                      handleValueChange={(e) => handleValueChange(e, index)}
-                      handleFilterAdd={() => handleFilterAdd(index + 1)}
-                      handleFilterRemove={() => handleFilterRemove(index)}
+          {authenticated && (
+            <Row>
+              <Col>
+                <Card>
+                  <Card.Header>
+                    <span>Filters</span>
+                    <div className="float-end">
+                      <ButtonComponent
+                        text="Add Filter"
+                        variant="dark"
+                        onClick={() => handleFilterAdd(filterList.length)}
+                      />
+                      <ButtonComponent
+                        text="Clear Filters"
+                        variant="dark"
+                        onClick={handleFilterClear}
+                      />
+                    </div>
+                  </Card.Header>
+                  <Card.Body className="panel">
+                    {filterList.map((filter, index) => (
+                      <div key={index}>
+                        <FilterComponent
+                          filter={filter}
+                          fieldOptions={fieldOptions}
+                          lookupOptions={lookupOptions}
+                          lookupDescriptions={lookupDescriptions}
+                          handleFieldChange={(e) => handleFieldChange(e, index)}
+                          handleLookupChange={(e) =>
+                            handleLookupChange(e, index)
+                          }
+                          handleValueChange={(e) => handleValueChange(e, index)}
+                          handleFilterAdd={() => handleFilterAdd(index + 1)}
+                          handleFilterRemove={() => handleFilterRemove(index)}
+                        />
+                      </div>
+                    ))}
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col>
+                <Card>
+                  <Card.Header>Included fields</Card.Header>
+                  <Card.Body className="panel">
+                    <MultiDropdownComponent
+                      className=""
+                      options={Array.from(fieldOptions.keys())}
+                      onChange={(e) =>
+                        setIncludeList(e.target.value.split(","))
+                      }
                     />
-                  ))}
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col>
+                <Card>
+                  <Card.Header>Summarised fields</Card.Header>
+                  <Card.Body className="panel">
+                    <MultiDropdownComponent
+                      className=""
+                      options={Array.from(fieldOptions.keys())}
+                      onChange={(e) =>
+                        setSummariseList(e.target.value.split(","))
+                      }
+                    />
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          )}
+          {authenticated && (
+            <div>
+              <ButtonComponent
+                text="Search"
+                variant="primary"
+                onClick={handleSearch}
+              />
+              <StatusComponent status={status} />
+              <Badge bg="secondary" pill>
+                Results: {resultCount}
+              </Badge>
+            </div>
+          )}
+          {authenticated && (
+            <Card>
+              <Card.Header>
+                <span>Results</span>
+                <div className="float-end">
+                  <ButtonComponent
+                    text="Export to CSV"
+                    variant="outline-primary"
+                    onClick={handleExportToCSV}
+                  />
                 </div>
-              </div>
-            )}
-          </Row>
-          <Row>
-            <TableComponent data={resultData} />
-          </Row>
+              </Card.Header>
+              <Card.Body>
+                <TableComponent data={resultData} />{" "}
+              </Card.Body>
+            </Card>
+          )}
         </Stack>
       </Container>
     </form>

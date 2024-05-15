@@ -2,28 +2,32 @@
   margin: 0 auto;
 }
 
-table {
+.table {
   display: block;
   overflow-x: auto;
   overflow-y: scroll;
   overscroll-behavior-x: none; 
-  max-height: 67vh;
+  height: 50vh;
   white-space: nowrap;
 }
 
-.filter-list {
-  height: 15vh;
+.card-header {
+  height: 5vh;
+}
+
+.panel {
+  height: 20vh;
   overflow-y: scroll;
 }
 
 .custom-select-container {
-  width: 200px; /* Adjust the width as needed */
+  width: 170px; /* Adjust the width as needed */
   padding: 1px; /* Optional padding for better aesthetics */
   display: inline-block;
 }
 
 .custom-input-container {
-  width: 200px; /* Adjust the width as needed */
+  width: 170px; /* Adjust the width as needed */
   padding: 1px; /* Optional padding for better aesthetics */
   display: inline-block;
 }
@@ -33,3 +37,5 @@ table {
   display: inline-block;
 }
 
+/* Incase I want to use in future: */
+/* border border-medium rounded bg-light */
