@@ -13,7 +13,8 @@ class RouteHandler(APIHandler):
     @tornado.web.authenticated
     def get(self):
         self.finish(json.dumps({
-            "data": "This is /onyx-extension/hello endpoint!"
+            "domain": os.environ.get('ONYX_DOMAIN', '*Unknown*'),
+            "token": os.environ.get('ONYX_TOKEN', '*Unknown*')
         }))
 
 
@@ -22,7 +23,7 @@ def setup_handlers(web_app):
 
     base_url = web_app.settings["base_url"]
     # Prepend the base_url so that it works in a JupyterHub setting
-    route_pattern = url_path_join(base_url, "onyx-extension", "hello")
+    route_pattern = url_path_join(base_url, "onyx-extension", "settings")
     handlers = [(route_pattern, RouteHandler)]
     web_app.add_handlers(host_pattern, handlers)
 

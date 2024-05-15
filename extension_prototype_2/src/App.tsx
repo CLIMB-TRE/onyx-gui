@@ -4,16 +4,18 @@ import { ReactWidget } from '@jupyterlab/apputils'
 
 
 function MyComponent(domain:string, token:string): React.JSX.Element {
-  return <div>Onyx Extension
-    ONYX_DOMAIN: {domain}
-    ONYX_TOKEN: {token} </div>;
+  return <div>
+    <h1>Onyx Extension</h1>
+    <h2>ONYX_DOMAIN: {domain}</h2>
+    <h2>ONYX_TOKEN: {token}</h2>
+    </div>;
 }
 
 export class ReactAppWidget extends ReactWidget {
-  constructor() {
+  constructor(dom:string, tok:string) {
     super()
-    this.domain =''
-    this.token = ''
+    this.domain =dom
+    this.token = tok
   }
 
   domain: string
@@ -25,9 +27,4 @@ export class ReactAppWidget extends ReactWidget {
     )
   }
   
-
-  async retrieve_token(): Promise<void> {
-   this.domain = 'a'
-   this.token = 'b'
-  }
 }

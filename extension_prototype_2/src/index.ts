@@ -30,21 +30,26 @@ const plugin: JupyterFrontEndPlugin<void> = {
       'JupyterLab extension @onyx_extension is activated!'
     );
 
-    // Try avoiding awaiting in the activate function because
-    // it will delay the application start up time.
-    requestAPI<any>('hello')
+    
+    const command = 'onyx_extension';
+    const category = 'Onyx';
+    
+  
+  let domain: string
+  let token: string
+
+  requestAPI<any>('settings')
       .then(data => {
         console.log(data);
+        domain = data['domain']
+        token = data['token']
       })
       .catch(reason => {
         console.error(
           `The onyx_extension server extension appears to be missing.\n${reason}`
         );
       });
-
-    const command = 'onyx_extension';
-    const category = 'Onyx';
-    
+      
   // Create a single widget
   let widget: MainAreaWidget<ReactAppWidget>
 
@@ -53,10 +58,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
       caption: 'Onyx',
       execute: () => {
         if (!widget || widget.disposed) {
-          const content = new ReactAppWidget()
-          content.retrieve_token()
+          const content = new ReactAppWidget(domain,token)
           widget = new MainAreaWidget({ content })
-          widget.id = 'onyx_extension'
           widget.title.label = 'Onyx'
           widget.title.closable = true
         }
