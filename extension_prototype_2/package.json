@@ -1,5 +1,5 @@
 {
-    "name": "@jupyterlab-examples/server-extension",
+    "name": "onyx_extension",
     "version": "0.1.0",
     "description": "A minimal JupyterLab extension with backend and frontend parts.",
     "keywords": [
@@ -7,9 +7,9 @@
         "jupyterlab",
         "jupyterlab-extension"
     ],
-    "homepage": "https://github.com/jupyterlab/extension-examples",
+    "homepage": "https://github.com/jupyterlab/extension-onyx_extension",
     "bugs": {
-        "url": "https://github.com/jupyterlab/extension-examples/issues"
+        "url": "https://github.com/jupyterlab/extension-onyx_extension/issues"
     },
     "license": "BSD-3-Clause",
     "author": "Project Jupyter Contributors",
@@ -22,7 +22,7 @@
     "style": "style/index.css",
     "repository": {
         "type": "git",
-        "url": "https://github.com/jupyterlab/extension-examples.git"
+        "url": "https://github.com/jupyterlab/extension-onyx_extension.git"
     },
     "scripts": {
         "build": "jlpm build:lib && jlpm build:labextension:dev",

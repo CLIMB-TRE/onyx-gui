@@ -3,28 +3,21 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
-import { ICommandPalette, IFrame } from '@jupyterlab/apputils';
+import { ICommandPalette, MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
 
-import { PageConfig } from '@jupyterlab/coreutils';
 
 import { ILauncher } from '@jupyterlab/launcher';
 
 import { requestAPI } from './handler';
+import { ReactAppWidget } from './App'
 
 /**
- * The command IDs used by the server extension plugin.
- */
-namespace CommandIDs {
-  export const get = 'server:get-file';
-}
-
-/**
- * Initialization data for the @jupyterlab-examples/server-extension extension.
+ * Initialization data for the onyx_extension extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: '@jupyterlab-examples/server-extension:plugin',
+  id: 'onyx_extension:plugin',
   description:
-    'A minimal JupyterLab extension with backend and frontend parts.',
+    'Onyx-extension.',
   autoStart: true,
   optional: [ILauncher],
   requires: [ICommandPalette],
@@ -34,7 +27,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     launcher: ILauncher | null
   ) => {
     console.log(
-      'JupyterLab extension @jupyterlab-examples/server-extension is activated!'
+      'JupyterLab extension @onyx_extension is activated!'
     );
 
     // Try avoiding awaiting in the activate function because
@@ -49,17 +42,35 @@ const plugin: JupyterFrontEndPlugin<void> = {
         );
       });
 
-    const { commands, shell } = app;
-    const command = CommandIDs.get;
-    const category = 'Climb';
+    const command = 'onyx_extension';
+    const category = 'Onyx';
+    
+  // Create a single widget
+  let widget: MainAreaWidget<ReactAppWidget>
 
-    commands.addCommand(command, {
-      label: 'Get Server Content in a IFrame Widget',
-      caption: 'Get Server Content in a IFrame Widget',
+  app.commands.addCommand(command, {
+      label: 'Onyx',
+      caption: 'Onyx',
       execute: () => {
-        const widget = new IFrameWidget();
-        shell.add(widget, 'main');
-      }
+        if (!widget || widget.disposed) {
+          const content = new ReactAppWidget()
+          content.retrieve_token()
+          widget = new MainAreaWidget({ content })
+          widget.id = 'onyx_extension'
+          widget.title.label = 'Onyx'
+          widget.title.closable = true
+        }
+        if (!tracker.has(widget)) {
+          tracker.add(widget)
+        }
+        if (!widget.isAttached) {
+          // Attach the widget to the main work area if it's not there
+          app.shell.add(widget, 'main')
+        }
+  
+        // Activate the widget
+        app.shell.activateById(widget.id)
+      },
     });
 
     palette.addItem({ command, category: category });
@@ -74,16 +85,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
   }
 };
 
-export default plugin;
+const tracker = new WidgetTracker<MainAreaWidget<ReactAppWidget>>({
+  namespace: 'onyx_extension',
+})
 
-class IFrameWidget extends IFrame {
-  constructor() {
-    super();
-    const baseUrl = PageConfig.getBaseUrl();
-    this.url = baseUrl + 'onyx-extension/public/index.html';
-    this.id = 'doc-example';
-    this.title.label = 'Server Doc';
-    this.title.closable = true;
-    this.node.style.overflowY = 'auto';
-  }
-}
+export default plugin;

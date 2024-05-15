@@ -47,8 +47,8 @@ artifacts = ["onyx_extension/labextension"]
 exclude = [".github", "binder"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"onyx_extension/labextension" = "share/jupyter/labextensions/@jupyterlab-examples/server-extension"
-"install.json" = "share/jupyter/labextensions/@jupyterlab-examples/server-extension/install.json"
+"onyx_extension/labextension" = "share/jupyter/labextensions/onyx_extension"
+"install.json" = "share/jupyter/labextensions/onyx_extension/install.json"
 "jupyter-config/server-config" = "etc/jupyter/jupyter_server_config.d"
 
 [tool.hatch.build.hooks.version]
