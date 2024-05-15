@@ -15,8 +15,9 @@ export const activate = (app: JupyterFrontEnd, palette: ICommandPalette, restore
   app.commands.addCommand(command, {
     label: EXTENSION_NAME,
     execute: () => {
-      if (!widget) {
+      if (!widget || widget.disposed) {
         const content = new ReactAppWidget()
+        content.retrieve_token()
         widget = new MainAreaWidget({ content })
         widget.id = EXTENSION_ID
         widget.title.label = EXTENSION_NAME
