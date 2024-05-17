@@ -31,6 +31,7 @@ function NavbarComponent({
   handleTokenChange,
   handleAuthenticate,
   handleProjectChange,
+  handleSearch,
 }: {
   domain: string;
   token: string;
@@ -41,6 +42,7 @@ function NavbarComponent({
   handleTokenChange: React.ChangeEventHandler<HTMLInputElement>;
   handleAuthenticate: React.MouseEventHandler<HTMLButtonElement>;
   handleProjectChange: (p: string) => void;
+  handleSearch: () => void;
 }) {
   return (
     <Navbar bg="dark" variant="dark" collapseOnSelect expand="lg">
@@ -59,30 +61,47 @@ function NavbarComponent({
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
-            <Navbar.Text>
-              Signed in as: <span className="text-light">{username}</span>
-            </Navbar.Text>
-          </Nav>
-          <Nav>
-            <InputComponent
-              type="text"
-              value={domain}
-              placeholder="Domain"
-              onChange={handleDomainChange}
-            />
-            <InputComponent
-              type="text"
-              value={token}
-              placeholder="Token"
-              onChange={handleTokenChange}
-            />
-            <ButtonComponent
-              text="Authenticate"
-              variant="outline-success"
-              onClick={handleAuthenticate}
-            />
+            <NavDropdown
+              title={
+                <Navbar.Text>
+                  <Navbar.Text>Signed in as:</Navbar.Text>{" "}
+                  <Navbar.Text className="text-light">{username}</Navbar.Text>
+                </Navbar.Text>
+              }
+              id="nav-dropdown"
+            >
+              <InputComponent
+                type="text"
+                value={domain}
+                placeholder="Domain"
+                onChange={handleDomainChange}
+              />
+              <InputComponent
+                type="text"
+                value={token}
+                placeholder="Token"
+                onChange={handleTokenChange}
+              />
+              <NavDropdown.Divider />
+              <NavDropdown.Item>
+                <ButtonComponent
+                  text="Authenticate"
+                  variant="outline-success"
+                  onClick={handleAuthenticate}
+                />
+              </NavDropdown.Item>
+            </NavDropdown>
           </Nav>
         </Navbar.Collapse>
+
+        <Nav>
+          {" "}
+          <ButtonComponent
+            text="Search"
+            variant="primary"
+            onClick={() => handleSearch()}
+          />
+        </Nav>
       </Container>
     </Navbar>
   );
@@ -444,7 +463,7 @@ function Onyx(props: OnyxProps) {
   const [domain, setDomain] = useState(props.domain || "");
   const [token, setToken] = useState(props.token || "");
   const [username, setUsername] = useState("None");
-  const [project, setProject] = useState("");
+  const [project, setProject] = useState("None");
   const [projectOptions, setProjectOptions] = useState(new Array<string>());
   const [fieldOptions, setFieldOptions] = useState(
     new Map<string, FieldOptions>()
@@ -731,6 +750,7 @@ function Onyx(props: OnyxProps) {
               handleTokenChange={handleTokenChange}
               handleAuthenticate={handleAuthenticate}
               handleProjectChange={handleProjectChange}
+              handleSearch={handleSearch}
             />
           </Row>
           <Row>
@@ -807,26 +827,12 @@ function Onyx(props: OnyxProps) {
               </Card>
             </Col>
           </Row>
-          {/* <Row>
-            <Col>
-              <ButtonComponent
-                text="Search"
-                variant="primary"
-                onClick={() => handleSearch()}
-              />
-            </Col>
-          </Row> */}
           <Row>
             <Col>
               <Card>
                 <Card.Header>
-                  <span>Results</span>
+                  <span>Data</span>
                   <div className="float-end">
-                    <ButtonComponent
-                      text="Search"
-                      variant="primary"
-                      onClick={() => handleSearch()}
-                    />
                     <ButtonComponent
                       text="Export Page to CSV"
                       variant="dark"
