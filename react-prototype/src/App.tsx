@@ -87,7 +87,7 @@ function DropdownComponent({
   onChange,
 }: {
   options: string[];
-  titles: Map<string, string> | null;
+  titles?: Map<string, string>;
   value: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }) {
@@ -234,7 +234,6 @@ function FilterComponent({
     f = (
       <DropdownComponent
         options={["true", "false"]}
-        titles={null}
         value={filter.value}
         onChange={handleValueChange}
       />
@@ -257,7 +256,6 @@ function FilterComponent({
       f = (
         <DropdownComponent
           options={fieldOptions.get(filter.field)?.choices || []}
-          titles={null}
           value={filter.value}
           onChange={handleValueChange}
         />
@@ -290,7 +288,6 @@ function FilterComponent({
     f = (
       <DropdownComponent
         options={["true", "false"]}
-        titles={null}
         value={filter.value}
         onChange={handleValueChange}
       />
