@@ -7,29 +7,18 @@
   overflow-x: auto;
   overflow-y: scroll;
   overscroll-behavior-x: none; 
-  height: 50vh;
+  height: 54vh;
   white-space: nowrap;
 }
 
 .card-header {
-  height: 5vh;
+  font-size: larger;
+  min-height: 55px;
 }
 
 .panel {
-  height: 20vh;
+  height: 15vh;
   overflow-y: scroll;
-}
-
-.custom-select-container {
-  width: 170px; /* Adjust the width as needed */
-  padding: 1px; /* Optional padding for better aesthetics */
-  display: inline-block;
-}
-
-.custom-input-container {
-  width: 170px; /* Adjust the width as needed */
-  padding: 1px; /* Optional padding for better aesthetics */
-  display: inline-block;
 }
 
 .custom-button-container {

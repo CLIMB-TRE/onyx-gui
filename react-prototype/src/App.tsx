@@ -36,12 +36,12 @@ function NavbarComponent({
   handleProjectChange: (p: string) => void;
 }) {
   return (
-    <Navbar bg="dark" variant="dark">
+    <Navbar bg="dark" variant="dark" collapseOnSelect expand="lg">
       <Container fluid>
         <Navbar.Brand>Onyx</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto my-2 my-lg-0">
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Collapse id="responsive-navbar-nav">
+          <Nav className="me-auto">
             <NavDropdown title={project} id="collapsible-nav-dropdown">
               {projectOptions.map((p) => (
                 <NavDropdown.Item
@@ -52,88 +52,86 @@ function NavbarComponent({
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
+            <Navbar.Text>
+              Signed in as: <span className="text-light">{username}</span>
+            </Navbar.Text>
+          </Nav>
+          <Nav>
+            <InputComponent
+              type="text"
+              placeholder="Domain"
+              onChange={handleDomainChange}
+            />
+            <InputComponent
+              type="text"
+              placeholder="Token"
+              onChange={handleTokenChange}
+            />
+            <ButtonComponent
+              text="Authenticate"
+              variant="outline-success"
+              onClick={handleAuthenticate}
+            />
           </Nav>
         </Navbar.Collapse>
-        <Container>
-          <Navbar.Text>
-            Signed in as: <span className="text-light">{username}</span>
-          </Navbar.Text>
-        </Container>
-        <InputComponent
-          type="text"
-          placeholder="Domain"
-          onChange={handleDomainChange}
-        />
-        <InputComponent
-          type="text"
-          placeholder="Token"
-          onChange={handleTokenChange}
-        />
-        <ButtonComponent
-          text="Authenticate"
-          variant="outline-success"
-          onClick={handleAuthenticate}
-        />
       </Container>
     </Navbar>
   );
 }
 
 function DropdownComponent({
-  className,
   options,
   titles,
   value,
   onChange,
 }: {
-  className: string;
   options: string[];
   titles: Map<string, string> | null;
   value: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
 }) {
   return (
-    <div className={className}>
-      <Form.Select value={value} onChange={onChange} size="sm">
-        {options.map((option) => (
-          <option key={option} value={option} title={titles?.get(option)}>
-            {option}
-          </option>
-        ))}
-      </Form.Select>
-    </div>
+    <Form.Select value={value} onChange={onChange}>
+      {options.map((option) => (
+        <option key={option} value={option} title={titles?.get(option)}>
+          {option}
+        </option>
+      ))}
+    </Form.Select>
   );
 }
 
 function MultiDropdownComponent({
-  className,
   options,
+  value,
   onChange,
 }: {
-  className: string;
   options: string[];
+  value: string[];
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
-    <div className={className}>
-      <Select
-        isMulti
-        menuPortalTarget={document.body}
-        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
-        options={options.map((option) => ({
-          value: option,
-          label: option,
-        }))}
-        delimiter=","
-        onChange={(e) =>
-          onChange({
-            target: {
-              value: e.map((option) => option.value).join(","),
-            },
-          } as React.ChangeEvent<HTMLInputElement>)
-        }
-      />
-    </div>
+    <Select
+      isMulti
+      menuPortalTarget={document.body}
+      styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+      options={options.map((option) => ({
+        value: option,
+        label: option,
+      }))}
+      value={value.map((option) => ({
+        value: option,
+        label: option,
+      }))}
+      delimiter=","
+      onChange={(e) =>
+        onChange({
+          target: {
+            value: e.map((option) => option.value).join(","),
+          },
+        } as React.ChangeEvent<HTMLInputElement>)
+      }
+    />
   );
 }
 
@@ -147,44 +145,41 @@ function InputComponent({
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
-    <div className="custom-input-container">
-      <Form.Control
-        type={type}
-        placeholder={placeholder}
-        onChange={onChange}
-        size="sm"
-      />
-    </div>
+    <Form.Control type={type} placeholder={placeholder} onChange={onChange} />
   );
 }
 
 function MultiInputComponent({
   options,
+  value,
   onChange,
 }: {
   options: string[];
+  value: string[];
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
-    <div className="custom-select-container">
-      <Creatable
-        isMulti
-        menuPortalTarget={document.body}
-        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
-        options={options.map((option) => ({
-          value: option,
-          label: option,
-        }))}
-        delimiter=","
-        onChange={(e) =>
-          onChange({
-            target: {
-              value: e.map((option) => option.value).join(","),
-            },
-          } as React.ChangeEvent<HTMLInputElement>)
-        }
-      />
-    </div>
+    <Creatable
+      isMulti
+      menuPortalTarget={document.body}
+      styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+      options={options.map((option) => ({
+        value: option,
+        label: option,
+      }))}
+      value={value.map((option) => ({
+        value: option,
+        label: option,
+      }))}
+      delimiter=","
+      onChange={(e) =>
+        onChange({
+          target: {
+            value: e.map((option) => option.value).join(","),
+          },
+        } as React.ChangeEvent<HTMLInputElement>)
+      }
+    />
   );
 }
 
@@ -199,7 +194,7 @@ function ButtonComponent({
 }) {
   return (
     <div className="custom-button-container">
-      <Button type="button" onClick={onClick} size="sm" variant={variant}>
+      <Button type="button" onClick={onClick} variant={variant}>
         <span>{text}</span>
       </Button>
     </div>
@@ -237,7 +232,6 @@ function FilterComponent({
   if (filter.lookup === "isnull") {
     f = (
       <DropdownComponent
-        className="custom-select-container"
         options={["true", "false"]}
         titles={null}
         value={filter.value}
@@ -246,17 +240,21 @@ function FilterComponent({
     );
   } else if (fieldOptions.get(filter.field)?.type === "choice") {
     if (filter.lookup === "in" || filter.lookup === "notin") {
+      let value: string[] = [];
+      if (filter.value) {
+        value = filter.value.split(",");
+      }
+
       f = (
         <MultiDropdownComponent
-          className="custom-select-container"
           options={fieldOptions.get(filter.field)?.choices || []}
+          value={value}
           onChange={handleValueChange}
         />
       );
     } else {
       f = (
         <DropdownComponent
-          className="custom-select-container"
           options={fieldOptions.get(filter.field)?.choices || []}
           titles={null}
           value={filter.value}
@@ -265,9 +263,14 @@ function FilterComponent({
       );
     }
   } else if (filter.lookup === "in" || filter.lookup === "notin") {
+    let value: string[] = [];
+    if (filter.value) {
+      value = filter.value.split(",");
+    }
     f = (
       <MultiInputComponent
         options={fieldOptions.get(filter.field)?.choices || []}
+        value={value}
         onChange={handleValueChange}
       />
     );
@@ -285,7 +288,6 @@ function FilterComponent({
   } else if (fieldOptions.get(filter.field)?.type === "bool") {
     f = (
       <DropdownComponent
-        className="custom-select-container"
         options={["true", "false"]}
         titles={null}
         value={filter.value}
@@ -302,34 +304,41 @@ function FilterComponent({
     );
   }
   return (
-    <div>
-      <DropdownComponent
-        className="custom-select-container"
-        options={[""].concat(Array.from(fieldOptions.keys()))}
-        titles={
-          new Map(
-            Array.from(fieldOptions.entries()).map(([field, options]) => [
-              field,
-              options.description,
-            ])
-          )
-        }
-        value={filter.field}
-        onChange={handleFieldChange}
-      />
-      <DropdownComponent
-        className="custom-select-container"
-        options={
-          lookupOptions.get(fieldOptions.get(filter.field)?.type || "") || []
-        }
-        titles={lookupDescriptions}
-        value={filter.lookup}
-        onChange={handleLookupChange}
-      />
-      {f}
+    <Stack direction="horizontal">
+      <Container fluid>
+        <Row>
+          <Col>
+            <DropdownComponent
+              options={[""].concat(Array.from(fieldOptions.keys()))}
+              titles={
+                new Map(
+                  Array.from(fieldOptions.entries()).map(([field, options]) => [
+                    field,
+                    options.description,
+                  ])
+                )
+              }
+              value={filter.field}
+              onChange={handleFieldChange}
+            />
+          </Col>
+          <Col>
+            <DropdownComponent
+              options={
+                lookupOptions.get(fieldOptions.get(filter.field)?.type || "") ||
+                []
+              }
+              titles={lookupDescriptions}
+              value={filter.lookup}
+              onChange={handleLookupChange}
+            />
+          </Col>
+          <Col>{f}</Col>
+        </Row>
+      </Container>
       <ButtonComponent text="+" variant="primary" onClick={handleFilterAdd} />
       <ButtonComponent text="-" variant="danger" onClick={handleFilterRemove} />
-    </div>
+    </Stack>
   );
 }
 
@@ -434,21 +443,20 @@ function App() {
   const [domain, setDomain] = useState("");
   const [token, setToken] = useState("");
   const [username, setUsername] = useState("None");
-  const [authenticated, setAuthenticated] = useState(false);
   const [project, setProject] = useState("");
-  const [projectOptions, setProjectOptions] = useState([] as string[]);
+  const [projectOptions, setProjectOptions] = useState(new Array<string>());
   const [fieldOptions, setFieldOptions] = useState(
-    {} as Map<string, FieldOptions>
+    new Map<string, FieldOptions>()
   );
   const [lookupOptions, setLookupOptions] = useState(
-    {} as Map<string, string[]>
+    new Map<string, string[]>()
   );
   const [lookupDescriptions, setLookupDescriptions] = useState(
-    {} as Map<string, string>
+    new Map<string, string>()
   );
-  const [filterList, setFilterList] = useState([] as Filter[]);
-  const [includeList, setIncludeList] = useState([] as string[]);
-  const [summariseList, setSummariseList] = useState([] as string[]);
+  const [filterList, setFilterList] = useState(new Array<Filter>());
+  const [includeList, setIncludeList] = useState(new Array<string>());
+  const [summariseList, setSummariseList] = useState(new Array<string>());
   const [resultData, setResultData] = useState([]);
   const resultCount = resultData.length;
   const [status, setStatus] = useState("None");
@@ -460,10 +468,8 @@ function App() {
       .then((response) => response.json())
       .then((data) => {
         setUsername(data["data"].username);
-        setAuthenticated(true);
       })
       .catch((err) => {
-        setAuthenticated(false);
         console.log(err.message);
       });
 
@@ -535,6 +541,8 @@ function App() {
   const handleProjectChange = (p: string) => {
     setProject(p);
     setFilterList([] as Filter[]);
+    setIncludeList([] as string[]);
+    setSummariseList([] as string[]);
     setResultData([]);
     setStatus("None");
     refreshFieldOptions({
@@ -565,7 +573,6 @@ function App() {
       list[index].value = "true";
     }
     setFilterList(list);
-    console.log(list);
   };
 
   const handleLookupChange = (
@@ -681,106 +688,102 @@ function App() {
               handleProjectChange={handleProjectChange}
             />
           </Row>
-          {authenticated && (
-            <Row>
-              <Col>
-                <Card>
-                  <Card.Header>
-                    <span>Filters</span>
-                    <div className="float-end">
-                      <ButtonComponent
-                        text="Add Filter"
-                        variant="dark"
-                        onClick={() => handleFilterAdd(filterList.length)}
-                      />
-                      <ButtonComponent
-                        text="Clear Filters"
-                        variant="dark"
-                        onClick={handleFilterClear}
+          <Row>
+            <Col lg={6}>
+              <Card>
+                <Card.Header>
+                  <span>Filters</span>
+                  <div className="float-end">
+                    <ButtonComponent
+                      text="Add Filter"
+                      variant="dark"
+                      onClick={() => handleFilterAdd(filterList.length)}
+                    />
+                    <ButtonComponent
+                      text="Clear Filters"
+                      variant="dark"
+                      onClick={handleFilterClear}
+                    />
+                  </div>
+                </Card.Header>
+                <Card.Body className="panel">
+                  {filterList.map((filter, index) => (
+                    <div key={index}>
+                      <FilterComponent
+                        filter={filter}
+                        fieldOptions={fieldOptions}
+                        lookupOptions={lookupOptions}
+                        lookupDescriptions={lookupDescriptions}
+                        handleFieldChange={(e) => handleFieldChange(e, index)}
+                        handleLookupChange={(e) => handleLookupChange(e, index)}
+                        handleValueChange={(e) => handleValueChange(e, index)}
+                        handleFilterAdd={() => handleFilterAdd(index + 1)}
+                        handleFilterRemove={() => handleFilterRemove(index)}
                       />
                     </div>
-                  </Card.Header>
-                  <Card.Body className="panel">
-                    {filterList.map((filter, index) => (
-                      <div key={index}>
-                        <FilterComponent
-                          filter={filter}
-                          fieldOptions={fieldOptions}
-                          lookupOptions={lookupOptions}
-                          lookupDescriptions={lookupDescriptions}
-                          handleFieldChange={(e) => handleFieldChange(e, index)}
-                          handleLookupChange={(e) =>
-                            handleLookupChange(e, index)
-                          }
-                          handleValueChange={(e) => handleValueChange(e, index)}
-                          handleFilterAdd={() => handleFilterAdd(index + 1)}
-                          handleFilterRemove={() => handleFilterRemove(index)}
-                        />
-                      </div>
-                    ))}
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col>
-                <Card>
-                  <Card.Header>Included fields</Card.Header>
-                  <Card.Body className="panel">
-                    <MultiDropdownComponent
-                      className=""
-                      options={Array.from(fieldOptions.keys())}
-                      onChange={(e) =>
-                        setIncludeList(e.target.value.split(","))
-                      }
-                    />
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col>
-                <Card>
-                  <Card.Header>Summarised fields</Card.Header>
-                  <Card.Body className="panel">
-                    <MultiDropdownComponent
-                      className=""
-                      options={Array.from(fieldOptions.keys())}
-                      onChange={(e) =>
-                        setSummariseList(e.target.value.split(","))
-                      }
-                    />
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-          )}
-          {authenticated && (
-            <div>
+                  ))}
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col>
+              <Card>
+                <Card.Header>Included fields</Card.Header>
+                <Card.Body className="panel">
+                  <MultiDropdownComponent
+                    options={Array.from(fieldOptions.keys())}
+                    value={includeList}
+                    onChange={(e) => setIncludeList(e.target.value.split(","))}
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col>
+              <Card>
+                <Card.Header>Summarised fields</Card.Header>
+                <Card.Body className="panel">
+                  <MultiDropdownComponent
+                    options={Array.from(fieldOptions.keys())}
+                    value={summariseList}
+                    onChange={(e) =>
+                      setSummariseList(e.target.value.split(","))
+                    }
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
               <ButtonComponent
                 text="Search"
                 variant="primary"
                 onClick={handleSearch}
               />
-              <StatusComponent status={status} />
-              <Badge bg="secondary" pill>
-                Results: {resultCount}
-              </Badge>
-            </div>
-          )}
-          {authenticated && (
-            <Card>
-              <Card.Header>
-                <span>Results</span>
-                <div className="float-end">
-                  <ButtonComponent
-                    text="Export to CSV"
-                    variant="outline-primary"
-                    onClick={handleExportToCSV}
-                  />
-                </div>
-              </Card.Header>
-              <Card.Body>
-                <TableComponent data={resultData} />{" "}
-              </Card.Body>
-            </Card>
-          )}
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <Card>
+                <Card.Header>
+                  <span>Results</span>
+                  <div className="float-end">
+                    <StatusComponent status={status} />
+                    <Badge bg="secondary" pill>
+                      Rows: {resultCount}
+                    </Badge>
+                    <ButtonComponent
+                      text="Export to CSV"
+                      variant="outline-primary"
+                      onClick={handleExportToCSV}
+                    />
+                  </div>
+                </Card.Header>
+                <Card.Body>
+                  <TableComponent data={resultData} />{" "}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
         </Stack>
       </Container>
     </form>
