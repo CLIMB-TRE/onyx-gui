@@ -8,11 +8,11 @@ import {
   Button,
   Form,
   Table,
-  Badge,
   Nav,
   Navbar,
   NavDropdown,
   Card,
+  Pagination,
 } from "react-bootstrap";
 import Select from "react-select";
 import Creatable from "react-select/creatable";
@@ -461,6 +461,8 @@ function Onyx(props: OnyxProps) {
   const [summariseList, setSummariseList] = useState(new Array<string>());
   const [resultData, setResultData] = useState([]);
   const resultCount = resultData.length;
+  const [nextPage, setNextPage] = useState("");
+  const [previousPage, setPreviousPage] = useState("");
   const [errors, setErrors] = useState(new Map<string, string | string[]>());
 
   const handleAuthenticate = () => {
@@ -646,47 +648,54 @@ function Onyx(props: OnyxProps) {
     setFilterList([] as Filter[]);
   };
 
-  const handleSearch = () => {
+  const handleSearch = (url?: string) => {
     if (project) {
-      const params = new URLSearchParams(
-        filterList
-          .filter((filter) => filter.field)
-          .map((filter) => {
-            if (filter.lookup) {
-              return [filter.field + "__" + filter.lookup, filter.value];
-            } else {
-              return [filter.field, filter.value];
-            }
-          })
-          .concat(
-            includeList
-              .filter((include) => include)
-              .map((field) => ["include", field])
-          )
-          .concat(
-            excludeList
-              .filter((exclude) => exclude)
-              .map((field) => ["exclude", field])
-          )
-          .concat(
-            summariseList
-              .filter((summarise) => summarise)
-              .map((field) => ["summarise", field])
-          )
-      );
-      fetch(domain + "/projects/" + project + "?" + params, {
+      if (url === undefined) {
+        const params = new URLSearchParams(
+          filterList
+            .filter((filter) => filter.field)
+            .map((filter) => {
+              if (filter.lookup) {
+                return [filter.field + "__" + filter.lookup, filter.value];
+              } else {
+                return [filter.field, filter.value];
+              }
+            })
+            .concat(
+              includeList
+                .filter((include) => include)
+                .map((field) => ["include", field])
+            )
+            .concat(
+              excludeList
+                .filter((exclude) => exclude)
+                .map((field) => ["exclude", field])
+            )
+            .concat(
+              summariseList
+                .filter((summarise) => summarise)
+                .map((field) => ["summarise", field])
+            )
+        );
+        url = domain + "/projects/" + project + "?" + params;
+      }
+
+      fetch(url, {
         headers: { Authorization: "Token " + token },
       })
         .then((response) => {
           if (!response.ok) {
             response.json().then((data) => {
               setResultData([]);
+              setNextPage("");
+              setPreviousPage("");
               setErrors(new Map(Object.entries(data["messages"])));
             });
           } else {
-            setErrors(new Map<string, string | string[]>());
             response.json().then((data) => {
               setResultData(data["data"]);
+              setNextPage(data["next"] || "");
+              setPreviousPage(data["previous"] || "");
               setErrors(new Map<string, string | string[]>());
             });
           }
@@ -706,7 +715,6 @@ function Onyx(props: OnyxProps) {
     const csv = generateCsv(csvConfig)(resultData);
     download(csvConfig)(csv);
   };
-  console.log(errors);
 
   return (
     <form className="Onyx" autoComplete="off">
@@ -799,27 +807,29 @@ function Onyx(props: OnyxProps) {
               </Card>
             </Col>
           </Row>
-          <Row>
+          {/* <Row>
             <Col>
               <ButtonComponent
                 text="Search"
                 variant="primary"
-                onClick={handleSearch}
+                onClick={() => handleSearch()}
               />
             </Col>
-          </Row>
+          </Row> */}
           <Row>
             <Col>
               <Card>
                 <Card.Header>
                   <span>Results</span>
                   <div className="float-end">
-                    <Badge bg="secondary" pill>
-                      Rows: {resultCount}
-                    </Badge>
                     <ButtonComponent
-                      text="Export to CSV"
-                      variant="outline-primary"
+                      text="Search"
+                      variant="primary"
+                      onClick={() => handleSearch()}
+                    />
+                    <ButtonComponent
+                      text="Export Page to CSV"
+                      variant="dark"
                       onClick={handleExportToCSV}
                     />
                   </div>
@@ -839,6 +849,21 @@ function Onyx(props: OnyxProps) {
                     <TableComponent data={resultData} />
                   )}
                 </Card.Body>
+                <Card.Footer>
+                  <Pagination>
+                    <Pagination.Prev
+                      disabled={!previousPage.length}
+                      onClick={() => handleSearch(previousPage)}
+                    />
+                    <Pagination.Item>
+                      Showing {resultCount} results
+                    </Pagination.Item>
+                    <Pagination.Next
+                      disabled={!nextPage.length}
+                      onClick={() => handleSearch(nextPage)}
+                    />
+                  </Pagination>
+                </Card.Footer>
               </Card>
             </Col>
           </Row>
