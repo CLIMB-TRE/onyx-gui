@@ -17,9 +17,13 @@ import {
 import Select from "react-select";
 import Creatable from "react-select/creatable";
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import "./App.css";
+
+import "./Onyx.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function NavbarComponent({
+  domain,
+  token,
   username,
   project,
   projectOptions,
@@ -28,6 +32,8 @@ function NavbarComponent({
   handleAuthenticate,
   handleProjectChange,
 }: {
+  domain: string;
+  token: string;
   username: string;
   project: string;
   projectOptions: string[];
@@ -60,11 +66,13 @@ function NavbarComponent({
           <Nav>
             <InputComponent
               type="text"
+              value={domain}
               placeholder="Domain"
               onChange={handleDomainChange}
             />
             <InputComponent
               type="text"
+              value={token}
               placeholder="Token"
               onChange={handleTokenChange}
             />
@@ -138,15 +146,22 @@ function MultiDropdownComponent({
 
 function InputComponent({
   type,
+  value,
   placeholder,
   onChange,
 }: {
   type: string;
+  value?: string;
   placeholder: string;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
-    <Form.Control type={type} placeholder={placeholder} onChange={onChange} />
+    <Form.Control
+      value={value}
+      type={type}
+      placeholder={placeholder}
+      onChange={onChange}
+    />
   );
 }
 
@@ -420,9 +435,14 @@ function refreshFieldOptions({
     });
 }
 
-function App() {
-  const [domain, setDomain] = useState("");
-  const [token, setToken] = useState("");
+interface OnyxProps {
+  domain?: string;
+  token?: string;
+}
+
+function Onyx(props: OnyxProps) {
+  const [domain, setDomain] = useState(props.domain || "");
+  const [token, setToken] = useState(props.token || "");
   const [username, setUsername] = useState("None");
   const [project, setProject] = useState("");
   const [projectOptions, setProjectOptions] = useState(new Array<string>());
@@ -689,11 +709,13 @@ function App() {
   console.log(errors);
 
   return (
-    <form className="App" autoComplete="off">
+    <form className="Onyx" autoComplete="off">
       <Container fluid>
         <Stack gap={3}>
           <Row>
             <NavbarComponent
+              domain={domain}
+              token={token}
               username={username}
               project={project}
               projectOptions={projectOptions}
@@ -826,4 +848,4 @@ function App() {
   );
 }
 
-export default App;
+export default Onyx;
