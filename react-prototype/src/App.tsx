@@ -587,6 +587,30 @@ function App() {
     setFilterList(list);
   };
 
+  const handleIncludeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === "") {
+      setIncludeList([]);
+    } else {
+      setIncludeList(e.target.value.split(","));
+    }
+  };
+
+  const handleExcludeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === "") {
+      setExcludeList([]);
+    } else {
+      setExcludeList(e.target.value.split(","));
+    }
+  };
+
+  const handleSummariseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === "") {
+      setSummariseList([]);
+    } else {
+      setSummariseList(e.target.value.split(","));
+    }
+  };
+
   const handleFilterAdd = (index: number) => {
     setFilterList([
       ...filterList.slice(0, index),
@@ -726,9 +750,7 @@ function App() {
                   <MultiDropdownComponent
                     options={Array.from(fieldOptions.keys())}
                     value={summariseList}
-                    onChange={(e) =>
-                      setSummariseList(e.target.value.split(","))
-                    }
+                    onChange={handleSummariseChange}
                   />
                 </Card.Body>
               </Card>
@@ -740,7 +762,7 @@ function App() {
                   <MultiDropdownComponent
                     options={Array.from(fieldOptions.keys())}
                     value={includeList}
-                    onChange={(e) => setIncludeList(e.target.value.split(","))}
+                    onChange={handleIncludeChange}
                   />
                 </Card.Body>
               </Card>
@@ -752,7 +774,7 @@ function App() {
                   <MultiDropdownComponent
                     options={Array.from(fieldOptions.keys())}
                     value={excludeList}
-                    onChange={(e) => setExcludeList(e.target.value.split(","))}
+                    onChange={handleExcludeChange}
                   />
                 </Card.Body>
               </Card>
