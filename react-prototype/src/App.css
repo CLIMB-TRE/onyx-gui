@@ -7,7 +7,7 @@
   overflow-x: auto;
   overflow-y: scroll;
   overscroll-behavior-x: none; 
-  height: 54vh;
+  height: 50vh;
   white-space: nowrap;
 }
 
@@ -19,6 +19,12 @@
 .panel {
   height: 15vh;
   overflow-y: scroll;
+}
+
+.table-panel {
+  height: 55vh;
+  overflow-y: scroll;
+
 }
 
 .custom-button-container {

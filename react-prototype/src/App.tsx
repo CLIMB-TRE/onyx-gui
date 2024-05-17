@@ -1,5 +1,6 @@
 import React, { ChangeEventHandler, useState } from "react";
 import {
+  Alert,
   Container,
   Row,
   Col,
@@ -378,23 +379,6 @@ function TableComponent({
   );
 }
 
-function StatusComponent({ status }: { status: string }) {
-  return (
-    <Badge
-      bg={
-        status === "Success"
-          ? "success"
-          : status === "Error"
-          ? "danger"
-          : "secondary"
-      }
-      pill
-    >
-      Status: {status}
-    </Badge>
-  );
-}
-
 interface FieldOptions {
   type: string;
   description: string;
@@ -456,10 +440,11 @@ function App() {
   );
   const [filterList, setFilterList] = useState(new Array<Filter>());
   const [includeList, setIncludeList] = useState(new Array<string>());
+  const [excludeList, setExcludeList] = useState(new Array<string>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
   const [resultData, setResultData] = useState([]);
   const resultCount = resultData.length;
-  const [status, setStatus] = useState("None");
+  const [errors, setErrors] = useState(new Map<string, string | string[]>());
 
   const handleAuthenticate = () => {
     fetch(domain + "/accounts/profile", {
@@ -544,7 +529,6 @@ function App() {
     setIncludeList([] as string[]);
     setSummariseList([] as string[]);
     setResultData([]);
-    setStatus("None");
     refreshFieldOptions({
       domain,
       token,
@@ -622,45 +606,54 @@ function App() {
   };
 
   const handleSearch = () => {
-    const params = new URLSearchParams(
-      filterList
-        .filter((filter) => filter.field)
-        .map((filter) => {
-          if (filter.lookup) {
-            return [filter.field + "__" + filter.lookup, filter.value];
+    if (project) {
+      const params = new URLSearchParams(
+        filterList
+          .filter((filter) => filter.field)
+          .map((filter) => {
+            if (filter.lookup) {
+              return [filter.field + "__" + filter.lookup, filter.value];
+            } else {
+              return [filter.field, filter.value];
+            }
+          })
+          .concat(
+            includeList
+              .filter((include) => include)
+              .map((field) => ["include", field])
+          )
+          .concat(
+            excludeList
+              .filter((exclude) => exclude)
+              .map((field) => ["exclude", field])
+          )
+          .concat(
+            summariseList
+              .filter((summarise) => summarise)
+              .map((field) => ["summarise", field])
+          )
+      );
+      fetch(domain + "/projects/" + project + "?" + params, {
+        headers: { Authorization: "Token " + token },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            response.json().then((data) => {
+              setResultData([]);
+              setErrors(new Map(Object.entries(data["messages"])));
+            });
           } else {
-            return [filter.field, filter.value];
+            setErrors(new Map<string, string | string[]>());
+            response.json().then((data) => {
+              setResultData(data["data"]);
+              setErrors(new Map<string, string | string[]>());
+            });
           }
         })
-        .concat(
-          includeList
-            .filter((include) => include)
-            .map((field) => ["include", field])
-        )
-        .concat(
-          summariseList
-            .filter((summarise) => summarise)
-            .map((field) => ["summarise", field])
-        )
-    );
-    fetch(domain + "/projects/" + project + "?" + params, {
-      headers: { Authorization: "Token " + token },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          setStatus("Error");
-          throw new Error(response.statusText);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setResultData(data["data"]);
-        setStatus("Success");
-      })
-      .catch((err) => {
-        console.log(err.message);
-        setStatus("Error");
-      });
+        .catch((err) => {
+          console.log(err.message);
+        });
+    }
   };
 
   const csvConfig = mkConfig({
@@ -672,6 +665,7 @@ function App() {
     const csv = generateCsv(csvConfig)(resultData);
     download(csvConfig)(csv);
   };
+  console.log(errors);
 
   return (
     <form className="App" autoComplete="off">
@@ -692,7 +686,7 @@ function App() {
             <Col lg={6}>
               <Card>
                 <Card.Header>
-                  <span>Filters</span>
+                  <span>Filter</span>
                   <div className="float-end">
                     <ButtonComponent
                       text="Add Filter"
@@ -725,9 +719,23 @@ function App() {
                 </Card.Body>
               </Card>
             </Col>
+            <Col lg={2}>
+              <Card>
+                <Card.Header>Summarise</Card.Header>
+                <Card.Body className="panel">
+                  <MultiDropdownComponent
+                    options={Array.from(fieldOptions.keys())}
+                    value={summariseList}
+                    onChange={(e) =>
+                      setSummariseList(e.target.value.split(","))
+                    }
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
             <Col>
               <Card>
-                <Card.Header>Included fields</Card.Header>
+                <Card.Header>Include</Card.Header>
                 <Card.Body className="panel">
                   <MultiDropdownComponent
                     options={Array.from(fieldOptions.keys())}
@@ -739,14 +747,12 @@ function App() {
             </Col>
             <Col>
               <Card>
-                <Card.Header>Summarised fields</Card.Header>
+                <Card.Header>Exclude</Card.Header>
                 <Card.Body className="panel">
                   <MultiDropdownComponent
                     options={Array.from(fieldOptions.keys())}
-                    value={summariseList}
-                    onChange={(e) =>
-                      setSummariseList(e.target.value.split(","))
-                    }
+                    value={excludeList}
+                    onChange={(e) => setExcludeList(e.target.value.split(","))}
                   />
                 </Card.Body>
               </Card>
@@ -767,7 +773,6 @@ function App() {
                 <Card.Header>
                   <span>Results</span>
                   <div className="float-end">
-                    <StatusComponent status={status} />
                     <Badge bg="secondary" pill>
                       Rows: {resultCount}
                     </Badge>
@@ -778,8 +783,20 @@ function App() {
                     />
                   </div>
                 </Card.Header>
-                <Card.Body>
-                  <TableComponent data={resultData} />{" "}
+                <Card.Body className="table-panel">
+                  {errors.size > 0 ? (
+                    Array.from(errors.entries()).map(([key, value]) => (
+                      <div key={key}>
+                        <Alert variant="danger">
+                          <span>
+                            {key}: {value}
+                          </span>
+                        </Alert>
+                      </div>
+                    ))
+                  ) : (
+                    <TableComponent data={resultData} />
+                  )}
                 </Card.Body>
               </Card>
             </Col>
