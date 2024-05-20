@@ -10,6 +10,7 @@ import { ILauncher } from '@jupyterlab/launcher';
 
 import { requestAPI } from './handler';
 import { ReactAppWidget } from './App'
+import { chatIcon } from './icon';
 
 /**
  * Initialization data for the onyx_extension extension.
@@ -56,6 +57,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
   app.commands.addCommand(command, {
       label: 'Onyx',
       caption: 'Onyx',
+      icon: chatIcon,
       execute: () => {
         if (!widget || widget.disposed) {
           const content = new ReactAppWidget(domain,token)
