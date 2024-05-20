@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, useState } from "react";
+import React, { memo, ChangeEventHandler, useState, useEffect } from "react";
 import {
   Alert,
   Container,
@@ -27,28 +27,33 @@ function NavbarComponent({
   username,
   project,
   projectOptions,
+  searchInput,
   handleDomainChange,
   handleTokenChange,
   handleAuthenticate,
   handleProjectChange,
+  handleSearchInputChange,
   handleSearch,
+  handleThemeChange,
 }: {
   domain: string;
   token: string;
   username: string;
   project: string;
   projectOptions: string[];
+  searchInput: string;
   handleDomainChange: React.ChangeEventHandler<HTMLInputElement>;
   handleTokenChange: React.ChangeEventHandler<HTMLInputElement>;
   handleAuthenticate: React.MouseEventHandler<HTMLButtonElement>;
   handleProjectChange: (p: string) => void;
+  handleSearchInputChange: React.ChangeEventHandler<HTMLInputElement>;
   handleSearch: () => void;
+  handleThemeChange: () => void;
 }) {
   return (
     <Navbar bg="dark" variant="dark" collapseOnSelect expand="lg">
       <Container fluid>
         <Navbar.Brand>Onyx</Navbar.Brand>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
             <NavDropdown title={project} id="collapsible-nav-dropdown">
@@ -70,13 +75,13 @@ function NavbarComponent({
               }
               id="nav-dropdown"
             >
-              <InputComponent
+              <Input
                 type="text"
                 value={domain}
                 placeholder="Domain"
                 onChange={handleDomainChange}
               />
-              <InputComponent
+              <Input
                 type="text"
                 value={token}
                 placeholder="Token"
@@ -84,30 +89,36 @@ function NavbarComponent({
               />
               <NavDropdown.Divider />
               <NavDropdown.Item>
-                <ButtonComponent
-                  text="Authenticate"
-                  variant="outline-success"
-                  onClick={handleAuthenticate}
-                />
+                <Button variant="outline-success" onClick={handleAuthenticate}>
+                  Authenticate
+                </Button>
               </NavDropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>
-
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Form.Check
+          type="switch"
+          id="theme-switch"
+          onChange={handleThemeChange}
+        />
         <Nav>
-          {" "}
-          <ButtonComponent
-            text="Search"
-            variant="primary"
-            onClick={() => handleSearch()}
+          <Input
+            type="text"
+            value={searchInput}
+            placeholder="Search records..."
+            onChange={handleSearchInputChange}
           />
+          <Button variant="primary" onClick={() => handleSearch()}>
+            Search
+          </Button>
         </Nav>
       </Container>
     </Navbar>
   );
 }
 
-function DropdownComponent({
+function Dropdown({
   options,
   titles,
   value,
@@ -129,7 +140,7 @@ function DropdownComponent({
   );
 }
 
-function MultiDropdownComponent({
+function MultiDropdown({
   options,
   value,
   onChange,
@@ -142,7 +153,16 @@ function MultiDropdownComponent({
     <Select
       isMulti
       menuPortalTarget={document.body}
-      styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+      styles={{
+        control: (styles) => ({ ...styles, backgroundColor: "dark-grey" }),
+        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+        menu: (base) => ({ ...base, backgroundColor: "black" }),
+        option: (base, state) => ({
+          ...base,
+          color: "white",
+          backgroundColor: state.isFocused ? "blue" : "black",
+        }),
+      }}
       options={options.map((option) => ({
         value: option,
         label: option,
@@ -163,14 +183,14 @@ function MultiDropdownComponent({
   );
 }
 
-function InputComponent({
+function Input({
   type,
   value,
   placeholder,
   onChange,
 }: {
   type: string;
-  value?: string;
+  value: string;
   placeholder: string;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
@@ -184,13 +204,15 @@ function InputComponent({
   );
 }
 
-function MultiInputComponent({
+function MultiInput({
   options,
   value,
+  limit,
   onChange,
 }: {
   options: string[];
   value: string[];
+  limit?: number;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
@@ -214,25 +236,8 @@ function MultiInputComponent({
           },
         } as React.ChangeEvent<HTMLInputElement>)
       }
+      isOptionDisabled={() => !(limit === undefined || value.length < limit)}
     />
-  );
-}
-
-function ButtonComponent({
-  text,
-  variant,
-  onClick,
-}: {
-  text: string;
-  variant: string;
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
-}) {
-  return (
-    <div className="custom-button-container">
-      <Button type="button" onClick={onClick} variant={variant}>
-        <span>{text}</span>
-      </Button>
-    </div>
   );
 }
 
@@ -266,21 +271,20 @@ function FilterComponent({
   let f: JSX.Element;
   if (filter.lookup === "isnull") {
     f = (
-      <DropdownComponent
+      <Dropdown
         options={["true", "false"]}
         value={filter.value}
         onChange={handleValueChange}
       />
     );
   } else if (fieldOptions.get(filter.field)?.type === "choice") {
-    if (filter.lookup === "in" || filter.lookup === "notin") {
+    if (filter.lookup.endsWith("in")) {
       let value: string[] = [];
       if (filter.value) {
         value = filter.value.split(",");
       }
-
       f = (
-        <MultiDropdownComponent
+        <MultiDropdown
           options={fieldOptions.get(filter.field)?.choices || []}
           value={value}
           onChange={handleValueChange}
@@ -288,39 +292,41 @@ function FilterComponent({
       );
     } else {
       f = (
-        <DropdownComponent
+        <Dropdown
           options={fieldOptions.get(filter.field)?.choices || []}
           value={filter.value}
           onChange={handleValueChange}
         />
       );
     }
-  } else if (filter.lookup === "in" || filter.lookup === "notin") {
+  } else if (filter.lookup.endsWith("in")) {
     let value: string[] = [];
     if (filter.value) {
       value = filter.value.split(",");
     }
     f = (
-      <MultiInputComponent
+      <MultiInput
         options={fieldOptions.get(filter.field)?.choices || []}
         value={value}
         onChange={handleValueChange}
       />
     );
-  } else if (
-    fieldOptions.get(filter.field)?.type === "integer" ||
-    fieldOptions.get(filter.field)?.type === "decimal"
-  ) {
+  } else if (filter.lookup.endsWith("range")) {
+    let value: string[] = [];
+    if (filter.value) {
+      value = filter.value.split(",");
+    }
     f = (
-      <InputComponent
-        type="number"
-        placeholder="Value"
+      <MultiInput
+        options={fieldOptions.get(filter.field)?.choices || []}
+        value={value}
+        limit={2}
         onChange={handleValueChange}
       />
     );
   } else if (fieldOptions.get(filter.field)?.type === "bool") {
     f = (
-      <DropdownComponent
+      <Dropdown
         options={["true", "false"]}
         value={filter.value}
         onChange={handleValueChange}
@@ -328,8 +334,9 @@ function FilterComponent({
     );
   } else {
     f = (
-      <InputComponent
+      <Input
         type="text"
+        value={filter.value}
         placeholder="Value"
         onChange={handleValueChange}
       />
@@ -340,7 +347,7 @@ function FilterComponent({
       <Container fluid>
         <Row>
           <Col>
-            <DropdownComponent
+            <Dropdown
               options={[""].concat(Array.from(fieldOptions.keys()))}
               titles={
                 new Map(
@@ -355,7 +362,7 @@ function FilterComponent({
             />
           </Col>
           <Col>
-            <DropdownComponent
+            <Dropdown
               options={
                 lookupOptions.get(fieldOptions.get(filter.field)?.type || "") ||
                 []
@@ -368,13 +375,17 @@ function FilterComponent({
           <Col>{f}</Col>
         </Row>
       </Container>
-      <ButtonComponent text="+" variant="primary" onClick={handleFilterAdd} />
-      <ButtonComponent text="-" variant="danger" onClick={handleFilterRemove} />
+      <Button variant="primary" onClick={handleFilterAdd}>
+        +
+      </Button>
+      <Button variant="danger" onClick={handleFilterRemove}>
+        -
+      </Button>
     </Stack>
   );
 }
 
-function TableComponent({
+const TableComponent = memo(function TableComponent({
   data,
 }: {
   data: Record<string, string | number | boolean | null>[];
@@ -408,7 +419,7 @@ function TableComponent({
       </tbody>
     </Table>
   );
-}
+});
 
 interface FieldOptions {
   type: string;
@@ -478,11 +489,27 @@ function Onyx(props: OnyxProps) {
   const [includeList, setIncludeList] = useState(new Array<string>());
   const [excludeList, setExcludeList] = useState(new Array<string>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
+  const [searchInput, setSearchInput] = useState("");
   const [resultData, setResultData] = useState([]);
   const resultCount = resultData.length;
   const [nextPage, setNextPage] = useState("");
   const [previousPage, setPreviousPage] = useState("");
   const [errors, setErrors] = useState(new Map<string, string | string[]>());
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleTheme = () => {
+    const htmlElement = document.querySelector("html");
+    htmlElement?.setAttribute("data-bs-theme", !darkMode ? "dark" : "light");
+    setDarkMode(!darkMode);
+  };
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.style.backgroundColor = "#1a1a1a";
+    } else {
+      document.body.style.backgroundColor = "#f8f9fa";
+    }
+  }, [darkMode]);
 
   const handleAuthenticate = () => {
     fetch(domain + "/accounts/profile", {
@@ -513,6 +540,7 @@ function Onyx(props: OnyxProps) {
           const project = projects[0];
           setProject(project);
           refreshFieldOptions({ domain, token, project, setFieldOptions });
+          handleSearch(domain + "/projects/" + project);
         }
       })
       .catch((err) => {
@@ -553,19 +581,13 @@ function Onyx(props: OnyxProps) {
       });
   };
 
-  const handleDomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDomain(e.target.value);
-  };
-
-  const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setToken(e.target.value);
-  };
-
   const handleProjectChange = (p: string) => {
     setProject(p);
     setFilterList([] as Filter[]);
     setIncludeList([] as string[]);
+    setExcludeList([] as string[]);
     setSummariseList([] as string[]);
+    setSearchInput("");
     setResultData([]);
     refreshFieldOptions({
       domain,
@@ -573,6 +595,7 @@ function Onyx(props: OnyxProps) {
       project: p,
       setFieldOptions,
     });
+    handleSearch(domain + "/projects/" + p);
   };
 
   const handleFieldChange = (
@@ -695,6 +718,11 @@ function Onyx(props: OnyxProps) {
                 .filter((summarise) => summarise)
                 .map((field) => ["summarise", field])
             )
+            .concat(
+              [searchInput]
+                .filter((search) => search)
+                .map((search) => ["search", search])
+            )
         );
         url = domain + "/projects/" + project + "?" + params;
       }
@@ -746,11 +774,14 @@ function Onyx(props: OnyxProps) {
               username={username}
               project={project}
               projectOptions={projectOptions}
-              handleDomainChange={handleDomainChange}
-              handleTokenChange={handleTokenChange}
+              searchInput={searchInput}
+              handleDomainChange={(e) => setDomain(e.target.value)}
+              handleTokenChange={(e) => setToken(e.target.value)}
               handleAuthenticate={handleAuthenticate}
               handleProjectChange={handleProjectChange}
+              handleSearchInputChange={(e) => setSearchInput(e.target.value)}
               handleSearch={handleSearch}
+              handleThemeChange={toggleTheme}
             />
           </Row>
           <Row>
@@ -759,16 +790,20 @@ function Onyx(props: OnyxProps) {
                 <Card.Header>
                   <span>Filter</span>
                   <div className="float-end">
-                    <ButtonComponent
-                      text="Add Filter"
+                    <Button
+                      size="sm"
                       variant="dark"
                       onClick={() => handleFilterAdd(filterList.length)}
-                    />
-                    <ButtonComponent
-                      text="Clear Filters"
+                    >
+                      Add Filter
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="dark"
                       onClick={handleFilterClear}
-                    />
+                    >
+                      Clear Filters
+                    </Button>
                   </div>
                 </Card.Header>
                 <Card.Body className="panel">
@@ -794,7 +829,7 @@ function Onyx(props: OnyxProps) {
               <Card>
                 <Card.Header>Summarise</Card.Header>
                 <Card.Body className="panel">
-                  <MultiDropdownComponent
+                  <MultiDropdown
                     options={Array.from(fieldOptions.keys())}
                     value={summariseList}
                     onChange={handleSummariseChange}
@@ -806,7 +841,7 @@ function Onyx(props: OnyxProps) {
               <Card>
                 <Card.Header>Include</Card.Header>
                 <Card.Body className="panel">
-                  <MultiDropdownComponent
+                  <MultiDropdown
                     options={Array.from(fieldOptions.keys())}
                     value={includeList}
                     onChange={handleIncludeChange}
@@ -818,7 +853,7 @@ function Onyx(props: OnyxProps) {
               <Card>
                 <Card.Header>Exclude</Card.Header>
                 <Card.Body className="panel">
-                  <MultiDropdownComponent
+                  <MultiDropdown
                     options={Array.from(fieldOptions.keys())}
                     value={excludeList}
                     onChange={handleExcludeChange}
@@ -831,13 +866,15 @@ function Onyx(props: OnyxProps) {
             <Col>
               <Card>
                 <Card.Header>
-                  <span>Data</span>
+                  <span>Results</span>
                   <div className="float-end">
-                    <ButtonComponent
-                      text="Export Page to CSV"
-                      variant="dark"
+                    <Button
+                      size="sm"
+                      variant="outline-success"
                       onClick={handleExportToCSV}
-                    />
+                    >
+                      Export Page to CSV
+                    </Button>
                   </div>
                 </Card.Header>
                 <Card.Body className="table-panel">
@@ -856,7 +893,7 @@ function Onyx(props: OnyxProps) {
                   )}
                 </Card.Body>
                 <Card.Footer>
-                  <Pagination>
+                  <Pagination size="sm">
                     <Pagination.Prev
                       disabled={!previousPage.length}
                       onClick={() => handleSearch(previousPage)}

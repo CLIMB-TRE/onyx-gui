@@ -1,7 +1,8 @@
 #root {
-  margin: 0 auto;
+  /* margin: 0 auto; */
+  /* background-color: #1a1a1a; */
+  height: 100vh;
 }
-
 .table {
   display: block;
   overflow-x: auto;
@@ -11,26 +12,61 @@
   white-space: nowrap;
 }
 
+.table thead{
+  position: sticky;
+  top: 0px;
+  margin: 0 0 0 0;
+}
+
 .card-header {
-  font-size: larger;
-  min-height: 60px;
+  font-size: large;
+  height: 50px;
+}
+
+.card-footer {
+  height: 50px;
 }
 
 .panel {
-  height: 15vh;
+  height: 20vh;
   overflow-y: scroll;
 }
 
 .table-panel {
   height: 55vh;
   overflow-y: scroll;
-
 }
 
-.custom-button-container {
-  padding: 1px; /* Optional padding for better aesthetics */
-  display: inline-block;
-}
+/* .react-select-container {
+  .react-select__control {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    transition: none;
 
-/* Incase I want to use in future: */
-/* border border-medium rounded bg-light */
+    &:hover {
+      border-color: var(--border-color);
+    }
+  }
+
+  .react-select__menu {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+  }
+
+  .react-select__option {
+    background-color: var(--bg-secondary);
+
+    &:hover {
+      background-color: var(--bg-primary);
+    }
+  }
+
+  .react-select__indicator-separator {
+    background-color: var(--border-color);
+  }
+
+  .react-select__placeholder,
+  .react-select__single-value {
+    color: var(--text-primary);
+  }
+} */
