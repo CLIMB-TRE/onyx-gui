@@ -1,4 +1,4 @@
-import React, { memo, ChangeEventHandler, useState, useEffect } from "react";
+import React, { memo, ChangeEventHandler, useState } from "react";
 import {
   Alert,
   Container,
@@ -502,14 +502,6 @@ function Onyx(props: OnyxProps) {
     htmlElement?.setAttribute("data-bs-theme", !darkMode ? "dark" : "light");
     setDarkMode(!darkMode);
   };
-
-  useEffect(() => {
-    if (darkMode) {
-      document.body.style.backgroundColor = "#1a1a1a";
-    } else {
-      document.body.style.backgroundColor = "#f8f9fa";
-    }
-  }, [darkMode]);
 
   const handleAuthenticate = () => {
     fetch(domain + "/accounts/profile", {
