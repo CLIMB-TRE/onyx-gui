@@ -2,6 +2,7 @@ import React from 'react';
 import { ReactWidget } from '@jupyterlab/apputils'
 //import App from '../../react-prototype/src/App'
 import Onyx from "climb-onyx-ui"
+import "climb-onyx-ui/dist/style.css";
 
 
 export class ReactAppWidget extends ReactWidget {
