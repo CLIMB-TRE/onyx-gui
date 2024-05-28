@@ -1,0 +1,72 @@
+#root {
+  /* margin: 0 auto; */
+  /* background-color: #1a1a1a; */
+  height: 100vh;
+}
+.table {
+  display: block;
+  overflow-x: auto;
+  overflow-y: scroll;
+  overscroll-behavior-x: none; 
+  height: 50vh;
+  white-space: nowrap;
+}
+
+.table thead{
+  position: sticky;
+  top: 0px;
+  margin: 0 0 0 0;
+}
+
+.card-header {
+  font-size: large;
+  height: 50px;
+}
+
+.card-footer {
+  height: 50px;
+}
+
+.panel {
+  height: 20vh;
+  overflow-y: scroll;
+}
+
+.table-panel {
+  height: 55vh;
+  overflow-y: scroll;
+}
+
+/* .react-select-container {
+  .react-select__control {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    transition: none;
+
+    &:hover {
+      border-color: var(--border-color);
+    }
+  }
+
+  .react-select__menu {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+  }
+
+  .react-select__option {
+    background-color: var(--bg-secondary);
+
+    &:hover {
+      background-color: var(--bg-primary);
+    }
+  }
+
+  .react-select__indicator-separator {
+    background-color: var(--border-color);
+  }
+
+  .react-select__placeholder,
+  .react-select__single-value {
+    color: var(--text-primary);
+  }
+} */
