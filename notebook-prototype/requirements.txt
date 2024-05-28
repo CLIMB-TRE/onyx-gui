@@ -1,5 +1,0 @@
-climb-onyx-client
-ipywidgets==7.7.1
-matplotlib
-numpy
-pyzmq
