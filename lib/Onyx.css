@@ -1,9 +1,13 @@
+form { 
+  background-color: grey;
+}
+
 .table {
   display: block;
   overflow-x: auto;
   overflow-y: scroll;
   overscroll-behavior-x: none; 
-  height: 50vh;
+  height: 40vh;
   white-space: nowrap;
 }
 
@@ -24,10 +28,6 @@
 
 .panel {
   height: 20vh;
-  overflow-y: scroll;
-}
-
-.table-panel {
   overflow-y: scroll;
 }
 

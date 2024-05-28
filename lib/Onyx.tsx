@@ -21,6 +21,8 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import "./Onyx.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+const VERSION = "0.6.0";
+
 function NavbarComponent({
   domain,
   token,
@@ -94,6 +96,7 @@ function NavbarComponent({
                 </Button>
               </NavDropdown.Item>
             </NavDropdown>
+            <Navbar.Text>Version: {VERSION}</Navbar.Text>
           </Nav>
         </Navbar.Collapse>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
@@ -817,7 +820,7 @@ function Onyx(props: OnyxProps) {
                 </Card.Body>
               </Card>
             </Col>
-            <Col lg={2}>
+            <Col>
               <Card>
                 <Card.Header>Summarise</Card.Header>
                 <Card.Body className="panel">
@@ -854,54 +857,48 @@ function Onyx(props: OnyxProps) {
               </Card>
             </Col>
           </Row>
-          <Row>
-            <Col>
-              <Card>
-                <Card.Header>
-                  <span>Results</span>
-                  <div className="float-end">
-                    <Button
-                      size="sm"
-                      variant="outline-success"
-                      onClick={handleExportToCSV}
-                    >
-                      Export Page to CSV
-                    </Button>
+          <Card>
+            <Card.Header>
+              <span>Results</span>
+              <div className="float-end">
+                <Button
+                  size="sm"
+                  variant="outline-success"
+                  onClick={handleExportToCSV}
+                >
+                  Export Page to CSV
+                </Button>
+              </div>
+            </Card.Header>
+            <Card.Body className="table-panel">
+              {errors.size > 0 ? (
+                Array.from(errors.entries()).map(([key, value]) => (
+                  <div key={key}>
+                    <Alert variant="danger">
+                      <span>
+                        {key}: {value}
+                      </span>
+                    </Alert>
                   </div>
-                </Card.Header>
-                <Card.Body className="table-panel">
-                  {errors.size > 0 ? (
-                    Array.from(errors.entries()).map(([key, value]) => (
-                      <div key={key}>
-                        <Alert variant="danger">
-                          <span>
-                            {key}: {value}
-                          </span>
-                        </Alert>
-                      </div>
-                    ))
-                  ) : (
-                    <TableComponent data={resultData} />
-                  )}
-                </Card.Body>
-                <Card.Footer>
-                  <Pagination size="sm">
-                    <Pagination.Prev
-                      disabled={!previousPage.length}
-                      onClick={() => handleSearch(previousPage)}
-                    />
-                    <Pagination.Item>
-                      Showing {resultCount} results
-                    </Pagination.Item>
-                    <Pagination.Next
-                      disabled={!nextPage.length}
-                      onClick={() => handleSearch(nextPage)}
-                    />
-                  </Pagination>
-                </Card.Footer>
-              </Card>
-            </Col>
-          </Row>
+                ))
+              ) : (
+                <TableComponent data={resultData} />
+              )}
+            </Card.Body>
+            <Card.Footer>
+              <Pagination size="sm">
+                <Pagination.Prev
+                  disabled={!previousPage.length}
+                  onClick={() => handleSearch(previousPage)}
+                />
+                <Pagination.Item>Showing {resultCount} results</Pagination.Item>
+                <Pagination.Next
+                  disabled={!nextPage.length}
+                  onClick={() => handleSearch(nextPage)}
+                />
+              </Pagination>
+            </Card.Footer>
+          </Card>
         </Stack>
       </Container>
     </form>
