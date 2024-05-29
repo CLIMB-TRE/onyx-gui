@@ -1,28 +1,25 @@
 import React, { memo, ChangeEventHandler, useState } from "react";
-import {
-  Alert,
-  Container,
-  Row,
-  Col,
-  Stack,
-  Button,
-  Form,
-  Table,
-  Nav,
-  Navbar,
-  NavDropdown,
-  Card,
-  Pagination,
-} from "react-bootstrap";
+import Alert from "react-bootstrap/Alert";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Stack from "react-bootstrap/Stack";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Table from "react-bootstrap/Table";
+import Nav from "react-bootstrap/Nav";
+import Navbar from "react-bootstrap/Navbar";
+import NavDropdown from "react-bootstrap/NavDropdown";
+import Card from "react-bootstrap/Card";
+import Pagination from "react-bootstrap/Pagination";
 import Select from "react-select";
 import Creatable from "react-select/creatable";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 
 import "./Onyx.css";
-// import "bootstrap/dist/css/bootstrap.min.css";
 import "./bootstrap.css";
 
-const VERSION = "0.6.1";
+const VERSION = "0.6.2";
 
 function NavbarComponent({
   domain,
@@ -97,7 +94,9 @@ function NavbarComponent({
                 </Button>
               </NavDropdown.Item>
             </NavDropdown>
-            <Navbar.Text>Version: {VERSION}</Navbar.Text>
+            <Navbar.Text>
+              Version: <span className="text-light">{VERSION}</span>
+            </Navbar.Text>
           </Nav>
         </Navbar.Collapse>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
