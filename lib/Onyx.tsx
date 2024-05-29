@@ -19,9 +19,10 @@ import Creatable from "react-select/creatable";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 
 import "./Onyx.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap/dist/css/bootstrap.min.css";
+import "./bootstrap.css";
 
-const VERSION = "0.6.0";
+const VERSION = "0.6.1";
 
 function NavbarComponent({
   domain,
