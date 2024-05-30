@@ -19,7 +19,7 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.6.2";
+const VERSION = "0.6.4";
 
 function NavbarComponent({
   domain,
