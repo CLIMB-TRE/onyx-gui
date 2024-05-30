@@ -19,7 +19,7 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.6.5";
+const VERSION = "0.7.0";
 
 function NavbarComponent({
   domain,
@@ -390,8 +390,10 @@ function FilterComponent({
 
 const TableComponent = memo(function TableComponent({
   data,
+  s3PathHandler,
 }: {
   data: Record<string, string | number | boolean | null>[];
+  s3PathHandler?: (path: string) => void;
 }) {
   const headers = () => {
     if (data.length > 0) {
@@ -400,7 +402,10 @@ const TableComponent = memo(function TableComponent({
       return [];
     }
   };
-  const rows = data.map((item) => Object.values(item));
+
+  const rows = data.map((item) =>
+    Object.values(item).map((value) => value?.toString().trim() || "")
+  );
 
   return (
     <Table striped bordered hover responsive size="sm">
@@ -414,9 +419,19 @@ const TableComponent = memo(function TableComponent({
       <tbody>
         {rows.map((row, index) => (
           <tr key={index}>
-            {row.map((cell, index) => (
-              <td key={index}>{cell?.toString()}</td>
-            ))}
+            {row.map((cell, index) =>
+              s3PathHandler &&
+              cell.startsWith("s3://") &&
+              cell.endsWith(".html") ? (
+                <td key={index}>
+                  <Button variant="link" onClick={() => s3PathHandler(cell)}>
+                    {cell}
+                  </Button>
+                </td>
+              ) : (
+                <td key={index}>{cell}</td>
+              )
+            )}
           </tr>
         ))}
       </tbody>
@@ -471,6 +486,7 @@ function refreshFieldOptions({
 interface OnyxProps {
   domain?: string;
   token?: string;
+  s3PathHandler?: (path: string) => void;
 }
 
 function Onyx(props: OnyxProps) {
@@ -882,7 +898,10 @@ function Onyx(props: OnyxProps) {
                   </div>
                 ))
               ) : (
-                <TableComponent data={resultData} />
+                <TableComponent
+                  data={resultData}
+                  s3PathHandler={props.s3PathHandler}
+                />
               )}
             </Card.Body>
             <Card.Footer>
