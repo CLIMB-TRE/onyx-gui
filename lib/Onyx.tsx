@@ -19,7 +19,26 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.7.0";
+const VERSION = "0.7.1";
+
+interface Filter {
+  field: string;
+  lookup: string;
+  value: string;
+}
+
+interface FieldOptions {
+  type: string;
+  description: string;
+  actions: string[];
+  choices: string[];
+}
+
+interface OnyxProps {
+  domain?: string;
+  token?: string;
+  s3PathHandler?: (path: string) => void;
+}
 
 function NavbarComponent({
   domain,
@@ -56,7 +75,10 @@ function NavbarComponent({
         <Navbar.Brand>Onyx</Navbar.Brand>
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
-            <NavDropdown title={project} id="collapsible-nav-dropdown">
+            <NavDropdown
+              title={project ? project : "None"}
+              id="collapsible-nav-dropdown"
+            >
               {projectOptions.map((p) => (
                 <NavDropdown.Item
                   key={p}
@@ -69,8 +91,10 @@ function NavbarComponent({
             <NavDropdown
               title={
                 <Navbar.Text>
-                  <Navbar.Text>Signed in as:</Navbar.Text>{" "}
-                  <Navbar.Text className="text-light">{username}</Navbar.Text>
+                  Signed in as:{" "}
+                  <span className="text-light">
+                    {username ? username : "None"}
+                  </span>
                 </Navbar.Text>
               }
               id="nav-dropdown"
@@ -112,7 +136,11 @@ function NavbarComponent({
             placeholder="Search records..."
             onChange={handleSearchInputChange}
           />
-          <Button variant="primary" onClick={() => handleSearch()}>
+          <Button
+            variant="primary"
+            disabled={!project}
+            onClick={() => handleSearch()}
+          >
             Search
           </Button>
         </Nav>
@@ -242,12 +270,6 @@ function MultiInput({
       isOptionDisabled={() => !(limit === undefined || value.length < limit)}
     />
   );
-}
-
-interface Filter {
-  field: string;
-  lookup: string;
-  value: string;
 }
 
 function FilterComponent({
@@ -439,61 +461,11 @@ const TableComponent = memo(function TableComponent({
   );
 });
 
-interface FieldOptions {
-  type: string;
-  description: string;
-  actions: string[];
-  choices: string[];
-}
-
-function refreshFieldOptions({
-  domain,
-  token,
-  project,
-  setFieldOptions,
-}: {
-  domain: string;
-  token: string;
-  project: string;
-  setFieldOptions: React.Dispatch<
-    React.SetStateAction<Map<string, FieldOptions>>
-  >;
-}) {
-  fetch(domain + "/projects/" + project + "/fields", {
-    headers: { Authorization: "Token " + token },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      const fields = data["data"]["fields"];
-      const fieldMap = new Map(
-        Object.keys(fields).map((field) => [
-          field,
-          {
-            type: fields[field].type,
-            description: fields[field].description,
-            actions: fields[field].actions,
-            choices: fields[field].values,
-          },
-        ])
-      );
-      setFieldOptions(fieldMap);
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-}
-
-interface OnyxProps {
-  domain?: string;
-  token?: string;
-  s3PathHandler?: (path: string) => void;
-}
-
 function Onyx(props: OnyxProps) {
   const [domain, setDomain] = useState(props.domain || "");
   const [token, setToken] = useState(props.token || "");
-  const [username, setUsername] = useState("None");
-  const [project, setProject] = useState("None");
+  const [username, setUsername] = useState("");
+  const [project, setProject] = useState("");
   const [projectOptions, setProjectOptions] = useState(new Array<string>());
   const [fieldOptions, setFieldOptions] = useState(
     new Map<string, FieldOptions>()
@@ -548,10 +520,7 @@ function Onyx(props: OnyxProps) {
         ] as string[];
         setProjectOptions(projects);
         if (projects.length > 0) {
-          const project = projects[0];
-          setProject(project);
-          refreshFieldOptions({ domain, token, project, setFieldOptions });
-          handleSearch(domain + "/projects/" + project);
+          handleProjectChange(projects[0]);
         }
       })
       .catch((err) => {
@@ -594,18 +563,34 @@ function Onyx(props: OnyxProps) {
 
   const handleProjectChange = (p: string) => {
     setProject(p);
-    setFilterList([] as Filter[]);
-    setIncludeList([] as string[]);
-    setExcludeList([] as string[]);
-    setSummariseList([] as string[]);
+    setFilterList([]);
+    setIncludeList([]);
+    setExcludeList([]);
+    setSummariseList([]);
     setSearchInput("");
     setResultData([]);
-    refreshFieldOptions({
-      domain,
-      token,
-      project: p,
-      setFieldOptions,
-    });
+    fetch(domain + "/projects/" + p + "/fields", {
+      headers: { Authorization: "Token " + token },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const fields = data["data"]["fields"];
+        const fieldMap = new Map(
+          Object.keys(fields).map((field) => [
+            field,
+            {
+              type: fields[field].type,
+              description: fields[field].description,
+              actions: fields[field].actions,
+              choices: fields[field].values,
+            },
+          ])
+        );
+        setFieldOptions(fieldMap);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
     handleSearch(domain + "/projects/" + p);
   };
 
@@ -614,19 +599,17 @@ function Onyx(props: OnyxProps) {
     index: number
   ) => {
     const list = [...filterList];
-    list[index].field = e.target.value;
-    list[index].lookup =
-      lookupOptions.get(fieldOptions.get(e.target.value)?.type || "")?.[0] ||
-      "";
-    list[index].value = "";
+    const field = fieldOptions.get(e.target.value);
 
-    if (fieldOptions.get(e.target.value)?.type === "choice") {
-      list[index].value = fieldOptions.get(e.target.value)?.choices[0] || "";
-    } else if (
-      fieldOptions.get(e.target.value)?.type === "bool" ||
-      list[index].lookup === "isnull"
-    ) {
+    list[index].field = e.target.value;
+    list[index].lookup = lookupOptions.get(field?.type || "")?.[0] || "";
+
+    if (field?.type === "bool" || list[index].lookup === "isnull") {
       list[index].value = "true";
+    } else if (field?.type === "choice") {
+      list[index].value = field?.choices[0] || "";
+    } else {
+      list[index].value = "";
     }
     setFilterList(list);
   };
@@ -636,16 +619,16 @@ function Onyx(props: OnyxProps) {
     index: number
   ) => {
     const list = [...filterList];
-    list[index].lookup = e.target.value;
-    list[index].value = "";
+    const field = fieldOptions.get(list[index].field);
 
-    if (fieldOptions.get(e.target.value)?.type === "choice") {
-      list[index].value = fieldOptions.get(e.target.value)?.choices[0] || "";
-    } else if (
-      fieldOptions.get(e.target.value)?.type === "bool" ||
-      list[index].lookup === "isnull"
-    ) {
+    list[index].lookup = e.target.value;
+
+    if (field?.type === "bool" || list[index].lookup === "isnull") {
       list[index].value = "true";
+    } else if (field?.type === "choice") {
+      list[index].value = field?.choices[0] || "";
+    } else {
+      list[index].value = "";
     }
     setFilterList(list);
   };
@@ -698,70 +681,68 @@ function Onyx(props: OnyxProps) {
   };
 
   const handleFilterClear = () => {
-    setFilterList([] as Filter[]);
+    setFilterList([]);
   };
 
   const handleSearch = (url?: string) => {
-    if (project) {
-      if (url === undefined) {
-        const params = new URLSearchParams(
-          filterList
-            .filter((filter) => filter.field)
-            .map((filter) => {
-              if (filter.lookup) {
-                return [filter.field + "__" + filter.lookup, filter.value];
-              } else {
-                return [filter.field, filter.value];
-              }
-            })
-            .concat(
-              includeList
-                .filter((include) => include)
-                .map((field) => ["include", field])
-            )
-            .concat(
-              excludeList
-                .filter((exclude) => exclude)
-                .map((field) => ["exclude", field])
-            )
-            .concat(
-              summariseList
-                .filter((summarise) => summarise)
-                .map((field) => ["summarise", field])
-            )
-            .concat(
-              [searchInput]
-                .filter((search) => search)
-                .map((search) => ["search", search])
-            )
-        );
-        url = domain + "/projects/" + project + "?" + params;
-      }
-
-      fetch(url, {
-        headers: { Authorization: "Token " + token },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            response.json().then((data) => {
-              setResultData([]);
-              setNextPage("");
-              setPreviousPage("");
-              setErrors(new Map(Object.entries(data["messages"])));
-            });
-          } else {
-            response.json().then((data) => {
-              setResultData(data["data"]);
-              setNextPage(data["next"] || "");
-              setPreviousPage(data["previous"] || "");
-              setErrors(new Map<string, string | string[]>());
-            });
-          }
-        })
-        .catch((err) => {
-          console.log(err.message);
-        });
+    if (url === undefined) {
+      const params = new URLSearchParams(
+        filterList
+          .filter((filter) => filter.field)
+          .map((filter) => {
+            if (filter.lookup) {
+              return [filter.field + "__" + filter.lookup, filter.value];
+            } else {
+              return [filter.field, filter.value];
+            }
+          })
+          .concat(
+            includeList
+              .filter((include) => include)
+              .map((field) => ["include", field])
+          )
+          .concat(
+            excludeList
+              .filter((exclude) => exclude)
+              .map((field) => ["exclude", field])
+          )
+          .concat(
+            summariseList
+              .filter((summarise) => summarise)
+              .map((field) => ["summarise", field])
+          )
+          .concat(
+            [searchInput]
+              .filter((search) => search)
+              .map((search) => ["search", search])
+          )
+      );
+      url = domain + "/projects/" + project + "?" + params;
     }
+
+    fetch(url, {
+      headers: { Authorization: "Token " + token },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          response.json().then((data) => {
+            setResultData([]);
+            setNextPage("");
+            setPreviousPage("");
+            setErrors(new Map(Object.entries(data["messages"])));
+          });
+        } else {
+          response.json().then((data) => {
+            setResultData(data["data"]);
+            setNextPage(data["next"] || "");
+            setPreviousPage(data["previous"] || "");
+            setErrors(new Map<string, string | string[]>());
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
   };
 
   const csvConfig = mkConfig({
@@ -876,26 +857,23 @@ function Onyx(props: OnyxProps) {
           <Card>
             <Card.Header>
               <span>Results</span>
-              <div className="float-end">
-                <Button
-                  size="sm"
-                  variant="outline-success"
-                  onClick={handleExportToCSV}
-                >
-                  Export Page to CSV
-                </Button>
-              </div>
+              <Button
+                className="float-end"
+                size="sm"
+                variant="outline-success"
+                onClick={handleExportToCSV}
+              >
+                Export Page to CSV
+              </Button>
             </Card.Header>
             <Card.Body className="table-panel">
               {errors.size > 0 ? (
                 Array.from(errors.entries()).map(([key, value]) => (
-                  <div key={key}>
-                    <Alert variant="danger">
-                      <span>
-                        {key}: {value}
-                      </span>
-                    </Alert>
-                  </div>
+                  <Alert key={key} variant="danger">
+                    <span>
+                      {key}: {value}
+                    </span>
+                  </Alert>
                 ))
               ) : (
                 <TableComponent
