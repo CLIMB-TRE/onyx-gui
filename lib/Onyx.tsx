@@ -1,4 +1,4 @@
-import React, { memo, ChangeEventHandler, useState } from "react";
+import React, { memo, ChangeEventHandler, useState, useEffect } from "react";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -19,51 +19,35 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.7.1";
+const VERSION = "0.8.0";
 
-interface Filter {
+interface FilterInfo {
   field: string;
   lookup: string;
   value: string;
 }
 
-interface FieldOptions {
+interface FieldInfo {
   type: string;
   description: string;
   actions: string[];
   choices: string[];
 }
 
-interface OnyxProps {
-  domain?: string;
-  token?: string;
-  s3PathHandler?: (path: string) => void;
-}
-
-function NavbarComponent({
-  domain,
-  token,
+function Header({
   username,
   project,
   projectOptions,
   searchInput,
-  handleDomainChange,
-  handleTokenChange,
-  handleAuthenticate,
   handleProjectChange,
   handleSearchInputChange,
   handleSearch,
   handleThemeChange,
 }: {
-  domain: string;
-  token: string;
   username: string;
   project: string;
   projectOptions: string[];
   searchInput: string;
-  handleDomainChange: React.ChangeEventHandler<HTMLInputElement>;
-  handleTokenChange: React.ChangeEventHandler<HTMLInputElement>;
-  handleAuthenticate: React.MouseEventHandler<HTMLButtonElement>;
   handleProjectChange: (p: string) => void;
   handleSearchInputChange: React.ChangeEventHandler<HTMLInputElement>;
   handleSearch: () => void;
@@ -74,62 +58,47 @@ function NavbarComponent({
       <Container fluid>
         <Navbar.Brand>Onyx</Navbar.Brand>
         <Navbar.Collapse id="responsive-navbar-nav">
-          <Nav className="me-auto">
-            <NavDropdown
-              title={project ? project : "None"}
-              id="collapsible-nav-dropdown"
-            >
-              {projectOptions.map((p) => (
-                <NavDropdown.Item
-                  key={p}
-                  onClick={() => handleProjectChange(p)}
-                >
-                  {p}
-                </NavDropdown.Item>
-              ))}
-            </NavDropdown>
-            <NavDropdown
-              title={
-                <Navbar.Text>
-                  Signed in as:{" "}
-                  <span className="text-light">
-                    {username ? username : "None"}
-                  </span>
-                </Navbar.Text>
-              }
-              id="nav-dropdown"
-            >
-              <Input
-                type="text"
-                value={domain}
-                placeholder="Domain"
-                onChange={handleDomainChange}
-              />
-              <Input
-                type="text"
-                value={token}
-                placeholder="Token"
-                onChange={handleTokenChange}
-              />
-              <NavDropdown.Divider />
-              <NavDropdown.Item>
-                <Button variant="outline-success" onClick={handleAuthenticate}>
-                  Authenticate
-                </Button>
-              </NavDropdown.Item>
-            </NavDropdown>
-            <Navbar.Text>
-              Version: <span className="text-light">{VERSION}</span>
-            </Navbar.Text>
+          <Nav>
+            <Stack direction="horizontal" gap={2}>
+              <NavDropdown
+                title={
+                  <Navbar.Text>
+                    Project:{" "}
+                    <span className="text-light">
+                      {project ? project : "None"}
+                    </span>
+                  </Navbar.Text>
+                }
+                id="collapsible-nav-dropdown"
+              >
+                {projectOptions.map((p) => (
+                  <NavDropdown.Item
+                    key={p}
+                    onClick={() => handleProjectChange(p)}
+                  >
+                    {p}
+                  </NavDropdown.Item>
+                ))}
+              </NavDropdown>
+              <Navbar.Text>
+                Signed in as:{" "}
+                <span className="text-light">
+                  {username ? username : "None"}
+                </span>
+              </Navbar.Text>
+              <Navbar.Text>
+                Version: <span className="text-light">{VERSION}</span>
+              </Navbar.Text>
+            </Stack>
           </Nav>
         </Navbar.Collapse>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Form.Check
-          type="switch"
-          id="theme-switch"
-          onChange={handleThemeChange}
-        />
-        <Nav>
+        <Stack direction="horizontal" gap={1}>
+          <Form.Check
+            type="switch"
+            id="theme-switch"
+            onChange={handleThemeChange}
+          />
           <Input
             type="text"
             value={searchInput}
@@ -143,7 +112,7 @@ function NavbarComponent({
           >
             Search
           </Button>
-        </Nav>
+        </Stack>
       </Container>
     </Navbar>
   );
@@ -272,7 +241,7 @@ function MultiInput({
   );
 }
 
-function FilterComponent({
+function Filter({
   filter,
   fieldOptions,
   lookupOptions,
@@ -283,8 +252,8 @@ function FilterComponent({
   handleFilterAdd,
   handleFilterRemove,
 }: {
-  filter: Filter;
-  fieldOptions: Map<string, FieldOptions>;
+  filter: FilterInfo;
+  fieldOptions: Map<string, FieldInfo>;
   lookupOptions: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
   handleFieldChange: ChangeEventHandler<HTMLSelectElement>;
@@ -400,17 +369,19 @@ function FilterComponent({
           <Col>{f}</Col>
         </Row>
       </Container>
-      <Button variant="primary" onClick={handleFilterAdd}>
-        +
-      </Button>
-      <Button variant="danger" onClick={handleFilterRemove}>
-        -
-      </Button>
+      <Stack direction="horizontal" gap={1}>
+        <Button variant="primary" onClick={handleFilterAdd}>
+          +
+        </Button>
+        <Button variant="danger" onClick={handleFilterRemove}>
+          -
+        </Button>
+      </Stack>
     </Stack>
   );
 }
 
-const TableComponent = memo(function TableComponent({
+const ResultsTable = memo(function ResultsTable({
   data,
   s3PathHandler,
 }: {
@@ -461,22 +432,24 @@ const TableComponent = memo(function TableComponent({
   );
 });
 
-function Onyx(props: OnyxProps) {
-  const [domain, setDomain] = useState(props.domain || "");
-  const [token, setToken] = useState(props.token || "");
+function Onyx({
+  httpPathHandler,
+  s3PathHandler,
+}: {
+  httpPathHandler: (path: string) => Promise<Response>;
+  s3PathHandler?: (path: string) => void;
+}) {
   const [username, setUsername] = useState("");
   const [project, setProject] = useState("");
   const [projectOptions, setProjectOptions] = useState(new Array<string>());
-  const [fieldOptions, setFieldOptions] = useState(
-    new Map<string, FieldOptions>()
-  );
+  const [fieldOptions, setFieldInfo] = useState(new Map<string, FieldInfo>());
   const [lookupOptions, setLookupOptions] = useState(
     new Map<string, string[]>()
   );
   const [lookupDescriptions, setLookupDescriptions] = useState(
     new Map<string, string>()
   );
-  const [filterList, setFilterList] = useState(new Array<Filter>());
+  const [filterList, setFilterList] = useState(new Array<FilterInfo>());
   const [includeList, setIncludeList] = useState(new Array<string>());
   const [excludeList, setExcludeList] = useState(new Array<string>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
@@ -488,16 +461,8 @@ function Onyx(props: OnyxProps) {
   const [errors, setErrors] = useState(new Map<string, string | string[]>());
   const [darkMode, setDarkMode] = useState(false);
 
-  const toggleTheme = () => {
-    const htmlElement = document.querySelector("html");
-    htmlElement?.setAttribute("data-bs-theme", !darkMode ? "dark" : "light");
-    setDarkMode(!darkMode);
-  };
-
-  const handleAuthenticate = () => {
-    fetch(domain + "/accounts/profile", {
-      headers: { Authorization: "Token " + token },
-    })
+  useEffect(() => {
+    httpPathHandler("accounts/profile")
       .then((response) => response.json())
       .then((data) => {
         setUsername(data["data"].username);
@@ -506,9 +471,7 @@ function Onyx(props: OnyxProps) {
         console.log(err.message);
       });
 
-    fetch(domain + "/projects", {
-      headers: { Authorization: "Token " + token },
-    })
+    httpPathHandler("projects")
       .then((response) => response.json())
       .then((data) => {
         const projects = [
@@ -527,14 +490,10 @@ function Onyx(props: OnyxProps) {
         console.log(err.message);
       });
 
-    fetch(domain + "/projects/types", {
-      headers: { Authorization: "Token " + token },
-    })
+    httpPathHandler("projects/types")
       .then((response) => response.json())
       .then((typeData) => {
-        fetch(domain + "/projects/lookups", {
-          headers: { Authorization: "Token " + token },
-        })
+        httpPathHandler("projects/lookups")
           .then((response) => response.json())
           .then((lookupData) => {
             const lookups = new Map(
@@ -559,6 +518,13 @@ function Onyx(props: OnyxProps) {
       .catch((err) => {
         console.log(err.message);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toggleTheme = () => {
+    const htmlElement = document.querySelector("html");
+    htmlElement?.setAttribute("data-bs-theme", !darkMode ? "dark" : "light");
+    setDarkMode(!darkMode);
   };
 
   const handleProjectChange = (p: string) => {
@@ -569,9 +535,8 @@ function Onyx(props: OnyxProps) {
     setSummariseList([]);
     setSearchInput("");
     setResultData([]);
-    fetch(domain + "/projects/" + p + "/fields", {
-      headers: { Authorization: "Token " + token },
-    })
+
+    httpPathHandler("projects/" + p + "/fields")
       .then((response) => response.json())
       .then((data) => {
         const fields = data["data"]["fields"];
@@ -586,12 +551,13 @@ function Onyx(props: OnyxProps) {
             },
           ])
         );
-        setFieldOptions(fieldMap);
+        setFieldInfo(fieldMap);
       })
       .catch((err) => {
         console.log(err.message);
       });
-    handleSearch(domain + "/projects/" + p);
+
+    handleSearch("projects/" + p);
   };
 
   const handleFieldChange = (
@@ -611,6 +577,7 @@ function Onyx(props: OnyxProps) {
     } else {
       list[index].value = "";
     }
+
     setFilterList(list);
   };
 
@@ -630,6 +597,7 @@ function Onyx(props: OnyxProps) {
     } else {
       list[index].value = "";
     }
+
     setFilterList(list);
   };
 
@@ -639,6 +607,7 @@ function Onyx(props: OnyxProps) {
   ) => {
     const list = [...filterList];
     list[index].value = e.target.value;
+
     setFilterList(list);
   };
 
@@ -684,8 +653,8 @@ function Onyx(props: OnyxProps) {
     setFilterList([]);
   };
 
-  const handleSearch = (url?: string) => {
-    if (url === undefined) {
+  const handleSearch = (search?: string) => {
+    if (search === undefined) {
       const params = new URLSearchParams(
         filterList
           .filter((filter) => filter.field)
@@ -717,12 +686,10 @@ function Onyx(props: OnyxProps) {
               .map((search) => ["search", search])
           )
       );
-      url = domain + "/projects/" + project + "?" + params;
+      search = "projects/" + project + "?" + params;
     }
 
-    fetch(url, {
-      headers: { Authorization: "Token " + token },
-    })
+    httpPathHandler(search)
       .then((response) => {
         if (!response.ok) {
           response.json().then((data) => {
@@ -734,9 +701,27 @@ function Onyx(props: OnyxProps) {
         } else {
           response.json().then((data) => {
             setResultData(data["data"]);
-            setNextPage(data["next"] || "");
-            setPreviousPage(data["previous"] || "");
             setErrors(new Map<string, string | string[]>());
+
+            let next;
+            if (data["next"]) {
+              next = data["next"].split("//")[1].split("/").slice(1).join("/");
+            } else {
+              next = "";
+            }
+            setNextPage(next);
+
+            let previous;
+            if (data["previous"]) {
+              previous = data["previous"]
+                .split("//")[1]
+                .split("/")
+                .slice(1)
+                .join("/");
+            } else {
+              previous = "";
+            }
+            setPreviousPage(previous);
           });
         }
       })
@@ -757,31 +742,24 @@ function Onyx(props: OnyxProps) {
 
   return (
     <form className="Onyx" autoComplete="off">
-      <Container fluid>
-        <Stack gap={3}>
-          <Row>
-            <NavbarComponent
-              domain={domain}
-              token={token}
-              username={username}
-              project={project}
-              projectOptions={projectOptions}
-              searchInput={searchInput}
-              handleDomainChange={(e) => setDomain(e.target.value)}
-              handleTokenChange={(e) => setToken(e.target.value)}
-              handleAuthenticate={handleAuthenticate}
-              handleProjectChange={handleProjectChange}
-              handleSearchInputChange={(e) => setSearchInput(e.target.value)}
-              handleSearch={handleSearch}
-              handleThemeChange={toggleTheme}
-            />
-          </Row>
+      <Stack gap={3}>
+        <Header
+          username={username}
+          project={project}
+          projectOptions={projectOptions}
+          searchInput={searchInput}
+          handleProjectChange={handleProjectChange}
+          handleSearchInputChange={(e) => setSearchInput(e.target.value)}
+          handleSearch={handleSearch}
+          handleThemeChange={toggleTheme}
+        />
+        <Container fluid>
           <Row>
             <Col lg={6}>
               <Card>
                 <Card.Header>
                   <span>Filter</span>
-                  <div className="float-end">
+                  <Stack direction="horizontal" gap={1} className="float-end">
                     <Button
                       size="sm"
                       variant="dark"
@@ -796,24 +774,28 @@ function Onyx(props: OnyxProps) {
                     >
                       Clear Filters
                     </Button>
-                  </div>
+                  </Stack>
                 </Card.Header>
                 <Card.Body className="panel">
-                  {filterList.map((filter, index) => (
-                    <div key={index}>
-                      <FilterComponent
-                        filter={filter}
-                        fieldOptions={fieldOptions}
-                        lookupOptions={lookupOptions}
-                        lookupDescriptions={lookupDescriptions}
-                        handleFieldChange={(e) => handleFieldChange(e, index)}
-                        handleLookupChange={(e) => handleLookupChange(e, index)}
-                        handleValueChange={(e) => handleValueChange(e, index)}
-                        handleFilterAdd={() => handleFilterAdd(index + 1)}
-                        handleFilterRemove={() => handleFilterRemove(index)}
-                      />
-                    </div>
-                  ))}
+                  <Stack gap={1}>
+                    {filterList.map((filter, index) => (
+                      <div key={index}>
+                        <Filter
+                          filter={filter}
+                          fieldOptions={fieldOptions}
+                          lookupOptions={lookupOptions}
+                          lookupDescriptions={lookupDescriptions}
+                          handleFieldChange={(e) => handleFieldChange(e, index)}
+                          handleLookupChange={(e) =>
+                            handleLookupChange(e, index)
+                          }
+                          handleValueChange={(e) => handleValueChange(e, index)}
+                          handleFilterAdd={() => handleFilterAdd(index + 1)}
+                          handleFilterRemove={() => handleFilterRemove(index)}
+                        />
+                      </div>
+                    ))}
+                  </Stack>
                 </Card.Body>
               </Card>
             </Col>
@@ -854,6 +836,8 @@ function Onyx(props: OnyxProps) {
               </Card>
             </Col>
           </Row>
+        </Container>
+        <Container fluid>
           <Card>
             <Card.Header>
               <span>Results</span>
@@ -876,10 +860,7 @@ function Onyx(props: OnyxProps) {
                   </Alert>
                 ))
               ) : (
-                <TableComponent
-                  data={resultData}
-                  s3PathHandler={props.s3PathHandler}
-                />
+                <ResultsTable data={resultData} s3PathHandler={s3PathHandler} />
               )}
             </Card.Body>
             <Card.Footer>
@@ -896,8 +877,8 @@ function Onyx(props: OnyxProps) {
               </Pagination>
             </Card.Footer>
           </Card>
-        </Stack>
-      </Container>
+        </Container>
+      </Stack>
     </form>
   );
 }
