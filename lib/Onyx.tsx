@@ -1,17 +1,17 @@
-import React, { memo, ChangeEventHandler, useState, useEffect } from "react";
+import React, { ChangeEventHandler, useState, useEffect } from "react";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
-import Table from "react-bootstrap/Table";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import Header from "./components/Header";
 import { Dropdown, MultiDropdown } from "./components/Dropdowns";
 import { Input, MultiInput } from "./components/Inputs";
+import ResultsTable from "./components/ResultsTable";
 
 import "./Onyx.css";
 import "./bootstrap.css";
@@ -168,57 +168,6 @@ function Filter({
     </Stack>
   );
 }
-
-const ResultsTable = memo(function ResultsTable({
-  data,
-  s3PathHandler,
-}: {
-  data: Record<string, string | number | boolean | null>[];
-  s3PathHandler?: (path: string) => void;
-}) {
-  const headers = () => {
-    if (data.length > 0) {
-      return Object.keys(data[0]);
-    } else {
-      return [];
-    }
-  };
-
-  const rows = data.map((item) =>
-    Object.values(item).map((value) => value?.toString().trim() || "")
-  );
-
-  return (
-    <Table striped bordered hover responsive size="sm">
-      <thead>
-        <tr>
-          {headers().map((header) => (
-            <th key={header}>{header}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, index) => (
-          <tr key={index}>
-            {row.map((cell, index) =>
-              s3PathHandler &&
-              cell.startsWith("s3://") &&
-              cell.endsWith(".html") ? (
-                <td key={index}>
-                  <Button variant="link" onClick={() => s3PathHandler(cell)}>
-                    {cell}
-                  </Button>
-                </td>
-              ) : (
-                <td key={index}>{cell}</td>
-              )
-            )}
-          </tr>
-        ))}
-      </tbody>
-    </Table>
-  );
-});
 
 function Onyx({
   httpPathHandler,
