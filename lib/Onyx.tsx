@@ -5,21 +5,16 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
-import Select from "react-select";
-import Creatable from "react-select/creatable";
 import { mkConfig, generateCsv, download } from "export-to-csv";
+import Header from "./components/Header";
+import { Dropdown, MultiDropdown } from "./components/Dropdowns";
+import { Input, MultiInput } from "./components/Inputs";
 
 import "./Onyx.css";
 import "./bootstrap.css";
-
-const VERSION = "0.8.0";
 
 interface FilterInfo {
   field: string;
@@ -32,213 +27,6 @@ interface FieldInfo {
   description: string;
   actions: string[];
   choices: string[];
-}
-
-function Header({
-  username,
-  project,
-  projectOptions,
-  searchInput,
-  handleProjectChange,
-  handleSearchInputChange,
-  handleSearch,
-  handleThemeChange,
-}: {
-  username: string;
-  project: string;
-  projectOptions: string[];
-  searchInput: string;
-  handleProjectChange: (p: string) => void;
-  handleSearchInputChange: React.ChangeEventHandler<HTMLInputElement>;
-  handleSearch: () => void;
-  handleThemeChange: () => void;
-}) {
-  return (
-    <Navbar bg="dark" variant="dark" collapseOnSelect expand="lg">
-      <Container fluid>
-        <Navbar.Brand>Onyx</Navbar.Brand>
-        <Navbar.Collapse id="responsive-navbar-nav">
-          <Nav>
-            <Stack direction="horizontal" gap={2}>
-              <NavDropdown
-                title={
-                  <Navbar.Text>
-                    Project:{" "}
-                    <span className="text-light">
-                      {project ? project : "None"}
-                    </span>
-                  </Navbar.Text>
-                }
-                id="collapsible-nav-dropdown"
-              >
-                {projectOptions.map((p) => (
-                  <NavDropdown.Item
-                    key={p}
-                    onClick={() => handleProjectChange(p)}
-                  >
-                    {p}
-                  </NavDropdown.Item>
-                ))}
-              </NavDropdown>
-              <Navbar.Text>
-                Signed in as:{" "}
-                <span className="text-light">
-                  {username ? username : "None"}
-                </span>
-              </Navbar.Text>
-              <Navbar.Text>
-                Version: <span className="text-light">{VERSION}</span>
-              </Navbar.Text>
-            </Stack>
-          </Nav>
-        </Navbar.Collapse>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Stack direction="horizontal" gap={1}>
-          <Form.Check
-            type="switch"
-            id="theme-switch"
-            onChange={handleThemeChange}
-          />
-          <Input
-            type="text"
-            value={searchInput}
-            placeholder="Search records..."
-            onChange={handleSearchInputChange}
-          />
-          <Button
-            variant="primary"
-            disabled={!project}
-            onClick={() => handleSearch()}
-          >
-            Search
-          </Button>
-        </Stack>
-      </Container>
-    </Navbar>
-  );
-}
-
-function Dropdown({
-  options,
-  titles,
-  value,
-  onChange,
-}: {
-  options: string[];
-  titles?: Map<string, string>;
-  value: string;
-  onChange: React.ChangeEventHandler<HTMLSelectElement>;
-}) {
-  return (
-    <Form.Select value={value} onChange={onChange}>
-      {options.map((option) => (
-        <option key={option} value={option} title={titles?.get(option)}>
-          {option}
-        </option>
-      ))}
-    </Form.Select>
-  );
-}
-
-function MultiDropdown({
-  options,
-  value,
-  onChange,
-}: {
-  options: string[];
-  value: string[];
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
-}) {
-  return (
-    <Select
-      isMulti
-      menuPortalTarget={document.body}
-      styles={{
-        control: (styles) => ({ ...styles, backgroundColor: "dark-grey" }),
-        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-        menu: (base) => ({ ...base, backgroundColor: "black" }),
-        option: (base, state) => ({
-          ...base,
-          color: "white",
-          backgroundColor: state.isFocused ? "blue" : "black",
-        }),
-      }}
-      options={options.map((option) => ({
-        value: option,
-        label: option,
-      }))}
-      value={value.map((option) => ({
-        value: option,
-        label: option,
-      }))}
-      delimiter=","
-      onChange={(e) =>
-        onChange({
-          target: {
-            value: e.map((option) => option.value).join(","),
-          },
-        } as React.ChangeEvent<HTMLInputElement>)
-      }
-    />
-  );
-}
-
-function Input({
-  type,
-  value,
-  placeholder,
-  onChange,
-}: {
-  type: string;
-  value: string;
-  placeholder: string;
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
-}) {
-  return (
-    <Form.Control
-      value={value}
-      type={type}
-      placeholder={placeholder}
-      onChange={onChange}
-    />
-  );
-}
-
-function MultiInput({
-  options,
-  value,
-  limit,
-  onChange,
-}: {
-  options: string[];
-  value: string[];
-  limit?: number;
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
-}) {
-  return (
-    <Creatable
-      isMulti
-      menuPortalTarget={document.body}
-      styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
-      options={options.map((option) => ({
-        value: option,
-        label: option,
-      }))}
-      value={value.map((option) => ({
-        value: option,
-        label: option,
-      }))}
-      delimiter=","
-      onChange={(e) =>
-        onChange({
-          target: {
-            value: e.map((option) => option.value).join(","),
-          },
-        } as React.ChangeEvent<HTMLInputElement>)
-      }
-      isOptionDisabled={() => !(limit === undefined || value.length < limit)}
-    />
-  );
 }
 
 function Filter({
