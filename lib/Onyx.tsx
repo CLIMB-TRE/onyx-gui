@@ -203,6 +203,7 @@ function Onyx({
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
+    // Fetch user profile
     httpPathHandler("accounts/profile")
       .then((response) => response.json())
       .then((data) => {
@@ -215,6 +216,7 @@ function Onyx({
         console.log(err.message);
       });
 
+    // Fetch project list
     httpPathHandler("projects")
       .then((response) => response.json())
       .then((data) => {
@@ -234,6 +236,7 @@ function Onyx({
         console.log(err.message);
       });
 
+    // Fetch type lookups and lookup descriptions
     httpPathHandler("projects/types")
       .then((response) => response.json())
       .then((typeData) => {
@@ -280,6 +283,7 @@ function Onyx({
     setSearchInput("");
     setResultData([]);
 
+    // Fetch project fields
     httpPathHandler("projects/" + p + "/fields")
       .then((response) => response.json())
       .then((data) => {
@@ -433,6 +437,7 @@ function Onyx({
       search = "projects/" + project + "?" + params;
     }
 
+    // Fetch search results
     httpPathHandler(search)
       .then((response) => {
         if (!response.ok) {
@@ -447,9 +452,13 @@ function Onyx({
             setResultData(data["data"]);
             setErrors(new Map<string, string | string[]>());
 
+            const getPath = (path: string) => {
+              return path.split("//")[1].split("/").slice(1).join("/");
+            };
+
             let next;
             if (data["next"]) {
-              next = data["next"].split("//")[1].split("/").slice(1).join("/");
+              next = getPath(data["next"]);
             } else {
               next = "";
             }
@@ -457,11 +466,7 @@ function Onyx({
 
             let previous;
             if (data["previous"]) {
-              previous = data["previous"]
-                .split("//")[1]
-                .split("/")
-                .slice(1)
-                .join("/");
+              previous = getPath(data["previous"]);
             } else {
               previous = "";
             }
@@ -596,13 +601,19 @@ function Onyx({
             </Card.Header>
             <Card.Body className="table-panel">
               {errors.size > 0 ? (
-                Array.from(errors.entries()).map(([key, value]) => (
-                  <Alert key={key} variant="danger">
-                    <span>
+                Array.from(errors.entries()).map(([key, value]) =>
+                  Array.isArray(value) ? (
+                    value.map((v: string) => (
+                      <Alert key={key} variant="danger">
+                        {key}: {v}
+                      </Alert>
+                    ))
+                  ) : (
+                    <Alert key={key} variant="danger">
                       {key}: {value}
-                    </span>
-                  </Alert>
-                ))
+                    </Alert>
+                  )
+                )
               ) : (
                 <ResultsTable data={resultData} s3PathHandler={s3PathHandler} />
               )}
