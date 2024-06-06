@@ -10,18 +10,18 @@ import { Input } from "./Inputs";
 import VERSION from "../version";
 
 function Header({
-  username,
+  profile,
   project,
-  projectOptions,
+  projectList,
   searchInput,
   handleProjectChange,
   handleSearchInputChange,
   handleSearch,
   handleThemeChange,
 }: {
-  username: string;
+  profile: { username: string; site: string };
   project: string;
-  projectOptions: string[];
+  projectList: string[];
   searchInput: string;
   handleProjectChange: (p: string) => void;
   handleSearchInputChange: React.ChangeEventHandler<HTMLInputElement>;
@@ -34,7 +34,7 @@ function Header({
         <Navbar.Brand>Onyx</Navbar.Brand>
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav>
-            <Stack direction="horizontal" gap={2}>
+            <Stack direction="horizontal" gap={3}>
               <NavDropdown
                 title={
                   <Navbar.Text>
@@ -46,7 +46,7 @@ function Header({
                 }
                 id="collapsible-nav-dropdown"
               >
-                {projectOptions.map((p) => (
+                {projectList.map((p) => (
                   <NavDropdown.Item
                     key={p}
                     onClick={() => handleProjectChange(p)}
@@ -56,9 +56,15 @@ function Header({
                 ))}
               </NavDropdown>
               <Navbar.Text>
-                Signed in as:{" "}
+                User:{" "}
                 <span className="text-light">
-                  {username ? username : "None"}
+                  {profile.username ? profile.username : "None"}
+                </span>
+              </Navbar.Text>
+              <Navbar.Text>
+                Site:{" "}
+                <span className="text-light">
+                  {profile.site ? profile.site : "None"}
                 </span>
               </Navbar.Text>
               <Navbar.Text>

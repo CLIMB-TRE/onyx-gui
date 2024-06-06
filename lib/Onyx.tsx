@@ -16,23 +16,28 @@ import ResultsTable from "./components/ResultsTable";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-interface FilterInfo {
-  field: string;
-  lookup: string;
-  value: string;
+interface Profile {
+  username: string;
+  site: string;
 }
 
-interface FieldInfo {
+interface ProjectField {
   type: string;
   description: string;
   actions: string[];
   choices: string[];
 }
 
+interface FilterField {
+  field: string;
+  lookup: string;
+  value: string;
+}
+
 function Filter({
   filter,
-  fieldOptions,
-  lookupOptions,
+  projectFields,
+  typeLookups,
   lookupDescriptions,
   handleFieldChange,
   handleLookupChange,
@@ -40,9 +45,9 @@ function Filter({
   handleFilterAdd,
   handleFilterRemove,
 }: {
-  filter: FilterInfo;
-  fieldOptions: Map<string, FieldInfo>;
-  lookupOptions: Map<string, string[]>;
+  filter: FilterField;
+  projectFields: Map<string, ProjectField>;
+  typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
   handleFieldChange: ChangeEventHandler<HTMLSelectElement>;
   handleLookupChange: ChangeEventHandler<HTMLSelectElement>;
@@ -59,7 +64,7 @@ function Filter({
         onChange={handleValueChange}
       />
     );
-  } else if (fieldOptions.get(filter.field)?.type === "choice") {
+  } else if (projectFields.get(filter.field)?.type === "choice") {
     if (filter.lookup.endsWith("in")) {
       let value: string[] = [];
       if (filter.value) {
@@ -67,7 +72,7 @@ function Filter({
       }
       f = (
         <MultiDropdown
-          options={fieldOptions.get(filter.field)?.choices || []}
+          options={projectFields.get(filter.field)?.choices || []}
           value={value}
           onChange={handleValueChange}
         />
@@ -75,7 +80,7 @@ function Filter({
     } else {
       f = (
         <Dropdown
-          options={fieldOptions.get(filter.field)?.choices || []}
+          options={projectFields.get(filter.field)?.choices || []}
           value={filter.value}
           onChange={handleValueChange}
         />
@@ -88,7 +93,7 @@ function Filter({
     }
     f = (
       <MultiInput
-        options={fieldOptions.get(filter.field)?.choices || []}
+        options={projectFields.get(filter.field)?.choices || []}
         value={value}
         onChange={handleValueChange}
       />
@@ -100,13 +105,13 @@ function Filter({
     }
     f = (
       <MultiInput
-        options={fieldOptions.get(filter.field)?.choices || []}
+        options={projectFields.get(filter.field)?.choices || []}
         value={value}
         limit={2}
         onChange={handleValueChange}
       />
     );
-  } else if (fieldOptions.get(filter.field)?.type === "bool") {
+  } else if (projectFields.get(filter.field)?.type === "bool") {
     f = (
       <Dropdown
         options={["true", "false"]}
@@ -130,13 +135,12 @@ function Filter({
         <Row>
           <Col>
             <Dropdown
-              options={[""].concat(Array.from(fieldOptions.keys()))}
+              options={[""].concat(Array.from(projectFields.keys()))}
               titles={
                 new Map(
-                  Array.from(fieldOptions.entries()).map(([field, options]) => [
-                    field,
-                    options.description,
-                  ])
+                  Array.from(projectFields.entries()).map(
+                    ([field, options]) => [field, options.description]
+                  )
                 )
               }
               value={filter.field}
@@ -146,7 +150,7 @@ function Filter({
           <Col>
             <Dropdown
               options={
-                lookupOptions.get(fieldOptions.get(filter.field)?.type || "") ||
+                typeLookups.get(projectFields.get(filter.field)?.type || "") ||
                 []
               }
               titles={lookupDescriptions}
@@ -176,17 +180,17 @@ function Onyx({
   httpPathHandler: (path: string) => Promise<Response>;
   s3PathHandler?: (path: string) => void;
 }) {
-  const [username, setUsername] = useState("");
+  const [profile, setProfile] = useState({} as Profile);
   const [project, setProject] = useState("");
-  const [projectOptions, setProjectOptions] = useState(new Array<string>());
-  const [fieldOptions, setFieldInfo] = useState(new Map<string, FieldInfo>());
-  const [lookupOptions, setLookupOptions] = useState(
-    new Map<string, string[]>()
+  const [projectList, setProjectList] = useState(new Array<string>());
+  const [projectFields, setProjectFields] = useState(
+    new Map<string, ProjectField>()
   );
+  const [typeLookups, setTypeLookups] = useState(new Map<string, string[]>());
   const [lookupDescriptions, setLookupDescriptions] = useState(
     new Map<string, string>()
   );
-  const [filterList, setFilterList] = useState(new Array<FilterInfo>());
+  const [filterList, setFilterList] = useState(new Array<FilterField>());
   const [includeList, setIncludeList] = useState(new Array<string>());
   const [excludeList, setExcludeList] = useState(new Array<string>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
@@ -202,7 +206,10 @@ function Onyx({
     httpPathHandler("accounts/profile")
       .then((response) => response.json())
       .then((data) => {
-        setUsername(data["data"].username);
+        setProfile({
+          username: data["data"].username,
+          site: data["data"].site,
+        });
       })
       .catch((err) => {
         console.log(err.message);
@@ -218,7 +225,7 @@ function Onyx({
             )
           ),
         ] as string[];
-        setProjectOptions(projects);
+        setProjectList(projects);
         if (projects.length > 0) {
           handleProjectChange(projects[0]);
         }
@@ -245,7 +252,7 @@ function Onyx({
                 lookup.description,
               ])
             ) as Map<string, string>;
-            setLookupOptions(lookups);
+            setTypeLookups(lookups);
             setLookupDescriptions(descriptions);
           })
           .catch((err) => {
@@ -288,7 +295,7 @@ function Onyx({
             },
           ])
         );
-        setFieldInfo(fieldMap);
+        setProjectFields(fieldMap);
       })
       .catch((err) => {
         console.log(err.message);
@@ -302,10 +309,10 @@ function Onyx({
     index: number
   ) => {
     const list = [...filterList];
-    const field = fieldOptions.get(e.target.value);
+    const field = projectFields.get(e.target.value);
 
     list[index].field = e.target.value;
-    list[index].lookup = lookupOptions.get(field?.type || "")?.[0] || "";
+    list[index].lookup = typeLookups.get(field?.type || "")?.[0] || "";
 
     if (field?.type === "bool" || list[index].lookup === "isnull") {
       list[index].value = "true";
@@ -323,7 +330,7 @@ function Onyx({
     index: number
   ) => {
     const list = [...filterList];
-    const field = fieldOptions.get(list[index].field);
+    const field = projectFields.get(list[index].field);
 
     list[index].lookup = e.target.value;
 
@@ -481,9 +488,9 @@ function Onyx({
     <form className="Onyx" autoComplete="off">
       <Stack gap={3}>
         <Header
-          username={username}
+          profile={profile}
           project={project}
-          projectOptions={projectOptions}
+          projectList={projectList}
           searchInput={searchInput}
           handleProjectChange={handleProjectChange}
           handleSearchInputChange={(e) => setSearchInput(e.target.value)}
@@ -519,8 +526,8 @@ function Onyx({
                       <div key={index}>
                         <Filter
                           filter={filter}
-                          fieldOptions={fieldOptions}
-                          lookupOptions={lookupOptions}
+                          projectFields={projectFields}
+                          typeLookups={typeLookups}
                           lookupDescriptions={lookupDescriptions}
                           handleFieldChange={(e) => handleFieldChange(e, index)}
                           handleLookupChange={(e) =>
@@ -541,7 +548,7 @@ function Onyx({
                 <Card.Header>Summarise</Card.Header>
                 <Card.Body className="panel">
                   <MultiDropdown
-                    options={Array.from(fieldOptions.keys())}
+                    options={Array.from(projectFields.keys())}
                     value={summariseList}
                     onChange={handleSummariseChange}
                   />
@@ -553,7 +560,7 @@ function Onyx({
                 <Card.Header>Include</Card.Header>
                 <Card.Body className="panel">
                   <MultiDropdown
-                    options={Array.from(fieldOptions.keys())}
+                    options={Array.from(projectFields.keys())}
                     value={includeList}
                     onChange={handleIncludeChange}
                   />
@@ -565,7 +572,7 @@ function Onyx({
                 <Card.Header>Exclude</Card.Header>
                 <Card.Body className="panel">
                   <MultiDropdown
-                    options={Array.from(fieldOptions.keys())}
+                    options={Array.from(projectFields.keys())}
                     value={excludeList}
                     onChange={handleExcludeChange}
                   />
@@ -581,7 +588,7 @@ function Onyx({
               <Button
                 className="float-end"
                 size="sm"
-                variant="outline-success"
+                variant="success"
                 onClick={handleExportToCSV}
               >
                 Export Page to CSV
