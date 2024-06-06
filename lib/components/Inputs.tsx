@@ -1,5 +1,6 @@
 import Form from "react-bootstrap/Form";
 import Creatable from "react-select/creatable";
+import getStyles from "./styles";
 
 function Input({
   type,
@@ -27,17 +28,19 @@ function MultiInput({
   value,
   limit,
   onChange,
+  darkMode,
 }: {
   options: string[];
   value: string[];
   limit?: number;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
+  darkMode: boolean;
 }) {
   return (
     <Creatable
       isMulti
       menuPortalTarget={document.body}
-      styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+      styles={getStyles(darkMode)}
       options={options.map((option) => ({
         value: option,
         label: option,

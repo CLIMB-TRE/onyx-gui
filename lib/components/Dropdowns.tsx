@@ -1,51 +1,87 @@
-import Form from "react-bootstrap/Form";
-import Select from "react-select";
+import Select, { components, OptionProps } from "react-select";
+import getStyles from "./styles";
 
 function Dropdown({
   options,
   titles,
   value,
   onChange,
+  darkMode,
 }: {
   options: string[];
   titles?: Map<string, string>;
   value: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
+  darkMode: boolean;
 }) {
+  const Option = (props: OptionProps) => {
+    return (
+      <div
+        data-toggle="tooltip"
+        data-placement="top"
+        title={titles?.get(props.label)}
+      >
+        <components.Option {...props} />
+      </div>
+    );
+  };
+
   return (
-    <Form.Select value={value} onChange={onChange}>
-      {options.map((option) => (
-        <option key={option} value={option} title={titles?.get(option)}>
-          {option}
-        </option>
-      ))}
-    </Form.Select>
+    <Select
+      components={{ Option }}
+      menuPortalTarget={document.body}
+      styles={getStyles(darkMode)}
+      options={options.map((option) => ({
+        value: option,
+        label: option,
+      }))}
+      value={{
+        value: value,
+        label: value,
+      }}
+      onChange={(e) =>
+        onChange({
+          target: {
+            value: e.value,
+          },
+        } as React.ChangeEvent<HTMLSelectElement>)
+      }
+    />
   );
 }
 
 function MultiDropdown({
   options,
+  titles,
   value,
   onChange,
+  darkMode,
 }: {
   options: string[];
+  titles?: Map<string, string>;
+
   value: string[];
   onChange: React.ChangeEventHandler<HTMLInputElement>;
+  darkMode: boolean;
 }) {
+  const Option = (props: OptionProps) => {
+    return (
+      <div
+        data-toggle="tooltip"
+        data-placement="top"
+        title={titles?.get(props.label)}
+      >
+        <components.Option {...props} />
+      </div>
+    );
+  };
+
   return (
     <Select
       isMulti
+      components={{ Option }}
       menuPortalTarget={document.body}
-      styles={{
-        control: (styles) => ({ ...styles, backgroundColor: "dark-grey" }),
-        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-        menu: (base) => ({ ...base, backgroundColor: "black" }),
-        option: (base, state) => ({
-          ...base,
-          color: "white",
-          backgroundColor: state.isFocused ? "blue" : "black",
-        }),
-      }}
+      styles={getStyles(darkMode)}
       options={options.map((option) => ({
         value: option,
         label: option,

@@ -25,7 +25,8 @@ interface ProjectField {
   type: string;
   description: string;
   actions: string[];
-  choices: string[];
+  values?: string[];
+  fields?: Record<string, ProjectField>;
 }
 
 interface FilterField {
@@ -38,77 +39,78 @@ function Filter({
   filter,
   projectFields,
   typeLookups,
+  fieldDescriptions,
   lookupDescriptions,
   handleFieldChange,
   handleLookupChange,
   handleValueChange,
   handleFilterAdd,
   handleFilterRemove,
+  darkMode,
 }: {
   filter: FilterField;
   projectFields: Map<string, ProjectField>;
   typeLookups: Map<string, string[]>;
+  fieldDescriptions: Map<string, string>;
   lookupDescriptions: Map<string, string>;
   handleFieldChange: ChangeEventHandler<HTMLSelectElement>;
   handleLookupChange: ChangeEventHandler<HTMLSelectElement>;
   handleValueChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
   handleFilterAdd: () => void;
   handleFilterRemove: () => void;
+  darkMode: boolean;
 }) {
   let f: JSX.Element;
+  const getValueList = (v: string) => {
+    return v ? v.split(",") : [];
+  };
+
   if (filter.lookup === "isnull") {
     f = (
       <Dropdown
         options={["true", "false"]}
         value={filter.value}
         onChange={handleValueChange}
+        darkMode={darkMode}
       />
     );
   } else if (projectFields.get(filter.field)?.type === "choice") {
     if (filter.lookup.endsWith("in")) {
-      let value: string[] = [];
-      if (filter.value) {
-        value = filter.value.split(",");
-      }
       f = (
         <MultiDropdown
-          options={projectFields.get(filter.field)?.choices || []}
-          value={value}
+          options={projectFields.get(filter.field)?.values || []}
+          value={getValueList(filter.value)}
           onChange={handleValueChange}
+          darkMode={darkMode}
         />
       );
     } else {
       f = (
         <Dropdown
-          options={projectFields.get(filter.field)?.choices || []}
+          options={projectFields.get(filter.field)?.values || []}
           value={filter.value}
           onChange={handleValueChange}
+          darkMode={darkMode}
         />
       );
     }
   } else if (filter.lookup.endsWith("in")) {
-    let value: string[] = [];
-    if (filter.value) {
-      value = filter.value.split(",");
-    }
     f = (
       <MultiInput
-        options={projectFields.get(filter.field)?.choices || []}
-        value={value}
+        options={projectFields.get(filter.field)?.values || []}
+        value={getValueList(filter.value)}
         onChange={handleValueChange}
+        darkMode={darkMode}
       />
     );
   } else if (filter.lookup.endsWith("range")) {
-    let value: string[] = [];
-    if (filter.value) {
-      value = filter.value.split(",");
-    }
     f = (
       <MultiInput
-        options={projectFields.get(filter.field)?.choices || []}
-        value={value}
+        options={projectFields.get(filter.field)?.values || []}
+        value={getValueList(filter.value)}
         limit={2}
         onChange={handleValueChange}
+        darkMode={darkMode}
       />
     );
   } else if (projectFields.get(filter.field)?.type === "bool") {
@@ -117,6 +119,7 @@ function Filter({
         options={["true", "false"]}
         value={filter.value}
         onChange={handleValueChange}
+        darkMode={darkMode}
       />
     );
   } else {
@@ -135,16 +138,11 @@ function Filter({
         <Row>
           <Col>
             <Dropdown
-              options={[""].concat(Array.from(projectFields.keys()))}
-              titles={
-                new Map(
-                  Array.from(projectFields.entries()).map(
-                    ([field, options]) => [field, options.description]
-                  )
-                )
-              }
+              options={Array.from(projectFields.keys())}
+              titles={fieldDescriptions}
               value={filter.field}
               onChange={handleFieldChange}
+              darkMode={darkMode}
             />
           </Col>
           <Col>
@@ -156,6 +154,7 @@ function Filter({
               titles={lookupDescriptions}
               value={filter.lookup}
               onChange={handleLookupChange}
+              darkMode={darkMode}
             />
           </Col>
           <Col>{f}</Col>
@@ -173,6 +172,26 @@ function Filter({
   );
 }
 
+function flattenFields(fields: Record<string, ProjectField>) {
+  const flatFields: Record<string, ProjectField> = {};
+
+  // Loop over object and flatten nested fields
+  const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
+    for (const [field, fieldInfo] of Object.entries(obj)) {
+      flatFields[prefix + field] = fieldInfo;
+      if (fieldInfo.type === "relation") {
+        flatten(
+          fieldInfo.fields as Record<string, ProjectField>,
+          prefix + field + "__"
+        );
+      }
+    }
+  };
+
+  flatten(fields);
+  return flatFields;
+}
+
 function Onyx({
   httpPathHandler,
   s3PathHandler,
@@ -187,6 +206,12 @@ function Onyx({
     new Map<string, ProjectField>()
   );
   const [typeLookups, setTypeLookups] = useState(new Map<string, string[]>());
+  const fieldDescriptions = new Map(
+    Array.from(projectFields.entries()).map(([field, options]) => [
+      field,
+      options.description,
+    ])
+  );
   const [lookupDescriptions, setLookupDescriptions] = useState(
     new Map<string, string>()
   );
@@ -287,7 +312,7 @@ function Onyx({
     httpPathHandler("projects/" + p + "/fields")
       .then((response) => response.json())
       .then((data) => {
-        const fields = data["data"]["fields"];
+        const fields = flattenFields(data["data"]["fields"]);
         const fieldMap = new Map(
           Object.keys(fields).map((field) => [
             field,
@@ -295,7 +320,7 @@ function Onyx({
               type: fields[field].type,
               description: fields[field].description,
               actions: fields[field].actions,
-              choices: fields[field].values,
+              values: fields[field].values,
             },
           ])
         );
@@ -321,7 +346,7 @@ function Onyx({
     if (field?.type === "bool" || list[index].lookup === "isnull") {
       list[index].value = "true";
     } else if (field?.type === "choice") {
-      list[index].value = field?.choices[0] || "";
+      list[index].value = field?.values?.[0] || "";
     } else {
       list[index].value = "";
     }
@@ -341,7 +366,7 @@ function Onyx({
     if (field?.type === "bool" || list[index].lookup === "isnull") {
       list[index].value = "true";
     } else if (field?.type === "choice") {
-      list[index].value = field?.choices[0] || "";
+      list[index].value = field?.values?.[0] || "";
     } else {
       list[index].value = "";
     }
@@ -360,27 +385,15 @@ function Onyx({
   };
 
   const handleIncludeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value === "") {
-      setIncludeList([]);
-    } else {
-      setIncludeList(e.target.value.split(","));
-    }
+    setIncludeList(e.target.value ? e.target.value.split(",") : []);
   };
 
   const handleExcludeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value === "") {
-      setExcludeList([]);
-    } else {
-      setExcludeList(e.target.value.split(","));
-    }
+    setExcludeList(e.target.value ? e.target.value.split(",") : []);
   };
 
   const handleSummariseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value === "") {
-      setSummariseList([]);
-    } else {
-      setSummariseList(e.target.value.split(","));
-    }
+    setSummariseList(e.target.value ? e.target.value.split(",") : []);
   };
 
   const handleFilterAdd = (index: number) => {
@@ -533,6 +546,7 @@ function Onyx({
                           filter={filter}
                           projectFields={projectFields}
                           typeLookups={typeLookups}
+                          fieldDescriptions={fieldDescriptions}
                           lookupDescriptions={lookupDescriptions}
                           handleFieldChange={(e) => handleFieldChange(e, index)}
                           handleLookupChange={(e) =>
@@ -541,6 +555,7 @@ function Onyx({
                           handleValueChange={(e) => handleValueChange(e, index)}
                           handleFilterAdd={() => handleFilterAdd(index + 1)}
                           handleFilterRemove={() => handleFilterRemove(index)}
+                          darkMode={darkMode}
                         />
                       </div>
                     ))}
@@ -548,14 +563,16 @@ function Onyx({
                 </Card.Body>
               </Card>
             </Col>
-            <Col>
+            <Col lg={2}>
               <Card>
                 <Card.Header>Summarise</Card.Header>
                 <Card.Body className="panel">
                   <MultiDropdown
                     options={Array.from(projectFields.keys())}
+                    titles={fieldDescriptions}
                     value={summariseList}
                     onChange={handleSummariseChange}
+                    darkMode={darkMode}
                   />
                 </Card.Body>
               </Card>
@@ -566,8 +583,10 @@ function Onyx({
                 <Card.Body className="panel">
                   <MultiDropdown
                     options={Array.from(projectFields.keys())}
+                    titles={fieldDescriptions}
                     value={includeList}
                     onChange={handleIncludeChange}
+                    darkMode={darkMode}
                   />
                 </Card.Body>
               </Card>
@@ -580,6 +599,7 @@ function Onyx({
                     options={Array.from(projectFields.keys())}
                     value={excludeList}
                     onChange={handleExcludeChange}
+                    darkMode={darkMode}
                   />
                 </Card.Body>
               </Card>
