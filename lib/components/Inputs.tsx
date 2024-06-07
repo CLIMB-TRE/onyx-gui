@@ -2,6 +2,8 @@ import Form from "react-bootstrap/Form";
 import Creatable from "react-select/creatable";
 import getStyles from "./styles";
 
+type OptionType = { label: string; value: string };
+
 function Input({
   value,
   placeholder,
@@ -40,7 +42,7 @@ function MultiInput({
       onChange={(e) =>
         onChange({
           target: {
-            value: e.map((option) => option.value).join(","),
+            value: (e as OptionType[]).map((option) => option.value).join(","),
           },
         } as React.ChangeEvent<HTMLInputElement>)
       }

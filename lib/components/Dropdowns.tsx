@@ -1,6 +1,8 @@
 import Select, { components, OptionProps } from "react-select";
 import getStyles from "./styles";
 
+type OptionType = { label: string; value: string };
+
 function Dropdown({
   options,
   titles,
@@ -42,7 +44,7 @@ function Dropdown({
       onChange={(e) =>
         onChange({
           target: {
-            value: e.value,
+            value: (e as OptionType).value,
           },
         } as React.ChangeEvent<HTMLSelectElement>)
       }
@@ -61,7 +63,7 @@ function MultiDropdown({
   options: string[];
   titles?: Map<string, string>;
   value: string[];
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
+  onChange: React.ChangeEventHandler<HTMLSelectElement>;
   darkMode: boolean;
 }) {
   const Option = (props: OptionProps) => {
@@ -95,9 +97,9 @@ function MultiDropdown({
       onChange={(e) =>
         onChange({
           target: {
-            value: e.map((option) => option.value).join(","),
+            value: (e as OptionType[]).map((option) => option.value).join(","),
           },
-        } as React.ChangeEvent<HTMLInputElement>)
+        } as React.ChangeEvent<HTMLSelectElement>)
       }
       placeholder=""
     />

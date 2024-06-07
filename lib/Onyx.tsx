@@ -375,15 +375,15 @@ function Onyx({
     setFilterList(list);
   };
 
-  const handleIncludeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIncludeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setIncludeList(e.target.value ? e.target.value.split(",") : []);
   };
 
-  const handleExcludeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExcludeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setExcludeList(e.target.value ? e.target.value.split(",") : []);
   };
 
-  const handleSummariseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSummariseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSummariseList(e.target.value ? e.target.value.split(",") : []);
   };
 
