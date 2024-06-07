@@ -126,8 +126,8 @@ function Filter({
   return (
     <Stack direction="horizontal">
       <Container fluid>
-        <Row>
-          <Col>
+        <Row className="g-1">
+          <Col lg={4}>
             <Dropdown
               options={Array.from(projectFields.keys())}
               titles={fieldDescriptions}
@@ -136,7 +136,7 @@ function Filter({
               darkMode={darkMode}
             />
           </Col>
-          <Col>
+          <Col lg={4}>
             <Dropdown
               options={
                 typeLookups.get(projectFields.get(filter.field)?.type || "") ||
@@ -148,7 +148,7 @@ function Filter({
               darkMode={darkMode}
             />
           </Col>
-          <Col>{f}</Col>
+          <Col lg={4}>{f}</Col>
         </Row>
       </Container>
       <Stack direction="horizontal" gap={1}>
