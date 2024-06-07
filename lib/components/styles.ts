@@ -1,10 +1,16 @@
 import { StylesConfig } from "react-select";
 
+// Bootstrap colours
+const lightGrey = "var(--bs-gray-300)";
+const midGrey = "var(--bs-gray-700)";
+const darkGrey = "var(--bs-gray-900)";
+const red = "var(--bs-red)";
+
 const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
   control: (styles) => ({
     ...styles,
-    borderColor: darkMode ? "#495057" : "#dee2e6",
-    backgroundColor: darkMode ? "#212529" : "white",
+    borderColor: darkMode ? midGrey : lightGrey,
+    backgroundColor: darkMode ? darkGrey : "white",
   }),
   menuPortal: (styles) => ({ ...styles, zIndex: 9999 }),
   menu: (styles) => ({
@@ -16,8 +22,8 @@ const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
     color: darkMode ? "white" : "black",
     backgroundColor: state.isFocused
       ? darkMode
-        ? "#495057"
-        : "#dee2e6"
+        ? midGrey
+        : lightGrey
       : darkMode
       ? "black"
       : "white",
@@ -27,7 +33,7 @@ const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
   multiValue: (styles) => {
     return {
       ...styles,
-      backgroundColor: darkMode ? "#495057" : "#dee2e6",
+      backgroundColor: darkMode ? midGrey : lightGrey,
     };
   },
   multiValueLabel: (styles) => ({
@@ -37,7 +43,7 @@ const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
   multiValueRemove: (styles) => ({
     ...styles,
     ":hover": {
-      backgroundColor: "red",
+      backgroundColor: red,
       color: "white",
     },
   }),
