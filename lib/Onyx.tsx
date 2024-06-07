@@ -127,7 +127,7 @@ function Filter({
     <Stack direction="horizontal">
       <Container fluid>
         <Row className="g-1">
-          <Col lg={4}>
+          <Col sm={4}>
             <Dropdown
               options={Array.from(projectFields.keys())}
               titles={fieldDescriptions}
@@ -136,7 +136,7 @@ function Filter({
               darkMode={darkMode}
             />
           </Col>
-          <Col lg={4}>
+          <Col sm={4}>
             <Dropdown
               options={
                 typeLookups.get(projectFields.get(filter.field)?.type || "") ||
@@ -148,7 +148,7 @@ function Filter({
               darkMode={darkMode}
             />
           </Col>
-          <Col lg={4}>{f}</Col>
+          <Col sm={4}>{f}</Col>
         </Row>
       </Container>
       <Stack direction="horizontal" gap={1}>
@@ -508,7 +508,7 @@ function Onyx({
         />
         <Container fluid>
           <Row>
-            <Col lg={6}>
+            <Col xl={6}>
               <Card>
                 <Card.Header>
                   <span>Filter</span>
@@ -554,7 +554,7 @@ function Onyx({
                 </Card.Body>
               </Card>
             </Col>
-            <Col lg={2}>
+            <Col md={4} xl={2}>
               <Card>
                 <Card.Header>Summarise</Card.Header>
                 <Card.Body className="panel">
@@ -568,7 +568,7 @@ function Onyx({
                 </Card.Body>
               </Card>
             </Col>
-            <Col>
+            <Col md={4} xl={2}>
               <Card>
                 <Card.Header>Include</Card.Header>
                 <Card.Body className="panel">
@@ -582,7 +582,7 @@ function Onyx({
                 </Card.Body>
               </Card>
             </Col>
-            <Col>
+            <Col md={4} xl={2}>
               <Card>
                 <Card.Header>Exclude</Card.Header>
                 <Card.Body className="panel">

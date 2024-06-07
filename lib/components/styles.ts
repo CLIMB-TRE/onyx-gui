@@ -16,6 +16,7 @@ const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
   menu: (styles) => ({
     ...styles,
     width: "max-content",
+    minWidth: "100%",
     backgroundColor: darkMode ? "black" : "white",
   }),
   option: (styles, state) => ({
