@@ -81,7 +81,6 @@ function Header({
             onChange={handleThemeChange}
           />
           <Input
-            type="text"
             value={searchInput}
             placeholder="Search records..."
             onChange={handleSearchInputChange}

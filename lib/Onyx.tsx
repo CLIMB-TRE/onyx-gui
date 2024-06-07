@@ -97,7 +97,6 @@ function Filter({
   } else if (filter.lookup.endsWith("in")) {
     f = (
       <MultiInput
-        options={projectFields.get(filter.field)?.values || []}
         value={getValueList(filter.value)}
         onChange={handleValueChange}
         darkMode={darkMode}
@@ -106,7 +105,6 @@ function Filter({
   } else if (filter.lookup.endsWith("range")) {
     f = (
       <MultiInput
-        options={projectFields.get(filter.field)?.values || []}
         value={getValueList(filter.value)}
         limit={2}
         onChange={handleValueChange}
@@ -123,14 +121,7 @@ function Filter({
       />
     );
   } else {
-    f = (
-      <Input
-        type="text"
-        value={filter.value}
-        placeholder="Value"
-        onChange={handleValueChange}
-      />
-    );
+    f = <Input value={filter.value} onChange={handleValueChange} />;
   }
   return (
     <Stack direction="horizontal">

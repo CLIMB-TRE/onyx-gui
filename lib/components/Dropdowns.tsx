@@ -46,6 +46,7 @@ function Dropdown({
           },
         } as React.ChangeEvent<HTMLSelectElement>)
       }
+      placeholder=""
     />
   );
 }
@@ -59,7 +60,6 @@ function MultiDropdown({
 }: {
   options: string[];
   titles?: Map<string, string>;
-
   value: string[];
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   darkMode: boolean;
@@ -79,6 +79,7 @@ function MultiDropdown({
   return (
     <Select
       isMulti
+      closeMenuOnSelect={false}
       components={{ Option }}
       menuPortalTarget={document.body}
       styles={getStyles(darkMode)}
@@ -98,6 +99,7 @@ function MultiDropdown({
           },
         } as React.ChangeEvent<HTMLInputElement>)
       }
+      placeholder=""
     />
   );
 }
