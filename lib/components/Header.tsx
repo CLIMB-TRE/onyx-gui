@@ -7,7 +7,32 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import Button from "react-bootstrap/Button";
 import { Input } from "./Inputs";
 
-import VERSION from "../version";
+function HeaderText({ label, value }: { label: string; value: string }) {
+  return (
+    <Navbar.Text>
+      {label}: <span className="text-light">{value ? value : "None"}</span>
+    </Navbar.Text>
+  );
+}
+
+function HeaderVersion({
+  label,
+  version,
+}: {
+  label: string;
+  version?: string;
+}) {
+  return (
+    <Navbar.Text>
+      {label}:{" "}
+      {version ? (
+        <code className="text-success">{version}</code>
+      ) : (
+        <span className="text-light">None</span>
+      )}
+    </Navbar.Text>
+  );
+}
 
 function Header({
   profile,
@@ -18,6 +43,8 @@ function Header({
   handleSearchInputChange,
   handleSearch,
   handleThemeChange,
+  guiVersion,
+  extVersion,
 }: {
   profile: { username: string; site: string };
   project: string;
@@ -27,6 +54,8 @@ function Header({
   handleSearchInputChange: React.ChangeEventHandler<HTMLInputElement>;
   handleSearch: () => void;
   handleThemeChange: () => void;
+  guiVersion?: string;
+  extVersion?: string;
 }) {
   return (
     <Navbar bg="dark" variant="dark" collapseOnSelect expand="lg">
@@ -36,14 +65,7 @@ function Header({
           <Nav>
             <Stack direction="horizontal" gap={3}>
               <NavDropdown
-                title={
-                  <Navbar.Text>
-                    Project:{" "}
-                    <span className="text-light">
-                      {project ? project : "None"}
-                    </span>
-                  </Navbar.Text>
-                }
+                title={<HeaderText label="Project" value={project} />}
                 id="collapsible-nav-dropdown"
               >
                 {projectList.map((p) => (
@@ -55,21 +77,10 @@ function Header({
                   </NavDropdown.Item>
                 ))}
               </NavDropdown>
-              <Navbar.Text>
-                User:{" "}
-                <span className="text-light">
-                  {profile.username ? profile.username : "None"}
-                </span>
-              </Navbar.Text>
-              <Navbar.Text>
-                Site:{" "}
-                <span className="text-light">
-                  {profile.site ? profile.site : "None"}
-                </span>
-              </Navbar.Text>
-              <Navbar.Text>
-                Version: <span className="text-light">{VERSION}</span>
-              </Navbar.Text>
+              <HeaderText label="User" value={profile.username} />
+              <HeaderText label="Site" value={profile.site} />
+              <HeaderVersion label="GUI Version" version={guiVersion} />
+              <HeaderVersion label="Extension Version" version={extVersion} />
             </Stack>
           </Nav>
         </Navbar.Collapse>

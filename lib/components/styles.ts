@@ -1,6 +1,7 @@
 import { StylesConfig } from "react-select";
 
 // Bootstrap colours
+const secondary = "var(--bs-secondary-color)";
 const lightGrey = "var(--bs-gray-300)";
 const midGrey = "var(--bs-gray-700)";
 const darkGrey = "var(--bs-gray-900)";
@@ -48,6 +49,10 @@ const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
       backgroundColor: red,
       color: "white",
     },
+  }),
+  placeholder: (styles) => ({
+    ...styles,
+    color: secondary,
   }),
 });
 

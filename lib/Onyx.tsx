@@ -7,7 +7,7 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
-import { mkConfig, generateCsv, download } from "export-to-csv";
+import { mkConfig, generateCsv, download, asString } from "export-to-csv";
 import Header from "./components/Header";
 import { Dropdown, MultiDropdown } from "./components/Dropdowns";
 import { Input, MultiInput } from "./components/Inputs";
@@ -15,6 +15,8 @@ import ResultsTable from "./components/ResultsTable";
 
 import "./Onyx.css";
 import "./bootstrap.css";
+
+const VERSION = "0.8.2";
 
 interface Profile {
   username: string;
@@ -132,6 +134,7 @@ function Filter({
               options={Array.from(projectFields.keys())}
               titles={fieldDescriptions}
               value={filter.field}
+              placeholder="Select field..."
               onChange={handleFieldChange}
               darkMode={darkMode}
             />
@@ -144,6 +147,7 @@ function Filter({
               }
               titles={lookupDescriptions}
               value={filter.lookup}
+              placeholder="Select lookup..."
               onChange={handleLookupChange}
               darkMode={darkMode}
             />
@@ -186,9 +190,13 @@ function flattenFields(fields: Record<string, ProjectField>) {
 function Onyx({
   httpPathHandler,
   s3PathHandler,
+  fileWriter,
+  extVersion,
 }: {
   httpPathHandler: (path: string) => Promise<Response>;
   s3PathHandler?: (path: string) => void;
+  fileWriter?: (path: string, content: string) => void;
+  extVersion?: string;
 }) {
   const [profile, setProfile] = useState({} as Profile);
   const [project, setProject] = useState("");
@@ -490,7 +498,12 @@ function Onyx({
 
   const handleExportToCSV = () => {
     const csv = generateCsv(csvConfig)(resultData);
-    download(csvConfig)(csv);
+
+    if (fileWriter) {
+      fileWriter(project + ".csv", asString(csv));
+    } else {
+      download(csvConfig)(csv);
+    }
   };
 
   return (
@@ -505,6 +518,8 @@ function Onyx({
           handleSearchInputChange={(e) => setSearchInput(e.target.value)}
           handleSearch={handleSearch}
           handleThemeChange={toggleTheme}
+          guiVersion={VERSION}
+          extVersion={extVersion}
         />
         <Container fluid>
           <Row>
@@ -562,6 +577,7 @@ function Onyx({
                     options={Array.from(projectFields.keys())}
                     titles={fieldDescriptions}
                     value={summariseList}
+                    placeholder="Select fields..."
                     onChange={handleSummariseChange}
                     darkMode={darkMode}
                   />
@@ -576,6 +592,7 @@ function Onyx({
                     options={Array.from(projectFields.keys())}
                     titles={fieldDescriptions}
                     value={includeList}
+                    placeholder="Select fields..."
                     onChange={handleIncludeChange}
                     darkMode={darkMode}
                   />
@@ -589,6 +606,7 @@ function Onyx({
                   <MultiDropdown
                     options={Array.from(projectFields.keys())}
                     value={excludeList}
+                    placeholder="Select fields..."
                     onChange={handleExcludeChange}
                     darkMode={darkMode}
                   />

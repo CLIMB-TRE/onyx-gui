@@ -7,12 +7,14 @@ function Dropdown({
   options,
   titles,
   value,
+  placeholder,
   onChange,
   darkMode,
 }: {
   options: string[];
   titles?: Map<string, string>;
   value: string;
+  placeholder?: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
   darkMode: boolean;
 }) {
@@ -37,10 +39,14 @@ function Dropdown({
         value: option,
         label: option,
       }))}
-      value={{
-        value: value,
-        label: value,
-      }}
+      value={
+        value
+          ? {
+              value: value,
+              label: value,
+            }
+          : null
+      }
       onChange={(e) =>
         onChange({
           target: {
@@ -48,7 +54,7 @@ function Dropdown({
           },
         } as React.ChangeEvent<HTMLSelectElement>)
       }
-      placeholder=""
+      placeholder={placeholder ? placeholder : "Select..."}
     />
   );
 }
@@ -57,12 +63,14 @@ function MultiDropdown({
   options,
   titles,
   value,
+  placeholder,
   onChange,
   darkMode,
 }: {
   options: string[];
   titles?: Map<string, string>;
   value: string[];
+  placeholder?: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
   darkMode: boolean;
 }) {
@@ -101,7 +109,7 @@ function MultiDropdown({
           },
         } as React.ChangeEvent<HTMLSelectElement>)
       }
-      placeholder=""
+      placeholder={placeholder ? placeholder : "Select..."}
     />
   );
 }

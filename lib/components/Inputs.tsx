@@ -14,17 +14,23 @@ function Input({
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
-    <Form.Control value={value} placeholder={placeholder} onChange={onChange} />
+    <Form.Control
+      value={value}
+      placeholder={placeholder ? placeholder : "Enter value..."}
+      onChange={onChange}
+    />
   );
 }
 
 function MultiInput({
   value,
+  placeholder,
   limit,
   onChange,
   darkMode,
 }: {
   value: string[];
+  placeholder?: string;
   limit?: number;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   darkMode: boolean;
@@ -47,8 +53,8 @@ function MultiInput({
         } as React.ChangeEvent<HTMLInputElement>)
       }
       isOptionDisabled={() => !(limit === undefined || value.length < limit)}
-      noOptionsMessage={() => "Enter a value"}
-      placeholder=""
+      noOptionsMessage={() => "Create a new value..."}
+      placeholder={placeholder ? placeholder : "Enter values..."}
     />
   );
 }
