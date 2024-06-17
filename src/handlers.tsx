@@ -1,8 +1,6 @@
 function httpPathHandler(path: string) {
-  const domain = "";
-  const token = "";
-  return fetch(domain + path, {
-    headers: { Authorization: "Token " + token },
+  return fetch(import.meta.env.VITE_ONYX_DOMAIN + path, {
+    headers: { Authorization: "Token " + import.meta.env.VITE_ONYX_TOKEN },
   });
 }
 
