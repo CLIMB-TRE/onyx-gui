@@ -3,7 +3,7 @@
   overflow-x: auto;
   overflow-y: scroll;
   overscroll-behavior-x: none; 
-  height: 45vh;
+  height: 42vh;
   white-space: nowrap;
 }
 
@@ -15,11 +15,11 @@
 
 .card-header {
   font-size: large;
-  min-height: 50px;
+  height: 50px;
 }
 
 .card-footer {
-  min-height: 50px;
+  height: 50px;
 }
 
 .panel {

@@ -34,7 +34,6 @@ function HeaderVersion({
 function Header({
   profile,
   projectName,
-  projectDescription,
   projectList,
   handleProjectChange,
   handleThemeChange,
@@ -43,7 +42,6 @@ function Header({
 }: {
   profile: { username: string; site: string };
   projectName: string;
-  projectDescription: string;
   projectList: string[];
   handleProjectChange: (p: string) => void;
   handleThemeChange: () => void;
@@ -69,7 +67,6 @@ function Header({
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
-            <HeaderText label="Description" value={projectDescription} />
             <HeaderText label="User" value={profile.username} />
             <HeaderText label="Site" value={profile.site} />
             <HeaderVersion label="GUI" version={guiVersion} />

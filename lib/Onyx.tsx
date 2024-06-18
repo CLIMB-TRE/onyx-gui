@@ -16,7 +16,7 @@ import ResultsTable from "./components/ResultsTable";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.8.3";
+const VERSION = "0.8.4";
 
 interface Profile {
   username: string;
@@ -587,7 +587,6 @@ function Onyx(props: OnyxProps) {
   const [profile, setProfile] = useState({} as Profile);
   const [project, setProject] = useState("");
   const [projectName, setProjectName] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
   const [projectList, setProjectList] = useState(new Array<string>());
   const [projectFields, setProjectFields] = useState(
     new Map<string, ProjectField>()
@@ -695,7 +694,6 @@ function Onyx(props: OnyxProps) {
           ])
         );
         setProjectName(data["data"]["name"]);
-        setProjectDescription(data["data"]["description"]);
         setProjectFields(fieldMap);
       })
       .catch((err) => {
@@ -714,7 +712,6 @@ function Onyx(props: OnyxProps) {
       <Header
         profile={profile}
         projectName={projectName}
-        projectDescription={projectDescription}
         projectList={projectList}
         handleProjectChange={handleProjectChange}
         handleThemeChange={toggleTheme}
