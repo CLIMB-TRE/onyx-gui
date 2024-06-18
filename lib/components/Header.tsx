@@ -1,11 +1,8 @@
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import Form from "react-bootstrap/Form";
-import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import Button from "react-bootstrap/Button";
-import { Input } from "./Inputs";
 
 function HeaderText({ label, value }: { label: string; value: string }) {
   return (
@@ -26,7 +23,7 @@ function HeaderVersion({
     <Navbar.Text>
       {label}:{" "}
       {version ? (
-        <code className="text-success">{version}</code>
+        <code className="text-success">{`v${version}`}</code>
       ) : (
         <span className="text-light">None</span>
       )}
@@ -36,23 +33,19 @@ function HeaderVersion({
 
 function Header({
   profile,
-  project,
+  projectName,
+  projectDescription,
   projectList,
-  searchInput,
   handleProjectChange,
-  handleSearchInputChange,
-  handleSearch,
   handleThemeChange,
   guiVersion,
   extVersion,
 }: {
   profile: { username: string; site: string };
-  project: string;
+  projectName: string;
+  projectDescription: string;
   projectList: string[];
-  searchInput: string;
   handleProjectChange: (p: string) => void;
-  handleSearchInputChange: React.ChangeEventHandler<HTMLInputElement>;
-  handleSearch: () => void;
   handleThemeChange: () => void;
   guiVersion?: string;
   extVersion?: string;
@@ -62,48 +55,34 @@ function Header({
       <Container fluid>
         <Navbar.Brand>Onyx</Navbar.Brand>
         <Navbar.Collapse id="responsive-navbar-nav">
-          <Nav>
-            <Stack direction="horizontal" gap={3}>
-              <NavDropdown
-                title={<HeaderText label="Project" value={project} />}
-                id="collapsible-nav-dropdown"
-              >
-                {projectList.map((p) => (
-                  <NavDropdown.Item
-                    key={p}
-                    onClick={() => handleProjectChange(p)}
-                  >
-                    {p}
-                  </NavDropdown.Item>
-                ))}
-              </NavDropdown>
-              <HeaderText label="User" value={profile.username} />
-              <HeaderText label="Site" value={profile.site} />
-              <HeaderVersion label="GUI Version" version={guiVersion} />
-              <HeaderVersion label="Extension Version" version={extVersion} />
-            </Stack>
-          </Nav>
+          <Stack direction="horizontal" gap={3}>
+            <NavDropdown
+              title={<HeaderText label="Project" value={projectName} />}
+              id="collapsible-nav-dropdown"
+            >
+              {projectList.map((p) => (
+                <NavDropdown.Item
+                  key={p}
+                  onClick={() => handleProjectChange(p)}
+                >
+                  {p}
+                </NavDropdown.Item>
+              ))}
+            </NavDropdown>
+            <HeaderText label="Description" value={projectDescription} />
+            <HeaderText label="User" value={profile.username} />
+            <HeaderText label="Site" value={profile.site} />
+            <HeaderVersion label="GUI" version={guiVersion} />
+            <HeaderVersion label="Extension" version={extVersion} />
+          </Stack>
         </Navbar.Collapse>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Stack direction="horizontal" gap={1}>
-          <Form.Check
-            type="switch"
-            id="theme-switch"
-            onChange={handleThemeChange}
-          />
-          <Input
-            value={searchInput}
-            placeholder="Search records..."
-            onChange={handleSearchInputChange}
-          />
-          <Button
-            variant="primary"
-            disabled={!project}
-            onClick={() => handleSearch()}
-          >
-            Search
-          </Button>
-        </Stack>
+        <Form.Check
+          type="switch"
+          id="theme-switch"
+          label={<span className="text-light">Switch Theme</span>}
+          onChange={handleThemeChange}
+        />
       </Container>
     </Navbar>
   );
