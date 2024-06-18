@@ -16,7 +16,7 @@ import ResultsTable from "./components/ResultsTable";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.8.4";
+const VERSION = "0.8.5";
 
 interface Profile {
   username: string;

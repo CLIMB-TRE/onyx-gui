@@ -15,7 +15,7 @@
 
 .card-header {
   font-size: large;
-  height: 50px;
+  min-height: 50px;
 }
 
 .card-footer {
