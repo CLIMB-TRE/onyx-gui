@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -8,20 +8,17 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
 import { mkConfig, generateCsv, download, asString } from "export-to-csv";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Header from "./components/Header";
-import { Dropdown, MultiDropdown } from "./components/Dropdowns";
-import { Input, MultiInput } from "./components/Inputs";
+import { MultiDropdown } from "./components/Dropdowns";
+import { Input } from "./components/Inputs";
+import Filter from "./components/Filter";
 import ResultsTable from "./components/ResultsTable";
 
 import "./Onyx.css";
 import "./bootstrap.css";
 
 const VERSION = "0.9.1";
-
-interface Profile {
-  username: string;
-  site: string;
-}
 
 interface ProjectField {
   type: string;
@@ -35,163 +32,6 @@ interface FilterField {
   field: string;
   lookup: string;
   value: string;
-}
-
-function Filter({
-  filter,
-  fieldList,
-  projectFields,
-  typeLookups,
-  fieldDescriptions,
-  lookupDescriptions,
-  handleFieldChange,
-  handleLookupChange,
-  handleValueChange,
-  handleFilterAdd,
-  handleFilterRemove,
-  darkMode,
-}: {
-  filter: FilterField;
-  fieldList: string[];
-  projectFields: Map<string, ProjectField>;
-  typeLookups: Map<string, string[]>;
-  fieldDescriptions: Map<string, string>;
-  lookupDescriptions: Map<string, string>;
-  handleFieldChange: ChangeEventHandler<HTMLSelectElement>;
-  handleLookupChange: ChangeEventHandler<HTMLSelectElement>;
-  handleValueChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
-  handleFilterAdd: () => void;
-  handleFilterRemove: () => void;
-  darkMode: boolean;
-}) {
-  let f: JSX.Element;
-  const getValueList = (v: string) => {
-    return v ? v.split(",") : [];
-  };
-
-  if (filter.lookup === "isnull") {
-    f = (
-      <Dropdown
-        options={["true", "false"]}
-        value={filter.value}
-        onChange={handleValueChange}
-        darkMode={darkMode}
-      />
-    );
-  } else if (projectFields.get(filter.field)?.type === "choice") {
-    if (filter.lookup.endsWith("in")) {
-      f = (
-        <MultiDropdown
-          options={projectFields.get(filter.field)?.values || []}
-          value={getValueList(filter.value)}
-          onChange={handleValueChange}
-          darkMode={darkMode}
-        />
-      );
-    } else {
-      f = (
-        <Dropdown
-          options={projectFields.get(filter.field)?.values || []}
-          value={filter.value}
-          onChange={handleValueChange}
-          darkMode={darkMode}
-        />
-      );
-    }
-  } else if (filter.lookup.endsWith("in")) {
-    f = (
-      <MultiInput
-        value={getValueList(filter.value)}
-        onChange={handleValueChange}
-        darkMode={darkMode}
-      />
-    );
-  } else if (filter.lookup.endsWith("range")) {
-    f = (
-      <MultiInput
-        value={getValueList(filter.value)}
-        limit={2}
-        onChange={handleValueChange}
-        darkMode={darkMode}
-      />
-    );
-  } else if (projectFields.get(filter.field)?.type === "bool") {
-    f = (
-      <Dropdown
-        options={["true", "false"]}
-        value={filter.value}
-        onChange={handleValueChange}
-        darkMode={darkMode}
-      />
-    );
-  } else {
-    f = <Input value={filter.value} onChange={handleValueChange} />;
-  }
-  return (
-    <Stack direction="horizontal" gap={1}>
-      <Container fluid className="g-0">
-        <Row className="g-1">
-          <Col sm={4}>
-            <Dropdown
-              options={fieldList}
-              titles={fieldDescriptions}
-              value={filter.field}
-              placeholder="Select field..."
-              onChange={handleFieldChange}
-              darkMode={darkMode}
-            />
-          </Col>
-          <Col sm={4}>
-            <Dropdown
-              options={
-                typeLookups.get(projectFields.get(filter.field)?.type || "") ||
-                []
-              }
-              titles={lookupDescriptions}
-              value={filter.lookup}
-              placeholder="Select lookup..."
-              onChange={handleLookupChange}
-              darkMode={darkMode}
-            />
-          </Col>
-          <Col sm={4}>{f}</Col>
-        </Row>
-      </Container>
-      <Button variant="primary" onClick={handleFilterAdd}>
-        +
-      </Button>
-      <Button variant="danger" onClick={handleFilterRemove}>
-        -
-      </Button>
-    </Stack>
-  );
-}
-
-function flattenFields(fields: Record<string, ProjectField>) {
-  const flatFields: Record<string, ProjectField> = {};
-
-  // Loop over object and flatten nested fields
-  const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
-    for (const [field, fieldInfo] of Object.entries(obj)) {
-      flatFields[prefix + field] = fieldInfo;
-      if (fieldInfo.type === "relation") {
-        flatten(
-          fieldInfo.fields as Record<string, ProjectField>,
-          prefix + field + "__"
-        );
-      }
-    }
-  };
-
-  flatten(fields);
-  return flatFields;
-}
-
-interface OnyxProps {
-  httpPathHandler: (path: string) => Promise<Response>;
-  s3PathHandler?: (path: string) => void;
-  fileWriter?: (path: string, content: string) => void;
-  extVersion?: string;
 }
 
 interface DataProps {
@@ -231,7 +71,9 @@ function Data(props: DataProps) {
     setSummariseList([]);
     setSearchInput("");
     setResultData([]);
-    handleSearch("projects/" + props.project);
+    if (props.project) {
+      handleSearch("projects/" + props.project);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
@@ -582,9 +424,35 @@ function Data(props: DataProps) {
   );
 }
 
-function Onyx(props: OnyxProps) {
+function flattenFields(fields: Record<string, ProjectField>) {
+  const flatFields: Record<string, ProjectField> = {};
+
+  // Loop over object and flatten nested fields
+  const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
+    for (const [field, fieldInfo] of Object.entries(obj)) {
+      flatFields[prefix + field] = fieldInfo;
+      if (fieldInfo.type === "relation") {
+        flatten(
+          fieldInfo.fields as Record<string, ProjectField>,
+          prefix + field + "__"
+        );
+      }
+    }
+  };
+
+  flatten(fields);
+  return flatFields;
+}
+
+interface OnyxProps {
+  httpPathHandler: (path: string) => Promise<Response>;
+  s3PathHandler?: (path: string) => void;
+  fileWriter?: (path: string, content: string) => void;
+  extVersion?: string;
+}
+
+function App(props: OnyxProps) {
   const [darkMode, setDarkMode] = useState(false);
-  const [profile, setProfile] = useState({} as Profile);
   const [project, setProject] = useState("");
   const [projectName, setProjectName] = useState("");
   const [projectList, setProjectList] = useState(new Array<string>());
@@ -603,20 +471,6 @@ function Onyx(props: OnyxProps) {
   );
 
   useEffect(() => {
-    // Fetch user profile
-    props
-      .httpPathHandler("accounts/profile")
-      .then((response) => response.json())
-      .then((data) => {
-        setProfile({
-          username: data["data"].username,
-          site: data["data"].site,
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-
     // Fetch project list
     props
       .httpPathHandler("projects")
@@ -710,13 +564,12 @@ function Onyx(props: OnyxProps) {
   return (
     <Stack gap={2} className="Onyx">
       <Header
-        profile={profile}
+        {...props}
         projectName={projectName}
         projectList={projectList}
         handleProjectChange={handleProjectChange}
         handleThemeChange={toggleTheme}
         guiVersion={VERSION}
-        extVersion={props.extVersion}
       />
       <Data
         {...props}
@@ -729,6 +582,16 @@ function Onyx(props: OnyxProps) {
       />
       <div></div>
     </Stack>
+  );
+}
+
+const queryClient = new QueryClient();
+
+function Onyx(props: OnyxProps) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <App {...props} />
+    </QueryClientProvider>
   );
 }
 

@@ -3,6 +3,7 @@ import Stack from "react-bootstrap/Stack";
 import Form from "react-bootstrap/Form";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
+import { useQuery } from "@tanstack/react-query";
 
 function HeaderText({ label, value }: { label: string; value: string }) {
   return (
@@ -31,46 +32,77 @@ function HeaderVersion({
   );
 }
 
-function Header({
-  profile,
-  projectName,
-  projectList,
-  handleProjectChange,
-  handleThemeChange,
-  guiVersion,
-  extVersion,
-}: {
-  profile: { username: string; site: string };
+interface HeaderProps {
+  httpPathHandler: (path: string) => Promise<Response>;
   projectName: string;
   projectList: string[];
   handleProjectChange: (p: string) => void;
   handleThemeChange: () => void;
   guiVersion?: string;
   extVersion?: string;
-}) {
+}
+
+function Header(props: HeaderProps) {
+  // Fetch user profile
+  const {
+    isPending: profilePending,
+    error: profileError,
+    data: profileData,
+  } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      // sleep for 2 seconds to simulate network latency
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return props
+        .httpPathHandler("accounts/profile")
+        .then((response) => response.json())
+        .then((data) => {
+          return {
+            username: data["data"].username,
+            site: data["data"].site,
+          };
+        });
+    },
+  });
+
+  // Handle display of user profile
+  let username;
+  let site;
+  if (profilePending) {
+    username = "Loading...";
+    site = "Loading...";
+  } else if (profileError) {
+    username = "Error";
+    site = "Error";
+  } else {
+    username = profileData.username;
+    site = profileData.site;
+  }
+
   return (
-    <Navbar bg="dark" variant="dark" collapseOnSelect expand="lg">
+    <Navbar bg="dark" variant="dark" collapseOnSelect expand="sm">
       <Container fluid>
         <Navbar.Brand>Onyx</Navbar.Brand>
         <Navbar.Collapse id="responsive-navbar-nav">
           <Stack direction="horizontal" gap={3}>
             <NavDropdown
-              title={<HeaderText label="Project" value={projectName} />}
+              title={<HeaderText label="Project" value={props.projectName} />}
               id="collapsible-nav-dropdown"
+              style={{ color: "white" }}
             >
-              {projectList.map((p) => (
+              {props.projectList.map((p) => (
                 <NavDropdown.Item
                   key={p}
-                  onClick={() => handleProjectChange(p)}
+                  onClick={() => props.handleProjectChange(p)}
                 >
                   {p}
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
-            <HeaderText label="User" value={profile.username} />
-            <HeaderText label="Site" value={profile.site} />
-            <HeaderVersion label="GUI" version={guiVersion} />
-            <HeaderVersion label="Extension" version={extVersion} />
+            <HeaderText label="User" value={username} />
+            <HeaderText label="Site" value={site} />
+            <HeaderVersion label="GUI" version={props.guiVersion} />
+            <HeaderVersion label="Extension" version={props.extVersion} />
           </Stack>
         </Navbar.Collapse>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
@@ -78,7 +110,7 @@ function Header({
           type="switch"
           id="theme-switch"
           label={<span className="text-light">Switch Theme</span>}
-          onChange={handleThemeChange}
+          onChange={props.handleThemeChange}
         />
       </Container>
     </Navbar>
