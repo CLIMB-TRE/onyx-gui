@@ -3,7 +3,7 @@
   overflow-x: auto;
   overflow-y: scroll;
   overscroll-behavior-x: none; 
-  height: 42vh;
+  height: 45vh;
   white-space: nowrap;
 }
 
@@ -25,4 +25,8 @@
 .panel {
   height: 15vh;
   overflow-y: scroll;
+}
+
+.table-panel {
+  height: 48vh;
 }
