@@ -51,8 +51,6 @@ function Header(props: HeaderProps) {
   } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
-      // sleep for 2 seconds to simulate network latency
-      await new Promise((resolve) => setTimeout(resolve, 2000));
       return props
         .httpPathHandler("accounts/profile")
         .then((response) => response.json())
