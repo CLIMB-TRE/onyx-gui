@@ -1,4 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, {
+  useState,
+  useMemo,
+  // useEffect,
+} from "react";
+import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -15,7 +20,7 @@ import {
 } from "@tanstack/react-query";
 import Header from "./components/Header";
 import { MultiDropdown } from "./components/Dropdowns";
-import { Input } from "./components/Inputs";
+// import { Input } from "./components/Inputs";
 import Filter from "./components/Filter";
 import ResultsTable from "./components/ResultsTable";
 import LoadingAlert from "./components/LoadingAlert";
@@ -69,12 +74,29 @@ interface ResultsProps extends DataProps {
   resultData: ResultData | null;
 }
 
+// const useDebouncedValue = (inputValue: string, delay: number) => {
+//   const [debouncedValue, setDebouncedValue] = useState(inputValue);
+
+//   useEffect(() => {
+//     const handler = setTimeout(() => {
+//       setDebouncedValue(inputValue);
+//     }, delay);
+
+//     return () => {
+//       clearTimeout(handler);
+//     };
+//   }, [inputValue, delay]);
+
+//   return debouncedValue;
+// };
+
 function Parameters(props: ParametersProps) {
   const [filterList, setFilterList] = useState(new Array<FilterField>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
   const [includeList, setIncludeList] = useState(new Array<string>());
   const [excludeList, setExcludeList] = useState(new Array<string>());
   const [searchInput, setSearchInput] = useState("");
+  // const debouncedSearchInput = useDebouncedValue(searchInput, 500);
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, field]) => field.actions.includes("filter"))
     .map(([field]) => field);
@@ -211,10 +233,15 @@ function Parameters(props: ParametersProps) {
   return (
     <>
       <Stack direction="horizontal" gap={2}>
-        <Input
+        <Form.Control
           value={searchInput}
           placeholder="Search records..."
           onChange={(e) => setSearchInput(e.target.value)}
+          onKeyUp={(event) => {
+            if (event.key === "Enter") {
+              handleParameters();
+            }
+          }}
         />
         <Button
           variant="primary"
@@ -275,26 +302,29 @@ function Parameters(props: ParametersProps) {
         {[
           {
             title: "Summarise",
+            options: filterFieldOptions,
             value: summariseList,
             onChange: handleSummariseChange,
           },
           {
             title: "Include",
+            options: listFieldOptions,
             value: includeList,
             onChange: handleIncludeChange,
           },
           {
             title: "Exclude",
+            options: listFieldOptions,
             value: excludeList,
             onChange: handleExcludeChange,
           },
-        ].map(({ title, value, onChange }) => (
+        ].map(({ title, options, value, onChange }) => (
           <Col key={title} md={4} xl={2}>
             <Card>
               <Card.Header>{title}</Card.Header>
               <Card.Body className="panel">
                 <MultiDropdown
-                  options={listFieldOptions}
+                  options={options}
                   titles={props.fieldDescriptions}
                   value={value}
                   placeholder="Select fields..."
