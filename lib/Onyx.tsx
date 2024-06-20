@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -58,7 +58,7 @@ interface DataProps {
   darkMode: boolean;
 }
 
-interface DataParametersProps extends DataProps {
+interface ParametersProps extends DataProps {
   setParameters: (params: string) => void;
 }
 
@@ -69,7 +69,7 @@ interface ResultsProps extends DataProps {
   resultData: ResultData | null;
 }
 
-function DataParameters(props: DataParametersProps) {
+function Parameters(props: ParametersProps) {
   const [filterList, setFilterList] = useState(new Array<FilterField>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
   const [includeList, setIncludeList] = useState(new Array<string>());
@@ -81,6 +81,17 @@ function DataParameters(props: DataParametersProps) {
   const listFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, field]) => field.actions.includes("list"))
     .map(([field]) => field);
+
+  // TODO: Bad use of useMemo apparently
+  // but hey it works
+  useMemo(() => {
+    setFilterList([]);
+    setSummariseList([]);
+    setIncludeList([]);
+    setExcludeList([]);
+    setSearchInput("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.project]);
 
   const handleFilterFieldChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
@@ -385,6 +396,14 @@ function Results(props: ResultsProps) {
 function Data(props: DataProps) {
   const [searchParameters, setSearchParameters] = useState("");
 
+  // TODO: Bad use of useMemo apparently
+  // but hey it works
+  useMemo(() => {
+    setSearchParameters("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.project]);
+
+  // Fetch data, depending on project and search parameters
   const {
     isFetching: resultPending,
     error: resultError,
@@ -392,21 +411,16 @@ function Data(props: DataProps) {
   } = useQuery({
     queryKey: ["results", props.project, searchParameters],
     queryFn: async () => {
-      let search;
-      if (searchParameters) {
-        search = `projects/${props.project}?${searchParameters}`;
-      } else {
-        search = `projects/${props.project}`;
-      }
-
-      return props.httpPathHandler(search).then((response) => response.json());
+      return props
+        .httpPathHandler(`projects/${props.project}/?${searchParameters}`)
+        .then((response) => response.json());
     },
   });
 
   return (
     <Container fluid className="g-2">
       <Stack gap={2}>
-        <DataParameters {...props} setParameters={setSearchParameters} />
+        <Parameters {...props} setParameters={setSearchParameters} />
         <Results
           {...props}
           setParameters={setSearchParameters}
@@ -465,7 +479,9 @@ function App(props: OnyxProps) {
     new Map<string, string>()
   );
 
-  useEffect(() => {
+  // TODO: Bad use of useMemo apparently
+  // but hey it works
+  useMemo(() => {
     // Fetch project list
     props
       .httpPathHandler("projects")

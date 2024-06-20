@@ -53,13 +53,7 @@ function Header(props: HeaderProps) {
     queryFn: async () => {
       return props
         .httpPathHandler("accounts/profile")
-        .then((response) => response.json())
-        .then((data) => {
-          return {
-            username: data["data"].username,
-            site: data["data"].site,
-          };
-        });
+        .then((response) => response.json());
     },
   });
 
@@ -73,8 +67,8 @@ function Header(props: HeaderProps) {
     username = "Error";
     site = "Error";
   } else {
-    username = profileData.username;
-    site = profileData.site;
+    username = profileData["data"].username;
+    site = profileData["data"].site;
   }
 
   return (
