@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  useMemo,
-  // useEffect,
-} from "react";
+import React, { useState, useLayoutEffect } from "react";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
@@ -20,7 +16,6 @@ import {
 } from "@tanstack/react-query";
 import Header from "./components/Header";
 import { MultiDropdown } from "./components/Dropdowns";
-// import { Input } from "./components/Inputs";
 import Filter from "./components/Filter";
 import ResultsTable from "./components/ResultsTable";
 import LoadingAlert from "./components/LoadingAlert";
@@ -74,29 +69,12 @@ interface ResultsProps extends DataProps {
   resultData: ResultData | null;
 }
 
-// const useDebouncedValue = (inputValue: string, delay: number) => {
-//   const [debouncedValue, setDebouncedValue] = useState(inputValue);
-
-//   useEffect(() => {
-//     const handler = setTimeout(() => {
-//       setDebouncedValue(inputValue);
-//     }, delay);
-
-//     return () => {
-//       clearTimeout(handler);
-//     };
-//   }, [inputValue, delay]);
-
-//   return debouncedValue;
-// };
-
 function Parameters(props: ParametersProps) {
   const [filterList, setFilterList] = useState(new Array<FilterField>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
   const [includeList, setIncludeList] = useState(new Array<string>());
   const [excludeList, setExcludeList] = useState(new Array<string>());
   const [searchInput, setSearchInput] = useState("");
-  // const debouncedSearchInput = useDebouncedValue(searchInput, 500);
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, field]) => field.actions.includes("filter"))
     .map(([field]) => field);
@@ -104,9 +82,8 @@ function Parameters(props: ParametersProps) {
     .filter(([, field]) => field.actions.includes("list"))
     .map(([field]) => field);
 
-  // TODO: Bad use of useMemo apparently
-  // but hey it works
-  useMemo(() => {
+  // Clear parameters when project changes
+  useLayoutEffect(() => {
     setFilterList([]);
     setSummariseList([]);
     setIncludeList([]);
@@ -426,9 +403,8 @@ function Results(props: ResultsProps) {
 function Data(props: DataProps) {
   const [searchParameters, setSearchParameters] = useState("");
 
-  // TODO: Bad use of useMemo apparently
-  // but hey it works
-  useMemo(() => {
+  // Clear parameters when project changes
+  useLayoutEffect(() => {
     setSearchParameters("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
@@ -509,9 +485,8 @@ function App(props: OnyxProps) {
     new Map<string, string>()
   );
 
-  // TODO: Bad use of useMemo apparently
-  // but hey it works
-  useMemo(() => {
+  // Fetch project list and type lookups
+  useLayoutEffect(() => {
     // Fetch project list
     props
       .httpPathHandler("projects")
