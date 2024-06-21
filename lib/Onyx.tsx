@@ -426,6 +426,7 @@ function Data(props: DataProps) {
         .httpPathHandler(`projects/${props.project}/?${searchParameters}`)
         .then((response) => response.json());
     },
+    enabled: !!props.project,
   });
 
   const handleSearch = (search: string) => {
@@ -596,17 +597,15 @@ function App(props: OnyxProps) {
         handleThemeChange={toggleTheme}
         guiVersion={VERSION}
       />
-      {project && (
-        <Data
-          {...props}
-          project={project}
-          projectFields={projectFields}
-          typeLookups={typeLookups}
-          fieldDescriptions={fieldDescriptions}
-          lookupDescriptions={lookupDescriptions}
-          darkMode={darkMode}
-        />
-      )}
+      <Data
+        {...props}
+        project={project}
+        projectFields={projectFields}
+        typeLookups={typeLookups}
+        fieldDescriptions={fieldDescriptions}
+        lookupDescriptions={lookupDescriptions}
+        darkMode={darkMode}
+      />
       <div></div>
     </Stack>
   );
