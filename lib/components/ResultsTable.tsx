@@ -4,9 +4,11 @@ import Button from "react-bootstrap/Button";
 
 const ResultsTable = memo(function ResultsTable({
   data,
+  titles,
   s3PathHandler,
 }: {
   data: Record<string, string | number | boolean | null>[];
+  titles?: Map<string, string>;
   s3PathHandler?: (path: string) => void;
 }) {
   const headers = () => {
@@ -26,7 +28,9 @@ const ResultsTable = memo(function ResultsTable({
       <thead>
         <tr>
           {headers().map((header) => (
-            <th key={header}>{header}</th>
+            <th key={header} title={titles?.get(header)}>
+              {header}
+            </th>
           ))}
         </tr>
       </thead>

@@ -69,7 +69,7 @@ interface SearchProps extends DataProps {
 interface ResultsProps extends SearchProps {
   resultPending: boolean;
   resultError: Error | null;
-  resultData: ResultData | null;
+  resultData: ResultData;
 }
 
 function Parameters(props: SearchProps) {
@@ -320,10 +320,6 @@ function Parameters(props: SearchProps) {
   );
 }
 
-const getParams = (path: string) => {
-  return path.split("?", 2)[1];
-};
-
 function Results(props: ResultsProps) {
   const csvConfig = mkConfig({
     filename: props.project,
@@ -331,7 +327,7 @@ function Results(props: ResultsProps) {
   });
 
   const handleExportToCSV = () => {
-    const csv = generateCsv(csvConfig)(props.resultData?.data || []);
+    const csv = generateCsv(csvConfig)(props.resultData.data || []);
 
     if (props.fileWriter) {
       props.fileWriter(props.project + ".csv", asString(csv));
@@ -358,8 +354,8 @@ function Results(props: ResultsProps) {
           <LoadingAlert />
         ) : props.resultError ? (
           <Alert variant="danger">Error: {props.resultError.message}</Alert>
-        ) : props.resultData?.messages ? (
-          Object.entries(props.resultData?.messages).map(([key, value]) =>
+        ) : props.resultData.messages ? (
+          Object.entries(props.resultData.messages).map(([key, value]) =>
             Array.isArray(value) ? (
               value.map((v: string) => (
                 <Alert key={key} variant="danger">
@@ -374,7 +370,8 @@ function Results(props: ResultsProps) {
           )
         ) : (
           <ResultsTable
-            data={props.resultData?.data || []}
+            data={props.resultData.data || []}
+            titles={props.fieldDescriptions}
             s3PathHandler={props.s3PathHandler}
           />
         )}
@@ -382,19 +379,23 @@ function Results(props: ResultsProps) {
       <Card.Footer>
         <Pagination size="sm">
           <Pagination.Prev
-            disabled={!props.resultData?.previous}
+            disabled={!props.resultData.previous}
             onClick={() => {
-              props.handleSearch(getParams(props.resultData?.previous || ""));
+              props.handleSearch(
+                props.resultData.previous?.split("?", 2)[1] || ""
+              );
             }}
           />
           <Pagination.Item>
-            Showing {props.resultData?.data ? props.resultData.data.length : 0}{" "}
+            Showing {props.resultData.data ? props.resultData.data.length : 0}{" "}
             results
           </Pagination.Item>
           <Pagination.Next
-            disabled={!props.resultData?.next}
+            disabled={!props.resultData.next}
             onClick={() => {
-              props.handleSearch(getParams(props.resultData?.next || ""));
+              props.handleSearch(
+                props.resultData?.next?.split("?", 2)[1] || ""
+              );
             }}
           />
         </Pagination>
@@ -416,7 +417,7 @@ function Data(props: DataProps) {
   const {
     isFetching: resultPending,
     error: resultError,
-    data: resultData = [],
+    data: resultData = {},
     refetch: refetchResults,
   } = useQuery({
     queryKey: ["results", props.project, searchParameters],
