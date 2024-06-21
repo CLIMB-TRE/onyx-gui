@@ -46,10 +46,14 @@ type ResultData = {
   messages?: Record<string, string | string[]>;
 };
 
-interface DataProps {
+interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
   s3PathHandler?: (path: string) => void;
   fileWriter?: (path: string, content: string) => void;
+  extVersion?: string;
+}
+
+interface DataProps extends OnyxProps {
   project: string;
   projectFields: Map<string, ProjectField>;
   typeLookups: Map<string, string[]>;
@@ -58,18 +62,17 @@ interface DataProps {
   darkMode: boolean;
 }
 
-interface ParametersProps extends DataProps {
-  setParameters: (params: string) => void;
+interface SearchProps extends DataProps {
+  handleSearch: (params: string) => void;
 }
 
-interface ResultsProps extends DataProps {
-  setParameters: (params: string) => void;
+interface ResultsProps extends SearchProps {
   resultPending: boolean;
   resultError: Error | null;
   resultData: ResultData | null;
 }
 
-function Parameters(props: ParametersProps) {
+function Parameters(props: SearchProps) {
   const [filterList, setFilterList] = useState(new Array<FilterField>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
   const [includeList, setIncludeList] = useState(new Array<string>());
@@ -204,7 +207,7 @@ function Parameters(props: ParametersProps) {
             .map((search) => ["search", search])
         )
     );
-    props.setParameters(params.toString());
+    props.handleSearch(params.toString());
   };
 
   return (
@@ -381,7 +384,7 @@ function Results(props: ResultsProps) {
           <Pagination.Prev
             disabled={!props.resultData?.previous}
             onClick={() => {
-              props.setParameters(getParams(props.resultData?.previous || ""));
+              props.handleSearch(getParams(props.resultData?.previous || ""));
             }}
           />
           <Pagination.Item>
@@ -391,7 +394,7 @@ function Results(props: ResultsProps) {
           <Pagination.Next
             disabled={!props.resultData?.next}
             onClick={() => {
-              props.setParameters(getParams(props.resultData?.next || ""));
+              props.handleSearch(getParams(props.resultData?.next || ""));
             }}
           />
         </Pagination>
@@ -413,7 +416,8 @@ function Data(props: DataProps) {
   const {
     isFetching: resultPending,
     error: resultError,
-    data: resultData,
+    data: resultData = [],
+    refetch: refetchResults,
   } = useQuery({
     queryKey: ["results", props.project, searchParameters],
     queryFn: async () => {
@@ -423,13 +427,24 @@ function Data(props: DataProps) {
     },
   });
 
+  const handleSearch = (search: string) => {
+    // If search parameters have not changed, a refetch can be triggered
+    // But only if the previous fetch has completed
+    if (searchParameters === search && !resultPending) {
+      refetchResults();
+    }
+    // Otherwise, set the new search parameters
+    // This will trigger a new fetch
+    setSearchParameters(search);
+  };
+
   return (
     <Container fluid className="g-2">
       <Stack gap={2}>
-        <Parameters {...props} setParameters={setSearchParameters} />
+        <Parameters {...props} handleSearch={handleSearch} />
         <Results
           {...props}
-          setParameters={setSearchParameters}
+          handleSearch={handleSearch}
           resultPending={resultPending}
           resultError={resultError}
           resultData={resultData}
@@ -459,19 +474,12 @@ function flattenFields(fields: Record<string, ProjectField>) {
   return flatFields;
 }
 
-interface OnyxProps {
-  httpPathHandler: (path: string) => Promise<Response>;
-  s3PathHandler?: (path: string) => void;
-  fileWriter?: (path: string, content: string) => void;
-  extVersion?: string;
-}
-
 function App(props: OnyxProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [project, setProject] = useState("");
 
   // Fetch the project list
-  const { data: projects } = useQuery({
+  const { data: projects = [] } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
       return props
@@ -480,7 +488,7 @@ function App(props: OnyxProps) {
         .then((data) => {
           return [
             ...new Set(
-              data["data"].map(
+              data.data.map(
                 (project: Record<string, unknown>) => project.project
               )
             ),
@@ -497,7 +505,7 @@ function App(props: OnyxProps) {
   }, [project, projects]);
 
   // Fetch types and their lookups
-  const { data: typeLookups } = useQuery({
+  const { data: typeLookups = new Map<string, string[]>() } = useQuery({
     queryKey: ["types"],
     queryFn: async () => {
       return props
@@ -505,7 +513,7 @@ function App(props: OnyxProps) {
         .then((response) => response.json())
         .then((data) => {
           return new Map(
-            data["data"].map((type: Record<string, unknown>) => [
+            data.data.map((type: Record<string, unknown>) => [
               type.type,
               type.lookups,
             ])
@@ -515,7 +523,7 @@ function App(props: OnyxProps) {
   });
 
   // Fetch lookup descriptions
-  const { data: lookupDescriptions } = useQuery({
+  const { data: lookupDescriptions = new Map<string, string>() } = useQuery({
     queryKey: ["lookups"],
     queryFn: async () => {
       return props
@@ -523,7 +531,7 @@ function App(props: OnyxProps) {
         .then((response) => response.json())
         .then((data) => {
           return new Map(
-            data["data"].map((lookup: Record<string, unknown>) => [
+            data.data.map((lookup: Record<string, unknown>) => [
               lookup.lookup,
               lookup.description,
             ])
@@ -546,8 +554,8 @@ function App(props: OnyxProps) {
         .httpPathHandler("projects/" + project + "/fields")
         .then((response) => response.json())
         .then((data) => {
-          const fields = flattenFields(data["data"]["fields"]);
-          const projectName = data["data"]["name"];
+          const fields = flattenFields(data.data.fields);
+          const projectName = data.data.name;
           const projectFields = new Map(
             Object.keys(fields).map((field) => [
               field,
@@ -582,7 +590,7 @@ function App(props: OnyxProps) {
       <Header
         {...props}
         projectName={projectName}
-        projectList={projects || []}
+        projectList={projects}
         handleProjectChange={setProject}
         handleThemeChange={toggleTheme}
         guiVersion={VERSION}
@@ -592,9 +600,9 @@ function App(props: OnyxProps) {
           {...props}
           project={project}
           projectFields={projectFields}
-          typeLookups={typeLookups || new Map<string, string[]>()}
+          typeLookups={typeLookups}
           fieldDescriptions={fieldDescriptions}
-          lookupDescriptions={lookupDescriptions || new Map<string, string>()}
+          lookupDescriptions={lookupDescriptions}
           darkMode={darkMode}
         />
       )}

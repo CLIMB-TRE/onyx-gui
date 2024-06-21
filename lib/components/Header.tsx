@@ -44,32 +44,17 @@ interface HeaderProps {
 
 function Header(props: HeaderProps) {
   // Fetch user profile
-  const {
-    isPending: profilePending,
-    error: profileError,
-    data: profileData,
-  } = useQuery({
+  const { data: { username, site } = { username: "", site: "" } } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       return props
         .httpPathHandler("accounts/profile")
-        .then((response) => response.json());
+        .then((response) => response.json())
+        .then((data) => {
+          return { username: data.data.username, site: data.data.site };
+        });
     },
   });
-
-  // Handle display of user profile
-  let username;
-  let site;
-  if (profilePending) {
-    username = "Loading...";
-    site = "Loading...";
-  } else if (profileError) {
-    username = "Error";
-    site = "Error";
-  } else {
-    username = profileData["data"].username;
-    site = profileData["data"].site;
-  }
 
   return (
     <Navbar bg="dark" variant="dark" collapseOnSelect expand="sm">
