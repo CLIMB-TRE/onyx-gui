@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect, useEffect } from "react";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
@@ -246,7 +246,7 @@ function Parameters(props: ParametersProps) {
                 </Button>
               </Stack>
             </Card.Header>
-            <Card.Body className="panel">
+            <Container fluid className="panel p-2">
               <Stack gap={1}>
                 {filterList.map((filter, index) => (
                   <div key={index}>
@@ -273,7 +273,7 @@ function Parameters(props: ParametersProps) {
                   </div>
                 ))}
               </Stack>
-            </Card.Body>
+            </Container>
           </Card>
         </Col>
         {[
@@ -299,7 +299,7 @@ function Parameters(props: ParametersProps) {
           <Col key={title} md={4} xl={2}>
             <Card>
               <Card.Header>{title}</Card.Header>
-              <Card.Body className="panel">
+              <Container fluid className="panel p-2">
                 <MultiDropdown
                   options={options}
                   titles={props.fieldDescriptions}
@@ -308,7 +308,7 @@ function Parameters(props: ParametersProps) {
                   onChange={onChange}
                   darkMode={props.darkMode}
                 />
-              </Card.Body>
+              </Container>
             </Card>
           </Col>
         ))}
@@ -350,7 +350,7 @@ function Results(props: ResultsProps) {
           Export Page to CSV
         </Button>
       </Card.Header>
-      <Card.Body className="table-panel">
+      <Container fluid className="table-panel p-2">
         {props.resultPending ? (
           <LoadingAlert />
         ) : props.resultError ? (
@@ -375,7 +375,7 @@ function Results(props: ResultsProps) {
             s3PathHandler={props.s3PathHandler}
           />
         )}
-      </Card.Body>
+      </Container>
       <Card.Footer>
         <Pagination size="sm">
           <Pagination.Prev
@@ -469,107 +469,107 @@ interface OnyxProps {
 function App(props: OnyxProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [project, setProject] = useState("");
-  const [projectName, setProjectName] = useState("");
-  const [projectList, setProjectList] = useState(new Array<string>());
-  const [projectFields, setProjectFields] = useState(
-    new Map<string, ProjectField>()
-  );
-  const [typeLookups, setTypeLookups] = useState(new Map<string, string[]>());
-  const fieldDescriptions = new Map(
-    Array.from(projectFields.entries()).map(([field, options]) => [
-      field,
-      options.description,
-    ])
-  );
-  const [lookupDescriptions, setLookupDescriptions] = useState(
-    new Map<string, string>()
-  );
 
-  // Fetch project list and type lookups
-  useLayoutEffect(() => {
-    // Fetch project list
-    props
-      .httpPathHandler("projects")
-      .then((response) => response.json())
-      .then((data) => {
-        const projects = [
-          ...new Set(
-            data["data"].map(
-              (project: Record<string, unknown>) => project.project
-            )
-          ),
-        ] as string[];
-        setProjectList(projects);
-        if (projects.length > 0) {
-          handleProjectChange(projects[0]);
-        }
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+  // Fetch the project list
+  const { data: projects } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects")
+        .then((response) => response.json())
+        .then((data) => {
+          return [
+            ...new Set(
+              data["data"].map(
+                (project: Record<string, unknown>) => project.project
+              )
+            ),
+          ] as string[];
+        });
+    },
+  });
 
-    // Fetch type lookups and lookup descriptions
-    props
-      .httpPathHandler("projects/types")
-      .then((response) => response.json())
-      .then((typeData) => {
-        props
-          .httpPathHandler("projects/lookups")
-          .then((response) => response.json())
-          .then((lookupData) => {
-            const lookups = new Map(
-              typeData["data"].map((type: Record<string, unknown>) => [
-                type.type,
-                type.lookups,
-              ])
-            ) as Map<string, string[]>;
-            const descriptions = new Map(
-              lookupData["data"].map((lookup: Record<string, unknown>) => [
-                lookup.lookup,
-                lookup.description,
-              ])
-            ) as Map<string, string>;
-            setTypeLookups(lookups);
-            setLookupDescriptions(descriptions);
-          })
-          .catch((err) => {
-            console.log(err.message);
-          });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Set the first project as the default
+  useEffect(() => {
+    if (!project && projects) {
+      setProject(projects[0]);
+    }
+  }, [project, projects]);
 
-  const handleProjectChange = (p: string) => {
-    // Set project
-    setProject(p);
+  // Fetch types and their lookups
+  const { data: typeLookups } = useQuery({
+    queryKey: ["types"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects/types")
+        .then((response) => response.json())
+        .then((data) => {
+          return new Map(
+            data["data"].map((type: Record<string, unknown>) => [
+              type.type,
+              type.lookups,
+            ])
+          ) as Map<string, string[]>;
+        });
+    },
+  });
 
-    // Set project fields
-    props
-      .httpPathHandler("projects/" + p + "/fields")
-      .then((response) => response.json())
-      .then((data) => {
-        const fields = flattenFields(data["data"]["fields"]);
-        const fieldMap = new Map(
-          Object.keys(fields).map((field) => [
-            field,
-            {
-              type: fields[field].type,
-              description: fields[field].description,
-              actions: fields[field].actions,
-              values: fields[field].values,
-            },
-          ])
-        );
-        setProjectName(data["data"]["name"]);
-        setProjectFields(fieldMap);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-  };
+  // Fetch lookup descriptions
+  const { data: lookupDescriptions } = useQuery({
+    queryKey: ["lookups"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects/lookups")
+        .then((response) => response.json())
+        .then((data) => {
+          return new Map(
+            data["data"].map((lookup: Record<string, unknown>) => [
+              lookup.lookup,
+              lookup.description,
+            ])
+          ) as Map<string, string>;
+        });
+    },
+  });
+
+  // Fetch project information
+  const {
+    data: { projectName, projectFields, fieldDescriptions } = {
+      projectName: "",
+      projectFields: new Map<string, ProjectField>(),
+      fieldDescriptions: new Map<string, string>(),
+    },
+  } = useQuery({
+    queryKey: ["fields", project],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects/" + project + "/fields")
+        .then((response) => response.json())
+        .then((data) => {
+          const fields = flattenFields(data["data"]["fields"]);
+          const projectName = data["data"]["name"];
+          const projectFields = new Map(
+            Object.keys(fields).map((field) => [
+              field,
+              {
+                type: fields[field].type,
+                description: fields[field].description,
+                actions: fields[field].actions,
+                values: fields[field].values,
+              },
+            ])
+          );
+          const fieldDescriptions = new Map(
+            Array.from(projectFields.entries()).map(([field, options]) => [
+              field,
+              options.description,
+            ])
+          );
+          return { projectName, projectFields, fieldDescriptions };
+        });
+    },
+    enabled: !!project,
+  });
 
   const toggleTheme = () => {
     const htmlElement = document.querySelector("html");
@@ -582,8 +582,8 @@ function App(props: OnyxProps) {
       <Header
         {...props}
         projectName={projectName}
-        projectList={projectList}
-        handleProjectChange={handleProjectChange}
+        projectList={projects || []}
+        handleProjectChange={setProject}
         handleThemeChange={toggleTheme}
         guiVersion={VERSION}
       />
@@ -592,9 +592,9 @@ function App(props: OnyxProps) {
           {...props}
           project={project}
           projectFields={projectFields}
-          typeLookups={typeLookups}
+          typeLookups={typeLookups || new Map<string, string[]>()}
           fieldDescriptions={fieldDescriptions}
-          lookupDescriptions={lookupDescriptions}
+          lookupDescriptions={lookupDescriptions || new Map<string, string>()}
           darkMode={darkMode}
         />
       )}

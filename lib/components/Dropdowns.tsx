@@ -1,3 +1,4 @@
+import React from "react";
 import Select, { components, OptionProps } from "react-select";
 import getStyles from "./styles";
 

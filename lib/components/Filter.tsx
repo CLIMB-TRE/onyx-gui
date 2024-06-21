@@ -1,4 +1,4 @@
-import { ChangeEventHandler } from "react";
+import React from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -14,9 +14,11 @@ interface FilterProps {
   typeLookups: Map<string, string[]>;
   fieldDescriptions: Map<string, string>;
   lookupDescriptions: Map<string, string>;
-  handleFieldChange: ChangeEventHandler<HTMLSelectElement>;
-  handleLookupChange: ChangeEventHandler<HTMLSelectElement>;
-  handleValueChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
+  handleFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleLookupChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleValueChange: React.ChangeEventHandler<
+    HTMLInputElement | HTMLSelectElement
+  >;
   handleFilterAdd: () => void;
   handleFilterRemove: () => void;
   darkMode: boolean;
