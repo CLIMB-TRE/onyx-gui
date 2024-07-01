@@ -1,4 +1,5 @@
-import React, { ChangeEventHandler, useState, useEffect } from "react";
+import React, { useState, useLayoutEffect, useEffect } from "react";
+import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -8,184 +9,42 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
 import { mkConfig, generateCsv, download, asString } from "export-to-csv";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
 import Header from "./components/Header";
-import { Dropdown, MultiDropdown } from "./components/Dropdowns";
-import { Input, MultiInput } from "./components/Inputs";
+import { MultiDropdown } from "./components/Dropdowns";
+import Filter from "./components/Filter";
 import ResultsTable from "./components/ResultsTable";
+import LoadingAlert from "./components/LoadingAlert";
 
 import "./Onyx.css";
 import "./bootstrap.css";
 
 const VERSION = "0.9.1";
 
-interface Profile {
-  username: string;
-  site: string;
-}
-
-interface ProjectField {
+type ProjectField = {
   type: string;
   description: string;
   actions: string[];
   values?: string[];
   fields?: Record<string, ProjectField>;
-}
+};
 
-interface FilterField {
+type FilterField = {
   field: string;
   lookup: string;
   value: string;
-}
+};
 
-function Filter({
-  filter,
-  fieldList,
-  projectFields,
-  typeLookups,
-  fieldDescriptions,
-  lookupDescriptions,
-  handleFieldChange,
-  handleLookupChange,
-  handleValueChange,
-  handleFilterAdd,
-  handleFilterRemove,
-  darkMode,
-}: {
-  filter: FilterField;
-  fieldList: string[];
-  projectFields: Map<string, ProjectField>;
-  typeLookups: Map<string, string[]>;
-  fieldDescriptions: Map<string, string>;
-  lookupDescriptions: Map<string, string>;
-  handleFieldChange: ChangeEventHandler<HTMLSelectElement>;
-  handleLookupChange: ChangeEventHandler<HTMLSelectElement>;
-  handleValueChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
-  handleFilterAdd: () => void;
-  handleFilterRemove: () => void;
-  darkMode: boolean;
-}) {
-  let f: JSX.Element;
-  const getValueList = (v: string) => {
-    return v ? v.split(",") : [];
-  };
-
-  if (filter.lookup === "isnull") {
-    f = (
-      <Dropdown
-        options={["true", "false"]}
-        value={filter.value}
-        onChange={handleValueChange}
-        darkMode={darkMode}
-      />
-    );
-  } else if (projectFields.get(filter.field)?.type === "choice") {
-    if (filter.lookup.endsWith("in")) {
-      f = (
-        <MultiDropdown
-          options={projectFields.get(filter.field)?.values || []}
-          value={getValueList(filter.value)}
-          onChange={handleValueChange}
-          darkMode={darkMode}
-        />
-      );
-    } else {
-      f = (
-        <Dropdown
-          options={projectFields.get(filter.field)?.values || []}
-          value={filter.value}
-          onChange={handleValueChange}
-          darkMode={darkMode}
-        />
-      );
-    }
-  } else if (filter.lookup.endsWith("in")) {
-    f = (
-      <MultiInput
-        value={getValueList(filter.value)}
-        onChange={handleValueChange}
-        darkMode={darkMode}
-      />
-    );
-  } else if (filter.lookup.endsWith("range")) {
-    f = (
-      <MultiInput
-        value={getValueList(filter.value)}
-        limit={2}
-        onChange={handleValueChange}
-        darkMode={darkMode}
-      />
-    );
-  } else if (projectFields.get(filter.field)?.type === "bool") {
-    f = (
-      <Dropdown
-        options={["true", "false"]}
-        value={filter.value}
-        onChange={handleValueChange}
-        darkMode={darkMode}
-      />
-    );
-  } else {
-    f = <Input value={filter.value} onChange={handleValueChange} />;
-  }
-  return (
-    <Stack direction="horizontal" gap={1}>
-      <Container fluid className="g-0">
-        <Row className="g-1">
-          <Col sm={4}>
-            <Dropdown
-              options={fieldList}
-              titles={fieldDescriptions}
-              value={filter.field}
-              placeholder="Select field..."
-              onChange={handleFieldChange}
-              darkMode={darkMode}
-            />
-          </Col>
-          <Col sm={4}>
-            <Dropdown
-              options={
-                typeLookups.get(projectFields.get(filter.field)?.type || "") ||
-                []
-              }
-              titles={lookupDescriptions}
-              value={filter.lookup}
-              placeholder="Select lookup..."
-              onChange={handleLookupChange}
-              darkMode={darkMode}
-            />
-          </Col>
-          <Col sm={4}>{f}</Col>
-        </Row>
-      </Container>
-      <Button variant="primary" onClick={handleFilterAdd}>
-        +
-      </Button>
-      <Button variant="danger" onClick={handleFilterRemove}>
-        -
-      </Button>
-    </Stack>
-  );
-}
-
-function flattenFields(fields: Record<string, ProjectField>) {
-  const flatFields: Record<string, ProjectField> = {};
-
-  // Loop over object and flatten nested fields
-  const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
-    for (const [field, fieldInfo] of Object.entries(obj)) {
-      flatFields[prefix + field] = fieldInfo;
-      if (fieldInfo.type === "relation") {
-        flatten(
-          fieldInfo.fields as Record<string, ProjectField>,
-          prefix + field + "__"
-        );
-      }
-    }
-  };
-
-  flatten(fields);
-  return flatFields;
-}
+type ResultData = {
+  next?: string;
+  previous?: string;
+  data?: Record<string, string | number | boolean | null>[];
+  messages?: Record<string, string | string[]>;
+};
 
 interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
@@ -194,10 +53,7 @@ interface OnyxProps {
   extVersion?: string;
 }
 
-interface DataProps {
-  httpPathHandler: (path: string) => Promise<Response>;
-  s3PathHandler?: (path: string) => void;
-  fileWriter?: (path: string, content: string) => void;
+interface DataProps extends OnyxProps {
   project: string;
   projectFields: Map<string, ProjectField>;
   typeLookups: Map<string, string[]>;
@@ -206,17 +62,22 @@ interface DataProps {
   darkMode: boolean;
 }
 
-function Data(props: DataProps) {
+interface SearchProps extends DataProps {
+  handleSearch: (params: string) => void;
+}
+
+interface ResultsProps extends SearchProps {
+  resultPending: boolean;
+  resultError: Error | null;
+  resultData: ResultData;
+}
+
+function Parameters(props: SearchProps) {
   const [filterList, setFilterList] = useState(new Array<FilterField>());
   const [summariseList, setSummariseList] = useState(new Array<string>());
   const [includeList, setIncludeList] = useState(new Array<string>());
   const [excludeList, setExcludeList] = useState(new Array<string>());
   const [searchInput, setSearchInput] = useState("");
-  const [resultData, setResultData] = useState([]);
-  const resultCount = resultData.length;
-  const [nextPage, setNextPage] = useState("");
-  const [previousPage, setPreviousPage] = useState("");
-  const [errors, setErrors] = useState(new Map<string, string | string[]>());
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, field]) => field.actions.includes("filter"))
     .map(([field]) => field);
@@ -224,14 +85,13 @@ function Data(props: DataProps) {
     .filter(([, field]) => field.actions.includes("list"))
     .map(([field]) => field);
 
-  useEffect(() => {
+  // Clear parameters when project changes
+  useLayoutEffect(() => {
     setFilterList([]);
+    setSummariseList([]);
     setIncludeList([]);
     setExcludeList([]);
-    setSummariseList([]);
     setSearchInput("");
-    setResultData([]);
-    handleSearch("projects/" + props.project);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
@@ -241,18 +101,14 @@ function Data(props: DataProps) {
   ) => {
     const list = [...filterList];
     const field = props.projectFields.get(e.target.value);
-
     list[index].field = e.target.value;
     list[index].lookup = props.typeLookups.get(field?.type || "")?.[0] || "";
 
-    if (field?.type === "bool" || list[index].lookup === "isnull") {
+    if (list[index].lookup === "isnull") {
       list[index].value = "true";
-    } else if (field?.type === "choice") {
-      list[index].value = field?.values?.[0] || "";
     } else {
       list[index].value = "";
     }
-
     setFilterList(list);
   };
 
@@ -261,18 +117,13 @@ function Data(props: DataProps) {
     index: number
   ) => {
     const list = [...filterList];
-    const field = props.projectFields.get(list[index].field);
-
     list[index].lookup = e.target.value;
 
-    if (field?.type === "bool" || list[index].lookup === "isnull") {
+    if (list[index].lookup === "isnull") {
       list[index].value = "true";
-    } else if (field?.type === "choice") {
-      list[index].value = field?.values?.[0] || "";
     } else {
       list[index].value = "";
     }
-
     setFilterList(list);
   };
 
@@ -282,7 +133,6 @@ function Data(props: DataProps) {
   ) => {
     const list = [...filterList];
     list[index].value = e.target.value;
-
     setFilterList(list);
   };
 
@@ -320,92 +170,159 @@ function Data(props: DataProps) {
     setExcludeList(e.target.value ? e.target.value.split(",") : []);
   };
 
-  const handleSearch = (search?: string) => {
-    if (search === undefined) {
-      const params = new URLSearchParams(
-        filterList
-          .filter((filter) => filter.field)
-          .map((filter) => {
-            if (filter.lookup) {
-              return [filter.field + "__" + filter.lookup, filter.value];
-            } else {
-              return [filter.field, filter.value];
-            }
-          })
-          .concat(
-            includeList
-              .filter((include) => include)
-              .map((field) => ["include", field])
-          )
-          .concat(
-            excludeList
-              .filter((exclude) => exclude)
-              .map((field) => ["exclude", field])
-          )
-          .concat(
-            summariseList
-              .filter((summarise) => summarise)
-              .map((field) => ["summarise", field])
-          )
-          .concat(
-            [searchInput]
-              .filter((search) => search)
-              .map((search) => ["search", search])
-          )
-      );
-      search = "projects/" + props.project + "?" + params;
-    }
-
-    // Fetch search results
-    props
-      .httpPathHandler(search)
-      .then((response) => {
-        if (!response.ok) {
-          response.json().then((data) => {
-            setResultData([]);
-            setNextPage("");
-            setPreviousPage("");
-            setErrors(new Map(Object.entries(data["messages"])));
-          });
-        } else {
-          response.json().then((data) => {
-            setResultData(data["data"]);
-            setErrors(new Map<string, string | string[]>());
-
-            const getPath = (path: string) => {
-              return path.split("//")[1].split("/").slice(1).join("/");
-            };
-
-            let next;
-            if (data["next"]) {
-              next = getPath(data["next"]);
-            } else {
-              next = "";
-            }
-            setNextPage(next);
-
-            let previous;
-            if (data["previous"]) {
-              previous = getPath(data["previous"]);
-            } else {
-              previous = "";
-            }
-            setPreviousPage(previous);
-          });
-        }
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+  const handleParameters = () => {
+    const params = new URLSearchParams(
+      filterList
+        .filter((filter) => filter.field)
+        .map((filter) => {
+          if (filter.lookup) {
+            return [filter.field + "__" + filter.lookup, filter.value];
+          } else {
+            return [filter.field, filter.value];
+          }
+        })
+        .concat(
+          includeList
+            .filter((include) => include)
+            .map((field) => ["include", field])
+        )
+        .concat(
+          excludeList
+            .filter((exclude) => exclude)
+            .map((field) => ["exclude", field])
+        )
+        .concat(
+          summariseList
+            .filter((summarise) => summarise)
+            .map((field) => ["summarise", field])
+        )
+        .concat(
+          [searchInput]
+            .filter((search) => search)
+            .map((search) => ["search", search])
+        )
+    );
+    props.handleSearch(params.toString());
   };
 
+  return (
+    <>
+      <Stack direction="horizontal" gap={2}>
+        <Form.Control
+          value={searchInput}
+          placeholder="Search records..."
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyUp={(event) => {
+            if (event.key === "Enter") {
+              handleParameters();
+            }
+          }}
+        />
+        <Button
+          variant="primary"
+          disabled={!props.project}
+          onClick={handleParameters}
+        >
+          Search
+        </Button>
+      </Stack>
+      <Row className="g-2">
+        <Col xl={6}>
+          <Card>
+            <Card.Header>
+              <span>Filter</span>
+              <Stack direction="horizontal" gap={1} className="float-end">
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => handleFilterAdd(filterList.length)}
+                >
+                  Add Filter
+                </Button>
+                <Button size="sm" variant="danger" onClick={handleFilterClear}>
+                  Clear Filters
+                </Button>
+              </Stack>
+            </Card.Header>
+            <Container fluid className="panel p-2">
+              <Stack gap={1}>
+                {filterList.map((filter, index) => (
+                  <div key={index}>
+                    <Filter
+                      filter={filter}
+                      fieldList={filterFieldOptions}
+                      projectFields={props.projectFields}
+                      typeLookups={props.typeLookups}
+                      fieldDescriptions={props.fieldDescriptions}
+                      lookupDescriptions={props.lookupDescriptions}
+                      handleFieldChange={(e) =>
+                        handleFilterFieldChange(e, index)
+                      }
+                      handleLookupChange={(e) =>
+                        handleFilterLookupChange(e, index)
+                      }
+                      handleValueChange={(e) =>
+                        handleFilterValueChange(e, index)
+                      }
+                      handleFilterAdd={() => handleFilterAdd(index + 1)}
+                      handleFilterRemove={() => handleFilterRemove(index)}
+                      darkMode={props.darkMode}
+                    />
+                  </div>
+                ))}
+              </Stack>
+            </Container>
+          </Card>
+        </Col>
+        {[
+          {
+            title: "Summarise",
+            options: filterFieldOptions,
+            value: summariseList,
+            onChange: handleSummariseChange,
+          },
+          {
+            title: "Include",
+            options: listFieldOptions,
+            value: includeList,
+            onChange: handleIncludeChange,
+          },
+          {
+            title: "Exclude",
+            options: listFieldOptions,
+            value: excludeList,
+            onChange: handleExcludeChange,
+          },
+        ].map(({ title, options, value, onChange }) => (
+          <Col key={title} md={4} xl={2}>
+            <Card>
+              <Card.Header>{title}</Card.Header>
+              <Container fluid className="panel p-2">
+                <MultiDropdown
+                  options={options}
+                  titles={props.fieldDescriptions}
+                  value={value}
+                  placeholder="Select fields..."
+                  onChange={onChange}
+                  darkMode={props.darkMode}
+                />
+              </Container>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </>
+  );
+}
+
+function Results(props: ResultsProps) {
   const csvConfig = mkConfig({
     filename: props.project,
     useKeysAsHeaders: true,
   });
 
   const handleExportToCSV = () => {
-    const csv = generateCsv(csvConfig)(resultData);
+    const csv = generateCsv(csvConfig)(props.resultData.data || []);
 
     if (props.fileWriter) {
       props.fileWriter(props.project + ".csv", asString(csv));
@@ -415,291 +332,250 @@ function Data(props: DataProps) {
   };
 
   return (
-    <Container fluid>
-      <Stack gap={2}>
-        <Stack direction="horizontal" gap={2}>
-          <Input
-            value={searchInput}
-            placeholder="Search records..."
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-          <Button
-            variant="primary"
-            disabled={!props.project}
-            onClick={() => handleSearch()}
-          >
-            Search
-          </Button>
-        </Stack>
-        <Row className="g-2">
-          <Col xl={6}>
-            <Card>
-              <Card.Header>
-                <span>Filter</span>
-                <Stack direction="horizontal" gap={1} className="float-end">
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => handleFilterAdd(filterList.length)}
-                  >
-                    Add Filter
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={handleFilterClear}
-                  >
-                    Clear Filters
-                  </Button>
-                </Stack>
-              </Card.Header>
-              <Card.Body className="panel">
-                <Stack gap={1}>
-                  {filterList.map((filter, index) => (
-                    <div key={index}>
-                      <Filter
-                        filter={filter}
-                        fieldList={filterFieldOptions}
-                        projectFields={props.projectFields}
-                        typeLookups={props.typeLookups}
-                        fieldDescriptions={props.fieldDescriptions}
-                        lookupDescriptions={props.lookupDescriptions}
-                        handleFieldChange={(e) =>
-                          handleFilterFieldChange(e, index)
-                        }
-                        handleLookupChange={(e) =>
-                          handleFilterLookupChange(e, index)
-                        }
-                        handleValueChange={(e) =>
-                          handleFilterValueChange(e, index)
-                        }
-                        handleFilterAdd={() => handleFilterAdd(index + 1)}
-                        handleFilterRemove={() => handleFilterRemove(index)}
-                        darkMode={props.darkMode}
-                      />
-                    </div>
-                  ))}
-                </Stack>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4} xl={2}>
-            <Card>
-              <Card.Header>Summarise</Card.Header>
-              <Card.Body className="panel">
-                <MultiDropdown
-                  options={listFieldOptions}
-                  titles={props.fieldDescriptions}
-                  value={summariseList}
-                  placeholder="Select fields..."
-                  onChange={handleSummariseChange}
-                  darkMode={props.darkMode}
-                />
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4} xl={2}>
-            <Card>
-              <Card.Header>Include</Card.Header>
-              <Card.Body className="panel">
-                <MultiDropdown
-                  options={listFieldOptions}
-                  titles={props.fieldDescriptions}
-                  value={includeList}
-                  placeholder="Select fields..."
-                  onChange={handleIncludeChange}
-                  darkMode={props.darkMode}
-                />
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4} xl={2}>
-            <Card>
-              <Card.Header>Exclude</Card.Header>
-              <Card.Body className="panel">
-                <MultiDropdown
-                  options={listFieldOptions}
-                  titles={props.fieldDescriptions}
-                  value={excludeList}
-                  placeholder="Select fields..."
-                  onChange={handleExcludeChange}
-                  darkMode={props.darkMode}
-                />
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-        <Card>
-          <Card.Header>
-            <span>Results</span>
-            <Button
-              className="float-end"
-              size="sm"
-              variant="success"
-              onClick={handleExportToCSV}
-            >
-              Export Page to CSV
-            </Button>
-          </Card.Header>
-          <Card.Body className="table-panel">
-            {errors.size > 0 ? (
-              Array.from(errors.entries()).map(([key, value]) =>
-                Array.isArray(value) ? (
-                  value.map((v: string) => (
-                    <Alert key={key} variant="danger">
-                      {key}: {v}
-                    </Alert>
-                  ))
-                ) : (
-                  <Alert key={key} variant="danger">
-                    {key}: {value}
-                  </Alert>
-                )
-              )
+    <Card>
+      <Card.Header>
+        <span>Results</span>
+        <Button
+          className="float-end"
+          size="sm"
+          variant="success"
+          onClick={handleExportToCSV}
+        >
+          Export Page to CSV
+        </Button>
+      </Card.Header>
+      <Container fluid className="table-panel p-2">
+        {props.resultPending ? (
+          <LoadingAlert />
+        ) : props.resultError ? (
+          <Alert variant="danger">Error: {props.resultError.message}</Alert>
+        ) : props.resultData.messages ? (
+          Object.entries(props.resultData.messages).map(([key, value]) =>
+            Array.isArray(value) ? (
+              value.map((v: string) => (
+                <Alert key={key} variant="danger">
+                  {key}: {v}
+                </Alert>
+              ))
             ) : (
-              <ResultsTable
-                data={resultData}
-                s3PathHandler={props.s3PathHandler}
-              />
-            )}
-          </Card.Body>
-          <Card.Footer>
-            <Pagination size="sm">
-              <Pagination.Prev
-                disabled={!previousPage.length}
-                onClick={() => handleSearch(previousPage)}
-              />
-              <Pagination.Item>Showing {resultCount} results</Pagination.Item>
-              <Pagination.Next
-                disabled={!nextPage.length}
-                onClick={() => handleSearch(nextPage)}
-              />
-            </Pagination>
-          </Card.Footer>
-        </Card>
+              <Alert key={key} variant="danger">
+                {key}: {value}
+              </Alert>
+            )
+          )
+        ) : (
+          <ResultsTable
+            data={props.resultData.data || []}
+            titles={props.fieldDescriptions}
+            s3PathHandler={props.s3PathHandler}
+          />
+        )}
+      </Container>
+      <Card.Footer>
+        <Pagination size="sm">
+          <Pagination.Prev
+            disabled={!props.resultData.previous}
+            onClick={() => {
+              props.handleSearch(
+                props.resultData.previous?.split("?", 2)[1] || ""
+              );
+            }}
+          />
+          <Pagination.Item>
+            {props.resultPending
+              ? "Loading..."
+              : `Showing ${props.resultData.data?.length || 0} results`}
+          </Pagination.Item>
+          <Pagination.Next
+            disabled={!props.resultData.next}
+            onClick={() => {
+              props.handleSearch(
+                props.resultData?.next?.split("?", 2)[1] || ""
+              );
+            }}
+          />
+        </Pagination>
+      </Card.Footer>
+    </Card>
+  );
+}
+
+function Data(props: DataProps) {
+  const [searchParameters, setSearchParameters] = useState("");
+
+  // Clear parameters when project changes
+  useLayoutEffect(() => {
+    setSearchParameters("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.project]);
+
+  // Fetch data, depending on project and search parameters
+  const {
+    isFetching: resultPending,
+    error: resultError,
+    data: resultData = {},
+    refetch: refetchResults,
+  } = useQuery({
+    queryKey: ["results", props.project, searchParameters],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/?${searchParameters}`)
+        .then((response) => response.json());
+    },
+    enabled: !!props.project,
+  });
+
+  const handleSearch = (search: string) => {
+    // If search parameters have not changed, a refetch can be triggered
+    // But only if the previous fetch has completed
+    if (searchParameters === search && !resultPending) {
+      refetchResults();
+    }
+    // Otherwise, set the new search parameters
+    // This will trigger a new fetch
+    setSearchParameters(search);
+  };
+
+  return (
+    <Container fluid className="g-2">
+      <Stack gap={2}>
+        <Parameters {...props} handleSearch={handleSearch} />
+        <Results
+          {...props}
+          handleSearch={setSearchParameters}
+          resultPending={resultPending}
+          resultError={resultError}
+          resultData={resultData}
+        />
       </Stack>
     </Container>
   );
 }
 
-function Onyx(props: OnyxProps) {
-  const [darkMode, setDarkMode] = useState(false);
-  const [profile, setProfile] = useState({} as Profile);
-  const [project, setProject] = useState("");
-  const [projectName, setProjectName] = useState("");
-  const [projectList, setProjectList] = useState(new Array<string>());
-  const [projectFields, setProjectFields] = useState(
-    new Map<string, ProjectField>()
-  );
-  const [typeLookups, setTypeLookups] = useState(new Map<string, string[]>());
-  const fieldDescriptions = new Map(
-    Array.from(projectFields.entries()).map(([field, options]) => [
-      field,
-      options.description,
-    ])
-  );
-  const [lookupDescriptions, setLookupDescriptions] = useState(
-    new Map<string, string>()
-  );
+function flattenFields(fields: Record<string, ProjectField>) {
+  const flatFields: Record<string, ProjectField> = {};
 
-  useEffect(() => {
-    // Fetch user profile
-    props
-      .httpPathHandler("accounts/profile")
-      .then((response) => response.json())
-      .then((data) => {
-        setProfile({
-          username: data["data"].username,
-          site: data["data"].site,
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-
-    // Fetch project list
-    props
-      .httpPathHandler("projects")
-      .then((response) => response.json())
-      .then((data) => {
-        const projects = [
-          ...new Set(
-            data["data"].map(
-              (project: Record<string, unknown>) => project.project
-            )
-          ),
-        ] as string[];
-        setProjectList(projects);
-        if (projects.length > 0) {
-          handleProjectChange(projects[0]);
-        }
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-
-    // Fetch type lookups and lookup descriptions
-    props
-      .httpPathHandler("projects/types")
-      .then((response) => response.json())
-      .then((typeData) => {
-        props
-          .httpPathHandler("projects/lookups")
-          .then((response) => response.json())
-          .then((lookupData) => {
-            const lookups = new Map(
-              typeData["data"].map((type: Record<string, unknown>) => [
-                type.type,
-                type.lookups,
-              ])
-            ) as Map<string, string[]>;
-            const descriptions = new Map(
-              lookupData["data"].map((lookup: Record<string, unknown>) => [
-                lookup.lookup,
-                lookup.description,
-              ])
-            ) as Map<string, string>;
-            setTypeLookups(lookups);
-            setLookupDescriptions(descriptions);
-          })
-          .catch((err) => {
-            console.log(err.message);
-          });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleProjectChange = (p: string) => {
-    // Set project
-    setProject(p);
-
-    // Set project fields
-    props
-      .httpPathHandler("projects/" + p + "/fields")
-      .then((response) => response.json())
-      .then((data) => {
-        const fields = flattenFields(data["data"]["fields"]);
-        const fieldMap = new Map(
-          Object.keys(fields).map((field) => [
-            field,
-            {
-              type: fields[field].type,
-              description: fields[field].description,
-              actions: fields[field].actions,
-              values: fields[field].values,
-            },
-          ])
+  // Loop over object and flatten nested fields
+  const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
+    for (const [field, fieldInfo] of Object.entries(obj)) {
+      flatFields[prefix + field] = fieldInfo;
+      if (fieldInfo.type === "relation") {
+        flatten(
+          fieldInfo.fields as Record<string, ProjectField>,
+          prefix + field + "__"
         );
-        setProjectName(data["data"]["name"]);
-        setProjectFields(fieldMap);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
+      }
+    }
   };
+
+  flatten(fields);
+  return flatFields;
+}
+
+function App(props: OnyxProps) {
+  const [darkMode, setDarkMode] = useState(false);
+  const [project, setProject] = useState("");
+
+  // Fetch the project list
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects")
+        .then((response) => response.json())
+        .then((data) => {
+          return [
+            ...new Set(
+              data.data.map(
+                (project: Record<string, unknown>) => project.project
+              )
+            ),
+          ] as string[];
+        });
+    },
+  });
+
+  // Set the first project as the default
+  useEffect(() => {
+    if (!project && projects) {
+      setProject(projects[0]);
+    }
+  }, [project, projects]);
+
+  // Fetch types and their lookups
+  const { data: typeLookups = new Map<string, string[]>() } = useQuery({
+    queryKey: ["types"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects/types")
+        .then((response) => response.json())
+        .then((data) => {
+          return new Map(
+            data.data.map((type: Record<string, unknown>) => [
+              type.type,
+              type.lookups,
+            ])
+          ) as Map<string, string[]>;
+        });
+    },
+  });
+
+  // Fetch lookup descriptions
+  const { data: lookupDescriptions = new Map<string, string>() } = useQuery({
+    queryKey: ["lookups"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects/lookups")
+        .then((response) => response.json())
+        .then((data) => {
+          return new Map(
+            data.data.map((lookup: Record<string, unknown>) => [
+              lookup.lookup,
+              lookup.description,
+            ])
+          ) as Map<string, string>;
+        });
+    },
+  });
+
+  // Fetch project information
+  const {
+    data: { projectName, projectFields, fieldDescriptions } = {
+      projectName: "",
+      projectFields: new Map<string, ProjectField>(),
+      fieldDescriptions: new Map<string, string>(),
+    },
+  } = useQuery({
+    queryKey: ["fields", project],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects/" + project + "/fields")
+        .then((response) => response.json())
+        .then((data) => {
+          const fields = flattenFields(data.data.fields);
+          const projectName = data.data.name;
+          const projectFields = new Map(
+            Object.keys(fields).map((field) => [
+              field,
+              {
+                type: fields[field].type,
+                description: fields[field].description,
+                actions: fields[field].actions,
+                values: fields[field].values,
+              },
+            ])
+          );
+          const fieldDescriptions = new Map(
+            Array.from(projectFields.entries()).map(([field, options]) => [
+              field,
+              options.description,
+            ])
+          );
+          return { projectName, projectFields, fieldDescriptions };
+        });
+    },
+    enabled: !!project,
+  });
 
   const toggleTheme = () => {
     const htmlElement = document.querySelector("html");
@@ -710,13 +586,12 @@ function Onyx(props: OnyxProps) {
   return (
     <Stack gap={2} className="Onyx">
       <Header
-        profile={profile}
+        {...props}
         projectName={projectName}
-        projectList={projectList}
-        handleProjectChange={handleProjectChange}
+        projectList={projects}
+        handleProjectChange={setProject}
         handleThemeChange={toggleTheme}
         guiVersion={VERSION}
-        extVersion={props.extVersion}
       />
       <Data
         {...props}
@@ -729,6 +604,22 @@ function Onyx(props: OnyxProps) {
       />
       <div></div>
     </Stack>
+  );
+}
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function Onyx(props: OnyxProps) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <App {...props} />
+    </QueryClientProvider>
   );
 }
 
