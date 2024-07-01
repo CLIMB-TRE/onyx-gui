@@ -23,7 +23,7 @@ import LoadingAlert from "./components/LoadingAlert";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.10.0";
+const VERSION = "0.10.1";
 
 type ProjectField = {
   type: string;
@@ -444,7 +444,7 @@ function Data(props: DataProps) {
           {...props}
           handleSearch={setSearchParameters}
           resultPending={resultPending}
-          resultError={resultError}
+          resultError={resultError instanceof Error ? resultError : null}
           resultData={resultData}
         />
       </Stack>
