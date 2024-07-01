@@ -23,7 +23,7 @@ import LoadingAlert from "./components/LoadingAlert";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.9.1";
+const VERSION = "0.10.0";
 
 type ProjectField = {
   type: string;
