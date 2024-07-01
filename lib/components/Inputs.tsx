@@ -1,3 +1,4 @@
+import React from "react";
 import Form from "react-bootstrap/Form";
 import Creatable from "react-select/creatable";
 import getStyles from "./styles";
@@ -16,7 +17,7 @@ function Input({
   return (
     <Form.Control
       value={value}
-      placeholder={placeholder ? placeholder : "Enter value..."}
+      placeholder={placeholder || "Enter value..."}
       onChange={onChange}
     />
   );
@@ -54,7 +55,7 @@ function MultiInput({
       }
       isOptionDisabled={() => !(limit === undefined || value.length < limit)}
       noOptionsMessage={() => "Create a new value..."}
-      placeholder={placeholder ? placeholder : "Enter values..."}
+      placeholder={placeholder || "Enter values..."}
     />
   );
 }

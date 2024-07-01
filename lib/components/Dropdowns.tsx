@@ -1,9 +1,11 @@
+import React from "react";
 import Select, { components, OptionProps } from "react-select";
 import getStyles from "./styles";
 
 type OptionType = { label: string; value: string };
 
 function Dropdown({
+  isClearable = false,
   options,
   titles,
   value,
@@ -11,6 +13,7 @@ function Dropdown({
   onChange,
   darkMode,
 }: {
+  isClearable?: boolean;
   options: string[];
   titles?: Map<string, string>;
   value: string;
@@ -32,6 +35,7 @@ function Dropdown({
 
   return (
     <Select
+      isClearable={isClearable}
       components={{ Option }}
       menuPortalTarget={document.body}
       styles={getStyles(darkMode)}
@@ -48,13 +52,19 @@ function Dropdown({
           : null
       }
       onChange={(e) =>
-        onChange({
-          target: {
-            value: (e as OptionType).value,
-          },
-        } as React.ChangeEvent<HTMLSelectElement>)
+        !e
+          ? onChange({
+              target: {
+                value: "",
+              },
+            } as React.ChangeEvent<HTMLSelectElement>)
+          : onChange({
+              target: {
+                value: (e as OptionType).value,
+              },
+            } as React.ChangeEvent<HTMLSelectElement>)
       }
-      placeholder={placeholder ? placeholder : "Select..."}
+      placeholder={placeholder || "Select value..."}
     />
   );
 }
@@ -109,7 +119,7 @@ function MultiDropdown({
           },
         } as React.ChangeEvent<HTMLSelectElement>)
       }
-      placeholder={placeholder ? placeholder : "Select..."}
+      placeholder={placeholder || "Select values..."}
     />
   );
 }
