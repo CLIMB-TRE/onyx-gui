@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 function HeaderText({ label, value }: { label: string; value: string }) {
   return (
     <Navbar.Text>
-      {label}: <span className="text-light">{value ? value : "None"}</span>
+      {label}: <span className="text-light">{value || "None"}</span>
     </Navbar.Text>
   );
 }

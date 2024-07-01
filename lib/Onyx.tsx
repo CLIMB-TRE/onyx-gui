@@ -104,10 +104,8 @@ function Parameters(props: SearchProps) {
     list[index].field = e.target.value;
     list[index].lookup = props.typeLookups.get(field?.type || "")?.[0] || "";
 
-    if (field?.type === "bool" || list[index].lookup === "isnull") {
+    if (list[index].lookup === "isnull") {
       list[index].value = "true";
-    } else if (field?.type === "choice") {
-      list[index].value = field?.values?.[0] || "";
     } else {
       list[index].value = "";
     }
@@ -119,13 +117,10 @@ function Parameters(props: SearchProps) {
     index: number
   ) => {
     const list = [...filterList];
-    const field = props.projectFields.get(list[index].field);
     list[index].lookup = e.target.value;
 
-    if (field?.type === "bool" || list[index].lookup === "isnull") {
+    if (list[index].lookup === "isnull") {
       list[index].value = "true";
-    } else if (field?.type === "choice") {
-      list[index].value = field?.values?.[0] || "";
     } else {
       list[index].value = "";
     }
@@ -387,8 +382,9 @@ function Results(props: ResultsProps) {
             }}
           />
           <Pagination.Item>
-            Showing {props.resultData.data ? props.resultData.data.length : 0}{" "}
-            results
+            {props.resultPending
+              ? "Loading..."
+              : `Showing ${props.resultData.data?.length || 0} results`}
           </Pagination.Item>
           <Pagination.Next
             disabled={!props.resultData.next}
@@ -446,7 +442,7 @@ function Data(props: DataProps) {
         <Parameters {...props} handleSearch={handleSearch} />
         <Results
           {...props}
-          handleSearch={handleSearch}
+          handleSearch={setSearchParameters}
           resultPending={resultPending}
           resultError={resultError}
           resultData={resultData}
@@ -611,7 +607,13 @@ function App(props: OnyxProps) {
   );
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function Onyx(props: OnyxProps) {
   return (

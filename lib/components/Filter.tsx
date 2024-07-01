@@ -52,6 +52,7 @@ function Filter(props: FilterProps) {
     } else {
       f = (
         <Dropdown
+          isClearable
           options={props.projectFields.get(props.filter.field)?.values || []}
           value={props.filter.value}
           onChange={props.handleValueChange}
@@ -79,6 +80,7 @@ function Filter(props: FilterProps) {
   } else if (props.projectFields.get(props.filter.field)?.type === "bool") {
     f = (
       <Dropdown
+        isClearable
         options={["true", "false"]}
         value={props.filter.value}
         onChange={props.handleValueChange}
