@@ -23,7 +23,7 @@ import LoadingAlert from "./components/LoadingAlert";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.10.1";
+const VERSION = "0.10.2";
 
 type ProjectField = {
   type: string;
@@ -481,7 +481,7 @@ function App(props: OnyxProps) {
     queryKey: ["projects"],
     queryFn: async () => {
       return props
-        .httpPathHandler("projects")
+        .httpPathHandler("projects/")
         .then((response) => response.json())
         .then((data) => {
           return [
@@ -507,7 +507,7 @@ function App(props: OnyxProps) {
     queryKey: ["types"],
     queryFn: async () => {
       return props
-        .httpPathHandler("projects/types")
+        .httpPathHandler("projects/types/")
         .then((response) => response.json())
         .then((data) => {
           return new Map(
@@ -525,7 +525,7 @@ function App(props: OnyxProps) {
     queryKey: ["lookups"],
     queryFn: async () => {
       return props
-        .httpPathHandler("projects/lookups")
+        .httpPathHandler("projects/lookups/")
         .then((response) => response.json())
         .then((data) => {
           return new Map(
@@ -549,7 +549,7 @@ function App(props: OnyxProps) {
     queryKey: ["fields", project],
     queryFn: async () => {
       return props
-        .httpPathHandler("projects/" + project + "/fields")
+        .httpPathHandler("projects/" + project + "/fields/")
         .then((response) => response.json())
         .then((data) => {
           const fields = flattenFields(data.data.fields);

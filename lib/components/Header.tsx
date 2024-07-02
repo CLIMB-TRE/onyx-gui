@@ -48,7 +48,7 @@ function Header(props: HeaderProps) {
     queryKey: ["profile"],
     queryFn: async () => {
       return props
-        .httpPathHandler("accounts/profile")
+        .httpPathHandler("accounts/profile/")
         .then((response) => response.json())
         .then((data) => {
           return { username: data.data.username, site: data.data.site };
