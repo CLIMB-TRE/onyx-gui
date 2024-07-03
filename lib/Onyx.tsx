@@ -319,8 +319,12 @@ function Parameters(props: SearchProps) {
 }
 
 function Results(props: ResultsProps) {
+  const fileName = `${props.project}${
+    props.pageNumber > 1 ? "_" + props.pageNumber.toString() : ""
+  }`;
+
   const csvConfig = mkConfig({
-    filename: props.project,
+    filename: fileName,
     useKeysAsHeaders: true,
   });
 
@@ -328,7 +332,7 @@ function Results(props: ResultsProps) {
     const csv = generateCsv(csvConfig)(props.resultData.data || []);
 
     if (props.fileWriter) {
-      props.fileWriter(props.project + ".csv", asString(csv));
+      props.fileWriter(fileName + ".csv", asString(csv));
     } else {
       download(csvConfig)(csv);
     }
