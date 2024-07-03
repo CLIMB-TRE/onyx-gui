@@ -23,7 +23,7 @@ import LoadingAlert from "./components/LoadingAlert";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.10.2";
+const VERSION = "0.10.3";
 
 type ProjectField = {
   type: string;
@@ -64,12 +64,14 @@ interface DataProps extends OnyxProps {
 
 interface SearchProps extends DataProps {
   handleSearch: (params: string) => void;
+  handlePageNumber: (page: number) => void;
 }
 
 interface ResultsProps extends SearchProps {
   resultPending: boolean;
   resultError: Error | null;
   resultData: ResultData;
+  pageNumber: number;
 }
 
 function Parameters(props: SearchProps) {
@@ -203,6 +205,7 @@ function Parameters(props: SearchProps) {
         )
     );
     props.handleSearch(params.toString());
+    props.handlePageNumber(1);
   };
 
   return (
@@ -316,8 +319,12 @@ function Parameters(props: SearchProps) {
 }
 
 function Results(props: ResultsProps) {
+  const fileName = `${props.project}${
+    props.pageNumber > 1 ? "_" + props.pageNumber.toString() : ""
+  }`;
+
   const csvConfig = mkConfig({
-    filename: props.project,
+    filename: fileName,
     useKeysAsHeaders: true,
   });
 
@@ -325,7 +332,7 @@ function Results(props: ResultsProps) {
     const csv = generateCsv(csvConfig)(props.resultData.data || []);
 
     if (props.fileWriter) {
-      props.fileWriter(props.project + ".csv", asString(csv));
+      props.fileWriter(fileName + ".csv", asString(csv));
     } else {
       download(csvConfig)(csv);
     }
@@ -379,12 +386,15 @@ function Results(props: ResultsProps) {
               props.handleSearch(
                 props.resultData.previous?.split("?", 2)[1] || ""
               );
+              props.handlePageNumber(props.pageNumber - 1);
             }}
           />
           <Pagination.Item>
             {props.resultPending
               ? "Loading..."
-              : `Showing ${props.resultData.data?.length || 0} results`}
+              : `Showing ${props.resultData.data?.length || 0} results (Page ${
+                  props.pageNumber
+                })`}
           </Pagination.Item>
           <Pagination.Next
             disabled={!props.resultData.next}
@@ -392,6 +402,7 @@ function Results(props: ResultsProps) {
               props.handleSearch(
                 props.resultData?.next?.split("?", 2)[1] || ""
               );
+              props.handlePageNumber(props.pageNumber + 1);
             }}
           />
         </Pagination>
@@ -402,10 +413,12 @@ function Results(props: ResultsProps) {
 
 function Data(props: DataProps) {
   const [searchParameters, setSearchParameters] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
     setSearchParameters("");
+    setPageNumber(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
@@ -439,13 +452,19 @@ function Data(props: DataProps) {
   return (
     <Container fluid className="g-2">
       <Stack gap={2}>
-        <Parameters {...props} handleSearch={handleSearch} />
+        <Parameters
+          {...props}
+          handleSearch={handleSearch}
+          handlePageNumber={setPageNumber}
+        />
         <Results
           {...props}
           handleSearch={setSearchParameters}
+          handlePageNumber={setPageNumber}
           resultPending={resultPending}
           resultError={resultError instanceof Error ? resultError : null}
           resultData={resultData}
+          pageNumber={pageNumber}
         />
       </Stack>
     </Container>
