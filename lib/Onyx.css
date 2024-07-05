@@ -27,6 +27,11 @@
   overflow-y: scroll;
 }
 
+.graph-panel {
+  height: 78vh;
+  overflow-y : scroll;
+}
+
 .table-panel {
   height: 48vh;
 }

@@ -8,17 +8,20 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
+import Tab from "react-bootstrap/Tab";
 import { mkConfig, generateCsv, download, asString } from "export-to-csv";
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
+import Plot from "react-plotly.js";
 import Header from "./components/Header";
 import { MultiDropdown } from "./components/Dropdowns";
 import Filter from "./components/Filter";
 import ResultsTable from "./components/ResultsTable";
 import LoadingAlert from "./components/LoadingAlert";
+import template from "./template";
 
 import "./Onyx.css";
 import "./bootstrap.css";
@@ -72,6 +75,15 @@ interface ResultsProps extends SearchProps {
   resultError: Error | null;
   resultData: ResultData;
   pageNumber: number;
+}
+
+interface StatsProps extends OnyxProps {
+  project: string;
+  darkMode: boolean;
+}
+
+interface GraphProps extends StatsProps {
+  field: string;
 }
 
 function Parameters(props: SearchProps) {
@@ -471,6 +483,153 @@ function Data(props: DataProps) {
   );
 }
 
+function ScatterGraph(props: GraphProps) {
+  const {
+    data: { field_data = [], count_data = [] } = {
+      field_data: [],
+      count_data: [],
+    },
+  } = useQuery({
+    queryKey: ["results", props.project, props.field],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/?summarise=${props.field}`)
+        .then((response) => response.json())
+        .then((data) => {
+          const field_data = data.data.map(
+            (record: Record<string, unknown>) => record[props.field]
+          );
+          const count_data = data.data.map(
+            (record: Record<string, unknown>) => record.count
+          );
+          return { field_data, count_data };
+        });
+    },
+    enabled: !!props.project,
+  });
+
+  return (
+    <Plot
+      data={[
+        {
+          x: field_data,
+          y: count_data,
+          type: "scatter",
+          mode: "lines+markers",
+          marker: { color: "#198754" },
+        },
+      ]}
+      layout={{
+        autosize: true,
+        title: `Records by ${props.field}`,
+        margin: {
+          l: 50,
+          r: 50,
+          b: 50,
+          t: 50,
+          pad: 4,
+        },
+        // width: 1080,
+        // height: 500,
+        // @ts-expect-error Typing this would be madness
+        template: props.darkMode ? template : undefined,
+      }}
+      useResizeHandler={true}
+      style={{ width: "100%", height: "100%" }}
+    />
+  );
+}
+
+function PieGraph(props: GraphProps) {
+  const {
+    data: { field_data = [], count_data = [] } = {
+      field_data: [],
+      count_data: [],
+    },
+  } = useQuery({
+    queryKey: ["results", props.project, props.field],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/?summarise=${props.field}`)
+        .then((response) => response.json())
+        .then((data) => {
+          const field_data = data.data.map(
+            (record: Record<string, unknown>) => record[props.field]
+          );
+          const count_data = data.data.map(
+            (record: Record<string, unknown>) => record.count
+          );
+          return { field_data, count_data };
+        });
+    },
+    enabled: !!props.project,
+  });
+
+  return (
+    <Plot
+      data={[
+        {
+          labels: field_data,
+          values: count_data,
+          type: "pie",
+          marker: { color: "#198754" },
+        },
+      ]}
+      layout={{
+        autosize: true,
+        title: `Records by ${props.field}`,
+        margin: {
+          l: 50,
+          r: 50,
+          b: 50,
+          t: 50,
+          pad: 4,
+        },
+        // width: 1080,
+        // height: 500,
+        // @ts-expect-error Typing this would be madness
+        template: props.darkMode ? template : undefined,
+      }}
+      useResizeHandler={true}
+      style={{ width: "100%", height: "100%" }}
+    />
+  );
+}
+
+function Stats(props: StatsProps) {
+  return (
+    <Container fluid className="g-2">
+      <Card>
+        <Card.Header>Graphs</Card.Header>
+        <Card.Body className="graph-panel">
+          <Row className="g-2">
+            <Col xl={8}>
+              <Stack gap={2}>
+                <Card body>
+                  <ScatterGraph {...props} field="collection_date" />
+                </Card>
+                <Card body>
+                  <ScatterGraph {...props} field="received_date" />
+                </Card>
+              </Stack>
+            </Col>
+            <Col xl={4}>
+              <Stack gap={2}>
+                <Card body>
+                  <PieGraph {...props} field="site" />
+                </Card>
+                <Card body>
+                  <PieGraph {...props} field="platform" />
+                </Card>
+              </Stack>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </Container>
+  );
+}
+
 function flattenFields(fields: Record<string, ProjectField>) {
   const flatFields: Record<string, ProjectField> = {};
 
@@ -494,6 +653,7 @@ function flattenFields(fields: Record<string, ProjectField>) {
 function App(props: OnyxProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [project, setProject] = useState("");
+  const [tabKey, setTabKey] = useState("data");
 
   // Fetch the project list
   const { data: projects = [] } = useQuery({
@@ -611,16 +771,27 @@ function App(props: OnyxProps) {
         handleProjectChange={setProject}
         handleThemeChange={toggleTheme}
         guiVersion={VERSION}
+        tabKey={tabKey}
+        setTabKey={setTabKey}
       />
-      <Data
-        {...props}
-        project={project}
-        projectFields={projectFields}
-        typeLookups={typeLookups}
-        fieldDescriptions={fieldDescriptions}
-        lookupDescriptions={lookupDescriptions}
-        darkMode={darkMode}
-      />
+      <Tab.Container activeKey={tabKey}>
+        <Tab.Content>
+          <Tab.Pane eventKey="data">
+            <Data
+              {...props}
+              project={project}
+              projectFields={projectFields}
+              typeLookups={typeLookups}
+              fieldDescriptions={fieldDescriptions}
+              lookupDescriptions={lookupDescriptions}
+              darkMode={darkMode}
+            />
+          </Tab.Pane>
+          <Tab.Pane eventKey="stats">
+            <Stats {...props} project={project} darkMode={darkMode} />
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
       <div></div>
     </Stack>
   );
