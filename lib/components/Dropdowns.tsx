@@ -1,127 +1,143 @@
 import React from "react";
 import Select, { components, OptionProps } from "react-select";
+import { useQuery } from "@tanstack/react-query";
 import getStyles from "./styles";
 
 type OptionType = { label: string; value: string };
 
-function Dropdown({
-  isClearable = false,
-  options,
-  titles,
-  value,
-  placeholder,
-  onChange,
-  darkMode,
-}: {
-  isClearable?: boolean;
+interface GenericDropdownProps {
   options: string[];
   titles?: Map<string, string>;
-  value: string;
   placeholder?: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
   darkMode: boolean;
-}) {
-  const Option = (props: OptionProps) => {
-    return (
-      <div
-        data-toggle="tooltip"
-        data-placement="top"
-        title={titles?.get(props.label)}
-      >
-        <components.Option {...props} />
-      </div>
-    );
-  };
+}
 
+interface DropdownProps extends GenericDropdownProps {
+  value: string;
+  isClearable?: boolean;
+}
+
+interface MultiDropdownProps extends GenericDropdownProps {
+  value: string[];
+}
+
+interface GenericChoiceProps {
+  project: string;
+  field: string;
+  httpPathHandler: (path: string) => Promise<Response>;
+}
+
+interface ChoiceProps extends DropdownProps, GenericChoiceProps {}
+
+interface MultiChoiceProps extends MultiDropdownProps, GenericChoiceProps {}
+
+const Option = (optionProps: OptionProps) => {
+  return (
+    <code>
+      <components.Option {...optionProps} />
+    </code>
+  );
+};
+
+const getLabel = (option: string, titles?: Map<string, string>) =>
+  option + (titles?.get(option) ? ` | ${titles?.get(option)}` : "");
+
+function Dropdown(props: DropdownProps) {
   return (
     <Select
-      isClearable={isClearable}
+      isClearable={props.isClearable}
       components={{ Option }}
       menuPortalTarget={document.body}
-      styles={getStyles(darkMode)}
-      options={options.map((option) => ({
+      styles={getStyles(props.darkMode)}
+      options={props.options.map((option) => ({
         value: option,
-        label: option,
+        label: getLabel(option, props.titles),
       }))}
       value={
-        value
+        props.value
           ? {
-              value: value,
-              label: value,
+              value: props.value,
+              label: props.value,
             }
           : null
       }
       onChange={(e) =>
         !e
-          ? onChange({
+          ? props.onChange({
               target: {
                 value: "",
               },
             } as React.ChangeEvent<HTMLSelectElement>)
-          : onChange({
+          : props.onChange({
               target: {
                 value: (e as OptionType).value,
               },
             } as React.ChangeEvent<HTMLSelectElement>)
       }
-      placeholder={placeholder || "Select value..."}
+      placeholder={props.placeholder || "Select value..."}
     />
   );
 }
 
-function MultiDropdown({
-  options,
-  titles,
-  value,
-  placeholder,
-  onChange,
-  darkMode,
-}: {
-  options: string[];
-  titles?: Map<string, string>;
-  value: string[];
-  placeholder?: string;
-  onChange: React.ChangeEventHandler<HTMLSelectElement>;
-  darkMode: boolean;
-}) {
-  const Option = (props: OptionProps) => {
-    return (
-      <div
-        data-toggle="tooltip"
-        data-placement="top"
-        title={titles?.get(props.label)}
-      >
-        <components.Option {...props} />
-      </div>
-    );
-  };
-
+function MultiDropdown(props: MultiDropdownProps) {
   return (
     <Select
       isMulti
       closeMenuOnSelect={false}
       components={{ Option }}
       menuPortalTarget={document.body}
-      styles={getStyles(darkMode)}
-      options={options.map((option) => ({
+      styles={getStyles(props.darkMode)}
+      options={props.options.map((option) => ({
         value: option,
-        label: option,
+        label: getLabel(option, props.titles),
       }))}
-      value={value.map((option) => ({
+      value={props.value.map((option) => ({
         value: option,
         label: option,
       }))}
       delimiter=","
       onChange={(e) =>
-        onChange({
+        props.onChange({
           target: {
             value: (e as OptionType[]).map((option) => option.value).join(","),
           },
         } as React.ChangeEvent<HTMLSelectElement>)
       }
-      placeholder={placeholder || "Select values..."}
+      placeholder={props.placeholder || "Select values..."}
     />
   );
 }
 
-export { Dropdown, MultiDropdown };
+const useChoiceQuery = (props: GenericChoiceProps) => {
+  // Fetch choices and their descriptions
+  return useQuery({
+    queryKey: ["choices", props.project, props.field],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/choices/${props.field}/`)
+        .then((response) => response.json())
+        .then((data) => {
+          const choices = new Map(
+            Object.entries(data.data).map(([choice, choiceInfo]) => [
+              choice,
+              (choiceInfo as { description: string }).description,
+            ])
+          );
+          return choices;
+        });
+    },
+  });
+};
+
+function Choice(props: ChoiceProps) {
+  const { data: choiceDescriptions } = useChoiceQuery(props);
+  return <Dropdown {...props} titles={choiceDescriptions} />;
+}
+
+function MultiChoice(props: MultiChoiceProps) {
+  const { data: choiceDescriptions } = useChoiceQuery(props);
+  return <MultiDropdown {...props} titles={choiceDescriptions} />;
+}
+
+export { Dropdown, MultiDropdown, Choice, MultiChoice };

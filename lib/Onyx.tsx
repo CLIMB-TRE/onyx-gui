@@ -252,6 +252,8 @@ function Parameters(props: SearchProps) {
                 {filterList.map((filter, index) => (
                   <div key={index}>
                     <Filter
+                      project={props.project}
+                      httpPathHandler={props.httpPathHandler}
                       filter={filter}
                       fieldList={filterFieldOptions}
                       projectFields={props.projectFields}
@@ -568,7 +570,7 @@ function App(props: OnyxProps) {
     queryKey: ["fields", project],
     queryFn: async () => {
       return props
-        .httpPathHandler("projects/" + project + "/fields/")
+        .httpPathHandler(`projects/${project}/fields/`)
         .then((response) => response.json())
         .then((data) => {
           const fields = flattenFields(data.data.fields);
@@ -630,6 +632,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
+      refetchOnMount: false,
     },
   },
 });
