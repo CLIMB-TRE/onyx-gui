@@ -16,8 +16,9 @@ const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
   menuPortal: (styles) => ({ ...styles, zIndex: 9999 }),
   menu: (styles) => ({
     ...styles,
-    width: "max-content",
-    minWidth: "100%",
+    width: "100%",
+    // width: "max-content",
+    // minWidth: "100%",
     backgroundColor: darkMode ? "black" : "white",
   }),
   option: (styles, state) => ({
