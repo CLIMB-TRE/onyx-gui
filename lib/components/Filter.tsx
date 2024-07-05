@@ -4,10 +4,12 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
-import { Dropdown, MultiDropdown } from "./Dropdowns";
+import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput } from "./Inputs";
 
 interface FilterProps {
+  project: string;
+  httpPathHandler: (path: string) => Promise<Response>;
   filter: { field: string; lookup: string; value: string };
   fieldList: string[];
   projectFields: Map<string, { type: string; values?: string[] }>;
@@ -42,7 +44,10 @@ function Filter(props: FilterProps) {
   } else if (props.projectFields.get(props.filter.field)?.type === "choice") {
     if (props.filter.lookup.endsWith("in")) {
       f = (
-        <MultiDropdown
+        <MultiChoice
+          project={props.project}
+          field={props.filter.field}
+          httpPathHandler={props.httpPathHandler}
           options={props.projectFields.get(props.filter.field)?.values || []}
           value={getValueList(props.filter.value)}
           onChange={props.handleValueChange}
@@ -51,7 +56,10 @@ function Filter(props: FilterProps) {
       );
     } else {
       f = (
-        <Dropdown
+        <Choice
+          project={props.project}
+          field={props.filter.field}
+          httpPathHandler={props.httpPathHandler}
           isClearable
           options={props.projectFields.get(props.filter.field)?.values || []}
           value={props.filter.value}
