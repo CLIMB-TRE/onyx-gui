@@ -35,6 +35,7 @@ interface GroupedGraphProps extends GraphProps {
 interface BaseGraphProps extends GraphProps {
   data: Record<string, string[] | number[] | string | Record<string, string>>[];
   title?: string;
+  isGrouped?: boolean;
 }
 
 interface GraphPanelProps extends GroupedGraphProps {
@@ -126,6 +127,7 @@ function BaseGraph(props: BaseGraphProps) {
         // @ts-expect-error Typing this would be madness
         template: props.darkMode ? graphStyles : undefined,
         yaxis: { fixedrange: true },
+        showlegend: props.isGrouped ? true : false,
       }}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
@@ -175,6 +177,7 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
         })
       )}
       title={`Records by ${props.field}, grouped by ${props.groupBy}`}
+      isGrouped
     />
   );
 }
@@ -242,6 +245,7 @@ function GroupedBarGraph(props: GroupedGraphProps) {
         })
       )}
       title={`Records by ${props.field}, grouped by ${props.groupBy}`}
+      isGrouped
     />
   );
 }
