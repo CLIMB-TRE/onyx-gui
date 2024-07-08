@@ -70,7 +70,6 @@ function Parameters(props: SearchProps) {
     setIncludeList([]);
     setExcludeList([]);
     setSearchInput("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
   const handleFilterFieldChange = (

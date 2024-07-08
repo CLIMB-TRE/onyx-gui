@@ -174,7 +174,12 @@ function App(props: OnyxProps) {
             />
           </Tab.Pane>
           <Tab.Pane eventKey="stats">
-            <Stats {...props} project={project} darkMode={darkMode} />
+            <Stats
+              {...props}
+              project={project}
+              projectFields={projectFields}
+              darkMode={darkMode}
+            />
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
