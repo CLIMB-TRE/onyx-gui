@@ -7,7 +7,7 @@ const midGrey = "var(--bs-gray-700)";
 const darkGrey = "var(--bs-gray-900)";
 const red = "var(--bs-red)";
 
-const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
+const selectStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
   control: (styles) => ({
     ...styles,
     borderColor: darkMode ? midGrey : lightGrey,
@@ -57,4 +57,4 @@ const getStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
   }),
 });
 
-export default getStyles;
+export default selectStyles;

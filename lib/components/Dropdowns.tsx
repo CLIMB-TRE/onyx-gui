@@ -1,9 +1,8 @@
 import React from "react";
 import Select, { components, OptionProps } from "react-select";
 import { useQuery } from "@tanstack/react-query";
-import getStyles from "./styles";
-
-type OptionType = { label: string; value: string };
+import selectStyles from "../utils/selectStyles";
+import { OptionType } from "../types";
 
 interface GenericDropdownProps {
   options: string[];
@@ -49,7 +48,7 @@ function Dropdown(props: DropdownProps) {
       isClearable={props.isClearable}
       components={{ Option }}
       menuPortalTarget={document.body}
-      styles={getStyles(props.darkMode)}
+      styles={selectStyles(props.darkMode)}
       options={props.options.map((option) => ({
         value: option,
         label: getLabel(option, props.titles),
@@ -87,7 +86,7 @@ function MultiDropdown(props: MultiDropdownProps) {
       closeMenuOnSelect={false}
       components={{ Option }}
       menuPortalTarget={document.body}
-      styles={getStyles(props.darkMode)}
+      styles={selectStyles(props.darkMode)}
       options={props.options.map((option) => ({
         value: option,
         label: getLabel(option, props.titles),

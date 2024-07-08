@@ -1,4 +1,4 @@
-const template = {
+const graphStyles = {
   data: {
     barpolar: [
       {
@@ -551,4 +551,4 @@ const template = {
   },
 };
 
-export default template;
+export default graphStyles;
