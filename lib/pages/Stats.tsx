@@ -35,7 +35,9 @@ interface GroupedGraphProps extends GraphProps {
 interface BaseGraphProps extends GraphProps {
   data: Record<string, string[] | number[] | string | Record<string, string>>[];
   title?: string;
-  isGrouped?: boolean;
+  xTitle?: string;
+  yTitle?: string;
+  legendTitle?: string;
 }
 
 interface GraphPanelProps extends GroupedGraphProps {
@@ -126,8 +128,10 @@ function BaseGraph(props: BaseGraphProps) {
         height: 330,
         // @ts-expect-error Typing this would be madness
         template: props.darkMode ? graphStyles : undefined,
-        yaxis: { fixedrange: true },
-        showlegend: props.isGrouped ? true : false,
+        xaxis: { title: props.xTitle },
+        yaxis: { title: props.yTitle, fixedrange: true },
+        legend: { title: { text: props.legendTitle } },
+        showlegend: props.legendTitle ? true : false,
       }}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
@@ -155,6 +159,8 @@ function ScatterGraph(props: GraphProps) {
           marker: { color: "#00CC96" },
         },
       ]}
+      xTitle={props.field}
+      yTitle="count"
     />
   );
 }
@@ -177,30 +183,9 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
         })
       )}
       title={`Records by ${props.field}, grouped by ${props.groupBy}`}
-      isGrouped
-    />
-  );
-}
-
-function PieGraph(props: GraphProps) {
-  const {
-    data = {
-      field_data: [],
-      count_data: [],
-    },
-  } = useSummaryQuery(props);
-
-  return (
-    <BaseGraph
-      {...props}
-      data={[
-        {
-          labels: data.field_data,
-          values: data.count_data,
-          type: "pie",
-          marker: { color: "#198754" },
-        },
-      ]}
+      xTitle={props.field}
+      yTitle="count"
+      legendTitle={props.groupBy}
     />
   );
 }
@@ -224,6 +209,8 @@ function BarGraph(props: GraphProps) {
           marker: { color: "#00CC96" },
         },
       ]}
+      xTitle={props.field}
+      yTitle="count"
     />
   );
 }
@@ -245,7 +232,33 @@ function GroupedBarGraph(props: GroupedGraphProps) {
         })
       )}
       title={`Records by ${props.field}, grouped by ${props.groupBy}`}
-      isGrouped
+      xTitle={props.field}
+      yTitle="count"
+      legendTitle={props.groupBy}
+    />
+  );
+}
+
+function PieGraph(props: GraphProps) {
+  const {
+    data = {
+      field_data: [],
+      count_data: [],
+    },
+  } = useSummaryQuery(props);
+
+  return (
+    <BaseGraph
+      {...props}
+      data={[
+        {
+          labels: data.field_data,
+          values: data.count_data,
+          type: "pie",
+          marker: { color: "#198754" },
+        },
+      ]}
+      legendTitle={props.field}
     />
   );
 }
@@ -346,7 +359,7 @@ function GraphPanel(props: GraphPanelProps) {
                 <Form.Label>Graph Type</Form.Label>
                 <Dropdown
                   isClearable
-                  options={["line", "pie", "bar"]}
+                  options={["line", "bar", "pie"]}
                   value={props.type}
                   onChange={props.handleGraphConfigTypeChange}
                   darkMode={props.darkMode}
@@ -383,15 +396,15 @@ function GraphPanel(props: GraphPanelProps) {
 
 function Stats(props: StatsProps) {
   const [graphConfigList, setGraphConfigList] = useState([
+    { type: "line", field: "published_date", groupBy: "" },
     { type: "line", field: "published_date", groupBy: "site" },
-    { type: "pie", field: "site", groupBy: "" },
   ] as GraphConfig[]);
 
   // Reset graphs when project changes
   useLayoutEffect(() => {
     setGraphConfigList([
+      { type: "line", field: "published_date", groupBy: "" },
       { type: "line", field: "published_date", groupBy: "site" },
-      { type: "pie", field: "site", groupBy: "" },
     ]);
   }, [props.project]);
 
