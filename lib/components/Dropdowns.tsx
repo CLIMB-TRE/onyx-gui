@@ -9,7 +9,6 @@ interface GenericDropdownProps {
   titles?: Map<string, string>;
   placeholder?: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
-  darkMode: boolean;
 }
 
 interface DropdownProps extends GenericDropdownProps {
@@ -50,7 +49,7 @@ function Dropdown(props: DropdownProps) {
       isDisabled={props.isDisabled}
       components={{ Option }}
       menuPortalTarget={document.body}
-      styles={selectStyles(props.darkMode)}
+      styles={selectStyles}
       options={props.options.map((option) => ({
         value: option,
         label: getLabel(option, props.titles),
@@ -88,7 +87,7 @@ function MultiDropdown(props: MultiDropdownProps) {
       closeMenuOnSelect={false}
       components={{ Option }}
       menuPortalTarget={document.body}
-      styles={selectStyles(props.darkMode)}
+      styles={selectStyles}
       options={props.options.map((option) => ({
         value: option,
         label: getLabel(option, props.titles),

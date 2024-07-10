@@ -23,7 +23,6 @@ interface FilterProps {
   >;
   handleFilterAdd: () => void;
   handleFilterRemove: () => void;
-  darkMode: boolean;
 }
 
 function Filter(props: FilterProps) {
@@ -38,7 +37,6 @@ function Filter(props: FilterProps) {
         options={["true", "false"]}
         value={props.filter.value}
         onChange={props.handleValueChange}
-        darkMode={props.darkMode}
       />
     );
   } else if (props.projectFields.get(props.filter.field)?.type === "choice") {
@@ -51,7 +49,6 @@ function Filter(props: FilterProps) {
           options={props.projectFields.get(props.filter.field)?.values || []}
           value={getValueList(props.filter.value)}
           onChange={props.handleValueChange}
-          darkMode={props.darkMode}
         />
       );
     } else {
@@ -64,7 +61,6 @@ function Filter(props: FilterProps) {
           options={props.projectFields.get(props.filter.field)?.values || []}
           value={props.filter.value}
           onChange={props.handleValueChange}
-          darkMode={props.darkMode}
         />
       );
     }
@@ -73,7 +69,6 @@ function Filter(props: FilterProps) {
       <MultiInput
         value={getValueList(props.filter.value)}
         onChange={props.handleValueChange}
-        darkMode={props.darkMode}
       />
     );
   } else if (props.filter.lookup.endsWith("range")) {
@@ -82,7 +77,6 @@ function Filter(props: FilterProps) {
         value={getValueList(props.filter.value)}
         limit={2}
         onChange={props.handleValueChange}
-        darkMode={props.darkMode}
       />
     );
   } else if (props.projectFields.get(props.filter.field)?.type === "bool") {
@@ -92,7 +86,6 @@ function Filter(props: FilterProps) {
         options={["true", "false"]}
         value={props.filter.value}
         onChange={props.handleValueChange}
-        darkMode={props.darkMode}
       />
     );
   } else {
@@ -109,7 +102,6 @@ function Filter(props: FilterProps) {
               value={props.filter.field}
               placeholder="Select field..."
               onChange={props.handleFieldChange}
-              darkMode={props.darkMode}
             />
           </Col>
           <Col sm={4}>
@@ -123,7 +115,6 @@ function Filter(props: FilterProps) {
               value={props.filter.lookup}
               placeholder="Select lookup..."
               onChange={props.handleLookupChange}
-              darkMode={props.darkMode}
             />
           </Col>
           <Col sm={4}>{f}</Col>

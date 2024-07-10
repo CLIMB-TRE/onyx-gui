@@ -171,7 +171,6 @@ function App(props: OnyxProps) {
               typeLookups={typeLookups}
               fieldDescriptions={fieldDescriptions}
               lookupDescriptions={lookupDescriptions}
-              darkMode={darkMode}
             />
           </Tab.Pane>
           <Tab.Pane eventKey="stats">

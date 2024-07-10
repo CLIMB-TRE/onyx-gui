@@ -27,19 +27,17 @@ function MultiInput({
   placeholder,
   limit,
   onChange,
-  darkMode,
 }: {
   value: string[];
   placeholder?: string;
   limit?: number;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
-  darkMode: boolean;
 }) {
   return (
     <Creatable
       isMulti
       menuPortalTarget={document.body}
-      styles={selectStyles(darkMode)}
+      styles={selectStyles}
       value={value.map((option) => ({
         value: option,
         label: option,

@@ -9,6 +9,7 @@ import Stack from "react-bootstrap/Stack";
 import Card from "react-bootstrap/Card";
 import { useQuery } from "@tanstack/react-query";
 import Plot from "react-plotly.js";
+import { Template } from "plotly.js";
 import graphStyles from "../utils/graphStyles";
 import { OnyxProps, ProjectField } from "../types";
 
@@ -132,8 +133,7 @@ function BaseGraph(props: BaseGraphProps) {
           pad: 4,
         },
         height: 330,
-        // @ts-expect-error Typing this would be madness
-        template: props.darkMode ? graphStyles : undefined,
+        template: props.darkMode ? (graphStyles as Template) : undefined,
         xaxis: { title: props.xTitle },
         yaxis: { title: props.yTitle, fixedrange: true },
         legend: { title: { text: props.legendTitle } },
@@ -381,7 +381,6 @@ function GraphPanel(props: GraphPanelProps) {
                   options={["line", "bar", "pie"]}
                   value={props.type}
                   onChange={props.handleGraphConfigTypeChange}
-                  darkMode={props.darkMode}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -391,7 +390,6 @@ function GraphPanel(props: GraphPanelProps) {
                   options={fields}
                   value={props.field}
                   onChange={props.handleGraphConfigFieldChange}
-                  darkMode={props.darkMode}
                 />
               </Form.Group>
               {props.type === "bar" ? (
@@ -404,7 +402,6 @@ function GraphPanel(props: GraphPanelProps) {
                         options={groupBy}
                         value={props.groupBy}
                         onChange={props.handleGraphConfigGroupByChange}
-                        darkMode={props.darkMode}
                       />
                     </Form.Group>
                   </Col>
@@ -415,7 +412,6 @@ function GraphPanel(props: GraphPanelProps) {
                         options={["group", "stack", "norm"]}
                         value={props.groupMode}
                         onChange={props.handleGraphConfigGroupModeChange}
-                        darkMode={props.darkMode}
                       />
                     </Form.Group>
                   </Col>
@@ -429,7 +425,6 @@ function GraphPanel(props: GraphPanelProps) {
                       options={groupBy}
                       value={props.groupBy}
                       onChange={props.handleGraphConfigGroupByChange}
-                      darkMode={props.darkMode}
                     />
                   </Form.Group>
                 )

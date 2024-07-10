@@ -1,60 +1,50 @@
 import { StylesConfig } from "react-select";
 
-// Bootstrap colours
-const secondary = "var(--bs-secondary-color)";
-const lightGrey = "var(--bs-gray-300)";
-const midGrey = "var(--bs-gray-700)";
-const darkGrey = "var(--bs-gray-900)";
-const red = "var(--bs-red)";
-
-const selectStyles: (darkMode: boolean) => StylesConfig = (darkMode) => ({
+const selectStyles: StylesConfig = {
   control: (styles) => ({
     ...styles,
-    borderColor: darkMode ? midGrey : lightGrey,
-    backgroundColor: darkMode ? darkGrey : "white",
+    borderColor: "var(--onyx-dropdown-control-border-color)",
+    backgroundColor: "var(--onyx-dropdown-control-background-color)",
   }),
   menuPortal: (styles) => ({ ...styles, zIndex: 9999 }),
   menu: (styles) => ({
     ...styles,
     width: "100%",
-    // width: "max-content",
-    // minWidth: "100%",
-    backgroundColor: darkMode ? "black" : "white",
+    backgroundColor: "var(--onyx-dropdown-menu-background-color)",
   }),
   option: (styles, state) => ({
     ...styles,
-    color: darkMode ? "white" : "black",
+    color: "var(--onyx-dropdown-label-color)",
     backgroundColor: state.isFocused
-      ? darkMode
-        ? midGrey
-        : lightGrey
-      : darkMode
-      ? "black"
-      : "white",
+      ? "var(--onyx-dropdown-option-hover-background-color)"
+      : "var(--onyx-dropdown-option-background-color)",
   }),
-  singleValue: (styles) => ({ ...styles, color: darkMode ? "white" : "black" }),
-  input: (styles) => ({ ...styles, color: darkMode ? "white" : "black" }),
+  singleValue: (styles) => ({
+    ...styles,
+    color: "var(--onyx-dropdown-label-color)",
+  }),
+  input: (styles) => ({ ...styles, color: "var(--onyx-dropdown-label-color)" }),
   multiValue: (styles) => {
     return {
       ...styles,
-      backgroundColor: darkMode ? midGrey : lightGrey,
+      backgroundColor: "var(--onyx-dropdown-multivalue-label-background-color)",
     };
   },
   multiValueLabel: (styles) => ({
     ...styles,
-    color: darkMode ? "white" : "black",
+    color: "var(--onyx-dropdown-label-color)",
   }),
   multiValueRemove: (styles) => ({
     ...styles,
     ":hover": {
-      backgroundColor: red,
-      color: "white",
+      backgroundColor: "var(--bs-red)",
+      color: "var(--bs-white)",
     },
   }),
   placeholder: (styles) => ({
     ...styles,
-    color: secondary,
+    color: "var(--bs-secondary-color)",
   }),
-});
+};
 
 export default selectStyles;

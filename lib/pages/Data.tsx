@@ -35,7 +35,6 @@ interface DataProps extends OnyxProps {
   typeLookups: Map<string, string[]>;
   fieldDescriptions: Map<string, string>;
   lookupDescriptions: Map<string, string>;
-  darkMode: boolean;
 }
 
 interface SearchProps extends DataProps {
@@ -246,7 +245,6 @@ function Parameters(props: SearchProps) {
                       }
                       handleFilterAdd={() => handleFilterAdd(index + 1)}
                       handleFilterRemove={() => handleFilterRemove(index)}
-                      darkMode={props.darkMode}
                     />
                   </div>
                 ))}
@@ -284,7 +282,6 @@ function Parameters(props: SearchProps) {
                   value={value}
                   placeholder="Select fields..."
                   onChange={onChange}
-                  darkMode={props.darkMode}
                 />
               </Container>
             </Card>
