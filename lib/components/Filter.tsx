@@ -129,10 +129,10 @@ function Filter(props: FilterProps) {
           <Col sm={4}>{f}</Col>
         </Row>
       </Container>
-      <Button variant="primary" onClick={props.handleFilterAdd}>
+      <Button variant="dark" onClick={props.handleFilterAdd}>
         +
       </Button>
-      <Button variant="danger" onClick={props.handleFilterRemove}>
+      <Button variant="dark" onClick={props.handleFilterRemove}>
         -
       </Button>
     </Stack>

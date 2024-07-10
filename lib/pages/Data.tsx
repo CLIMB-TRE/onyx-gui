@@ -212,12 +212,12 @@ function Parameters(props: SearchProps) {
               <Stack direction="horizontal" gap={1} className="float-end">
                 <Button
                   size="sm"
-                  variant="primary"
+                  variant="dark"
                   onClick={() => handleFilterAdd(filterList.length)}
                 >
                   Add Filter
                 </Button>
-                <Button size="sm" variant="danger" onClick={handleFilterClear}>
+                <Button size="sm" variant="dark" onClick={handleFilterClear}>
                   Clear Filters
                 </Button>
               </Stack>
@@ -322,7 +322,7 @@ function Results(props: ResultsProps) {
         <Button
           className="float-end"
           size="sm"
-          variant="success"
+          variant="dark"
           onClick={handleExportToCSV}
         >
           Export Page to CSV

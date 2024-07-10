@@ -32,12 +32,21 @@ interface GroupedGraphProps extends GraphProps {
   groupBy: string;
 }
 
+interface BarGraphProps extends GraphProps {
+  mode?: string;
+}
+
+interface GroupedBarGraphProps extends GroupedGraphProps {
+  mode?: string;
+}
+
 interface BaseGraphProps extends GraphProps {
   data: Record<string, string[] | number[] | string | Record<string, string>>[];
   title?: string;
   xTitle?: string;
   yTitle?: string;
   legendTitle?: string;
+  layout?: Record<string, unknown>;
 }
 
 interface GraphPanelProps extends GroupedGraphProps {
@@ -116,6 +125,7 @@ function BaseGraph(props: BaseGraphProps) {
     <Plot
       data={props.data}
       layout={{
+        ...props.layout,
         autosize: true,
         title: props.title || `Records by ${props.field}`,
         margin: {
@@ -190,13 +200,20 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
   );
 }
 
-function BarGraph(props: GraphProps) {
+function BarGraph(props: BarGraphProps) {
   const {
     data = {
       field_data: [],
       count_data: [],
     },
   } = useSummaryQuery(props);
+
+  let layout: Record<string, string> = {};
+  if (props.mode === "bar-stack") {
+    layout = { barmode: "stack" };
+  } else if (props.mode === "bar-stack-norm") {
+    layout = { barmode: "stack", barnorm: "percent" };
+  }
 
   return (
     <BaseGraph
@@ -211,14 +228,22 @@ function BarGraph(props: GraphProps) {
       ]}
       xTitle={props.field}
       yTitle="count"
+      layout={layout}
     />
   );
 }
 
-function GroupedBarGraph(props: GroupedGraphProps) {
+function GroupedBarGraph(props: GroupedBarGraphProps) {
   const {
     data = new Map<string, { field_data: string[]; count_data: number[] }>(),
   } = useGroupedSummaryQuery(props);
+
+  let layout: Record<string, string> = {};
+  if (props.mode === "bar-stack") {
+    layout = { barmode: "stack" };
+  } else if (props.mode === "bar-stack-norm") {
+    layout = { barmode: "stack", barnorm: "percent" };
+  }
 
   return (
     <BaseGraph
@@ -235,6 +260,7 @@ function GroupedBarGraph(props: GroupedGraphProps) {
       xTitle={props.field}
       yTitle="count"
       legendTitle={props.groupBy}
+      layout={layout}
     />
   );
 }
@@ -303,7 +329,11 @@ function GraphPanel(props: GraphPanelProps) {
     } else {
       g = <BaseGraph {...props} data={[]} title="Empty Graph" />;
     }
-  } else if (props.type === "bar") {
+  } else if (
+    props.type === "bar" ||
+    props.type === "bar-stack" ||
+    props.type === "bar-stack-norm"
+  ) {
     fields = Array.from(props.projectFields.keys()).filter(
       (k) =>
         (props.projectFields.get(k)?.type === "choice" ||
@@ -321,10 +351,11 @@ function GraphPanel(props: GraphPanelProps) {
             {...props}
             field={props.field}
             groupBy={props.groupBy}
+            mode={props.type}
           />
         );
       } else {
-        g = <BarGraph {...props} field={props.field} />;
+        g = <BarGraph {...props} field={props.field} mode={props.type} />;
       }
     } else {
       g = <BaseGraph {...props} data={[]} title="Empty Graph" />;
@@ -345,10 +376,10 @@ function GraphPanel(props: GraphPanelProps) {
           <Card.Header>
             <span>Options</span>
             <Stack direction="horizontal" gap={1} className="float-end">
-              <Button variant="primary" onClick={props.handleGraphConfigAdd}>
+              <Button variant="dark" onClick={props.handleGraphConfigAdd}>
                 +
               </Button>
-              <Button variant="danger" onClick={props.handleGraphConfigRemove}>
+              <Button variant="dark" onClick={props.handleGraphConfigRemove}>
                 -
               </Button>
             </Stack>
@@ -359,7 +390,13 @@ function GraphPanel(props: GraphPanelProps) {
                 <Form.Label>Graph Type</Form.Label>
                 <Dropdown
                   isClearable
-                  options={["line", "bar", "pie"]}
+                  options={[
+                    "line",
+                    "bar",
+                    "bar-stack",
+                    "bar-stack-norm",
+                    "pie",
+                  ]}
                   value={props.type}
                   onChange={props.handleGraphConfigTypeChange}
                   darkMode={props.darkMode}
@@ -413,9 +450,19 @@ function Stats(props: StatsProps) {
     index: number
   ) => {
     const list = [...graphConfigList];
+
+    if (
+      !(
+        (list[index].type.startsWith("bar") &&
+          e.target.value.startsWith("bar")) ||
+        list[index].type === e.target.value
+      )
+    ) {
+      list[index].field = "";
+      list[index].groupBy = "";
+    }
+
     list[index].type = e.target.value;
-    list[index].field = "";
-    list[index].groupBy = "";
     setGraphConfigList(list);
   };
 
@@ -463,12 +510,12 @@ function Stats(props: StatsProps) {
           <Stack direction="horizontal" gap={1} className="float-end">
             <Button
               size="sm"
-              variant="primary"
+              variant="dark"
               onClick={() => handleGraphConfigAdd(graphConfigList.length)}
             >
               Add Graph
             </Button>
-            <Button size="sm" variant="danger" onClick={handleGraphConfigClear}>
+            <Button size="sm" variant="dark" onClick={handleGraphConfigClear}>
               Clear Graphs
             </Button>
           </Stack>
