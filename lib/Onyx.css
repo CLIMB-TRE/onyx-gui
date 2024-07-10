@@ -38,6 +38,6 @@
 
 [data-bs-theme=dark] .btn {
   --bs-btn-border-color: var(--bs-gray-700);
-  --bs-btn-hover-border-color: var(--bs-gray-300);
+  --bs-btn-hover-border-color: var(--bs-gray-500);
 }
 
