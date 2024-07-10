@@ -41,6 +41,12 @@ function App(props: OnyxProps) {
   const [project, setProject] = useState("");
   const [tabKey, setTabKey] = useState("data");
 
+  // Set the theme based on darkMode state
+  useEffect(() => {
+    const htmlElement = document.querySelector("html");
+    htmlElement?.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
+
   // Fetch the project list
   const { data: projects = [] } = useQuery({
     queryKey: ["projects"],
@@ -142,12 +148,6 @@ function App(props: OnyxProps) {
     enabled: !!project,
   });
 
-  const toggleTheme = () => {
-    const htmlElement = document.querySelector("html");
-    htmlElement?.setAttribute("data-bs-theme", !darkMode ? "dark" : "light");
-    setDarkMode(!darkMode);
-  };
-
   return (
     <Stack gap={2} className="Onyx">
       <Header
@@ -155,10 +155,11 @@ function App(props: OnyxProps) {
         projectName={projectName}
         projectList={projects}
         handleProjectChange={setProject}
-        handleThemeChange={toggleTheme}
         guiVersion={VERSION}
         tabKey={tabKey}
         setTabKey={setTabKey}
+        darkMode={darkMode}
+        handleThemeChange={() => setDarkMode(!darkMode)}
       />
       <Tab.Container activeKey={tabKey}>
         <Tab.Content>

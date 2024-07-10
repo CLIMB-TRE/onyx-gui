@@ -35,15 +35,16 @@ function HeaderVersion({
 }
 
 interface HeaderProps {
-  tabKey: string;
-  setTabKey: (k: string) => void;
   httpPathHandler: (path: string) => Promise<Response>;
   projectName: string;
   projectList: string[];
   handleProjectChange: (p: string) => void;
-  handleThemeChange: () => void;
   guiVersion?: string;
   extVersion?: string;
+  tabKey: string;
+  setTabKey: (k: string) => void;
+  darkMode: boolean;
+  handleThemeChange: () => void;
 }
 
 function Header(props: HeaderProps) {
@@ -105,6 +106,7 @@ function Header(props: HeaderProps) {
             type="switch"
             id="theme-switch"
             label={<span className="text-light">Switch Theme</span>}
+            checked={props.darkMode}
             onChange={props.handleThemeChange}
           />
         </Stack>
