@@ -36,7 +36,7 @@
   height: 48vh;
 }
 
-[data-bs-theme=dark] .btn {
+[data-bs-theme=dark] .btn-dark {
   --bs-btn-border-color: var(--bs-gray-700);
   --bs-btn-hover-border-color: var(--bs-gray-500);
 }
