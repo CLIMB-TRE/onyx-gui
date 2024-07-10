@@ -16,6 +16,7 @@ type GraphConfig = {
   type: string;
   field: string;
   groupBy: string;
+  groupMode: string;
 };
 
 interface StatsProps extends OnyxProps {
@@ -30,14 +31,7 @@ interface GraphProps extends StatsProps {
 
 interface GroupedGraphProps extends GraphProps {
   groupBy: string;
-}
-
-interface BarGraphProps extends GraphProps {
-  mode?: string;
-}
-
-interface GroupedBarGraphProps extends GroupedGraphProps {
-  mode?: string;
+  groupMode?: string;
 }
 
 interface BaseGraphProps extends GraphProps {
@@ -51,9 +45,11 @@ interface BaseGraphProps extends GraphProps {
 
 interface GraphPanelProps extends GroupedGraphProps {
   type: string;
+  groupMode: string;
   handleGraphConfigTypeChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigGroupByChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleGraphConfigGroupModeChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigAdd: () => void;
   handleGraphConfigRemove: () => void;
 }
@@ -200,20 +196,13 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
   );
 }
 
-function BarGraph(props: BarGraphProps) {
+function BarGraph(props: GraphProps) {
   const {
     data = {
       field_data: [],
       count_data: [],
     },
   } = useSummaryQuery(props);
-
-  let layout: Record<string, string> = {};
-  if (props.mode === "bar-stack") {
-    layout = { barmode: "stack" };
-  } else if (props.mode === "bar-stack-norm") {
-    layout = { barmode: "stack", barnorm: "percent" };
-  }
 
   return (
     <BaseGraph
@@ -228,21 +217,25 @@ function BarGraph(props: BarGraphProps) {
       ]}
       xTitle={props.field}
       yTitle="count"
-      layout={layout}
     />
   );
 }
 
-function GroupedBarGraph(props: GroupedBarGraphProps) {
+function GroupedBarGraph(props: GroupedGraphProps) {
   const {
     data = new Map<string, { field_data: string[]; count_data: number[] }>(),
   } = useGroupedSummaryQuery(props);
 
   let layout: Record<string, string> = {};
-  if (props.mode === "bar-stack") {
+  let yTitle = "count";
+
+  if (props.groupMode === "group") {
+    layout = { barmode: "group" };
+  } else if (props.groupMode === "stack") {
     layout = { barmode: "stack" };
-  } else if (props.mode === "bar-stack-norm") {
+  } else if (props.groupMode === "norm") {
     layout = { barmode: "stack", barnorm: "percent" };
+    yTitle = "percentage";
   }
 
   return (
@@ -258,7 +251,7 @@ function GroupedBarGraph(props: GroupedBarGraphProps) {
       )}
       title={`Records by ${props.field}, grouped by ${props.groupBy}`}
       xTitle={props.field}
-      yTitle="count"
+      yTitle={yTitle}
       legendTitle={props.groupBy}
       layout={layout}
     />
@@ -294,19 +287,11 @@ function GraphPanel(props: GraphPanelProps) {
   let fields: string[];
   let groupBy: string[];
 
-  // TODO: Very messy conditionals here
-  if (props.type === "pie") {
-    fields = Array.from(props.projectFields.keys()).filter(
-      (k) => props.projectFields.get(k)?.type === "choice" && !k.includes("__")
-    );
-    groupBy = [];
+  const emptyGraph = () => (
+    <BaseGraph {...props} data={[]} title="Empty Graph" />
+  );
 
-    if (props.field) {
-      g = <PieGraph {...props} field={props.field} />;
-    } else {
-      g = <BaseGraph {...props} data={[]} title="Empty Graph" />;
-    }
-  } else if (props.type === "line") {
+  if (props.type === "line") {
     fields = Array.from(props.projectFields.keys()).filter(
       (k) => props.projectFields.get(k)?.type === "date" && !k.includes("__")
     );
@@ -314,26 +299,20 @@ function GraphPanel(props: GraphPanelProps) {
       (k) => props.projectFields.get(k)?.type === "choice" && !k.includes("__")
     );
 
-    if (props.field) {
-      if (props.groupBy) {
-        g = (
-          <GroupedScatterGraph
-            {...props}
-            field={props.field}
-            groupBy={props.groupBy}
-          />
-        );
-      } else {
-        g = <ScatterGraph {...props} field={props.field} />;
-      }
+    if (props.field && props.groupBy) {
+      g = (
+        <GroupedScatterGraph
+          {...props}
+          field={props.field}
+          groupBy={props.groupBy}
+        />
+      );
+    } else if (props.field) {
+      g = <ScatterGraph {...props} field={props.field} />;
     } else {
-      g = <BaseGraph {...props} data={[]} title="Empty Graph" />;
+      g = emptyGraph();
     }
-  } else if (
-    props.type === "bar" ||
-    props.type === "bar-stack" ||
-    props.type === "bar-stack-norm"
-  ) {
+  } else if (props.type === "bar") {
     fields = Array.from(props.projectFields.keys()).filter(
       (k) =>
         (props.projectFields.get(k)?.type === "choice" ||
@@ -344,24 +323,33 @@ function GraphPanel(props: GraphPanelProps) {
       (k) => props.projectFields.get(k)?.type === "choice" && !k.includes("__")
     );
 
-    if (props.field) {
-      if (props.groupBy) {
-        g = (
-          <GroupedBarGraph
-            {...props}
-            field={props.field}
-            groupBy={props.groupBy}
-            mode={props.type}
-          />
-        );
-      } else {
-        g = <BarGraph {...props} field={props.field} mode={props.type} />;
-      }
+    if (props.field && props.groupBy) {
+      g = (
+        <GroupedBarGraph
+          {...props}
+          field={props.field}
+          groupBy={props.groupBy}
+          groupMode={props.groupMode}
+        />
+      );
+    } else if (props.field) {
+      g = <BarGraph {...props} field={props.field} />;
     } else {
-      g = <BaseGraph {...props} data={[]} title="Empty Graph" />;
+      g = emptyGraph();
+    }
+  } else if (props.type === "pie") {
+    fields = Array.from(props.projectFields.keys()).filter(
+      (k) => props.projectFields.get(k)?.type === "choice" && !k.includes("__")
+    );
+    groupBy = [];
+
+    if (props.field) {
+      g = <PieGraph {...props} field={props.field} />;
+    } else {
+      g = emptyGraph();
     }
   } else {
-    g = <BaseGraph {...props} data={[]} title="Empty Graph" />;
+    g = emptyGraph();
     fields = [];
     groupBy = [];
   }
@@ -390,13 +378,7 @@ function GraphPanel(props: GraphPanelProps) {
                 <Form.Label>Graph Type</Form.Label>
                 <Dropdown
                   isClearable
-                  options={[
-                    "line",
-                    "bar",
-                    "bar-stack",
-                    "bar-stack-norm",
-                    "pie",
-                  ]}
+                  options={["line", "bar", "pie"]}
                   value={props.type}
                   onChange={props.handleGraphConfigTypeChange}
                   darkMode={props.darkMode}
@@ -412,17 +394,46 @@ function GraphPanel(props: GraphPanelProps) {
                   darkMode={props.darkMode}
                 />
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Group By</Form.Label>
-                <Dropdown
-                  isDisabled={props.type === "pie"}
-                  isClearable
-                  options={groupBy}
-                  value={props.groupBy}
-                  onChange={props.handleGraphConfigGroupByChange}
-                  darkMode={props.darkMode}
-                />
-              </Form.Group>
+              {props.type === "bar" ? (
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Group By</Form.Label>
+                      <Dropdown
+                        isClearable
+                        options={groupBy}
+                        value={props.groupBy}
+                        onChange={props.handleGraphConfigGroupByChange}
+                        darkMode={props.darkMode}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Mode</Form.Label>
+                      <Dropdown
+                        options={["group", "stack", "norm"]}
+                        value={props.groupMode}
+                        onChange={props.handleGraphConfigGroupModeChange}
+                        darkMode={props.darkMode}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              ) : (
+                props.type !== "pie" && (
+                  <Form.Group className="mb-3">
+                    <Form.Label>Group By</Form.Label>
+                    <Dropdown
+                      isClearable
+                      options={groupBy}
+                      value={props.groupBy}
+                      onChange={props.handleGraphConfigGroupByChange}
+                      darkMode={props.darkMode}
+                    />
+                  </Form.Group>
+                )
+              )}
             </Form>
           </Card.Body>
         </Card>
@@ -440,8 +451,8 @@ function Stats(props: StatsProps) {
   // Reset graphs when project changes
   useLayoutEffect(() => {
     setGraphConfigList([
-      { type: "line", field: "published_date", groupBy: "" },
-      { type: "line", field: "published_date", groupBy: "site" },
+      { type: "line", field: "published_date", groupBy: "", groupMode: "" },
+      { type: "line", field: "published_date", groupBy: "site", groupMode: "" },
     ]);
   }, [props.project]);
 
@@ -451,15 +462,14 @@ function Stats(props: StatsProps) {
   ) => {
     const list = [...graphConfigList];
 
-    if (
-      !(
-        (list[index].type.startsWith("bar") &&
-          e.target.value.startsWith("bar")) ||
-        list[index].type === e.target.value
-      )
-    ) {
+    if (list[index].type !== e.target.value) {
       list[index].field = "";
       list[index].groupBy = "";
+      if (e.target.value === "bar") {
+        list[index].groupMode = "group";
+      } else {
+        list[index].groupMode = "";
+      }
     }
 
     list[index].type = e.target.value;
@@ -484,10 +494,19 @@ function Stats(props: StatsProps) {
     setGraphConfigList(list);
   };
 
+  const handleGraphConfigGroupModeChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    index: number
+  ) => {
+    const list = [...graphConfigList];
+    list[index].groupMode = e.target.value;
+    setGraphConfigList(list);
+  };
+
   const handleGraphConfigAdd = (index: number) => {
     setGraphConfigList([
       ...graphConfigList.slice(0, index),
-      { type: "", field: "", groupBy: "" },
+      { type: "", field: "", groupBy: "", groupMode: "" },
       ...graphConfigList.slice(index),
     ]);
   };
@@ -529,6 +548,7 @@ function Stats(props: StatsProps) {
                 type={graphConfig.type}
                 field={graphConfig.field}
                 groupBy={graphConfig.groupBy}
+                groupMode={graphConfig.groupMode}
                 handleGraphConfigTypeChange={(e) =>
                   handleGraphConfigTypeChange(e, index)
                 }
@@ -537,6 +557,9 @@ function Stats(props: StatsProps) {
                 }
                 handleGraphConfigGroupByChange={(e) =>
                   handleGraphConfigGroupByChange(e, index)
+                }
+                handleGraphConfigGroupModeChange={(e) =>
+                  handleGraphConfigGroupModeChange(e, index)
                 }
                 handleGraphConfigAdd={() => handleGraphConfigAdd(index + 1)}
                 handleGraphConfigRemove={() => handleGraphConfigRemove(index)}
