@@ -8,10 +8,14 @@ import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import Card from "react-bootstrap/Card";
 import { useQuery } from "@tanstack/react-query";
-import Plot from "react-plotly.js";
-import { Template } from "plotly.js";
+import Plotly from "plotly.js-basic-dist";
+import createPlotlyComponent from "react-plotly.js/factory";
+import { Template } from "plotly.js-basic-dist";
 import graphStyles from "../utils/graphStyles";
 import { OnyxProps, ProjectField } from "../types";
+
+// Create Plotly component using basic distribution
+const Plot = createPlotlyComponent(Plotly);
 
 type GraphConfig = {
   type: string;
