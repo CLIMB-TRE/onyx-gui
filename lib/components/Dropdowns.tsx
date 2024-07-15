@@ -1,21 +1,20 @@
 import React from "react";
 import Select, { components, OptionProps } from "react-select";
 import { useQuery } from "@tanstack/react-query";
-import getStyles from "./styles";
-
-type OptionType = { label: string; value: string };
+import selectStyles from "../utils/selectStyles";
+import { OptionType } from "../types";
 
 interface GenericDropdownProps {
   options: string[];
   titles?: Map<string, string>;
   placeholder?: string;
   onChange: React.ChangeEventHandler<HTMLSelectElement>;
-  darkMode: boolean;
 }
 
 interface DropdownProps extends GenericDropdownProps {
   value: string;
   isClearable?: boolean;
+  isDisabled?: boolean;
 }
 
 interface MultiDropdownProps extends GenericDropdownProps {
@@ -47,9 +46,10 @@ function Dropdown(props: DropdownProps) {
   return (
     <Select
       isClearable={props.isClearable}
+      isDisabled={props.isDisabled}
       components={{ Option }}
       menuPortalTarget={document.body}
-      styles={getStyles(props.darkMode)}
+      styles={selectStyles}
       options={props.options.map((option) => ({
         value: option,
         label: getLabel(option, props.titles),
@@ -87,7 +87,7 @@ function MultiDropdown(props: MultiDropdownProps) {
       closeMenuOnSelect={false}
       components={{ Option }}
       menuPortalTarget={document.body}
-      styles={getStyles(props.darkMode)}
+      styles={selectStyles}
       options={props.options.map((option) => ({
         value: option,
         label: getLabel(option, props.titles),

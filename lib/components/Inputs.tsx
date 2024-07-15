@@ -1,9 +1,8 @@
 import React from "react";
 import Form from "react-bootstrap/Form";
 import Creatable from "react-select/creatable";
-import getStyles from "./styles";
-
-type OptionType = { label: string; value: string };
+import selectStyles from "../utils/selectStyles";
+import { OptionType } from "../types";
 
 function Input({
   value,
@@ -28,19 +27,17 @@ function MultiInput({
   placeholder,
   limit,
   onChange,
-  darkMode,
 }: {
   value: string[];
   placeholder?: string;
   limit?: number;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
-  darkMode: boolean;
 }) {
   return (
     <Creatable
       isMulti
       menuPortalTarget={document.body}
-      styles={getStyles(darkMode)}
+      styles={selectStyles}
       value={value.map((option) => ({
         value: option,
         label: option,

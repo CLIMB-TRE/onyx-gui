@@ -27,6 +27,37 @@
   overflow-y: scroll;
 }
 
+.graph-panel {
+  height: 78vh;
+  overflow-y : scroll;
+}
+
 .table-panel {
   height: 48vh;
 }
+
+[data-bs-theme=light] {
+  --onyx-dropdown-control-border-color: var(--bs-gray-300);
+  --onyx-dropdown-control-background-color: var(--bs-white);
+  --onyx-dropdown-menu-background-color: var(--bs-white);
+  --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-300);
+  --onyx-dropdown-label-color: var(--bs-black);
+  --onyx-dropdown-option-background-color: var(--bs-white);
+  --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
+}
+
+[data-bs-theme=dark] {
+  --onyx-dropdown-control-border-color: var(--bs-gray-700);
+  --onyx-dropdown-control-background-color: var(--bs-gray-900);
+  --onyx-dropdown-menu-background-color: var(--bs-black);
+  --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-700);
+  --onyx-dropdown-label-color: var(--bs-white);
+  --onyx-dropdown-option-background-color: var(--bs-black);
+  --onyx-dropdown-option-hover-background-color: var(--bs-gray-700);
+}
+
+[data-bs-theme=dark] .btn-dark {
+  --bs-btn-border-color: var(--bs-gray-700);
+  --bs-btn-hover-border-color: var(--bs-gray-500);
+}
+

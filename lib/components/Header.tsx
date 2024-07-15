@@ -1,6 +1,8 @@
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import Form from "react-bootstrap/Form";
+import Tab from "react-bootstrap/Tab";
+import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { useQuery } from "@tanstack/react-query";
@@ -37,9 +39,12 @@ interface HeaderProps {
   projectName: string;
   projectList: string[];
   handleProjectChange: (p: string) => void;
-  handleThemeChange: () => void;
   guiVersion?: string;
   extVersion?: string;
+  tabKey: string;
+  setTabKey: (k: string) => void;
+  darkMode: boolean;
+  handleThemeChange: () => void;
 }
 
 function Header(props: HeaderProps) {
@@ -60,6 +65,7 @@ function Header(props: HeaderProps) {
     <Navbar bg="dark" variant="dark" collapseOnSelect expand="sm">
       <Container fluid>
         <Navbar.Brand>Onyx</Navbar.Brand>
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Stack direction="horizontal" gap={3}>
             <NavDropdown
@@ -82,13 +88,28 @@ function Header(props: HeaderProps) {
             <HeaderVersion label="Extension" version={props.extVersion} />
           </Stack>
         </Navbar.Collapse>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Form.Check
-          type="switch"
-          id="theme-switch"
-          label={<span className="text-light">Switch Theme</span>}
-          onChange={props.handleThemeChange}
-        />
+        <Stack direction="horizontal" gap={3}>
+          <Tab.Container
+            activeKey={props.tabKey}
+            onSelect={(k) => props.setTabKey(k || "data")}
+          >
+            <Nav variant="underline">
+              <Nav.Item>
+                <Nav.Link eventKey="data">Data</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="stats">Statistics</Nav.Link>
+              </Nav.Item>
+            </Nav>
+          </Tab.Container>
+          <Form.Check
+            type="switch"
+            id="theme-switch"
+            label={<span className="text-light">Switch Theme</span>}
+            checked={props.darkMode}
+            onChange={props.handleThemeChange}
+          />
+        </Stack>
       </Container>
     </Navbar>
   );
