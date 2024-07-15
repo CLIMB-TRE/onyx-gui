@@ -319,7 +319,7 @@ function Results(props: ResultsProps) {
         <Button
           className="float-end"
           size="sm"
-          variant="dark"
+          variant="success"
           onClick={handleExportToCSV}
         >
           Export Page to CSV
