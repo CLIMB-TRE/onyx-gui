@@ -14,7 +14,7 @@ import { Template } from "plotly.js-basic-dist";
 import graphStyles from "../utils/graphStyles";
 import { OnyxProps, ProjectField } from "../types";
 
-// Create Plotly component using basic distribution
+// Create Plotly component using basic plotly distribution
 const Plot = createPlotlyComponent(Plotly);
 
 type GraphConfig = {
@@ -291,16 +291,41 @@ function GraphPanel(props: GraphPanelProps) {
   let fields: string[];
   let groupBy: string[];
 
+  const graphConfig = {
+    line: {
+      fields: ["date"],
+      groupBy: ["choice", "bool"],
+    },
+    bar: {
+      fields: ["choice", "date", "bool"],
+      groupBy: ["choice", "bool"],
+    },
+    pie: {
+      fields: ["choice", "bool"],
+      groupBy: [],
+    },
+  };
+
   const emptyGraph = () => (
     <BaseGraph {...props} data={[]} title="Empty Graph" />
   );
 
+  const getType = (field: string) => {
+    return props.projectFields.get(field)?.type || "";
+  };
+
+  const projectFieldsArray = Array.from(props.projectFields.keys());
+
   if (props.type === "line") {
-    fields = Array.from(props.projectFields.keys()).filter(
-      (k) => props.projectFields.get(k)?.type === "date" && !k.includes("__")
+    fields = projectFieldsArray.filter(
+      (field) =>
+        graphConfig.line.fields.includes(getType(field)) &&
+        !field.includes("__")
     );
-    groupBy = Array.from(props.projectFields.keys()).filter(
-      (k) => props.projectFields.get(k)?.type === "choice" && !k.includes("__")
+    groupBy = projectFieldsArray.filter(
+      (field) =>
+        graphConfig.line.groupBy.includes(getType(field)) &&
+        !field.includes("__")
     );
 
     if (props.field && props.groupBy) {
@@ -317,14 +342,14 @@ function GraphPanel(props: GraphPanelProps) {
       g = emptyGraph();
     }
   } else if (props.type === "bar") {
-    fields = Array.from(props.projectFields.keys()).filter(
-      (k) =>
-        (props.projectFields.get(k)?.type === "choice" ||
-          props.projectFields.get(k)?.type === "date") &&
-        !k.includes("__")
+    fields = projectFieldsArray.filter(
+      (field) =>
+        graphConfig.bar.fields.includes(getType(field)) && !field.includes("__")
     );
-    groupBy = Array.from(props.projectFields.keys()).filter(
-      (k) => props.projectFields.get(k)?.type === "choice" && !k.includes("__")
+    groupBy = projectFieldsArray.filter(
+      (field) =>
+        graphConfig.bar.groupBy.includes(getType(field)) &&
+        !field.includes("__")
     );
 
     if (props.field && props.groupBy) {
@@ -342,8 +367,9 @@ function GraphPanel(props: GraphPanelProps) {
       g = emptyGraph();
     }
   } else if (props.type === "pie") {
-    fields = Array.from(props.projectFields.keys()).filter(
-      (k) => props.projectFields.get(k)?.type === "choice" && !k.includes("__")
+    fields = projectFieldsArray.filter(
+      (field) =>
+        graphConfig.pie.fields.includes(getType(field)) && !field.includes("__")
     );
     groupBy = [];
 
@@ -387,17 +413,19 @@ function GraphPanel(props: GraphPanelProps) {
                   onChange={props.handleGraphConfigTypeChange}
                 />
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Field</Form.Label>
-                <Dropdown
-                  isClearable
-                  options={fields}
-                  value={props.field}
-                  onChange={props.handleGraphConfigFieldChange}
-                />
-              </Form.Group>
+              {props.type && (
+                <Form.Group className="mb-3">
+                  <Form.Label>Field</Form.Label>
+                  <Dropdown
+                    isClearable
+                    options={fields}
+                    value={props.field}
+                    onChange={props.handleGraphConfigFieldChange}
+                  />
+                </Form.Group>
+              )}
               {props.type === "bar" ? (
-                <Row>
+                <Row className="g-3">
                   <Col>
                     <Form.Group className="mb-3">
                       <Form.Label>Group By</Form.Label>
@@ -421,7 +449,7 @@ function GraphPanel(props: GraphPanelProps) {
                   </Col>
                 </Row>
               ) : (
-                props.type !== "pie" && (
+                props.type === "line" && (
                   <Form.Group className="mb-3">
                     <Form.Label>Group By</Form.Label>
                     <Dropdown
@@ -460,7 +488,6 @@ function Stats(props: StatsProps) {
     index: number
   ) => {
     const list = [...graphConfigList];
-
     if (list[index].type !== e.target.value) {
       list[index].field = "";
       list[index].groupBy = "";
@@ -470,7 +497,6 @@ function Stats(props: StatsProps) {
         list[index].groupMode = "";
       }
     }
-
     list[index].type = e.target.value;
     setGraphConfigList(list);
   };
