@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from "react";
+import { useState, useMemo, useLayoutEffect } from "react";
 import { Dropdown } from "../components/Dropdowns";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -180,18 +180,22 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
     data = new Map<string, { field_data: string[]; count_data: number[] }>(),
   } = useGroupedSummaryQuery(props);
 
+  const graphData = useMemo(
+    () =>
+      Array.from(data.entries()).map(([group, { field_data, count_data }]) => ({
+        x: field_data,
+        y: count_data,
+        name: group,
+        type: "scatter",
+        mode: "lines+markers",
+      })),
+    [data]
+  );
+
   return (
     <BaseGraph
       {...props}
-      data={Array.from(data.entries()).map(
-        ([group, { field_data, count_data }]) => ({
-          x: field_data,
-          y: count_data,
-          name: group,
-          type: "scatter",
-          mode: "lines+markers",
-        })
-      )}
+      data={graphData}
       title={`Records by ${props.field}, grouped by ${props.groupBy}`}
       xTitle={props.field}
       yTitle="count"
@@ -230,6 +234,17 @@ function GroupedBarGraph(props: GroupedGraphProps) {
     data = new Map<string, { field_data: string[]; count_data: number[] }>(),
   } = useGroupedSummaryQuery(props);
 
+  const graphData = useMemo(
+    () =>
+      Array.from(data.entries()).map(([group, { field_data, count_data }]) => ({
+        x: field_data,
+        y: count_data,
+        name: group,
+        type: "bar",
+      })),
+    [data]
+  );
+
   let layout: Record<string, string> = {};
   let yTitle = "count";
 
@@ -245,14 +260,7 @@ function GroupedBarGraph(props: GroupedGraphProps) {
   return (
     <BaseGraph
       {...props}
-      data={Array.from(data.entries()).map(
-        ([group, { field_data, count_data }]) => ({
-          x: field_data,
-          y: count_data,
-          name: group,
-          type: "bar",
-        })
-      )}
+      data={graphData}
       title={`Records by ${props.field}, grouped by ${props.groupBy}`}
       xTitle={props.field}
       yTitle={yTitle}
