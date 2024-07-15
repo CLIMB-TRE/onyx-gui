@@ -4,10 +4,12 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
-import { Dropdown, MultiDropdown } from "./Dropdowns";
+import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput } from "./Inputs";
 
 interface FilterProps {
+  project: string;
+  httpPathHandler: (path: string) => Promise<Response>;
   filter: { field: string; lookup: string; value: string };
   fieldList: string[];
   projectFields: Map<string, { type: string; values?: string[] }>;
@@ -21,7 +23,6 @@ interface FilterProps {
   >;
   handleFilterAdd: () => void;
   handleFilterRemove: () => void;
-  darkMode: boolean;
 }
 
 function Filter(props: FilterProps) {
@@ -36,27 +37,30 @@ function Filter(props: FilterProps) {
         options={["true", "false"]}
         value={props.filter.value}
         onChange={props.handleValueChange}
-        darkMode={props.darkMode}
       />
     );
   } else if (props.projectFields.get(props.filter.field)?.type === "choice") {
     if (props.filter.lookup.endsWith("in")) {
       f = (
-        <MultiDropdown
+        <MultiChoice
+          project={props.project}
+          field={props.filter.field}
+          httpPathHandler={props.httpPathHandler}
           options={props.projectFields.get(props.filter.field)?.values || []}
           value={getValueList(props.filter.value)}
           onChange={props.handleValueChange}
-          darkMode={props.darkMode}
         />
       );
     } else {
       f = (
-        <Dropdown
+        <Choice
+          project={props.project}
+          field={props.filter.field}
+          httpPathHandler={props.httpPathHandler}
           isClearable
           options={props.projectFields.get(props.filter.field)?.values || []}
           value={props.filter.value}
           onChange={props.handleValueChange}
-          darkMode={props.darkMode}
         />
       );
     }
@@ -65,7 +69,6 @@ function Filter(props: FilterProps) {
       <MultiInput
         value={getValueList(props.filter.value)}
         onChange={props.handleValueChange}
-        darkMode={props.darkMode}
       />
     );
   } else if (props.filter.lookup.endsWith("range")) {
@@ -74,7 +77,6 @@ function Filter(props: FilterProps) {
         value={getValueList(props.filter.value)}
         limit={2}
         onChange={props.handleValueChange}
-        darkMode={props.darkMode}
       />
     );
   } else if (props.projectFields.get(props.filter.field)?.type === "bool") {
@@ -84,7 +86,6 @@ function Filter(props: FilterProps) {
         options={["true", "false"]}
         value={props.filter.value}
         onChange={props.handleValueChange}
-        darkMode={props.darkMode}
       />
     );
   } else {
@@ -101,7 +102,6 @@ function Filter(props: FilterProps) {
               value={props.filter.field}
               placeholder="Select field..."
               onChange={props.handleFieldChange}
-              darkMode={props.darkMode}
             />
           </Col>
           <Col sm={4}>
@@ -115,16 +115,15 @@ function Filter(props: FilterProps) {
               value={props.filter.lookup}
               placeholder="Select lookup..."
               onChange={props.handleLookupChange}
-              darkMode={props.darkMode}
             />
           </Col>
           <Col sm={4}>{f}</Col>
         </Row>
       </Container>
-      <Button variant="primary" onClick={props.handleFilterAdd}>
+      <Button variant="dark" onClick={props.handleFilterAdd}>
         +
       </Button>
-      <Button variant="danger" onClick={props.handleFilterRemove}>
+      <Button variant="dark" onClick={props.handleFilterRemove}>
         -
       </Button>
     </Stack>
