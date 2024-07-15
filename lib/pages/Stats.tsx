@@ -418,6 +418,7 @@ function GraphPanel(props: GraphPanelProps) {
                   isClearable
                   options={["line", "bar", "pie"]}
                   value={props.type}
+                  placeholder="Select graph type..."
                   onChange={props.handleGraphConfigTypeChange}
                 />
               </Form.Group>
@@ -428,6 +429,7 @@ function GraphPanel(props: GraphPanelProps) {
                     isClearable
                     options={fields}
                     value={props.field}
+                    placeholder="Select field..."
                     onChange={props.handleGraphConfigFieldChange}
                   />
                 </Form.Group>
@@ -441,6 +443,7 @@ function GraphPanel(props: GraphPanelProps) {
                         isClearable
                         options={groupBy}
                         value={props.groupBy}
+                        placeholder="Select field..."
                         onChange={props.handleGraphConfigGroupByChange}
                       />
                     </Form.Group>
@@ -464,6 +467,7 @@ function GraphPanel(props: GraphPanelProps) {
                       isClearable
                       options={groupBy}
                       value={props.groupBy}
+                      placeholder="Select field..."
                       onChange={props.handleGraphConfigGroupByChange}
                     />
                   </Form.Group>
