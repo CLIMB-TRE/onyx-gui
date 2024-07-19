@@ -14,8 +14,11 @@ import { useQuery } from "@tanstack/react-query";
 import { MultiDropdown } from "../components/Dropdowns";
 import Filter from "../components/Filter";
 import ResultsTable from "../components/ResultsTable";
-import LoadingAlert from "../components/LoadingAlert";
+import { LoadingAlert, DelayedLoadingAlert } from "../components/LoadingAlert";
+import ErrorMessages from "../components/ErrorMessages";
 import { OnyxProps, ProjectField, ResultType, ErrorType } from "../types";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
 
 type FilterField = {
   field: string;
@@ -325,19 +328,7 @@ function Results(props: ResultsProps) {
         ) : props.resultError ? (
           <Alert variant="danger">Error: {props.resultError.message}</Alert>
         ) : props.resultData.messages ? (
-          Object.entries(props.resultData.messages).map(([key, value]) =>
-            Array.isArray(value) ? (
-              value.map((v: string) => (
-                <Alert key={key} variant="danger">
-                  {key}: {v}
-                </Alert>
-              ))
-            ) : (
-              <Alert key={key} variant="danger">
-                {key}: {value}
-              </Alert>
-            )
-          )
+          <ErrorMessages messages={props.resultData.messages} />
         ) : (
           <ResultsTable
             data={props.resultData.data || []}
@@ -387,12 +378,11 @@ interface RecordDetailProps extends DataProps {
 }
 
 function RecordDetail(props: RecordDetailProps) {
-  // Fetch data, depending on project and record ID
+  // Fetch record, depending on project and record ID
   const {
     isFetching: recordPending,
     error: recordError,
-    data: recordData = {} as ResultType,
-    // refetch: refetchResults,
+    data: recordData = {},
   } = useQuery({
     queryKey: ["results", props.project, props.recordID],
     queryFn: async () => {
@@ -406,46 +396,78 @@ function RecordDetail(props: RecordDetailProps) {
 
   return (
     <Modal
-      {...props}
-      size="lg"
+      show={props.show}
+      onHide={props.onHide}
+      dialogClassName="modal-xl"
       aria-labelledby="contained-modal-title-vcenter"
-      // centered
       scrollable
-      className="modal-height"
     >
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
-          {props.recordID}
+          <Container fluid>
+            {" "}
+            CLIMB ID: <code>{props.recordID}</code>
+          </Container>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <h4>Record Details</h4>
         {recordPending ? (
-          <LoadingAlert />
+          <DelayedLoadingAlert />
         ) : recordError ? (
           <Alert variant="danger">
             Error: {(recordError as Error).message}
           </Alert>
         ) : recordData.messages ? (
-          Object.entries(recordData.messages).map(([key, value]) =>
-            Array.isArray(value) ? (
-              value.map((v: string) => (
-                <Alert key={key} variant="danger">
-                  {key}: {v}
-                </Alert>
-              ))
-            ) : (
-              <Alert key={key} variant="danger">
-                {key}: {value as string}
-              </Alert>
-            )
-          )
+          <ErrorMessages messages={recordData.messages} />
         ) : (
-          <pre>{JSON.stringify(recordData, null, 2)}</pre>
+          // <pre>{JSON.stringify(recordData.data, null, 2)}</pre>
+          recordData.data && (
+            <Container fluid>
+              <Stack gap={3} direction="vertical">
+                <h4>
+                  Published Date:{" "}
+                  <code>{recordData.data["published_date"]}</code>
+                </h4>
+                <h4>
+                  Site: <code>{recordData.data["site"]}</code>
+                </h4>
+              </Stack>
+              <hr />
+              <Tabs
+                defaultActiveKey="recordDetails"
+                id="uncontrolled-tab-example"
+                className="mb-3"
+              >
+                <Tab eventKey="recordDetails" title="Record Details">
+                  <ResultsTable
+                    data={
+                      Object.entries(recordData.data)
+                        .filter(([, value]) => {
+                          return !(value instanceof Array);
+                        })
+                        .map(([key, value]) => ({
+                          Field: key,
+                          Value: value,
+                        })) as ResultType[]
+                    }
+                  />
+                </Tab>
+                {Object.entries(recordData.data)
+                  .filter(([, value]) => value instanceof Array)
+                  .map(([key, value], index) => (
+                    <Tab eventKey={index} title={key}>
+                      <ResultsTable data={value as ResultType[]} />
+                    </Tab>
+                  ))}
+              </Tabs>
+            </Container>
+          )
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={props.onHide}>Close</Button>
+        <Button variant="dark" onClick={props.onHide}>
+          Close
+        </Button>
       </Modal.Footer>
     </Modal>
   );

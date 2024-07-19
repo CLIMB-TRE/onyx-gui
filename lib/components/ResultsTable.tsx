@@ -11,7 +11,7 @@ const ResultsTable = memo(function ResultsTable({
 }: {
   data: ResultType[];
   titles?: Map<string, string>;
-  recordDetailHandler: (climbID: string) => void;
+  recordDetailHandler?: (climbID: string) => void;
   s3PathHandler?: (path: string) => void;
 }) {
   const headers = () => {
@@ -43,7 +43,7 @@ const ResultsTable = memo(function ResultsTable({
         {rows.map((row, index) => (
           <tr key={index}>
             {row.map((cell, index) =>
-              index === climbIDIndex ? (
+              recordDetailHandler && index === climbIDIndex ? (
                 <td key={index}>
                   <Button
                     variant="link"
