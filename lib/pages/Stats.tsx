@@ -17,48 +17,6 @@ import { OnyxProps, ProjectField, ResultType } from "../types";
 // Create Plotly component using basic plotly distribution
 const Plot = createPlotlyComponent(Plotly);
 
-type GraphConfig = {
-  type: string;
-  field: string;
-  groupBy: string;
-  groupMode: string;
-};
-
-interface StatsProps extends OnyxProps {
-  project: string;
-  projectFields: Map<string, ProjectField>;
-  darkMode: boolean;
-}
-
-interface GraphProps extends StatsProps {
-  field: string;
-}
-
-interface GroupedGraphProps extends GraphProps {
-  groupBy: string;
-  groupMode?: string;
-}
-
-interface BaseGraphProps extends GraphProps {
-  data: Plotly.Data[];
-  title?: string;
-  xTitle?: string;
-  yTitle?: string;
-  legendTitle?: string;
-  layout?: Record<string, unknown>;
-}
-
-interface GraphPanelProps extends GroupedGraphProps {
-  type: string;
-  groupMode: string;
-  handleGraphConfigTypeChange: React.ChangeEventHandler<HTMLSelectElement>;
-  handleGraphConfigFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
-  handleGraphConfigGroupByChange: React.ChangeEventHandler<HTMLSelectElement>;
-  handleGraphConfigGroupModeChange: React.ChangeEventHandler<HTMLSelectElement>;
-  handleGraphConfigAdd: () => void;
-  handleGraphConfigRemove: () => void;
-}
-
 const useSummaryQuery = (props: GraphProps) => {
   return useQuery({
     queryKey: ["results", props.project, props.field],
@@ -140,6 +98,16 @@ const useGroupedSummaryQuery = (props: GroupedGraphProps) => {
   });
 };
 
+interface BaseGraphProps {
+  data: Plotly.Data[];
+  title: string;
+  xTitle?: string;
+  yTitle?: string;
+  legendTitle?: string;
+  layout?: Record<string, unknown>;
+  darkMode: boolean;
+}
+
 function BaseGraph(props: BaseGraphProps) {
   return (
     <Plot
@@ -147,7 +115,7 @@ function BaseGraph(props: BaseGraphProps) {
       layout={{
         ...props.layout,
         autosize: true,
-        title: props.title || `Records by ${props.field}`,
+        title: props.title,
         margin: {
           l: 50,
           r: 50,
@@ -168,37 +136,53 @@ function BaseGraph(props: BaseGraphProps) {
   );
 }
 
+function getType(projectFields: Map<string, ProjectField>, field: string) {
+  return projectFields.get(field)?.type || "";
+}
+
 function getTitle(
+  projectFields: Map<string, ProjectField>,
   field: string,
   data: { field_data: string[]; count_data: number[] }
 ) {
   let title = `Records by ${field}`;
-  const nullCount = data.count_data[data.field_data.indexOf("")] || 0;
 
-  if (nullCount) {
-    title += `<br>(Excluding ${nullCount} records with no ${field})`;
+  if (getType(projectFields, field) === "date") {
+    const nullCount = data.count_data[data.field_data.indexOf("")] || 0;
+
+    if (nullCount) {
+      title += `<br>(Excluding ${nullCount} records with no ${field})`;
+    }
   }
 
   return title;
 }
 
 function getGroupedTitle(
+  projectFields: Map<string, ProjectField>,
   field: string,
   groupBy: string,
   data: Map<string, { field_data: string[]; count_data: number[] }>
 ) {
   let title = `Records by ${field}, grouped by ${groupBy}`;
-  let nullCount = 0;
 
-  data.forEach(({ field_data, count_data }) => {
-    nullCount += count_data[field_data.indexOf("")] || 0;
-  });
+  if (getType(projectFields, field) === "date") {
+    let nullCount = 0;
 
-  if (nullCount) {
-    title += `<br>(Excluding ${nullCount} records with no ${field})`;
+    data.forEach(({ field_data, count_data }) => {
+      nullCount += count_data[field_data.indexOf("")] || 0;
+    });
+
+    if (nullCount) {
+      title += `<br>(Excluding ${nullCount} records with no ${field})`;
+    }
   }
 
   return title;
+}
+
+interface GraphProps extends StatsProps {
+  field: string;
 }
 
 function ScatterGraph(props: GraphProps) {
@@ -221,38 +205,9 @@ function ScatterGraph(props: GraphProps) {
           marker: { color: "#00CC96" },
         },
       ]}
-      title={getTitle(props.field, data)}
+      title={getTitle(props.projectFields, props.field, data)}
       xTitle={props.field}
       yTitle="count"
-    />
-  );
-}
-
-function GroupedScatterGraph(props: GroupedGraphProps) {
-  const {
-    data = new Map<string, { field_data: string[]; count_data: number[] }>(),
-  } = useGroupedSummaryQuery(props);
-
-  const graphData = useMemo(
-    () =>
-      Array.from(data.entries()).map(([group, { field_data, count_data }]) => ({
-        x: field_data,
-        y: count_data,
-        name: group,
-        type: "scatter",
-        mode: "lines+markers",
-      })) as Plotly.Data[],
-    [data]
-  );
-
-  return (
-    <BaseGraph
-      {...props}
-      data={graphData}
-      title={getGroupedTitle(props.field, props.groupBy, data)}
-      xTitle={props.field}
-      yTitle="count"
-      legendTitle={props.groupBy}
     />
   );
 }
@@ -276,9 +231,73 @@ function BarGraph(props: GraphProps) {
           marker: { color: "#00CC96" },
         },
       ]}
-      title={getTitle(props.field, data)}
+      title={getTitle(props.projectFields, props.field, data)}
       xTitle={props.field}
       yTitle="count"
+    />
+  );
+}
+
+function PieGraph(props: GraphProps) {
+  const {
+    data = {
+      field_data: [],
+      count_data: [],
+    },
+  } = useSummaryQuery(props);
+
+  return (
+    <BaseGraph
+      {...props}
+      data={[
+        {
+          labels: data.field_data,
+          values: data.count_data,
+          type: "pie",
+          marker: { color: "#198754" },
+        },
+      ]}
+      title={getTitle(props.projectFields, props.field, data)}
+      legendTitle={props.field}
+    />
+  );
+}
+
+interface GroupedGraphProps extends GraphProps {
+  groupBy: string;
+  groupMode?: string;
+}
+
+function GroupedScatterGraph(props: GroupedGraphProps) {
+  const {
+    data = new Map<string, { field_data: string[]; count_data: number[] }>(),
+  } = useGroupedSummaryQuery(props);
+
+  const graphData = useMemo(
+    () =>
+      Array.from(data.entries()).map(([group, { field_data, count_data }]) => ({
+        x: field_data,
+        y: count_data,
+        name: group,
+        type: "scatter",
+        mode: "lines+markers",
+      })) as Plotly.Data[],
+    [data]
+  );
+
+  return (
+    <BaseGraph
+      {...props}
+      data={graphData}
+      title={getGroupedTitle(
+        props.projectFields,
+        props.field,
+        props.groupBy,
+        data
+      )}
+      xTitle={props.field}
+      yTitle="count"
+      legendTitle={props.groupBy}
     />
   );
 }
@@ -315,7 +334,12 @@ function GroupedBarGraph(props: GroupedGraphProps) {
     <BaseGraph
       {...props}
       data={graphData}
-      title={getGroupedTitle(props.field, props.groupBy, data)}
+      title={getGroupedTitle(
+        props.projectFields,
+        props.field,
+        props.groupBy,
+        data
+      )}
       xTitle={props.field}
       yTitle={yTitle}
       legendTitle={props.groupBy}
@@ -324,35 +348,21 @@ function GroupedBarGraph(props: GroupedGraphProps) {
   );
 }
 
-function PieGraph(props: GraphProps) {
-  const {
-    data = {
-      field_data: [],
-      count_data: [],
-    },
-  } = useSummaryQuery(props);
-
-  return (
-    <BaseGraph
-      {...props}
-      data={[
-        {
-          labels: data.field_data,
-          values: data.count_data,
-          type: "pie",
-          marker: { color: "#198754" },
-        },
-      ]}
-      legendTitle={props.field}
-    />
-  );
+interface GraphPanelProps extends StatsProps {
+  type: string;
+  field: string;
+  groupBy: string;
+  groupMode: string;
+  graphFieldOptions: string[];
+  handleGraphConfigTypeChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleGraphConfigFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleGraphConfigGroupByChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleGraphConfigGroupModeChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleGraphConfigAdd: () => void;
+  handleGraphConfigRemove: () => void;
 }
 
 function GraphPanel(props: GraphPanelProps) {
-  let g: JSX.Element;
-  let fields: string[];
-  let groupBy: string[];
-
   const graphConfig = {
     line: {
       fields: ["date"],
@@ -364,33 +374,26 @@ function GraphPanel(props: GraphPanelProps) {
     },
     pie: {
       fields: ["choice", "bool"],
-      groupBy: [],
+      groupBy: [] as string[],
     },
   };
 
-  const emptyGraph = () => (
-    <BaseGraph {...props} data={[]} title="Empty Graph" />
+  const fields = props.graphFieldOptions.filter((field) =>
+    graphConfig[props.type as keyof typeof graphConfig].fields.includes(
+      getType(props.projectFields, field)
+    )
   );
 
-  const getType = (field: string) => {
-    return props.projectFields.get(field)?.type || "";
-  };
+  const groupBy = props.graphFieldOptions.filter((field) =>
+    graphConfig[props.type as keyof typeof graphConfig].groupBy.includes(
+      getType(props.projectFields, field)
+    )
+  );
 
-  const projectFieldsArray = Array.from(props.projectFields.keys());
+  let g: JSX.Element;
 
-  if (props.type === "line") {
-    fields = projectFieldsArray.filter(
-      (field) =>
-        graphConfig.line.fields.includes(getType(field)) &&
-        !field.includes("__")
-    );
-    groupBy = projectFieldsArray.filter(
-      (field) =>
-        graphConfig.line.groupBy.includes(getType(field)) &&
-        !field.includes("__")
-    );
-
-    if (props.field && props.groupBy) {
+  switch (true) {
+    case props.type === "line" && !!props.field && !!props.groupBy:
       g = (
         <GroupedScatterGraph
           {...props}
@@ -398,23 +401,11 @@ function GraphPanel(props: GraphPanelProps) {
           groupBy={props.groupBy}
         />
       );
-    } else if (props.field) {
+      break;
+    case props.type === "line" && !!props.field:
       g = <ScatterGraph {...props} field={props.field} />;
-    } else {
-      g = emptyGraph();
-    }
-  } else if (props.type === "bar") {
-    fields = projectFieldsArray.filter(
-      (field) =>
-        graphConfig.bar.fields.includes(getType(field)) && !field.includes("__")
-    );
-    groupBy = projectFieldsArray.filter(
-      (field) =>
-        graphConfig.bar.groupBy.includes(getType(field)) &&
-        !field.includes("__")
-    );
-
-    if (props.field && props.groupBy) {
+      break;
+    case props.type === "bar" && !!props.field && !!props.groupBy:
       g = (
         <GroupedBarGraph
           {...props}
@@ -423,27 +414,15 @@ function GraphPanel(props: GraphPanelProps) {
           groupMode={props.groupMode}
         />
       );
-    } else if (props.field) {
+      break;
+    case props.type === "bar" && !!props.field:
       g = <BarGraph {...props} field={props.field} />;
-    } else {
-      g = emptyGraph();
-    }
-  } else if (props.type === "pie") {
-    fields = projectFieldsArray.filter(
-      (field) =>
-        graphConfig.pie.fields.includes(getType(field)) && !field.includes("__")
-    );
-    groupBy = [];
-
-    if (props.field) {
+      break;
+    case props.type === "pie" && !!props.field:
       g = <PieGraph {...props} field={props.field} />;
-    } else {
-      g = emptyGraph();
-    }
-  } else {
-    g = emptyGraph();
-    fields = [];
-    groupBy = [];
+      break;
+    default:
+      g = <BaseGraph {...props} data={[]} title="Empty Graph" />;
   }
 
   return (
@@ -535,11 +514,27 @@ function GraphPanel(props: GraphPanelProps) {
   );
 }
 
+type GraphConfig = {
+  type: string;
+  field: string;
+  groupBy: string;
+  groupMode: string;
+};
+
+interface StatsProps extends OnyxProps {
+  project: string;
+  projectFields: Map<string, ProjectField>;
+  darkMode: boolean;
+}
+
 function Stats(props: StatsProps) {
   const [graphConfigList, setGraphConfigList] = useState([
     { type: "line", field: "published_date", groupBy: "" },
     { type: "line", field: "published_date", groupBy: "site" },
   ] as GraphConfig[]);
+  const listFieldOptions = Array.from(props.projectFields.entries())
+    .filter(([, projectField]) => projectField.actions.includes("list"))
+    .map(([field]) => field);
 
   // Reset graphs when project changes
   useLayoutEffect(() => {
@@ -640,6 +635,7 @@ function Stats(props: StatsProps) {
                 field={graphConfig.field}
                 groupBy={graphConfig.groupBy}
                 groupMode={graphConfig.groupMode}
+                graphFieldOptions={listFieldOptions}
                 handleGraphConfigTypeChange={(e) =>
                   handleGraphConfigTypeChange(e, index)
                 }

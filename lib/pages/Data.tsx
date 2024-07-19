@@ -22,31 +22,9 @@ type FilterField = {
   value: string;
 };
 
-type ResultData = {
-  next?: string;
-  previous?: string;
-  data?: ResultType[];
-  messages?: ErrorType;
-};
-
-interface DataProps extends OnyxProps {
-  project: string;
-  projectFields: Map<string, ProjectField>;
-  typeLookups: Map<string, string[]>;
-  fieldDescriptions: Map<string, string>;
-  lookupDescriptions: Map<string, string>;
-}
-
 interface SearchProps extends DataProps {
   handleSearch: (params: string) => void;
   handlePageNumber: (page: number) => void;
-}
-
-interface ResultsProps extends SearchProps {
-  resultPending: boolean;
-  resultError: Error | null;
-  resultData: ResultData;
-  pageNumber: number;
 }
 
 function Parameters(props: SearchProps) {
@@ -56,10 +34,10 @@ function Parameters(props: SearchProps) {
   const [excludeList, setExcludeList] = useState(new Array<string>());
   const [searchInput, setSearchInput] = useState("");
   const filterFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, field]) => field.actions.includes("filter"))
+    .filter(([, projectField]) => projectField.actions.includes("filter"))
     .map(([field]) => field);
   const listFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, field]) => field.actions.includes("list"))
+    .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
 
   // Clear parameters when project changes
@@ -292,6 +270,20 @@ function Parameters(props: SearchProps) {
   );
 }
 
+type ResultData = {
+  next?: string;
+  previous?: string;
+  data?: ResultType[];
+  messages?: ErrorType;
+};
+
+interface ResultsProps extends SearchProps {
+  resultPending: boolean;
+  resultError: Error | null;
+  resultData: ResultData;
+  pageNumber: number;
+}
+
 function Results(props: ResultsProps) {
   const fileName = `${props.project}${
     props.pageNumber > 1 ? "_" + props.pageNumber.toString() : ""
@@ -383,6 +375,14 @@ function Results(props: ResultsProps) {
       </Card.Footer>
     </Card>
   );
+}
+
+interface DataProps extends OnyxProps {
+  project: string;
+  projectFields: Map<string, ProjectField>;
+  typeLookups: Map<string, string[]>;
+  fieldDescriptions: Map<string, string>;
+  lookupDescriptions: Map<string, string>;
 }
 
 function Data(props: DataProps) {
