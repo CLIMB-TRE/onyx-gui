@@ -14,7 +14,7 @@ import { MultiDropdown } from "../components/Dropdowns";
 import Filter from "../components/Filter";
 import ResultsTable from "../components/ResultsTable";
 import LoadingAlert from "../components/LoadingAlert";
-import { OnyxProps, ProjectField } from "../types";
+import { OnyxProps, ProjectField, ResultType, ErrorType } from "../types";
 
 type FilterField = {
   field: string;
@@ -25,8 +25,8 @@ type FilterField = {
 type ResultData = {
   next?: string;
   previous?: string;
-  data?: Record<string, string | number | boolean | null>[];
-  messages?: Record<string, string | string[]>;
+  data?: ResultType[];
+  messages?: ErrorType;
 };
 
 interface DataProps extends OnyxProps {
@@ -413,14 +413,17 @@ function Data(props: DataProps) {
   });
 
   const handleSearch = (search: string) => {
-    // If search parameters have not changed, a refetch can be triggered
-    // But only if the previous fetch has completed
-    if (searchParameters === search && !resultPending) {
-      refetchResults();
+    if (searchParameters === search) {
+      if (!resultPending) {
+        // If search parameters have not changed and nothing is pending
+        // Then trigger a refetch
+        refetchResults();
+      }
+    } else {
+      // Otherwise, set the new search parameters
+      // This will trigger a new fetch
+      setSearchParameters(search);
     }
-    // Otherwise, set the new search parameters
-    // This will trigger a new fetch
-    setSearchParameters(search);
   };
 
   return (

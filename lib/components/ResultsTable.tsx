@@ -1,13 +1,14 @@
 import { memo } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
+import { ResultType } from "../types";
 
 const ResultsTable = memo(function ResultsTable({
   data,
   titles,
   s3PathHandler,
 }: {
-  data: Record<string, string | number | boolean | null>[];
+  data: ResultType[];
   titles?: Map<string, string>;
   s3PathHandler?: (path: string) => void;
 }) {

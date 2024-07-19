@@ -12,7 +12,7 @@ import Plotly from "plotly.js-basic-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
 import { Template } from "plotly.js-basic-dist";
 import graphStyles from "../utils/graphStyles";
-import { OnyxProps, ProjectField } from "../types";
+import { OnyxProps, ProjectField, ResultType } from "../types";
 
 // Create Plotly component using basic plotly distribution
 const Plot = createPlotlyComponent(Plotly);
@@ -40,7 +40,7 @@ interface GroupedGraphProps extends GraphProps {
 }
 
 interface BaseGraphProps extends GraphProps {
-  data: Record<string, string[] | number[] | string | Record<string, string>>[];
+  data: Plotly.Data[];
   title?: string;
   xTitle?: string;
   yTitle?: string;
@@ -67,11 +67,18 @@ const useSummaryQuery = (props: GraphProps) => {
         .httpPathHandler(`projects/${props.project}/?summarise=${props.field}`)
         .then((response) => response.json())
         .then((data) => {
-          const field_data = data.data.map(
-            (record: Record<string, unknown>) => record[props.field]
-          );
+          const field_data = data.data.map((record: ResultType) => {
+            // Convert null field value to empty string
+            let field_value = record[props.field];
+            if (field_value === null) {
+              field_value = "";
+            } else {
+              field_value = field_value.toString();
+            }
+            return field_value;
+          });
           const count_data = data.data.map(
-            (record: Record<string, unknown>) => record.count
+            (record: { count: number }) => record.count
           );
           return { field_data, count_data };
         });
@@ -92,26 +99,38 @@ const useGroupedSummaryQuery = (props: GroupedGraphProps) => {
         .then((data) => {
           const groupedData = new Map<
             string,
-            { field_data: Array<string>; count_data: Array<number> }
+            { field_data: string[]; count_data: number[] }
           >();
 
-          data.data.forEach((record: Record<string, string | number>) => {
-            const group_by_value = record[props.groupBy].toString();
-
-            if (!groupedData.has(group_by_value)) {
-              groupedData.set(group_by_value, {
-                field_data: [],
-                count_data: [],
-              });
+          data.data.forEach((record: ResultType) => {
+            // Convert null field value to empty string
+            let field_value = record[props.field];
+            if (field_value === null) {
+              field_value = "";
+            } else {
+              field_value = field_value.toString();
             }
 
-            groupedData
-              .get(group_by_value)
-              ?.field_data.push(record[props.field].toString());
+            // Convert null group-by value to empty string
+            let group_by_value = record[props.groupBy];
+            if (group_by_value === null) {
+              group_by_value = "";
+            } else {
+              group_by_value = group_by_value.toString();
+            }
 
-            groupedData
-              .get(group_by_value)
-              ?.count_data.push(Number(record.count));
+            // Add field value and count to grouped data
+            const groupedValue = groupedData.get(group_by_value);
+            if (!groupedValue) {
+              groupedData.set(group_by_value, {
+                field_data: [field_value],
+                count_data: [record.count as number],
+              });
+              return;
+            } else {
+              groupedValue.field_data.push(field_value);
+              groupedValue.count_data.push(record.count as number);
+            }
           });
 
           return groupedData;
@@ -139,7 +158,7 @@ function BaseGraph(props: BaseGraphProps) {
         height: 330,
         template: props.darkMode ? (graphStyles as Template) : undefined,
         xaxis: { title: props.xTitle },
-        yaxis: { title: props.yTitle, fixedrange: true },
+        yaxis: { title: props.yTitle },
         legend: { title: { text: props.legendTitle } },
         showlegend: props.legendTitle ? true : false,
       }}
@@ -147,6 +166,39 @@ function BaseGraph(props: BaseGraphProps) {
       style={{ width: "100%", height: "100%" }}
     />
   );
+}
+
+function getTitle(
+  field: string,
+  data: { field_data: string[]; count_data: number[] }
+) {
+  const nullCount = data.count_data[data.field_data.indexOf("")] || 0;
+
+  let title = `Records by ${field}`;
+  if (nullCount) {
+    title += `<br>(Excluding ${nullCount} records with no ${field})`;
+  }
+
+  return title;
+}
+
+function getGroupedTitle(
+  field: string,
+  groupBy: string,
+  data: Map<string, { field_data: string[]; count_data: number[] }>
+) {
+  let title = `Records by ${field}, grouped by ${groupBy}`;
+  let emptyValueCount = 0;
+
+  data.forEach(({ field_data, count_data }) => {
+    emptyValueCount += count_data[field_data.indexOf("")] || 0;
+  });
+
+  if (emptyValueCount) {
+    title += `<br>(Excluding ${emptyValueCount} records with no ${field})`;
+  }
+
+  return title;
 }
 
 function ScatterGraph(props: GraphProps) {
@@ -169,6 +221,7 @@ function ScatterGraph(props: GraphProps) {
           marker: { color: "#00CC96" },
         },
       ]}
+      title={getTitle(props.field, data)}
       xTitle={props.field}
       yTitle="count"
     />
@@ -188,7 +241,7 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
         name: group,
         type: "scatter",
         mode: "lines+markers",
-      })),
+      })) as Plotly.Data[],
     [data]
   );
 
@@ -196,7 +249,7 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
     <BaseGraph
       {...props}
       data={graphData}
-      title={`Records by ${props.field}, grouped by ${props.groupBy}`}
+      title={getGroupedTitle(props.field, props.groupBy, data)}
       xTitle={props.field}
       yTitle="count"
       legendTitle={props.groupBy}
@@ -223,6 +276,7 @@ function BarGraph(props: GraphProps) {
           marker: { color: "#00CC96" },
         },
       ]}
+      title={getTitle(props.field, data)}
       xTitle={props.field}
       yTitle="count"
     />
@@ -241,17 +295,17 @@ function GroupedBarGraph(props: GroupedGraphProps) {
         y: count_data,
         name: group,
         type: "bar",
-      })),
+      })) as Plotly.Data[],
     [data]
   );
 
   let layout: Record<string, string> = {};
   let yTitle = "count";
 
-  if (props.groupMode === "group") {
-    layout = { barmode: "group" };
-  } else if (props.groupMode === "stack") {
+  if (props.groupMode === "stack") {
     layout = { barmode: "stack" };
+  } else if (props.groupMode === "group") {
+    layout = { barmode: "group" };
   } else if (props.groupMode === "norm") {
     layout = { barmode: "stack", barnorm: "percent" };
     yTitle = "percentage";
@@ -261,7 +315,7 @@ function GroupedBarGraph(props: GroupedGraphProps) {
     <BaseGraph
       {...props}
       data={graphData}
-      title={`Records by ${props.field}, grouped by ${props.groupBy}`}
+      title={getGroupedTitle(props.field, props.groupBy, data)}
       xTitle={props.field}
       yTitle={yTitle}
       legendTitle={props.groupBy}
@@ -452,7 +506,7 @@ function GraphPanel(props: GraphPanelProps) {
                     <Form.Group className="mb-3">
                       <Form.Label>Mode</Form.Label>
                       <Dropdown
-                        options={["group", "stack", "norm"]}
+                        options={["stack", "group", "norm"]}
                         value={props.groupMode}
                         onChange={props.handleGraphConfigGroupModeChange}
                       />
@@ -504,7 +558,7 @@ function Stats(props: StatsProps) {
       list[index].field = "";
       list[index].groupBy = "";
       if (e.target.value === "bar") {
-        list[index].groupMode = "group";
+        list[index].groupMode = "stack";
       } else {
         list[index].groupMode = "";
       }

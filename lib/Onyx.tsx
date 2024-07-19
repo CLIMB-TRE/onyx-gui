@@ -57,9 +57,7 @@ function App(props: OnyxProps) {
         .then((data) => {
           return [
             ...new Set(
-              data.data.map(
-                (project: Record<string, unknown>) => project.project
-              )
+              data.data.map((project: { project: string }) => project.project)
             ),
           ] as string[];
         });
@@ -82,7 +80,7 @@ function App(props: OnyxProps) {
         .then((response) => response.json())
         .then((data) => {
           return new Map(
-            data.data.map((type: Record<string, unknown>) => [
+            data.data.map((type: { type: string; lookups: string[] }) => [
               type.type,
               type.lookups,
             ])
@@ -100,7 +98,7 @@ function App(props: OnyxProps) {
         .then((response) => response.json())
         .then((data) => {
           return new Map(
-            data.data.map((lookup: Record<string, unknown>) => [
+            data.data.map((lookup: { lookup: string; description: string }) => [
               lookup.lookup,
               lookup.description,
             ])
