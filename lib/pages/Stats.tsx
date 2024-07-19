@@ -172,9 +172,9 @@ function getTitle(
   field: string,
   data: { field_data: string[]; count_data: number[] }
 ) {
+  let title = `Records by ${field}`;
   const nullCount = data.count_data[data.field_data.indexOf("")] || 0;
 
-  let title = `Records by ${field}`;
   if (nullCount) {
     title += `<br>(Excluding ${nullCount} records with no ${field})`;
   }
@@ -188,14 +188,14 @@ function getGroupedTitle(
   data: Map<string, { field_data: string[]; count_data: number[] }>
 ) {
   let title = `Records by ${field}, grouped by ${groupBy}`;
-  let emptyValueCount = 0;
+  let nullCount = 0;
 
   data.forEach(({ field_data, count_data }) => {
-    emptyValueCount += count_data[field_data.indexOf("")] || 0;
+    nullCount += count_data[field_data.indexOf("")] || 0;
   });
 
-  if (emptyValueCount) {
-    title += `<br>(Excluding ${emptyValueCount} records with no ${field})`;
+  if (nullCount) {
+    title += `<br>(Excluding ${nullCount} records with no ${field})`;
   }
 
   return title;
