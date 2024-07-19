@@ -8,6 +8,7 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
+import Modal from "react-bootstrap/Modal";
 import { mkConfig, generateCsv, download, asString } from "export-to-csv";
 import { useQuery } from "@tanstack/react-query";
 import { MultiDropdown } from "../components/Dropdowns";
@@ -278,6 +279,7 @@ type ResultData = {
 };
 
 interface ResultsProps extends SearchProps {
+  recordDetailHandler: (climbID: string) => void;
   resultPending: boolean;
   resultError: Error | null;
   resultData: ResultData;
@@ -340,6 +342,7 @@ function Results(props: ResultsProps) {
           <ResultsTable
             data={props.resultData.data || []}
             titles={props.fieldDescriptions}
+            recordDetailHandler={props.recordDetailHandler}
             s3PathHandler={props.s3PathHandler}
           />
         )}
@@ -377,6 +380,77 @@ function Results(props: ResultsProps) {
   );
 }
 
+interface RecordDetailProps extends DataProps {
+  recordID: string;
+  show: boolean;
+  onHide: () => void;
+}
+
+function RecordDetail(props: RecordDetailProps) {
+  // Fetch data, depending on project and record ID
+  const {
+    isFetching: recordPending,
+    error: recordError,
+    data: recordData = {} as ResultType,
+    // refetch: refetchResults,
+  } = useQuery({
+    queryKey: ["results", props.project, props.recordID],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/${props.recordID}/`)
+        .then((response) => response.json());
+    },
+    enabled: !!(props.project && props.recordID),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  return (
+    <Modal
+      {...props}
+      size="lg"
+      aria-labelledby="contained-modal-title-vcenter"
+      // centered
+      scrollable
+      className="modal-height"
+    >
+      <Modal.Header closeButton>
+        <Modal.Title id="contained-modal-title-vcenter">
+          {props.recordID}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <h4>Record Details</h4>
+        {recordPending ? (
+          <LoadingAlert />
+        ) : recordError ? (
+          <Alert variant="danger">
+            Error: {(recordError as Error).message}
+          </Alert>
+        ) : recordData.messages ? (
+          Object.entries(recordData.messages).map(([key, value]) =>
+            Array.isArray(value) ? (
+              value.map((v: string) => (
+                <Alert key={key} variant="danger">
+                  {key}: {v}
+                </Alert>
+              ))
+            ) : (
+              <Alert key={key} variant="danger">
+                {key}: {value as string}
+              </Alert>
+            )
+          )
+        ) : (
+          <pre>{JSON.stringify(recordData, null, 2)}</pre>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onClick={props.onHide}>Close</Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
 interface DataProps extends OnyxProps {
   project: string;
   projectFields: Map<string, ProjectField>;
@@ -388,6 +462,8 @@ interface DataProps extends OnyxProps {
 function Data(props: DataProps) {
   const [searchParameters, setSearchParameters] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
+  const [recordDetailShow, setRecordDetailShow] = React.useState(false);
+  const [recordDetailID, setRecordDetailID] = React.useState("");
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
@@ -426,9 +502,20 @@ function Data(props: DataProps) {
     }
   };
 
+  const handleRecordDetailShow = (climbID: string) => {
+    setRecordDetailID(climbID);
+    setRecordDetailShow(true);
+  };
+
   return (
     <Container fluid className="g-2">
       <Stack gap={2}>
+        <RecordDetail
+          {...props}
+          recordID={recordDetailID}
+          show={recordDetailShow}
+          onHide={() => setRecordDetailShow(false)}
+        />
         <Parameters
           {...props}
           handleSearch={handleSearch}
@@ -438,6 +525,7 @@ function Data(props: DataProps) {
           {...props}
           handleSearch={setSearchParameters}
           handlePageNumber={setPageNumber}
+          recordDetailHandler={handleRecordDetailShow}
           resultPending={resultPending}
           resultError={resultError instanceof Error ? resultError : null}
           resultData={resultData}

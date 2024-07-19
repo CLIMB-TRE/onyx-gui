@@ -6,10 +6,12 @@ import { ResultType } from "../types";
 const ResultsTable = memo(function ResultsTable({
   data,
   titles,
+  recordDetailHandler,
   s3PathHandler,
 }: {
   data: ResultType[];
   titles?: Map<string, string>;
+  recordDetailHandler: (climbID: string) => void;
   s3PathHandler?: (path: string) => void;
 }) {
   const headers = () => {
@@ -19,6 +21,8 @@ const ResultsTable = memo(function ResultsTable({
       return [];
     }
   };
+
+  const climbIDIndex = headers().indexOf("climb_id");
 
   const rows = data.map((item) =>
     Object.values(item).map((value) => value?.toString().trim() || "")
@@ -39,9 +43,20 @@ const ResultsTable = memo(function ResultsTable({
         {rows.map((row, index) => (
           <tr key={index}>
             {row.map((cell, index) =>
-              s3PathHandler &&
-              cell.startsWith("s3://") &&
-              cell.endsWith(".html") ? (
+              index === climbIDIndex ? (
+                <td key={index}>
+                  <Button
+                    variant="link"
+                    onClick={() => {
+                      recordDetailHandler(cell);
+                    }}
+                  >
+                    {cell}
+                  </Button>
+                </td>
+              ) : s3PathHandler &&
+                cell.startsWith("s3://") &&
+                cell.endsWith(".html") ? (
                 <td key={index}>
                   <Button variant="link" onClick={() => s3PathHandler(cell)}>
                     {cell}
