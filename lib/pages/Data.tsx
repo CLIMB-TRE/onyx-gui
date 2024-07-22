@@ -330,6 +330,7 @@ function Results(props: ResultsProps) {
             titles={props.fieldDescriptions}
             recordDetailHandler={props.recordDetailHandler}
             s3PathHandler={props.s3PathHandler}
+            isSortable={!props.resultData?.next && !props.resultData?.previous}
           />
         )}
       </Container>
@@ -432,7 +433,7 @@ function RecordDetail(props: RecordDetailProps) {
                 id="uncontrolled-tab-example"
                 className="mb-3"
               >
-                <Tab eventKey="recordDetails" title="Record Details">
+                <Tab eventKey="recordDetails" title="Details">
                   <ResultsTable
                     data={
                       Object.entries(recordData.data)
@@ -449,6 +450,7 @@ function RecordDetail(props: RecordDetailProps) {
                 </Tab>
                 {Object.entries(recordData.data)
                   .filter(([, value]) => value instanceof Array)
+                  .sort()
                   .map(([key, value], index) => (
                     <Tab key={key} eventKey={index} title={key}>
                       <ResultsTable

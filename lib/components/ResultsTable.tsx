@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import { ResultType } from "../types";
@@ -8,12 +8,17 @@ const ResultsTable = memo(function ResultsTable({
   titles,
   recordDetailHandler,
   s3PathHandler,
+  isSortable = true,
 }: {
   data: ResultType[];
   titles?: Map<string, string>;
   recordDetailHandler?: (climbID: string) => void;
   s3PathHandler?: (path: string) => void;
+  isSortable?: boolean;
 }) {
+  const [sort, setSort] = useState({ sortKey: "", direction: "" });
+
+  // Array of strings containing the headers of the table
   const headers = () => {
     if (data.length > 0) {
       return Object.keys(data[0]);
@@ -22,29 +27,86 @@ const ResultsTable = memo(function ResultsTable({
     }
   };
 
-  const climbIDIndex = headers().indexOf("climb_id");
+  // Array of arrays containing the unsorted data
+  const rows = useMemo(() => {
+    return data.map((item) =>
+      Object.values(item).map((value) =>
+        typeof value === "number" ? value : value?.toString().trim() || ""
+      )
+    );
+  }, [data]);
 
-  const rows = data.map((item) =>
-    Object.values(item).map((value) => value?.toString().trim() || "")
-  );
+  // Copy of the rows array that will be sorted in-place
+  const sortedRows = useMemo(() => {
+    return [...rows];
+  }, [rows]);
+
+  function handleHeaderSort(header: string) {
+    const sortOptions = ["asc", "desc", ""];
+    let direction: string;
+
+    if (sort.sortKey === header) {
+      direction = sortOptions[(sortOptions.indexOf(sort.direction) + 1) % 3];
+    } else {
+      direction = sortOptions[0];
+    }
+
+    setSort({
+      sortKey: header,
+      direction: direction,
+    });
+  }
+
+  function sortRows() {
+    const sortIndex = headers().indexOf(sort.sortKey);
+
+    if (sort.direction === "asc") {
+      return sortedRows.sort((a, b) => (a[sortIndex] > b[sortIndex] ? 1 : -1));
+    } else if (sort.direction === "desc") {
+      return sortedRows.sort((a, b) => (a[sortIndex] < b[sortIndex] ? 1 : -1));
+    } else {
+      return rows;
+    }
+  }
+
+  const climbIDIndex = headers().indexOf("climb_id");
 
   return (
     <Table striped bordered hover responsive size="sm">
       <thead>
         <tr>
-          {headers().map((header) => (
-            <th key={header} title={titles?.get(header)}>
-              {header}
+          {headers().map((header, index) => (
+            <th
+              key={index}
+              title={titles?.get(header)}
+              onClick={() => isSortable && handleHeaderSort(header)}
+            >
+              <span>
+                {header}&nbsp;
+                {isSortable ? (
+                  sort.sortKey === header && sort.direction === "asc" ? (
+                    "↑"
+                  ) : sort.sortKey === header && sort.direction === "desc" ? (
+                    "↓"
+                  ) : (
+                    <span className="text-secondary">↕</span>
+                  )
+                ) : (
+                  <span>&nbsp;</span>
+                )}
+              </span>
             </th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {rows.map((row, index) => (
-          <tr key={index}>
-            {row.map((cell, index) =>
-              recordDetailHandler && index === climbIDIndex ? (
-                <td key={index}>
+        {sortRows().map((row, rowIndex) => (
+          <tr key={rowIndex}>
+            {row.map((cell, cellIndex) =>
+              recordDetailHandler &&
+              cellIndex === climbIDIndex &&
+              typeof cell === "string" ? (
+                <td key={cellIndex}>
                   <Button
                     variant="link"
                     onClick={() => {
@@ -55,15 +117,16 @@ const ResultsTable = memo(function ResultsTable({
                   </Button>
                 </td>
               ) : s3PathHandler &&
+                typeof cell === "string" &&
                 cell.startsWith("s3://") &&
                 cell.endsWith(".html") ? (
-                <td key={index}>
+                <td key={cellIndex}>
                   <Button variant="link" onClick={() => s3PathHandler(cell)}>
                     {cell}
                   </Button>
                 </td>
               ) : (
-                <td key={index}>{cell}</td>
+                <td key={cellIndex}>{cell}</td>
               )
             )}
           </tr>
