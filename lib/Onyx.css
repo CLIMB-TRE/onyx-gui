@@ -2,9 +2,11 @@
   display: block;
   overflow-x: auto;
   overflow-y: scroll;
-  overscroll-behavior-x: none; 
+  overscroll-behavior: none; 
   height: 47vh;
   white-space: nowrap;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .table thead{
