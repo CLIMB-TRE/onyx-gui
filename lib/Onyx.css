@@ -1,4 +1,5 @@
 .table {
+  font-family: monospace;
   display: block;
   overflow-x: auto;
   overflow-y: scroll;
@@ -13,6 +14,10 @@
   position: sticky;
   top: 0px;
   margin: 0 0 0 0;
+}
+
+.table td {
+  vertical-align: middle
 }
 
 .card-header {
