@@ -206,29 +206,24 @@ function Parameters(props: SearchProps) {
             <Container fluid className="panel p-2">
               <Stack gap={1}>
                 {filterList.map((filter, index) => (
-                  <div key={index}>
-                    <Filter
-                      project={props.project}
-                      httpPathHandler={props.httpPathHandler}
-                      filter={filter}
-                      fieldList={filterFieldOptions}
-                      projectFields={props.projectFields}
-                      typeLookups={props.typeLookups}
-                      fieldDescriptions={props.fieldDescriptions}
-                      lookupDescriptions={props.lookupDescriptions}
-                      handleFieldChange={(e) =>
-                        handleFilterFieldChange(e, index)
-                      }
-                      handleLookupChange={(e) =>
-                        handleFilterLookupChange(e, index)
-                      }
-                      handleValueChange={(e) =>
-                        handleFilterValueChange(e, index)
-                      }
-                      handleFilterAdd={() => handleFilterAdd(index + 1)}
-                      handleFilterRemove={() => handleFilterRemove(index)}
-                    />
-                  </div>
+                  <Filter
+                    key={index}
+                    project={props.project}
+                    httpPathHandler={props.httpPathHandler}
+                    filter={filter}
+                    fieldList={filterFieldOptions}
+                    projectFields={props.projectFields}
+                    typeLookups={props.typeLookups}
+                    fieldDescriptions={props.fieldDescriptions}
+                    lookupDescriptions={props.lookupDescriptions}
+                    handleFieldChange={(e) => handleFilterFieldChange(e, index)}
+                    handleLookupChange={(e) =>
+                      handleFilterLookupChange(e, index)
+                    }
+                    handleValueChange={(e) => handleFilterValueChange(e, index)}
+                    handleFilterAdd={() => handleFilterAdd(index + 1)}
+                    handleFilterRemove={() => handleFilterRemove(index)}
+                  />
                 ))}
               </Stack>
             </Container>
@@ -405,7 +400,6 @@ function RecordDetail(props: RecordDetailProps) {
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
           <Container fluid>
-            {" "}
             CLIMB ID: <code>{props.recordID}</code>
           </Container>
         </Modal.Title>
@@ -450,13 +444,17 @@ function RecordDetail(props: RecordDetailProps) {
                           Value: value,
                         })) as ResultType[]
                     }
+                    s3PathHandler={props.s3PathHandler}
                   />
                 </Tab>
                 {Object.entries(recordData.data)
                   .filter(([, value]) => value instanceof Array)
                   .map(([key, value], index) => (
-                    <Tab eventKey={index} title={key}>
-                      <ResultsTable data={value as ResultType[]} />
+                    <Tab key={key} eventKey={index} title={key}>
+                      <ResultsTable
+                        data={value as ResultType[]}
+                        s3PathHandler={props.s3PathHandler}
+                      />
                     </Tab>
                   ))}
               </Tabs>
