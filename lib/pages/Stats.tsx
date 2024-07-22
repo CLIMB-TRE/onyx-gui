@@ -378,17 +378,20 @@ function GraphPanel(props: GraphPanelProps) {
     },
   };
 
-  const fields = props.graphFieldOptions.filter((field) =>
-    graphConfig[props.type as keyof typeof graphConfig].fields.includes(
-      getType(props.projectFields, field)
-    )
-  );
-
-  const groupBy = props.graphFieldOptions.filter((field) =>
-    graphConfig[props.type as keyof typeof graphConfig].groupBy.includes(
-      getType(props.projectFields, field)
-    )
-  );
+  let fields: string[] = [];
+  let groupBy: string[] = [];
+  if (props.type) {
+    fields = props.graphFieldOptions.filter((field) =>
+      graphConfig[props.type as keyof typeof graphConfig].fields.includes(
+        getType(props.projectFields, field)
+      )
+    );
+    groupBy = props.graphFieldOptions.filter((field) =>
+      graphConfig[props.type as keyof typeof graphConfig].groupBy.includes(
+        getType(props.projectFields, field)
+      )
+    );
+  }
 
   let g: JSX.Element;
 
