@@ -64,7 +64,7 @@ function Header(props: HeaderProps) {
   return (
     <Navbar bg="dark" variant="dark" collapseOnSelect expand="sm">
       <Container fluid>
-        <Navbar.Brand>Onyx</Navbar.Brand>
+        <Navbar.Brand>⬗ Onyx</Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Stack direction="horizontal" gap={3}>
@@ -105,7 +105,10 @@ function Header(props: HeaderProps) {
           <Form.Check
             type="switch"
             id="theme-switch"
-            label={<span className="text-light">Switch Theme</span>}
+            label={
+              <span className="text-light">{props.darkMode ? "☾" : "☼"} </span>
+            }
+            title={`Switch to ${props.darkMode ? "light mode" : "dark mode"}`}
             checked={props.darkMode}
             onChange={props.handleThemeChange}
           />
