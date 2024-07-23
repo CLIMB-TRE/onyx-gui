@@ -60,10 +60,32 @@ const ResultsTable = memo(function ResultsTable({
   function sortRows() {
     const sortIndex = headers().indexOf(sort.sortKey);
 
-    if (sort.direction === "asc") {
-      return sortedRows.sort((a, b) => (a[sortIndex] > b[sortIndex] ? 1 : -1));
-    } else if (sort.direction === "desc") {
-      return sortedRows.sort((a, b) => (a[sortIndex] < b[sortIndex] ? 1 : -1));
+    if (sortedRows.length > 0 && sort.direction === "asc") {
+      if (typeof sortedRows[0][sortIndex] === "number") {
+        return sortedRows.sort(
+          (a, b) => (a[sortIndex] as number) - (b[sortIndex] as number)
+        );
+      } else {
+        return sortedRows.sort((a, b) =>
+          (a[sortIndex] as string).toLowerCase() >
+          (b[sortIndex] as string).toLowerCase()
+            ? 1
+            : -1
+        );
+      }
+    } else if (sortedRows.length > 0 && sort.direction === "desc") {
+      if (typeof sortedRows[0][sortIndex] === "number") {
+        return sortedRows.sort(
+          (a, b) => (b[sortIndex] as number) - (a[sortIndex] as number)
+        );
+      } else {
+        return sortedRows.sort((a, b) =>
+          (a[sortIndex] as string).toLowerCase() <
+          (b[sortIndex] as string).toLowerCase()
+            ? 1
+            : -1
+        );
+      }
     } else {
       return rows;
     }
