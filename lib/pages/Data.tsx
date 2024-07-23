@@ -8,13 +8,17 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
+import Modal from "react-bootstrap/Modal";
 import { mkConfig, generateCsv, download, asString } from "export-to-csv";
 import { useQuery } from "@tanstack/react-query";
 import { MultiDropdown } from "../components/Dropdowns";
 import Filter from "../components/Filter";
 import ResultsTable from "../components/ResultsTable";
-import LoadingAlert from "../components/LoadingAlert";
+import { LoadingAlert, DelayedLoadingAlert } from "../components/LoadingAlert";
+import ErrorMessages from "../components/ErrorMessages";
 import { OnyxProps, ProjectField, ResultType, ErrorType } from "../types";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
 
 type FilterField = {
   field: string;
@@ -202,29 +206,24 @@ function Parameters(props: SearchProps) {
             <Container fluid className="panel p-2">
               <Stack gap={1}>
                 {filterList.map((filter, index) => (
-                  <div key={index}>
-                    <Filter
-                      project={props.project}
-                      httpPathHandler={props.httpPathHandler}
-                      filter={filter}
-                      fieldList={filterFieldOptions}
-                      projectFields={props.projectFields}
-                      typeLookups={props.typeLookups}
-                      fieldDescriptions={props.fieldDescriptions}
-                      lookupDescriptions={props.lookupDescriptions}
-                      handleFieldChange={(e) =>
-                        handleFilterFieldChange(e, index)
-                      }
-                      handleLookupChange={(e) =>
-                        handleFilterLookupChange(e, index)
-                      }
-                      handleValueChange={(e) =>
-                        handleFilterValueChange(e, index)
-                      }
-                      handleFilterAdd={() => handleFilterAdd(index + 1)}
-                      handleFilterRemove={() => handleFilterRemove(index)}
-                    />
-                  </div>
+                  <Filter
+                    key={index}
+                    project={props.project}
+                    httpPathHandler={props.httpPathHandler}
+                    filter={filter}
+                    fieldList={filterFieldOptions}
+                    projectFields={props.projectFields}
+                    typeLookups={props.typeLookups}
+                    fieldDescriptions={props.fieldDescriptions}
+                    lookupDescriptions={props.lookupDescriptions}
+                    handleFieldChange={(e) => handleFilterFieldChange(e, index)}
+                    handleLookupChange={(e) =>
+                      handleFilterLookupChange(e, index)
+                    }
+                    handleValueChange={(e) => handleFilterValueChange(e, index)}
+                    handleFilterAdd={() => handleFilterAdd(index + 1)}
+                    handleFilterRemove={() => handleFilterRemove(index)}
+                  />
                 ))}
               </Stack>
             </Container>
@@ -278,6 +277,7 @@ type ResultData = {
 };
 
 interface ResultsProps extends SearchProps {
+  recordDetailHandler: (climbID: string) => void;
   resultPending: boolean;
   resultError: Error | null;
   resultData: ResultData;
@@ -323,24 +323,14 @@ function Results(props: ResultsProps) {
         ) : props.resultError ? (
           <Alert variant="danger">Error: {props.resultError.message}</Alert>
         ) : props.resultData.messages ? (
-          Object.entries(props.resultData.messages).map(([key, value]) =>
-            Array.isArray(value) ? (
-              value.map((v: string) => (
-                <Alert key={key} variant="danger">
-                  {key}: {v}
-                </Alert>
-              ))
-            ) : (
-              <Alert key={key} variant="danger">
-                {key}: {value}
-              </Alert>
-            )
-          )
+          <ErrorMessages messages={props.resultData.messages} />
         ) : (
           <ResultsTable
             data={props.resultData.data || []}
             titles={props.fieldDescriptions}
+            recordDetailHandler={props.recordDetailHandler}
             s3PathHandler={props.s3PathHandler}
+            isSortable={!props.resultData?.next && !props.resultData?.previous}
           />
         )}
       </Container>
@@ -377,6 +367,112 @@ function Results(props: ResultsProps) {
   );
 }
 
+interface RecordDetailProps extends DataProps {
+  recordID: string;
+  show: boolean;
+  onHide: () => void;
+}
+
+function RecordDetail(props: RecordDetailProps) {
+  // Fetch record, depending on project and record ID
+  const {
+    isFetching: recordPending,
+    error: recordError,
+    data: recordData = {},
+  } = useQuery({
+    queryKey: ["results", props.project, props.recordID],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/${props.recordID}/`)
+        .then((response) => response.json());
+    },
+    enabled: !!(props.project && props.recordID),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  return (
+    <Modal
+      show={props.show}
+      onHide={props.onHide}
+      dialogClassName="modal-xl"
+      aria-labelledby="contained-modal-title-vcenter"
+      scrollable
+    >
+      <Modal.Header closeButton>
+        <Modal.Title id="contained-modal-title-vcenter">
+          <Container fluid>
+            CLIMB ID: <code>{props.recordID}</code>
+          </Container>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {recordPending ? (
+          <DelayedLoadingAlert />
+        ) : recordError ? (
+          <Alert variant="danger">
+            Error: {(recordError as Error).message}
+          </Alert>
+        ) : recordData.messages ? (
+          <ErrorMessages messages={recordData.messages} />
+        ) : (
+          // <pre>{JSON.stringify(recordData.data, null, 2)}</pre>
+          recordData.data && (
+            <Container fluid>
+              <Stack gap={3} direction="vertical">
+                <h4>
+                  Published Date:{" "}
+                  <code>{recordData.data["published_date"]}</code>
+                </h4>
+                <h4>
+                  Site: <code>{recordData.data["site"]}</code>
+                </h4>
+              </Stack>
+              <hr />
+              <Tabs
+                defaultActiveKey="recordDetails"
+                id="uncontrolled-tab-example"
+                className="mb-3"
+              >
+                <Tab eventKey="recordDetails" title="Details">
+                  <ResultsTable
+                    data={
+                      Object.entries(recordData.data)
+                        .filter(([, value]) => {
+                          return !(value instanceof Array);
+                        })
+                        .map(([key, value]) => ({
+                          Field: key,
+                          Value: value,
+                        })) as ResultType[]
+                    }
+                    s3PathHandler={props.s3PathHandler}
+                  />
+                </Tab>
+                {Object.entries(recordData.data)
+                  .filter(([, value]) => value instanceof Array)
+                  .sort()
+                  .map(([key, value], index) => (
+                    <Tab key={key} eventKey={index} title={key}>
+                      <ResultsTable
+                        data={value as ResultType[]}
+                        s3PathHandler={props.s3PathHandler}
+                      />
+                    </Tab>
+                  ))}
+              </Tabs>
+            </Container>
+          )
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="dark" onClick={props.onHide}>
+          Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
 interface DataProps extends OnyxProps {
   project: string;
   projectFields: Map<string, ProjectField>;
@@ -388,6 +484,8 @@ interface DataProps extends OnyxProps {
 function Data(props: DataProps) {
   const [searchParameters, setSearchParameters] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
+  const [recordDetailShow, setRecordDetailShow] = React.useState(false);
+  const [recordDetailID, setRecordDetailID] = React.useState("");
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
@@ -426,9 +524,20 @@ function Data(props: DataProps) {
     }
   };
 
+  const handleRecordDetailShow = (climbID: string) => {
+    setRecordDetailID(climbID);
+    setRecordDetailShow(true);
+  };
+
   return (
     <Container fluid className="g-2">
       <Stack gap={2}>
+        <RecordDetail
+          {...props}
+          recordID={recordDetailID}
+          show={recordDetailShow}
+          onHide={() => setRecordDetailShow(false)}
+        />
         <Parameters
           {...props}
           handleSearch={handleSearch}
@@ -438,6 +547,7 @@ function Data(props: DataProps) {
           {...props}
           handleSearch={setSearchParameters}
           handlePageNumber={setPageNumber}
+          recordDetailHandler={handleRecordDetailShow}
           resultPending={resultPending}
           resultError={resultError instanceof Error ? resultError : null}
           resultData={resultData}
