@@ -72,7 +72,7 @@ const ResultsTable = memo(function ResultsTable({
   const climbIDIndex = headers().indexOf("climb_id");
 
   return (
-    <Table striped bordered hover responsive size="sm">
+    <Table striped bordered hover responsive>
       <thead>
         <tr>
           {headers().map((header, index) => (
@@ -108,6 +108,7 @@ const ResultsTable = memo(function ResultsTable({
               typeof cell === "string" ? (
                 <td key={cellIndex}>
                   <Button
+                    size="sm"
                     variant="link"
                     onClick={() => {
                       recordDetailHandler(cell);
@@ -121,7 +122,11 @@ const ResultsTable = memo(function ResultsTable({
                 cell.startsWith("s3://") &&
                 cell.endsWith(".html") ? (
                 <td key={cellIndex}>
-                  <Button variant="link" onClick={() => s3PathHandler(cell)}>
+                  <Button
+                    size="sm"
+                    variant="link"
+                    onClick={() => s3PathHandler(cell)}
+                  >
                     {cell}
                   </Button>
                 </td>

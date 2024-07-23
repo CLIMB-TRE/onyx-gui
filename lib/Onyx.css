@@ -1,5 +1,6 @@
 .table {
   font-family: monospace;
+  font-size: 10pt;
   display: block;
   overflow-x: auto;
   overflow-y: scroll;
