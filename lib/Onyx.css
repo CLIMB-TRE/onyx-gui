@@ -57,6 +57,7 @@
   --onyx-dropdown-label-color: var(--bs-black);
   --onyx-dropdown-option-background-color: var(--bs-white);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
+  --onyx-dropdown-option-description-color: var(--bs-secondary);
 }
 
 [data-bs-theme=dark] {
@@ -67,6 +68,7 @@
   --onyx-dropdown-label-color: var(--bs-white);
   --onyx-dropdown-option-background-color: var(--bs-black);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-700);
+  --onyx-dropdown-option-description-color: var(--bs-gray-500);
 }
 
 [data-bs-theme=dark] .btn-dark {

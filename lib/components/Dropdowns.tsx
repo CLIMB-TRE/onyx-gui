@@ -32,9 +32,20 @@ interface ChoiceProps extends DropdownProps, GenericChoiceProps {}
 interface MultiChoiceProps extends MultiDropdownProps, GenericChoiceProps {}
 
 const Option = (optionProps: OptionProps) => {
+  const splitLabel = optionProps.label.split("|", 2);
+
   return (
     <code>
-      <components.Option {...optionProps} />
+      <components.Option {...optionProps}>
+        {splitLabel.length > 0 && <div>{splitLabel[0]}</div>}
+        {splitLabel.length > 1 && (
+          <div
+            style={{ color: "var(--onyx-dropdown-option-description-color)" }}
+          >
+            {splitLabel[1]}
+          </div>
+        )}
+      </components.Option>
     </code>
   );
 };
