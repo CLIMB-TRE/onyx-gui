@@ -45,6 +45,7 @@ const getLabel = (option: string, titles?: Map<string, string>) =>
 function Dropdown(props: DropdownProps) {
   return (
     <Select
+      menuPosition="fixed"
       isClearable={props.isClearable}
       isDisabled={props.isDisabled}
       components={{ Option }}
@@ -84,6 +85,7 @@ function MultiDropdown(props: MultiDropdownProps) {
   return (
     <Select
       isMulti
+      menuPosition="fixed"
       closeMenuOnSelect={false}
       components={{ Option }}
       menuPortalTarget={document.body}
