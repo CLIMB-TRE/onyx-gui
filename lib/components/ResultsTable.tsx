@@ -94,7 +94,7 @@ const ResultsTable = memo(function ResultsTable({
   const climbIDIndex = headers().indexOf("climb_id");
 
   return (
-    <Table striped bordered hover responsive>
+    <Table className="onyx-results-table" striped bordered hover responsive>
       <thead>
         <tr>
           {headers().map((header, index) => (

@@ -640,7 +640,7 @@ function Stats(props: StatsProps) {
             </Button>
           </Stack>
         </Card.Header>
-        <Container fluid className="graph-panel p-2">
+        <Container fluid className="onyx-graphs-panel p-2">
           <Stack gap={2}>
             {graphConfigList.map((graphConfig, index) => (
               <GraphPanel

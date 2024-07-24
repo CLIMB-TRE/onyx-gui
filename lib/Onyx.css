@@ -1,54 +1,3 @@
-.table {
-  font-family: monospace;
-  font-size: 10pt;
-  display: block;
-  overflow-x: auto;
-  overflow-y: scroll;
-  overscroll-behavior: none; 
-  height: 47vh;
-  white-space: nowrap;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.table thead{
-  position: sticky;
-  top: 0px;
-  /* margin: 0 0 0 0; */
-}
-
-.table th {
-  user-select: none;
-  cursor: pointer;
-}
-
-.table td {
-  vertical-align: middle
-}
-
-.card-header {
-  font-size: large;
-  min-height: 50px;
-}
-
-.card-footer {
-  height: 50px;
-}
-
-.panel {
-  height: 15vh;
-  overflow-y: scroll;
-}
-
-.graph-panel {
-  height: 78vh;
-  overflow-y : scroll;
-}
-
-.table-panel {
-  height: 48vh;
-}
-
 [data-bs-theme=light] {
   --onyx-dropdown-control-border-color: var(--bs-gray-300);
   --onyx-dropdown-control-background-color: var(--bs-white);
@@ -76,3 +25,61 @@
   --bs-btn-hover-border-color: var(--bs-gray-500);
 }
 
+.table {
+  font-family: monospace;
+  font-size: 10pt;
+  display: block;
+  overflow-x: auto;
+  overflow-y: scroll;
+  overscroll-behavior: none; 
+  height: 46vh;
+  white-space: nowrap;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead {
+  position: sticky;
+  top: 0px;
+}
+
+.table th {
+  user-select: none;
+  cursor: pointer;
+}
+
+.table td {
+  vertical-align: middle
+}
+
+.card-header {
+  font-size: large;
+  min-height: 50px;
+}
+
+.card-footer {
+  height: 50px;
+}
+
+.onyx-parameters-panel {
+  height: 15vh;
+  overflow-y: scroll;
+}
+
+.onyx-graphs-panel {
+  height: 78vh;
+  overflow-y : scroll;
+}
+
+.onyx-results-panel {
+  height: 47vh;
+}
+
+.onyx-record-detail .table {
+  height: 58vh;
+}
+
+.onyx-code-style {
+  font-family: monospace;
+  color: var(--bs-code-color);
+}

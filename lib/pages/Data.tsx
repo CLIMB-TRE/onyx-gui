@@ -203,7 +203,7 @@ function Parameters(props: SearchProps) {
                 </Button>
               </Stack>
             </Card.Header>
-            <Container fluid className="panel p-2">
+            <Container fluid className="onyx-parameters-panel p-2">
               <Stack gap={1}>
                 {filterList.map((filter, index) => (
                   <Filter
@@ -252,7 +252,7 @@ function Parameters(props: SearchProps) {
           <Col key={title} md={4} xl={2}>
             <Card>
               <Card.Header>{title}</Card.Header>
-              <Container fluid className="panel p-2">
+              <Container fluid className="onyx-parameters-panel p-2">
                 <MultiDropdown
                   options={options}
                   titles={props.fieldDescriptions}
@@ -317,7 +317,7 @@ function Results(props: ResultsProps) {
           Export Page to CSV
         </Button>
       </Card.Header>
-      <Container fluid className="table-panel p-2">
+      <Container fluid className="onyx-results-panel p-2">
         {props.resultPending ? (
           <LoadingAlert />
         ) : props.resultError ? (
@@ -392,6 +392,7 @@ function RecordDetail(props: RecordDetailProps) {
 
   return (
     <Modal
+      className="onyx-record-detail"
       show={props.show}
       onHide={props.onHide}
       dialogClassName="modal-xl"
@@ -401,7 +402,7 @@ function RecordDetail(props: RecordDetailProps) {
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
           <Container fluid>
-            CLIMB ID: <code>{props.recordID}</code>
+            CLIMB ID: <span className="onyx-code-style">{props.recordID}</span>
           </Container>
         </Modal.Title>
       </Modal.Header>
@@ -419,13 +420,18 @@ function RecordDetail(props: RecordDetailProps) {
           recordData.data && (
             <Container fluid>
               <Stack gap={3} direction="vertical">
-                <h4>
+                <h5>
                   Published Date:{" "}
-                  <code>{recordData.data["published_date"]}</code>
-                </h4>
-                <h4>
-                  Site: <code>{recordData.data["site"]}</code>
-                </h4>
+                  <span className="onyx-code-style">
+                    {recordData.data["published_date"]}
+                  </span>
+                </h5>
+                <h5>
+                  Site:{" "}
+                  <span className="onyx-code-style">
+                    {recordData.data["site"]}
+                  </span>
+                </h5>
               </Stack>
               <hr />
               <Tabs
