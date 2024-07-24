@@ -109,6 +109,7 @@ function App(props: OnyxProps) {
 
   // Fetch project information
   const {
+    isFetching: projectInfoPending,
     data: { projectName, projectFields, fieldDescriptions } = {
       projectName: "",
       projectFields: new Map<string, ProjectField>(),
@@ -150,7 +151,7 @@ function App(props: OnyxProps) {
     <Stack gap={2} className="Onyx">
       <Header
         {...props}
-        projectName={projectName}
+        projectName={projectInfoPending ? "Loading..." : projectName}
         projectList={projects}
         handleProjectChange={setProject}
         guiVersion={VERSION}

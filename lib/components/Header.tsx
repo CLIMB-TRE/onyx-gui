@@ -49,7 +49,10 @@ interface HeaderProps {
 
 function Header(props: HeaderProps) {
   // Fetch user profile
-  const { data: { username, site } = { username: "", site: "" } } = useQuery({
+  const {
+    isFetching: profilePending,
+    data: { username, site } = { username: "", site: "" },
+  } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       return props
@@ -82,8 +85,14 @@ function Header(props: HeaderProps) {
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
-            <HeaderText label="User" value={username} />
-            <HeaderText label="Site" value={site} />
+            <HeaderText
+              label="User"
+              value={profilePending ? "Loading..." : username}
+            />
+            <HeaderText
+              label="Site"
+              value={profilePending ? "Loading..." : site}
+            />
             <HeaderVersion label="GUI" version={props.guiVersion} />
             <HeaderVersion label="Extension" version={props.extVersion} />
           </Stack>
