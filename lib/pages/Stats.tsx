@@ -129,6 +129,18 @@ function BaseGraph(props: BaseGraphProps) {
         yaxis: { title: props.yTitle },
         legend: { title: { text: props.legendTitle } },
         showlegend: props.legendTitle ? true : false,
+        colorway: [
+          "#00cc96",
+          "#636efa",
+          "#EF553B",
+          "#ab63fa",
+          "#FFA15A",
+          "#19d3f3",
+          "#FF6692",
+          "#B6E880",
+          "#FF97FF",
+          "#FECB52",
+        ],
       }}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
@@ -202,7 +214,6 @@ function ScatterGraph(props: GraphProps) {
           y: data.count_data,
           type: "scatter",
           mode: "lines+markers",
-          marker: { color: "#00CC96" },
         },
       ]}
       title={getTitle(props.projectFields, props.field, data)}
@@ -228,7 +239,6 @@ function BarGraph(props: GraphProps) {
           x: data.field_data,
           y: data.count_data,
           type: "bar",
-          marker: { color: "#00CC96" },
         },
       ]}
       title={getTitle(props.projectFields, props.field, data)}

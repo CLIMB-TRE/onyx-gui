@@ -14,7 +14,7 @@ import { OnyxProps, ProjectField } from "./types";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.11.1";
+const VERSION = "0.11.2";
 
 function flattenFields(fields: Record<string, ProjectField>) {
   const flatFields: Record<string, ProjectField> = {};
