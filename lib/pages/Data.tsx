@@ -508,6 +508,7 @@ function Data(props: DataProps) {
         .then((response) => response.json());
     },
     enabled: !!props.project,
+    cacheTime: 0.5 * 60 * 1000,
   });
 
   const handleSearch = (search: string) => {

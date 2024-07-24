@@ -42,6 +42,7 @@ const useSummaryQuery = (props: GraphProps) => {
         });
     },
     enabled: !!props.project,
+    staleTime: 1 * 60 * 1000,
   });
 };
 
@@ -95,6 +96,7 @@ const useGroupedSummaryQuery = (props: GroupedGraphProps) => {
         });
     },
     enabled: !!props.project,
+    staleTime: 1 * 60 * 1000,
   });
 };
 

@@ -145,6 +145,7 @@ function App(props: OnyxProps) {
         });
     },
     enabled: !!project,
+    staleTime: 1 * 60 * 1000,
   });
 
   return (

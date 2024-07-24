@@ -127,6 +127,7 @@ const useChoiceQuery = (props: GenericChoiceProps) => {
           return choices;
         });
     },
+    staleTime: 5 * 60 * 1000,
   });
 };
 
