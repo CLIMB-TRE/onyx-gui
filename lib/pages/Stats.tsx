@@ -3,6 +3,8 @@ import { Dropdown } from "../components/Dropdowns";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import ToggleButton from "react-bootstrap/ToggleButton";
+import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
@@ -450,10 +452,18 @@ function GraphPanel(props: GraphPanelProps) {
           <Card.Header>
             <span>Options</span>
             <Stack direction="horizontal" gap={1} className="float-end">
-              <Button variant="dark" onClick={props.handleGraphConfigAdd}>
+              <Button
+                size="sm"
+                variant="dark"
+                onClick={props.handleGraphConfigAdd}
+              >
                 +
               </Button>
-              <Button variant="dark" onClick={props.handleGraphConfigRemove}>
+              <Button
+                size="sm"
+                variant="dark"
+                onClick={props.handleGraphConfigRemove}
+              >
                 -
               </Button>
             </Stack>
@@ -543,6 +553,7 @@ interface StatsProps extends OnyxProps {
 }
 
 function Stats(props: StatsProps) {
+  const [viewMode, setViewMode] = useState("wide");
   const [graphConfigList, setGraphConfigList] = useState([
     { type: "line", field: "published_date", groupBy: "" },
     { type: "line", field: "published_date", groupBy: "site" },
@@ -638,36 +649,59 @@ function Stats(props: StatsProps) {
             <Button size="sm" variant="dark" onClick={handleGraphConfigClear}>
               Clear Graphs
             </Button>
+            <ToggleButtonGroup
+              size="sm"
+              name="view-mode"
+              type="radio"
+              value={viewMode}
+              onChange={(mode) => setViewMode(mode)}
+            >
+              <ToggleButton
+                id="wide-toggle"
+                value="wide"
+                variant="outline-secondary"
+              >
+                Wide
+              </ToggleButton>
+              <ToggleButton
+                id="compact-toggle"
+                value="compact"
+                variant="outline-secondary"
+              >
+                Compact
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Stack>
         </Card.Header>
         <Container fluid className="onyx-graphs-panel p-2">
-          <Stack gap={2}>
+          <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
-              <GraphPanel
-                key={index}
-                {...props}
-                type={graphConfig.type}
-                field={graphConfig.field}
-                groupBy={graphConfig.groupBy}
-                groupMode={graphConfig.groupMode}
-                graphFieldOptions={listFieldOptions}
-                handleGraphConfigTypeChange={(e) =>
-                  handleGraphConfigTypeChange(e, index)
-                }
-                handleGraphConfigFieldChange={(e) =>
-                  handleGraphConfigFieldChange(e, index)
-                }
-                handleGraphConfigGroupByChange={(e) =>
-                  handleGraphConfigGroupByChange(e, index)
-                }
-                handleGraphConfigGroupModeChange={(e) =>
-                  handleGraphConfigGroupModeChange(e, index)
-                }
-                handleGraphConfigAdd={() => handleGraphConfigAdd(index + 1)}
-                handleGraphConfigRemove={() => handleGraphConfigRemove(index)}
-              />
+              <Col key={index} lg={viewMode === "wide" ? 12 : 6}>
+                <GraphPanel
+                  {...props}
+                  type={graphConfig.type}
+                  field={graphConfig.field}
+                  groupBy={graphConfig.groupBy}
+                  groupMode={graphConfig.groupMode}
+                  graphFieldOptions={listFieldOptions}
+                  handleGraphConfigTypeChange={(e) =>
+                    handleGraphConfigTypeChange(e, index)
+                  }
+                  handleGraphConfigFieldChange={(e) =>
+                    handleGraphConfigFieldChange(e, index)
+                  }
+                  handleGraphConfigGroupByChange={(e) =>
+                    handleGraphConfigGroupByChange(e, index)
+                  }
+                  handleGraphConfigGroupModeChange={(e) =>
+                    handleGraphConfigGroupModeChange(e, index)
+                  }
+                  handleGraphConfigAdd={() => handleGraphConfigAdd(index + 1)}
+                  handleGraphConfigRemove={() => handleGraphConfigRemove(index)}
+                />
+              </Col>
             ))}
-          </Stack>
+          </Row>
         </Container>
       </Card>
     </Container>
