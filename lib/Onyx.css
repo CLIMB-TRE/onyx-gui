@@ -31,7 +31,6 @@
   display: block;
   overflow-x: auto;
   overflow-y: scroll;
-  overscroll-behavior: none; 
   height: 46vh;
   white-space: nowrap;
   border-collapse: separate;
@@ -79,7 +78,6 @@
   height: 58vh;
 }
 
-.onyx-code-style {
-  font-family: monospace;
+.onyx-text-pink {
   color: var(--bs-code-color);
 }
