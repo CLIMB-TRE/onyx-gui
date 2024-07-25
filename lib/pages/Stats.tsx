@@ -443,82 +443,59 @@ function GraphPanel(props: GraphPanelProps) {
   }
 
   return (
-    <Row className="g-2">
-      <Col xl={9}>
-        <Card body>{g}</Card>
-      </Col>
-      <Col xl={3}>
-        <Card style={{ height: "100%" }}>
-          <Card.Header>
-            <span>Options</span>
-            <Stack direction="horizontal" gap={1} className="float-end">
-              <Button
-                size="sm"
-                variant="dark"
-                onClick={props.handleGraphConfigAdd}
-              >
-                +
-              </Button>
-              <Button
-                size="sm"
-                variant="dark"
-                onClick={props.handleGraphConfigRemove}
-              >
-                -
-              </Button>
-            </Stack>
-          </Card.Header>
-          <Card.Body>
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Graph Type</Form.Label>
-                <Dropdown
-                  isClearable
-                  options={["line", "bar", "pie"]}
-                  value={props.type}
-                  placeholder="Select graph type..."
-                  onChange={props.handleGraphConfigTypeChange}
-                />
-              </Form.Group>
-              {props.type && (
+    <Container fluid className="g-0">
+      <Row className="g-2">
+        <Col xl={12} xxl={9}>
+          <Card body style={{ height: "365px" }}>
+            {g}
+          </Card>
+        </Col>
+        <Col xl={12} xxl={3}>
+          <Card style={{ height: "365px" }}>
+            <Card.Header>
+              <span>Options</span>
+              <Stack direction="horizontal" gap={1} className="float-end">
+                <Button
+                  size="sm"
+                  variant="dark"
+                  onClick={props.handleGraphConfigAdd}
+                >
+                  +
+                </Button>
+                <Button
+                  size="sm"
+                  variant="dark"
+                  onClick={props.handleGraphConfigRemove}
+                >
+                  -
+                </Button>
+              </Stack>
+            </Card.Header>
+            <Card.Body style={{ overflowY: "scroll" }}>
+              <Form>
                 <Form.Group className="mb-3">
-                  <Form.Label>Field</Form.Label>
+                  <Form.Label>Graph Type</Form.Label>
                   <Dropdown
                     isClearable
-                    options={fields}
-                    value={props.field}
-                    placeholder="Select field..."
-                    onChange={props.handleGraphConfigFieldChange}
+                    options={["line", "bar", "pie"]}
+                    value={props.type}
+                    placeholder="Select graph type..."
+                    onChange={props.handleGraphConfigTypeChange}
                   />
                 </Form.Group>
-              )}
-              {props.type === "bar" ? (
-                <Row className="g-3">
-                  <Col>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Group By</Form.Label>
-                      <Dropdown
-                        isClearable
-                        options={groupBy}
-                        value={props.groupBy}
-                        placeholder="Select field..."
-                        onChange={props.handleGraphConfigGroupByChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Mode</Form.Label>
-                      <Dropdown
-                        options={["stack", "group", "norm"]}
-                        value={props.groupMode}
-                        onChange={props.handleGraphConfigGroupModeChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-              ) : (
-                props.type === "line" && (
+                {props.type && (
+                  <Form.Group className="mb-3">
+                    <Form.Label>Field</Form.Label>
+                    <Dropdown
+                      isClearable
+                      options={fields}
+                      value={props.field}
+                      placeholder="Select field..."
+                      onChange={props.handleGraphConfigFieldChange}
+                    />
+                  </Form.Group>
+                )}
+                {(props.type === "line" || props.type === "bar") && (
                   <Form.Group className="mb-3">
                     <Form.Label>Group By</Form.Label>
                     <Dropdown
@@ -529,13 +506,23 @@ function GraphPanel(props: GraphPanelProps) {
                       onChange={props.handleGraphConfigGroupByChange}
                     />
                   </Form.Group>
-                )
-              )}
-            </Form>
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
+                )}
+                {props.type === "bar" && (
+                  <Form.Group className="mb-3">
+                    <Form.Label>Mode</Form.Label>
+                    <Dropdown
+                      options={["stack", "group", "norm"]}
+                      value={props.groupMode}
+                      onChange={props.handleGraphConfigGroupModeChange}
+                    />
+                  </Form.Group>
+                )}
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
