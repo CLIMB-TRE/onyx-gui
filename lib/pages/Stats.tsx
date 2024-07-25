@@ -540,21 +540,28 @@ interface StatsProps extends OnyxProps {
 }
 
 function Stats(props: StatsProps) {
-  const [viewMode, setViewMode] = useState("wide");
-  const [graphConfigList, setGraphConfigList] = useState([
-    { type: "line", field: "published_date", groupBy: "" },
-    { type: "line", field: "published_date", groupBy: "site" },
-  ] as GraphConfig[]);
+  const defaultGraphConfig = [
+    { type: "bar", field: "published_date", groupBy: "", groupMode: "stack" },
+    {
+      type: "bar",
+      field: "published_date",
+      groupBy: "site",
+      groupMode: "stack",
+    },
+    { type: "pie", field: "site", groupBy: "", groupMode: "" },
+    { type: "line", field: "published_date", groupBy: "site", groupMode: "" },
+  ] as GraphConfig[];
+
+  const [viewMode, setViewMode] = useState("compact");
+  const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig);
   const listFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
 
   // Reset graphs when project changes
   useLayoutEffect(() => {
-    setGraphConfigList([
-      { type: "line", field: "published_date", groupBy: "", groupMode: "" },
-      { type: "line", field: "published_date", groupBy: "site", groupMode: "" },
-    ]);
+    setGraphConfigList(defaultGraphConfig);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
   const handleGraphConfigTypeChange = (
@@ -644,18 +651,18 @@ function Stats(props: StatsProps) {
               onChange={(mode) => setViewMode(mode)}
             >
               <ToggleButton
-                id="wide-toggle"
-                value="wide"
-                variant="outline-secondary"
-              >
-                Wide
-              </ToggleButton>
-              <ToggleButton
                 id="compact-toggle"
                 value="compact"
                 variant="outline-secondary"
               >
                 Compact
+              </ToggleButton>
+              <ToggleButton
+                id="wide-toggle"
+                value="wide"
+                variant="outline-secondary"
+              >
+                Wide
               </ToggleButton>
             </ToggleButtonGroup>
           </Stack>
