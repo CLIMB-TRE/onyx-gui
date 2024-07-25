@@ -95,7 +95,7 @@ function Filter(props: FilterProps) {
     <Stack direction="horizontal" gap={1}>
       <Container fluid className="g-0">
         <Row className="g-1">
-          <Col sm={4}>
+          <Col sm={6} lg={4}>
             <Dropdown
               options={props.fieldList}
               titles={props.fieldDescriptions}
@@ -104,7 +104,7 @@ function Filter(props: FilterProps) {
               onChange={props.handleFieldChange}
             />
           </Col>
-          <Col sm={4}>
+          <Col sm={6} lg={4}>
             <Dropdown
               options={
                 props.typeLookups.get(
@@ -117,7 +117,9 @@ function Filter(props: FilterProps) {
               onChange={props.handleLookupChange}
             />
           </Col>
-          <Col sm={4}>{f}</Col>
+          <Col sm={12} lg={4}>
+            {f}
+          </Col>
         </Row>
       </Container>
       <Button variant="dark" onClick={props.handleFilterAdd}>
