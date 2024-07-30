@@ -31,7 +31,7 @@
   display: block;
   overflow-x: auto;
   overflow-y: scroll;
-  height: 46vh;
+  height: 47vh;
   white-space: nowrap;
   border-collapse: separate;
   border-spacing: 0;
@@ -71,7 +71,7 @@
 }
 
 .onyx-results-panel {
-  height: 47vh;
+  height: 48vh;
 }
 
 .onyx-record-detail .table {

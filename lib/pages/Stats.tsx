@@ -552,7 +552,7 @@ function Stats(props: StatsProps) {
     { type: "line", field: "published_date", groupBy: "site", groupMode: "" },
   ] as GraphConfig[];
 
-  const [viewMode, setViewMode] = useState("compact");
+  const [viewMode, setViewMode] = useState("wide");
   const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig);
   const listFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("list"))
