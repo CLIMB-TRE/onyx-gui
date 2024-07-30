@@ -1,16 +1,54 @@
+[data-bs-theme=light] {
+  --onyx-dropdown-control-border-color: var(--bs-gray-300);
+  --onyx-dropdown-control-background-color: var(--bs-white);
+  --onyx-dropdown-menu-background-color: var(--bs-white);
+  --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-300);
+  --onyx-dropdown-label-color: var(--bs-black);
+  --onyx-dropdown-option-background-color: var(--bs-white);
+  --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
+  --onyx-dropdown-option-description-color: var(--bs-secondary);
+}
+
+[data-bs-theme=dark] {
+  --onyx-dropdown-control-border-color: var(--bs-gray-700);
+  --onyx-dropdown-control-background-color: var(--bs-gray-900);
+  --onyx-dropdown-menu-background-color: var(--bs-black);
+  --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-700);
+  --onyx-dropdown-label-color: var(--bs-white);
+  --onyx-dropdown-option-background-color: var(--bs-black);
+  --onyx-dropdown-option-hover-background-color: var(--bs-gray-700);
+  --onyx-dropdown-option-description-color: var(--bs-gray-500);
+}
+
+[data-bs-theme=dark] .btn-dark {
+  --bs-btn-border-color: var(--bs-gray-700);
+  --bs-btn-hover-border-color: var(--bs-gray-500);
+}
+
 .table {
+  font-family: monospace;
+  font-size: 10pt;
   display: block;
   overflow-x: auto;
   overflow-y: scroll;
-  overscroll-behavior-x: none; 
   height: 47vh;
   white-space: nowrap;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-.table thead{
+.table thead {
   position: sticky;
   top: 0px;
-  margin: 0 0 0 0;
+}
+
+.table th {
+  user-select: none;
+  cursor: pointer;
+}
+
+.table td {
+  vertical-align: middle
 }
 
 .card-header {
@@ -22,42 +60,24 @@
   height: 50px;
 }
 
-.panel {
+.onyx-parameters-panel {
   height: 15vh;
   overflow-y: scroll;
 }
 
-.graph-panel {
+.onyx-graphs-panel {
   height: 78vh;
   overflow-y : scroll;
 }
 
-.table-panel {
+.onyx-results-panel {
   height: 48vh;
 }
 
-[data-bs-theme=light] {
-  --onyx-dropdown-control-border-color: var(--bs-gray-300);
-  --onyx-dropdown-control-background-color: var(--bs-white);
-  --onyx-dropdown-menu-background-color: var(--bs-white);
-  --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-300);
-  --onyx-dropdown-label-color: var(--bs-black);
-  --onyx-dropdown-option-background-color: var(--bs-white);
-  --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
+.onyx-record-detail .table {
+  height: 58vh;
 }
 
-[data-bs-theme=dark] {
-  --onyx-dropdown-control-border-color: var(--bs-gray-700);
-  --onyx-dropdown-control-background-color: var(--bs-gray-900);
-  --onyx-dropdown-menu-background-color: var(--bs-black);
-  --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-700);
-  --onyx-dropdown-label-color: var(--bs-white);
-  --onyx-dropdown-option-background-color: var(--bs-black);
-  --onyx-dropdown-option-hover-background-color: var(--bs-gray-700);
+.onyx-text-pink {
+  color: var(--bs-code-color);
 }
-
-[data-bs-theme=dark] .btn-dark {
-  --bs-btn-border-color: var(--bs-gray-700);
-  --bs-btn-hover-border-color: var(--bs-gray-500);
-}
-

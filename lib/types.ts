@@ -15,4 +15,8 @@ type ProjectField = {
 
 type OptionType = { label: string; value: string };
 
-export type { OnyxProps, ProjectField, OptionType };
+type ResultType = Record<string, string | number | boolean | null>;
+
+type ErrorType = Record<string, string | string[]>;
+
+export type { OnyxProps, ProjectField, OptionType, ResultType, ErrorType };

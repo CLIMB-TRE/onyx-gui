@@ -32,9 +32,20 @@ interface ChoiceProps extends DropdownProps, GenericChoiceProps {}
 interface MultiChoiceProps extends MultiDropdownProps, GenericChoiceProps {}
 
 const Option = (optionProps: OptionProps) => {
+  const splitLabel = optionProps.label.split("|", 2);
+
   return (
     <code>
-      <components.Option {...optionProps} />
+      <components.Option {...optionProps}>
+        {splitLabel.length > 0 && <div>{splitLabel[0]}</div>}
+        {splitLabel.length > 1 && (
+          <div
+            style={{ color: "var(--onyx-dropdown-option-description-color)" }}
+          >
+            {splitLabel[1]}
+          </div>
+        )}
+      </components.Option>
     </code>
   );
 };
@@ -45,6 +56,7 @@ const getLabel = (option: string, titles?: Map<string, string>) =>
 function Dropdown(props: DropdownProps) {
   return (
     <Select
+      menuPosition="fixed"
       isClearable={props.isClearable}
       isDisabled={props.isDisabled}
       components={{ Option }}
@@ -84,6 +96,7 @@ function MultiDropdown(props: MultiDropdownProps) {
   return (
     <Select
       isMulti
+      menuPosition="fixed"
       closeMenuOnSelect={false}
       components={{ Option }}
       menuPortalTarget={document.body}
@@ -127,6 +140,7 @@ const useChoiceQuery = (props: GenericChoiceProps) => {
           return choices;
         });
     },
+    staleTime: 5 * 60 * 1000,
   });
 };
 

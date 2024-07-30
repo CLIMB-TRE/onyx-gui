@@ -14,7 +14,7 @@ import { OnyxProps, ProjectField } from "./types";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.11.1";
+const VERSION = "0.12.0";
 
 function flattenFields(fields: Record<string, ProjectField>) {
   const flatFields: Record<string, ProjectField> = {};
@@ -57,9 +57,7 @@ function App(props: OnyxProps) {
         .then((data) => {
           return [
             ...new Set(
-              data.data.map(
-                (project: Record<string, unknown>) => project.project
-              )
+              data.data.map((project: { project: string }) => project.project)
             ),
           ] as string[];
         });
@@ -82,7 +80,7 @@ function App(props: OnyxProps) {
         .then((response) => response.json())
         .then((data) => {
           return new Map(
-            data.data.map((type: Record<string, unknown>) => [
+            data.data.map((type: { type: string; lookups: string[] }) => [
               type.type,
               type.lookups,
             ])
@@ -100,7 +98,7 @@ function App(props: OnyxProps) {
         .then((response) => response.json())
         .then((data) => {
           return new Map(
-            data.data.map((lookup: Record<string, unknown>) => [
+            data.data.map((lookup: { lookup: string; description: string }) => [
               lookup.lookup,
               lookup.description,
             ])
@@ -111,6 +109,7 @@ function App(props: OnyxProps) {
 
   // Fetch project information
   const {
+    isFetching: projectInfoPending,
     data: { projectName, projectFields, fieldDescriptions } = {
       projectName: "",
       projectFields: new Map<string, ProjectField>(),
@@ -146,13 +145,14 @@ function App(props: OnyxProps) {
         });
     },
     enabled: !!project,
+    staleTime: 1 * 60 * 1000,
   });
 
   return (
     <Stack gap={2} className="Onyx">
       <Header
         {...props}
-        projectName={projectName}
+        projectName={projectInfoPending ? "Loading..." : projectName}
         projectList={projects}
         handleProjectChange={setProject}
         guiVersion={VERSION}
