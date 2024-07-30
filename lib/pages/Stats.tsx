@@ -3,6 +3,8 @@ import { Dropdown } from "../components/Dropdowns";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import ToggleButton from "react-bootstrap/ToggleButton";
+import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
@@ -42,6 +44,7 @@ const useSummaryQuery = (props: GraphProps) => {
         });
     },
     enabled: !!props.project,
+    staleTime: 1 * 60 * 1000,
   });
 };
 
@@ -95,6 +98,7 @@ const useGroupedSummaryQuery = (props: GroupedGraphProps) => {
         });
     },
     enabled: !!props.project,
+    staleTime: 1 * 60 * 1000,
   });
 };
 
@@ -129,6 +133,18 @@ function BaseGraph(props: BaseGraphProps) {
         yaxis: { title: props.yTitle },
         legend: { title: { text: props.legendTitle } },
         showlegend: props.legendTitle ? true : false,
+        colorway: [
+          "#00cc96",
+          "#636efa",
+          "#EF553B",
+          "#ab63fa",
+          "#FFA15A",
+          "#19d3f3",
+          "#FF6692",
+          "#B6E880",
+          "#FF97FF",
+          "#FECB52",
+        ],
       }}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
@@ -202,7 +218,6 @@ function ScatterGraph(props: GraphProps) {
           y: data.count_data,
           type: "scatter",
           mode: "lines+markers",
-          marker: { color: "#00CC96" },
         },
       ]}
       title={getTitle(props.projectFields, props.field, data)}
@@ -228,7 +243,6 @@ function BarGraph(props: GraphProps) {
           x: data.field_data,
           y: data.count_data,
           type: "bar",
-          marker: { color: "#00CC96" },
         },
       ]}
       title={getTitle(props.projectFields, props.field, data)}
@@ -429,74 +443,59 @@ function GraphPanel(props: GraphPanelProps) {
   }
 
   return (
-    <Row className="g-2">
-      <Col xl={9}>
-        <Card body>{g}</Card>
-      </Col>
-      <Col xl={3}>
-        <Card style={{ height: "100%" }}>
-          <Card.Header>
-            <span>Options</span>
-            <Stack direction="horizontal" gap={1} className="float-end">
-              <Button variant="dark" onClick={props.handleGraphConfigAdd}>
-                +
-              </Button>
-              <Button variant="dark" onClick={props.handleGraphConfigRemove}>
-                -
-              </Button>
-            </Stack>
-          </Card.Header>
-          <Card.Body>
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Graph Type</Form.Label>
-                <Dropdown
-                  isClearable
-                  options={["line", "bar", "pie"]}
-                  value={props.type}
-                  placeholder="Select graph type..."
-                  onChange={props.handleGraphConfigTypeChange}
-                />
-              </Form.Group>
-              {props.type && (
+    <Container fluid className="g-0">
+      <Row className="g-2">
+        <Col xl={12} xxl={9}>
+          <Card body style={{ height: "365px" }}>
+            {g}
+          </Card>
+        </Col>
+        <Col xl={12} xxl={3}>
+          <Card style={{ height: "365px" }}>
+            <Card.Header>
+              <span>Options</span>
+              <Stack direction="horizontal" gap={1} className="float-end">
+                <Button
+                  size="sm"
+                  variant="dark"
+                  onClick={props.handleGraphConfigAdd}
+                >
+                  +
+                </Button>
+                <Button
+                  size="sm"
+                  variant="dark"
+                  onClick={props.handleGraphConfigRemove}
+                >
+                  -
+                </Button>
+              </Stack>
+            </Card.Header>
+            <Card.Body style={{ overflowY: "scroll" }}>
+              <Form>
                 <Form.Group className="mb-3">
-                  <Form.Label>Field</Form.Label>
+                  <Form.Label>Graph Type</Form.Label>
                   <Dropdown
                     isClearable
-                    options={fields}
-                    value={props.field}
-                    placeholder="Select field..."
-                    onChange={props.handleGraphConfigFieldChange}
+                    options={["line", "bar", "pie"]}
+                    value={props.type}
+                    placeholder="Select graph type..."
+                    onChange={props.handleGraphConfigTypeChange}
                   />
                 </Form.Group>
-              )}
-              {props.type === "bar" ? (
-                <Row className="g-3">
-                  <Col>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Group By</Form.Label>
-                      <Dropdown
-                        isClearable
-                        options={groupBy}
-                        value={props.groupBy}
-                        placeholder="Select field..."
-                        onChange={props.handleGraphConfigGroupByChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Mode</Form.Label>
-                      <Dropdown
-                        options={["stack", "group", "norm"]}
-                        value={props.groupMode}
-                        onChange={props.handleGraphConfigGroupModeChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-              ) : (
-                props.type === "line" && (
+                {props.type && (
+                  <Form.Group className="mb-3">
+                    <Form.Label>Field</Form.Label>
+                    <Dropdown
+                      isClearable
+                      options={fields}
+                      value={props.field}
+                      placeholder="Select field..."
+                      onChange={props.handleGraphConfigFieldChange}
+                    />
+                  </Form.Group>
+                )}
+                {(props.type === "line" || props.type === "bar") && (
                   <Form.Group className="mb-3">
                     <Form.Label>Group By</Form.Label>
                     <Dropdown
@@ -507,13 +506,23 @@ function GraphPanel(props: GraphPanelProps) {
                       onChange={props.handleGraphConfigGroupByChange}
                     />
                   </Form.Group>
-                )
-              )}
-            </Form>
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
+                )}
+                {props.type === "bar" && (
+                  <Form.Group className="mb-3">
+                    <Form.Label>Mode</Form.Label>
+                    <Dropdown
+                      options={["stack", "group", "norm"]}
+                      value={props.groupMode}
+                      onChange={props.handleGraphConfigGroupModeChange}
+                    />
+                  </Form.Group>
+                )}
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
@@ -531,20 +540,28 @@ interface StatsProps extends OnyxProps {
 }
 
 function Stats(props: StatsProps) {
-  const [graphConfigList, setGraphConfigList] = useState([
-    { type: "line", field: "published_date", groupBy: "" },
-    { type: "line", field: "published_date", groupBy: "site" },
-  ] as GraphConfig[]);
+  const defaultGraphConfig = [
+    { type: "bar", field: "published_date", groupBy: "", groupMode: "stack" },
+    {
+      type: "bar",
+      field: "published_date",
+      groupBy: "site",
+      groupMode: "stack",
+    },
+    { type: "pie", field: "site", groupBy: "", groupMode: "" },
+    { type: "line", field: "published_date", groupBy: "site", groupMode: "" },
+  ] as GraphConfig[];
+
+  const [viewMode, setViewMode] = useState("compact");
+  const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig);
   const listFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
 
   // Reset graphs when project changes
   useLayoutEffect(() => {
-    setGraphConfigList([
-      { type: "line", field: "published_date", groupBy: "", groupMode: "" },
-      { type: "line", field: "published_date", groupBy: "site", groupMode: "" },
-    ]);
+    setGraphConfigList(defaultGraphConfig);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
   const handleGraphConfigTypeChange = (
@@ -626,36 +643,59 @@ function Stats(props: StatsProps) {
             <Button size="sm" variant="dark" onClick={handleGraphConfigClear}>
               Clear Graphs
             </Button>
+            <ToggleButtonGroup
+              size="sm"
+              name="view-mode"
+              type="radio"
+              value={viewMode}
+              onChange={(mode) => setViewMode(mode)}
+            >
+              <ToggleButton
+                id="compact-toggle"
+                value="compact"
+                variant="outline-secondary"
+              >
+                Compact
+              </ToggleButton>
+              <ToggleButton
+                id="wide-toggle"
+                value="wide"
+                variant="outline-secondary"
+              >
+                Wide
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Stack>
         </Card.Header>
-        <Container fluid className="graph-panel p-2">
-          <Stack gap={2}>
+        <Container fluid className="onyx-graphs-panel p-2">
+          <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
-              <GraphPanel
-                key={index}
-                {...props}
-                type={graphConfig.type}
-                field={graphConfig.field}
-                groupBy={graphConfig.groupBy}
-                groupMode={graphConfig.groupMode}
-                graphFieldOptions={listFieldOptions}
-                handleGraphConfigTypeChange={(e) =>
-                  handleGraphConfigTypeChange(e, index)
-                }
-                handleGraphConfigFieldChange={(e) =>
-                  handleGraphConfigFieldChange(e, index)
-                }
-                handleGraphConfigGroupByChange={(e) =>
-                  handleGraphConfigGroupByChange(e, index)
-                }
-                handleGraphConfigGroupModeChange={(e) =>
-                  handleGraphConfigGroupModeChange(e, index)
-                }
-                handleGraphConfigAdd={() => handleGraphConfigAdd(index + 1)}
-                handleGraphConfigRemove={() => handleGraphConfigRemove(index)}
-              />
+              <Col key={index} lg={viewMode === "wide" ? 12 : 6}>
+                <GraphPanel
+                  {...props}
+                  type={graphConfig.type}
+                  field={graphConfig.field}
+                  groupBy={graphConfig.groupBy}
+                  groupMode={graphConfig.groupMode}
+                  graphFieldOptions={listFieldOptions}
+                  handleGraphConfigTypeChange={(e) =>
+                    handleGraphConfigTypeChange(e, index)
+                  }
+                  handleGraphConfigFieldChange={(e) =>
+                    handleGraphConfigFieldChange(e, index)
+                  }
+                  handleGraphConfigGroupByChange={(e) =>
+                    handleGraphConfigGroupByChange(e, index)
+                  }
+                  handleGraphConfigGroupModeChange={(e) =>
+                    handleGraphConfigGroupModeChange(e, index)
+                  }
+                  handleGraphConfigAdd={() => handleGraphConfigAdd(index + 1)}
+                  handleGraphConfigRemove={() => handleGraphConfigRemove(index)}
+                />
+              </Col>
             ))}
-          </Stack>
+          </Row>
         </Container>
       </Card>
     </Container>

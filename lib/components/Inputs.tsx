@@ -36,6 +36,7 @@ function MultiInput({
   return (
     <Creatable
       isMulti
+      menuPosition="fixed"
       menuPortalTarget={document.body}
       styles={selectStyles}
       value={value.map((option) => ({

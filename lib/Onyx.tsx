@@ -14,7 +14,7 @@ import { OnyxProps, ProjectField } from "./types";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.11.1";
+const VERSION = "0.11.2";
 
 function flattenFields(fields: Record<string, ProjectField>) {
   const flatFields: Record<string, ProjectField> = {};
@@ -109,6 +109,7 @@ function App(props: OnyxProps) {
 
   // Fetch project information
   const {
+    isFetching: projectInfoPending,
     data: { projectName, projectFields, fieldDescriptions } = {
       projectName: "",
       projectFields: new Map<string, ProjectField>(),
@@ -144,13 +145,14 @@ function App(props: OnyxProps) {
         });
     },
     enabled: !!project,
+    staleTime: 1 * 60 * 1000,
   });
 
   return (
     <Stack gap={2} className="Onyx">
       <Header
         {...props}
-        projectName={projectName}
+        projectName={projectInfoPending ? "Loading..." : projectName}
         projectList={projects}
         handleProjectChange={setProject}
         guiVersion={VERSION}

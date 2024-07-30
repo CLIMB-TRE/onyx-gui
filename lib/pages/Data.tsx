@@ -19,6 +19,7 @@ import ErrorMessages from "../components/ErrorMessages";
 import { OnyxProps, ProjectField, ResultType, ErrorType } from "../types";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
+import { NavDropdown } from "react-bootstrap";
 
 type FilterField = {
   field: string;
@@ -32,10 +33,13 @@ interface SearchProps extends DataProps {
 }
 
 function Parameters(props: SearchProps) {
-  const [filterList, setFilterList] = useState(new Array<FilterField>());
-  const [summariseList, setSummariseList] = useState(new Array<string>());
-  const [includeList, setIncludeList] = useState(new Array<string>());
-  const [excludeList, setExcludeList] = useState(new Array<string>());
+  const defaultFilterList = [
+    { field: "", lookup: "", value: "" },
+  ] as FilterField[];
+
+  const [filterList, setFilterList] = useState(defaultFilterList);
+  const [filterAction, setFilterAction] = useState("Summarise");
+  const [filterActionList, setFilterActionList] = useState(new Array<string>());
   const [searchInput, setSearchInput] = useState("");
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("filter"))
@@ -46,11 +50,11 @@ function Parameters(props: SearchProps) {
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
-    setFilterList([]);
-    setSummariseList([]);
-    setIncludeList([]);
-    setExcludeList([]);
+    setFilterList(defaultFilterList);
+    setFilterAction("Summarise");
+    setFilterActionList([]);
     setSearchInput("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
   const handleFilterFieldChange = (
@@ -112,20 +116,15 @@ function Parameters(props: SearchProps) {
     setFilterList([]);
   };
 
-  const handleSummariseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSummariseList(e.target.value ? e.target.value.split(",") : []);
-    setIncludeList([]);
-    setExcludeList([]);
+  const handleFilterActionChange = (action: string) => {
+    setFilterAction(action);
+    setFilterActionList([]);
   };
 
-  const handleIncludeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSummariseList([]);
-    setIncludeList(e.target.value ? e.target.value.split(",") : []);
-  };
-
-  const handleExcludeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSummariseList([]);
-    setExcludeList(e.target.value ? e.target.value.split(",") : []);
+  const handleFilterActionListChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setFilterActionList(e.target.value ? e.target.value.split(",") : []);
   };
 
   const handleParameters = () => {
@@ -140,19 +139,9 @@ function Parameters(props: SearchProps) {
           }
         })
         .concat(
-          includeList
-            .filter((include) => include)
-            .map((field) => ["include", field])
-        )
-        .concat(
-          excludeList
-            .filter((exclude) => exclude)
-            .map((field) => ["exclude", field])
-        )
-        .concat(
-          summariseList
-            .filter((summarise) => summarise)
-            .map((field) => ["summarise", field])
+          filterActionList
+            .filter((field) => field)
+            .map((field) => [filterAction.toLowerCase(), field])
         )
         .concat(
           [searchInput]
@@ -186,7 +175,7 @@ function Parameters(props: SearchProps) {
         </Button>
       </Stack>
       <Row className="g-2">
-        <Col xl={6}>
+        <Col md={8}>
           <Card>
             <Card.Header>
               <span>Filter</span>
@@ -203,7 +192,7 @@ function Parameters(props: SearchProps) {
                 </Button>
               </Stack>
             </Card.Header>
-            <Container fluid className="panel p-2">
+            <Container fluid className="onyx-parameters-panel p-2">
               <Stack gap={1}>
                 {filterList.map((filter, index) => (
                   <Filter
@@ -229,41 +218,35 @@ function Parameters(props: SearchProps) {
             </Container>
           </Card>
         </Col>
-        {[
-          {
-            title: "Summarise",
-            options: filterFieldOptions,
-            value: summariseList,
-            onChange: handleSummariseChange,
-          },
-          {
-            title: "Include",
-            options: listFieldOptions,
-            value: includeList,
-            onChange: handleIncludeChange,
-          },
-          {
-            title: "Exclude",
-            options: listFieldOptions,
-            value: excludeList,
-            onChange: handleExcludeChange,
-          },
-        ].map(({ title, options, value, onChange }) => (
-          <Col key={title} md={4} xl={2}>
-            <Card>
-              <Card.Header>{title}</Card.Header>
-              <Container fluid className="panel p-2">
-                <MultiDropdown
-                  options={options}
-                  titles={props.fieldDescriptions}
-                  value={value}
-                  placeholder="Select fields..."
-                  onChange={onChange}
-                />
-              </Container>
-            </Card>
-          </Col>
-        ))}
+        <Col md={4}>
+          <Card>
+            <Card.Header>
+              <NavDropdown title={filterAction}>
+                {["Summarise", "Include", "Exclude"].map((action) => (
+                  <NavDropdown.Item
+                    key={action}
+                    onClick={() => handleFilterActionChange(action)}
+                  >
+                    {action}
+                  </NavDropdown.Item>
+                ))}
+              </NavDropdown>
+            </Card.Header>
+            <Container fluid className="onyx-parameters-panel p-2">
+              <MultiDropdown
+                options={
+                  filterAction === "Summarise"
+                    ? filterFieldOptions
+                    : listFieldOptions
+                }
+                titles={props.fieldDescriptions}
+                value={filterActionList}
+                placeholder={`${filterAction} fields...`}
+                onChange={handleFilterActionListChange}
+              />
+            </Container>
+          </Card>
+        </Col>
       </Row>
     </>
   );
@@ -317,7 +300,7 @@ function Results(props: ResultsProps) {
           Export Page to CSV
         </Button>
       </Card.Header>
-      <Container fluid className="table-panel p-2">
+      <Container fluid className="onyx-results-panel p-2">
         {props.resultPending ? (
           <LoadingAlert />
         ) : props.resultError ? (
@@ -392,6 +375,7 @@ function RecordDetail(props: RecordDetailProps) {
 
   return (
     <Modal
+      className="onyx-record-detail"
       show={props.show}
       onHide={props.onHide}
       dialogClassName="modal-xl"
@@ -401,7 +385,7 @@ function RecordDetail(props: RecordDetailProps) {
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
           <Container fluid>
-            CLIMB ID: <code>{props.recordID}</code>
+            CLIMB ID: <span className="onyx-text-pink">{props.recordID}</span>
           </Container>
         </Modal.Title>
       </Modal.Header>
@@ -415,17 +399,21 @@ function RecordDetail(props: RecordDetailProps) {
         ) : recordData.messages ? (
           <ErrorMessages messages={recordData.messages} />
         ) : (
-          // <pre>{JSON.stringify(recordData.data, null, 2)}</pre>
           recordData.data && (
             <Container fluid>
               <Stack gap={3} direction="vertical">
-                <h4>
+                <h5>
                   Published Date:{" "}
-                  <code>{recordData.data["published_date"]}</code>
-                </h4>
-                <h4>
-                  Site: <code>{recordData.data["site"]}</code>
-                </h4>
+                  <span className="onyx-text-pink">
+                    {recordData.data["published_date"]}
+                  </span>
+                </h5>
+                <h5>
+                  Site:{" "}
+                  <span className="onyx-text-pink">
+                    {recordData.data["site"]}
+                  </span>
+                </h5>
               </Stack>
               <hr />
               <Tabs
@@ -508,6 +496,7 @@ function Data(props: DataProps) {
         .then((response) => response.json());
     },
     enabled: !!props.project,
+    cacheTime: 0.5 * 60 * 1000,
   });
 
   const handleSearch = (search: string) => {

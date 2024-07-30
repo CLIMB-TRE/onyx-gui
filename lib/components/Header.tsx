@@ -49,7 +49,10 @@ interface HeaderProps {
 
 function Header(props: HeaderProps) {
   // Fetch user profile
-  const { data: { username, site } = { username: "", site: "" } } = useQuery({
+  const {
+    isFetching: profilePending,
+    data: { username, site } = { username: "", site: "" },
+  } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       return props
@@ -62,57 +65,78 @@ function Header(props: HeaderProps) {
   });
 
   return (
-    <Navbar bg="dark" variant="dark" collapseOnSelect expand="sm">
+    <Navbar bg="dark" variant="dark" collapseOnSelect expand="lg">
       <Container fluid>
         <Navbar.Brand>⬗ Onyx</Navbar.Brand>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav">
-          <Stack direction="horizontal" gap={3}>
-            <NavDropdown
-              title={<HeaderText label="Project" value={props.projectName} />}
-              id="collapsible-nav-dropdown"
-              style={{ color: "white" }}
-            >
-              {props.projectList.map((p) => (
-                <NavDropdown.Item
-                  key={p}
-                  onClick={() => props.handleProjectChange(p)}
+        <Navbar.Toggle aria-controls="navbarScroll" />
+        <Navbar.Collapse id="navbarScroll">
+          <Nav className="me-auto">
+            <Nav style={{ maxHeight: "200px" }} navbarScroll>
+              <Stack direction="horizontal" gap={2}>
+                <NavDropdown
+                  title={
+                    <HeaderText label="Project" value={props.projectName} />
+                  }
+                  id="navbarScrollingDropdown"
+                  style={{ color: "white" }}
                 >
-                  {p}
-                </NavDropdown.Item>
-              ))}
-            </NavDropdown>
-            <HeaderText label="User" value={username} />
-            <HeaderText label="Site" value={site} />
-            <HeaderVersion label="GUI" version={props.guiVersion} />
-            <HeaderVersion label="Extension" version={props.extVersion} />
-          </Stack>
-        </Navbar.Collapse>
-        <Stack direction="horizontal" gap={3}>
+                  {props.projectList.map((p) => (
+                    <NavDropdown.Item
+                      key={p}
+                      onClick={() => props.handleProjectChange(p)}
+                    >
+                      {p}
+                    </NavDropdown.Item>
+                  ))}
+                </NavDropdown>
+                <div></div>
+              </Stack>
+            </Nav>
+            <Nav>
+              <Stack direction="horizontal" gap={3}>
+                <HeaderText
+                  label="User"
+                  value={profilePending ? "Loading..." : username}
+                />
+                <HeaderText
+                  label="Site"
+                  value={profilePending ? "Loading..." : site}
+                />
+                <HeaderVersion label="GUI" version={props.guiVersion} />
+                <HeaderVersion label="Extension" version={props.extVersion} />
+              </Stack>
+            </Nav>
+          </Nav>
           <Tab.Container
             activeKey={props.tabKey}
             onSelect={(k) => props.setTabKey(k || "data")}
           >
             <Nav variant="underline">
-              <Nav.Item>
-                <Nav.Link eventKey="data">Data</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="stats">Statistics</Nav.Link>
-              </Nav.Item>
+              <Stack direction="horizontal" gap={3}>
+                <Nav.Item>
+                  <Nav.Link eventKey="data">Data</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="stats">Statistics</Nav.Link>
+                </Nav.Item>
+                <Form.Check
+                  type="switch"
+                  id="theme-switch"
+                  label={
+                    <span className="text-light">
+                      {props.darkMode ? "☾" : "☼"}{" "}
+                    </span>
+                  }
+                  title={`Switch to ${
+                    props.darkMode ? "light mode" : "dark mode"
+                  }`}
+                  checked={props.darkMode}
+                  onChange={props.handleThemeChange}
+                />
+              </Stack>
             </Nav>
           </Tab.Container>
-          <Form.Check
-            type="switch"
-            id="theme-switch"
-            label={
-              <span className="text-light">{props.darkMode ? "☾" : "☼"} </span>
-            }
-            title={`Switch to ${props.darkMode ? "light mode" : "dark mode"}`}
-            checked={props.darkMode}
-            onChange={props.handleThemeChange}
-          />
-        </Stack>
+        </Navbar.Collapse>
       </Container>
     </Navbar>
   );
