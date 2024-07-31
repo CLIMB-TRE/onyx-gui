@@ -9,7 +9,7 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
 import Modal from "react-bootstrap/Modal";
-import { mkConfig, generateCsv, download, asString } from "export-to-csv";
+import { mkConfig, generateCsv, asString } from "export-to-csv";
 import { useQuery } from "@tanstack/react-query";
 import { MultiDropdown } from "../components/Dropdowns";
 import Filter from "../components/Filter";
@@ -278,12 +278,12 @@ function Results(props: ResultsProps) {
   });
 
   const handleExportToCSV = () => {
-    const csv = generateCsv(csvConfig)(props.resultData.data || []);
+    const csvData = asString(
+      generateCsv(csvConfig)(props.resultData.data || [])
+    );
 
     if (props.fileWriter) {
-      props.fileWriter(fileName + ".csv", asString(csv));
-    } else {
-      download(csvConfig)(csv);
+      props.fileWriter(fileName + ".csv", csvData);
     }
   };
 
@@ -294,6 +294,7 @@ function Results(props: ResultsProps) {
         <Button
           className="float-end"
           size="sm"
+          disabled={!props.fileWriter}
           variant="success"
           onClick={handleExportToCSV}
         >
@@ -373,6 +374,14 @@ function RecordDetail(props: RecordDetailProps) {
     staleTime: 1 * 60 * 1000,
   });
 
+  const handleExportToJSON = () => {
+    const jsonData = JSON.stringify(recordData);
+
+    if (props.fileWriter) {
+      props.fileWriter(props.recordID + ".json", jsonData);
+    }
+  };
+
   return (
     <Modal
       className="onyx-record-detail"
@@ -401,13 +410,23 @@ function RecordDetail(props: RecordDetailProps) {
         ) : (
           recordData.data && (
             <Container fluid>
-              <Stack gap={3} direction="vertical">
+              <Stack gap={2} direction="vertical">
                 <h5>
                   Published Date:{" "}
                   <span className="onyx-text-pink">
                     {recordData.data["published_date"]}
                   </span>
+                  <Button
+                    className="float-end"
+                    size="sm"
+                    disabled={!props.fileWriter}
+                    variant="success"
+                    onClick={handleExportToJSON}
+                  >
+                    Export Record to JSON
+                  </Button>
                 </h5>
+
                 <h5>
                   Site:{" "}
                   <span className="onyx-text-pink">
