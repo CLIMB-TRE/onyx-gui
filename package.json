@@ -1,6 +1,6 @@
 {
   "name": "climb-onyx-gui",
-  "version": "0.12.0",
+  "version": "0.12.3",
   "type": "module",
   "main": "dist/climb-onyx-gui.js",
   "types": "dist/main.d.ts",

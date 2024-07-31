@@ -22,16 +22,7 @@ function DelayedLoadingAlert() {
     return () => clearTimeout(timer);
   });
 
-  return (
-    showAlert && (
-      <Alert variant="light">
-        <Stack direction="horizontal" gap={2}>
-          <Spinner />
-          <span>Loading...</span>
-        </Stack>
-      </Alert>
-    )
-  );
+  return showAlert && <LoadingAlert />;
 }
 
 export { LoadingAlert, DelayedLoadingAlert };
