@@ -375,7 +375,7 @@ function RecordDetail(props: RecordDetailProps) {
   });
 
   const handleExportToJSON = () => {
-    const jsonData = JSON.stringify(recordData.data);
+    const jsonData = JSON.stringify(recordData.data || {});
 
     if (props.fileWriter) {
       props.fileWriter(props.recordID + ".json", jsonData);
