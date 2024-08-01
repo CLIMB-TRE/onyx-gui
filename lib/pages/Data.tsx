@@ -9,6 +9,9 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
 import Modal from "react-bootstrap/Modal";
+import NavDropdown from "react-bootstrap/NavDropdown";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import { useQuery } from "@tanstack/react-query";
 import { MultiDropdown } from "../components/Dropdowns";
@@ -17,11 +20,10 @@ import ResultsTable from "../components/ResultsTable";
 import { LoadingAlert, DelayedLoadingAlert } from "../components/LoadingAlert";
 import ErrorMessages from "../components/ErrorMessages";
 import { OnyxProps, ProjectField, ResultType, ErrorType } from "../types";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
-import { NavDropdown } from "react-bootstrap";
+import generateKey from "../utils/generateKey";
 
 type FilterField = {
+  key: string;
   field: string;
   lookup: string;
   value: string;
@@ -33,11 +35,10 @@ interface SearchProps extends DataProps {
 }
 
 function Parameters(props: SearchProps) {
-  const defaultFilterList = [
-    { field: "", lookup: "", value: "" },
-  ] as FilterField[];
+  const defaultFilterList = () =>
+    [{ key: generateKey(), field: "", lookup: "", value: "" }] as FilterField[];
 
-  const [filterList, setFilterList] = useState(defaultFilterList);
+  const [filterList, setFilterList] = useState(defaultFilterList());
   const [filterAction, setFilterAction] = useState("Summarise");
   const [filterActionList, setFilterActionList] = useState(new Array<string>());
   const [searchInput, setSearchInput] = useState("");
@@ -50,7 +51,7 @@ function Parameters(props: SearchProps) {
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
-    setFilterList(defaultFilterList);
+    setFilterList(defaultFilterList());
     setFilterAction("Summarise");
     setFilterActionList([]);
     setSearchInput("");
@@ -101,7 +102,12 @@ function Parameters(props: SearchProps) {
   const handleFilterAdd = (index: number) => {
     setFilterList([
       ...filterList.slice(0, index),
-      { field: "", lookup: "", value: "" },
+      {
+        key: generateKey(),
+        field: "",
+        lookup: "",
+        value: "",
+      },
       ...filterList.slice(index),
     ]);
   };
@@ -196,7 +202,7 @@ function Parameters(props: SearchProps) {
               <Stack gap={1}>
                 {filterList.map((filter, index) => (
                   <Filter
-                    key={index}
+                    key={filter.key}
                     project={props.project}
                     httpPathHandler={props.httpPathHandler}
                     filter={filter}
