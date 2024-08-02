@@ -1,10 +1,9 @@
-import { useState, useMemo, useLayoutEffect } from "react";
-import { Dropdown } from "../components/Dropdowns";
+import { useState, useMemo, useLayoutEffect, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import ToggleButton from "react-bootstrap/ToggleButton";
-import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
+import { Dropdown as BDropdown } from "react-bootstrap";
+import DropdownButton from "react-bootstrap/DropdownButton";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
@@ -13,8 +12,10 @@ import { useQuery } from "@tanstack/react-query";
 import Plotly from "plotly.js-basic-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
 import { Template } from "plotly.js-basic-dist";
-import graphStyles from "../utils/graphStyles";
+import { Dropdown } from "../components/Dropdowns";
 import { OnyxProps, ProjectField, ResultType } from "../types";
+import graphStyles from "../utils/graphStyles";
+import generateKey from "../utils/generateKey";
 
 // Create Plotly component using basic plotly distribution
 const Plot = createPlotlyComponent(Plotly);
@@ -110,6 +111,7 @@ interface BaseGraphProps {
   legendTitle?: string;
   layout?: Record<string, unknown>;
   darkMode: boolean;
+  uirevision: number;
 }
 
 function BaseGraph(props: BaseGraphProps) {
@@ -145,6 +147,7 @@ function BaseGraph(props: BaseGraphProps) {
           "#FF97FF",
           "#FECB52",
         ],
+        uirevision: props.uirevision,
       }}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
@@ -197,11 +200,41 @@ function getGroupedTitle(
   return title;
 }
 
+const useUIRevision = (field: string) => {
+  const [uirevision, setUIRevision] = useState(0);
+
+  useEffect(
+    () => {
+      setUIRevision((uirevision + 1) % 2);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [field]
+  );
+
+  return uirevision;
+};
+
+const useGroupedUIRevision = (field: string, groupBy: string) => {
+  const [uirevision, setUIRevision] = useState(0);
+
+  useEffect(
+    () => {
+      setUIRevision((uirevision + 1) % 2);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [field, groupBy]
+  );
+
+  return uirevision;
+};
+
 interface GraphProps extends StatsProps {
   field: string;
 }
 
 function ScatterGraph(props: GraphProps) {
+  const uirevision = useUIRevision(props.field);
+
   const {
     data = {
       field_data: [],
@@ -223,11 +256,14 @@ function ScatterGraph(props: GraphProps) {
       title={getTitle(props.projectFields, props.field, data)}
       xTitle={props.field}
       yTitle="count"
+      uirevision={uirevision}
     />
   );
 }
 
 function BarGraph(props: GraphProps) {
+  const uirevision = useUIRevision(props.field);
+
   const {
     data = {
       field_data: [],
@@ -248,11 +284,14 @@ function BarGraph(props: GraphProps) {
       title={getTitle(props.projectFields, props.field, data)}
       xTitle={props.field}
       yTitle="count"
+      uirevision={uirevision}
     />
   );
 }
 
 function PieGraph(props: GraphProps) {
+  const uirevision = useUIRevision(props.field);
+
   const {
     data = {
       field_data: [],
@@ -273,6 +312,7 @@ function PieGraph(props: GraphProps) {
       ]}
       title={getTitle(props.projectFields, props.field, data)}
       legendTitle={props.field}
+      uirevision={uirevision}
     />
   );
 }
@@ -283,6 +323,8 @@ interface GroupedGraphProps extends GraphProps {
 }
 
 function GroupedScatterGraph(props: GroupedGraphProps) {
+  const uirevision = useGroupedUIRevision(props.field, props.groupBy);
+
   const {
     data = new Map<string, { field_data: string[]; count_data: number[] }>(),
   } = useGroupedSummaryQuery(props);
@@ -312,11 +354,14 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
       xTitle={props.field}
       yTitle="count"
       legendTitle={props.groupBy}
+      uirevision={uirevision}
     />
   );
 }
 
 function GroupedBarGraph(props: GroupedGraphProps) {
+  const uirevision = useGroupedUIRevision(props.field, props.groupBy);
+
   const {
     data = new Map<string, { field_data: string[]; count_data: number[] }>(),
   } = useGroupedSummaryQuery(props);
@@ -358,6 +403,7 @@ function GroupedBarGraph(props: GroupedGraphProps) {
       yTitle={yTitle}
       legendTitle={props.groupBy}
       layout={layout}
+      uirevision={uirevision}
     />
   );
 }
@@ -439,7 +485,7 @@ function GraphPanel(props: GraphPanelProps) {
       g = <PieGraph {...props} field={props.field} />;
       break;
     default:
-      g = <BaseGraph {...props} data={[]} title="Empty Graph" />;
+      g = <BaseGraph {...props} data={[]} title="Empty Graph" uirevision={0} />;
   }
 
   return (
@@ -527,6 +573,7 @@ function GraphPanel(props: GraphPanelProps) {
 }
 
 type GraphConfig = {
+  key: string;
   type: string;
   field: string;
   groupBy: string;
@@ -540,27 +587,47 @@ interface StatsProps extends OnyxProps {
 }
 
 function Stats(props: StatsProps) {
-  const defaultGraphConfig = [
-    { type: "bar", field: "published_date", groupBy: "", groupMode: "stack" },
-    {
-      type: "bar",
-      field: "published_date",
-      groupBy: "site",
-      groupMode: "stack",
-    },
-    { type: "pie", field: "site", groupBy: "", groupMode: "" },
-    { type: "line", field: "published_date", groupBy: "site", groupMode: "" },
-  ] as GraphConfig[];
+  const defaultGraphConfig = () =>
+    [
+      {
+        key: generateKey(),
+        type: "bar",
+        field: "published_date",
+        groupBy: "",
+        groupMode: "stack",
+      },
+      {
+        key: generateKey(),
+        type: "bar",
+        field: "published_date",
+        groupBy: "site",
+        groupMode: "stack",
+      },
+      {
+        key: generateKey(),
+        type: "pie",
+        field: "site",
+        groupBy: "",
+        groupMode: "",
+      },
+      {
+        key: generateKey(),
+        type: "line",
+        field: "published_date",
+        groupBy: "site",
+        groupMode: "",
+      },
+    ] as GraphConfig[];
 
   const [viewMode, setViewMode] = useState("wide");
-  const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig);
+  const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig());
   const listFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
 
   // Reset graphs when project changes
   useLayoutEffect(() => {
-    setGraphConfigList(defaultGraphConfig);
+    setGraphConfigList(defaultGraphConfig());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
@@ -612,7 +679,13 @@ function Stats(props: StatsProps) {
   const handleGraphConfigAdd = (index: number) => {
     setGraphConfigList([
       ...graphConfigList.slice(0, index),
-      { type: "", field: "", groupBy: "", groupMode: "" },
+      {
+        key: generateKey(),
+        type: "",
+        field: "",
+        groupBy: "",
+        groupMode: "",
+      },
       ...graphConfigList.slice(index),
     ]);
   };
@@ -643,34 +716,29 @@ function Stats(props: StatsProps) {
             <Button size="sm" variant="dark" onClick={handleGraphConfigClear}>
               Clear Graphs
             </Button>
-            <ToggleButtonGroup
+            <DropdownButton
+              title={`View Mode: ${
+                viewMode.charAt(0).toUpperCase() + viewMode.slice(1)
+              }`}
               size="sm"
-              name="view-mode"
-              type="radio"
-              value={viewMode}
-              onChange={(mode) => setViewMode(mode)}
+              variant="dark"
             >
-              <ToggleButton
-                id="compact-toggle"
-                value="compact"
-                variant="outline-secondary"
+              <BDropdown.Item key="wide" onClick={() => setViewMode("wide")}>
+                Wide
+              </BDropdown.Item>
+              <BDropdown.Item
+                key="compact"
+                onClick={() => setViewMode("compact")}
               >
                 Compact
-              </ToggleButton>
-              <ToggleButton
-                id="wide-toggle"
-                value="wide"
-                variant="outline-secondary"
-              >
-                Wide
-              </ToggleButton>
-            </ToggleButtonGroup>
+              </BDropdown.Item>
+            </DropdownButton>
           </Stack>
         </Card.Header>
         <Container fluid className="onyx-graphs-panel p-2">
           <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
-              <Col key={index} lg={viewMode === "wide" ? 12 : 6}>
+              <Col key={graphConfig.key} lg={viewMode === "wide" ? 12 : 6}>
                 <GraphPanel
                   {...props}
                   type={graphConfig.type}
