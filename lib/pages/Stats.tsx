@@ -2,8 +2,8 @@ import { useState, useMemo, useLayoutEffect, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import ToggleButton from "react-bootstrap/ToggleButton";
-import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
+import { Dropdown as BDropdown } from "react-bootstrap";
+import DropdownButton from "react-bootstrap/DropdownButton";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
@@ -716,28 +716,23 @@ function Stats(props: StatsProps) {
             <Button size="sm" variant="dark" onClick={handleGraphConfigClear}>
               Clear Graphs
             </Button>
-            <ToggleButtonGroup
+            <DropdownButton
+              title={`View Mode: ${
+                viewMode.charAt(0).toUpperCase() + viewMode.slice(1)
+              }`}
               size="sm"
-              name="view-mode"
-              type="radio"
-              value={viewMode}
-              onChange={(mode) => setViewMode(mode)}
+              variant="dark"
             >
-              <ToggleButton
-                id="compact-toggle"
-                value="compact"
-                variant="outline-secondary"
+              <BDropdown.Item key="wide" onClick={() => setViewMode("wide")}>
+                Wide
+              </BDropdown.Item>
+              <BDropdown.Item
+                key="compact"
+                onClick={() => setViewMode("compact")}
               >
                 Compact
-              </ToggleButton>
-              <ToggleButton
-                id="wide-toggle"
-                value="wide"
-                variant="outline-secondary"
-              >
-                Wide
-              </ToggleButton>
-            </ToggleButtonGroup>
+              </BDropdown.Item>
+            </DropdownButton>
           </Stack>
         </Card.Header>
         <Container fluid className="onyx-graphs-panel p-2">
