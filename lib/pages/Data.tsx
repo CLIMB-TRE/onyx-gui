@@ -19,8 +19,34 @@ import Filter from "../components/Filter";
 import ResultsTable from "../components/ResultsTable";
 import { LoadingAlert, DelayedLoadingAlert } from "../components/LoadingAlert";
 import ErrorMessages from "../components/ErrorMessages";
-import { OnyxProps, ProjectField, ResultType, ErrorType } from "../types";
+import { ResultType, ErrorType } from "../types";
+import { DataProps } from "../interfaces";
 import generateKey from "../utils/generateKey";
+
+interface SearchProps extends DataProps {
+  handleSearch: (params: string) => void;
+  handlePageNumber: (page: number) => void;
+}
+
+interface SearchBarProps extends SearchProps {
+  searchInput: string;
+  setSearchInput: (value: string) => void;
+  handleParameters: () => void;
+}
+
+interface ResultsProps extends SearchProps {
+  recordDetailHandler: (climbID: string) => void;
+  resultPending: boolean;
+  resultError: Error | null;
+  resultData: ResultData;
+  pageNumber: number;
+}
+
+interface RecordDetailProps extends DataProps {
+  recordID: string;
+  show: boolean;
+  onHide: () => void;
+}
 
 type FilterField = {
   key: string;
@@ -29,9 +55,35 @@ type FilterField = {
   value: string;
 };
 
-interface SearchProps extends DataProps {
-  handleSearch: (params: string) => void;
-  handlePageNumber: (page: number) => void;
+type ResultData = {
+  next?: string;
+  previous?: string;
+  data?: ResultType[];
+  messages?: ErrorType;
+};
+
+function SearchBar(props: SearchBarProps) {
+  return (
+    <Stack direction="horizontal" gap={2}>
+      <Form.Control
+        value={props.searchInput}
+        placeholder="Search records..."
+        onChange={(e) => props.setSearchInput(e.target.value)}
+        onKeyUp={(event) => {
+          if (event.key === "Enter") {
+            props.handleParameters();
+          }
+        }}
+      />
+      <Button
+        variant="primary"
+        disabled={!props.project}
+        onClick={props.handleParameters}
+      >
+        Search
+      </Button>
+    </Stack>
+  );
 }
 
 function Parameters(props: SearchProps) {
@@ -161,25 +213,12 @@ function Parameters(props: SearchProps) {
 
   return (
     <>
-      <Stack direction="horizontal" gap={2}>
-        <Form.Control
-          value={searchInput}
-          placeholder="Search records..."
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyUp={(event) => {
-            if (event.key === "Enter") {
-              handleParameters();
-            }
-          }}
-        />
-        <Button
-          variant="primary"
-          disabled={!props.project}
-          onClick={handleParameters}
-        >
-          Search
-        </Button>
-      </Stack>
+      <SearchBar
+        {...props}
+        searchInput={searchInput}
+        setSearchInput={setSearchInput}
+        handleParameters={handleParameters}
+      />
       <Row className="g-2">
         <Col md={8}>
           <Card>
@@ -202,15 +241,10 @@ function Parameters(props: SearchProps) {
               <Stack gap={1}>
                 {filterList.map((filter, index) => (
                   <Filter
+                    {...props}
                     key={filter.key}
-                    project={props.project}
-                    httpPathHandler={props.httpPathHandler}
                     filter={filter}
                     fieldList={filterFieldOptions}
-                    projectFields={props.projectFields}
-                    typeLookups={props.typeLookups}
-                    fieldDescriptions={props.fieldDescriptions}
-                    lookupDescriptions={props.lookupDescriptions}
                     handleFieldChange={(e) => handleFilterFieldChange(e, index)}
                     handleLookupChange={(e) =>
                       handleFilterLookupChange(e, index)
@@ -256,21 +290,6 @@ function Parameters(props: SearchProps) {
       </Row>
     </>
   );
-}
-
-type ResultData = {
-  next?: string;
-  previous?: string;
-  data?: ResultType[];
-  messages?: ErrorType;
-};
-
-interface ResultsProps extends SearchProps {
-  recordDetailHandler: (climbID: string) => void;
-  resultPending: boolean;
-  resultError: Error | null;
-  resultData: ResultData;
-  pageNumber: number;
 }
 
 function Results(props: ResultsProps) {
@@ -355,12 +374,6 @@ function Results(props: ResultsProps) {
       </Card.Footer>
     </Card>
   );
-}
-
-interface RecordDetailProps extends DataProps {
-  recordID: string;
-  show: boolean;
-  onHide: () => void;
 }
 
 function RecordDetail(props: RecordDetailProps) {
@@ -484,14 +497,6 @@ function RecordDetail(props: RecordDetailProps) {
       </Modal.Footer>
     </Modal>
   );
-}
-
-interface DataProps extends OnyxProps {
-  project: string;
-  projectFields: Map<string, ProjectField>;
-  typeLookups: Map<string, string[]>;
-  fieldDescriptions: Map<string, string>;
-  lookupDescriptions: Map<string, string>;
 }
 
 function Data(props: DataProps) {
