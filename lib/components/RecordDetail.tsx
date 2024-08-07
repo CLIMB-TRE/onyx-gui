@@ -6,7 +6,7 @@ import Modal from "react-bootstrap/Modal";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import { useQuery } from "@tanstack/react-query";
-import ResultsTable from "./ResultsTable";
+import Table from "./Table";
 import { DelayedLoadingAlert } from "./LoadingAlert";
 import ErrorMessages from "./ErrorMessages";
 import { ResultType } from "../types";
@@ -102,7 +102,7 @@ function RecordDetail(props: RecordDetailProps) {
                 className="mb-3"
               >
                 <Tab eventKey="recordDetails" title="Details">
-                  <ResultsTable
+                  <Table
                     data={
                       Object.entries(recordData.data)
                         .filter(([, value]) => {
@@ -121,7 +121,7 @@ function RecordDetail(props: RecordDetailProps) {
                   .sort()
                   .map(([key, value], index) => (
                     <Tab key={key} eventKey={index} title={key}>
-                      <ResultsTable
+                      <Table
                         data={value as ResultType[]}
                         s3PathHandler={props.s3PathHandler}
                       />

@@ -4,7 +4,7 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
-import ResultsTable from "./ResultsTable";
+import Table from "./Table";
 import { LoadingAlert } from "./LoadingAlert";
 import ErrorMessages from "./ErrorMessages";
 import { ResultType, ErrorType } from "../types";
@@ -69,7 +69,7 @@ function ResultsPanel(props: ResultsPanelProps) {
         ) : props.resultData.messages ? (
           <ErrorMessages messages={props.resultData.messages} />
         ) : (
-          <ResultsTable
+          <Table
             data={props.resultData.data || []}
             titles={props.fieldDescriptions}
             handleRecordDetailShow={props.handleRecordDetailShow}

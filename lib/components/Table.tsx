@@ -1,9 +1,9 @@
 import { memo, useMemo, useState } from "react";
-import Table from "react-bootstrap/Table";
+import { Table as BTable } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import { ResultType } from "../types";
 
-const ResultsTable = memo(function ResultsTable({
+const Table = memo(function Table({
   data,
   titles,
   handleRecordDetailShow,
@@ -94,7 +94,7 @@ const ResultsTable = memo(function ResultsTable({
   const climbIDIndex = headers().indexOf("climb_id");
 
   return (
-    <Table className="onyx-results-table" striped bordered hover responsive>
+    <BTable className="onyx-results-table" striped bordered hover responsive>
       <thead>
         <tr>
           {headers().map((header, index) => (
@@ -159,8 +159,8 @@ const ResultsTable = memo(function ResultsTable({
           </tr>
         ))}
       </tbody>
-    </Table>
+    </BTable>
   );
 });
 
-export default ResultsTable;
+export default Table;
