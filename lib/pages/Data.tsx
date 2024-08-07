@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect, useCallback } from "react";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
@@ -23,23 +23,35 @@ import { ResultType, ErrorType } from "../types";
 import { DataProps } from "../interfaces";
 import generateKey from "../utils/generateKey";
 
-interface SearchProps extends DataProps {
-  handleSearch: (params: string) => void;
-  handlePageNumber: (page: number) => void;
-}
-
-interface SearchBarProps extends SearchProps {
+interface SearchBarProps extends DataProps {
   searchInput: string;
   setSearchInput: (value: string) => void;
-  handleParameters: () => void;
+  handleSearchParameters: () => void;
 }
 
-interface ResultsProps extends SearchProps {
-  recordDetailHandler: (climbID: string) => void;
+interface FilterPanelProps extends DataProps {
+  filterList: FilterField[];
+  setFilterList: (value: FilterField[]) => void;
+  filterFieldOptions: string[];
+}
+
+interface TransformsPanelProps extends DataProps {
+  transform: string;
+  setTransform: (value: string) => void;
+  transformList: string[];
+  setTransformList: (value: string[]) => void;
+  filterFieldOptions: string[];
+  listFieldOptions: string[];
+}
+
+interface ResultsPanelProps extends DataProps {
   resultPending: boolean;
   resultError: Error | null;
   resultData: ResultData;
+  setSearchParameters: (params: string) => void;
   pageNumber: number;
+  setPageNumber: (page: number) => void;
+  handleRecordDetailShow: (climbID: string) => void;
 }
 
 interface RecordDetailProps extends DataProps {
@@ -71,14 +83,14 @@ function SearchBar(props: SearchBarProps) {
         onChange={(e) => props.setSearchInput(e.target.value)}
         onKeyUp={(event) => {
           if (event.key === "Enter") {
-            props.handleParameters();
+            props.handleSearchParameters();
           }
         }}
       />
       <Button
         variant="primary"
         disabled={!props.project}
-        onClick={props.handleParameters}
+        onClick={props.handleSearchParameters}
       >
         Search
       </Button>
@@ -86,35 +98,12 @@ function SearchBar(props: SearchBarProps) {
   );
 }
 
-function Parameters(props: SearchProps) {
-  const defaultFilterList = () =>
-    [{ key: generateKey(), field: "", lookup: "", value: "" }] as FilterField[];
-
-  const [filterList, setFilterList] = useState(defaultFilterList());
-  const [filterAction, setFilterAction] = useState("Summarise");
-  const [filterActionList, setFilterActionList] = useState(new Array<string>());
-  const [searchInput, setSearchInput] = useState("");
-  const filterFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, projectField]) => projectField.actions.includes("filter"))
-    .map(([field]) => field);
-  const listFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, projectField]) => projectField.actions.includes("list"))
-    .map(([field]) => field);
-
-  // Clear parameters when project changes
-  useLayoutEffect(() => {
-    setFilterList(defaultFilterList());
-    setFilterAction("Summarise");
-    setFilterActionList([]);
-    setSearchInput("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.project]);
-
+function FilterPanel(props: FilterPanelProps) {
   const handleFilterFieldChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
     index: number
   ) => {
-    const list = [...filterList];
+    const list = [...props.filterList];
     const field = props.projectFields.get(e.target.value);
     list[index].field = e.target.value;
     list[index].lookup = props.typeLookups.get(field?.type || "")?.[0] || "";
@@ -124,14 +113,14 @@ function Parameters(props: SearchProps) {
     } else {
       list[index].value = "";
     }
-    setFilterList(list);
+    props.setFilterList(list);
   };
 
   const handleFilterLookupChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
     index: number
   ) => {
-    const list = [...filterList];
+    const list = [...props.filterList];
     list[index].lookup = e.target.value;
 
     if (list[index].lookup === "isnull") {
@@ -139,160 +128,123 @@ function Parameters(props: SearchProps) {
     } else {
       list[index].value = "";
     }
-    setFilterList(list);
+    props.setFilterList(list);
   };
 
   const handleFilterValueChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     index: number
   ) => {
-    const list = [...filterList];
+    const list = [...props.filterList];
     list[index].value = e.target.value;
-    setFilterList(list);
+    props.setFilterList(list);
   };
 
   const handleFilterAdd = (index: number) => {
-    setFilterList([
-      ...filterList.slice(0, index),
+    props.setFilterList([
+      ...props.filterList.slice(0, index),
       {
         key: generateKey(),
         field: "",
         lookup: "",
         value: "",
       },
-      ...filterList.slice(index),
+      ...props.filterList.slice(index),
     ]);
   };
 
   const handleFilterRemove = (index: number) => {
-    const list = [...filterList];
+    const list = [...props.filterList];
     list.splice(index, 1);
-    setFilterList(list);
+    props.setFilterList(list);
   };
 
   const handleFilterClear = () => {
-    setFilterList([]);
-  };
-
-  const handleFilterActionChange = (action: string) => {
-    setFilterAction(action);
-    setFilterActionList([]);
-  };
-
-  const handleFilterActionListChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setFilterActionList(e.target.value ? e.target.value.split(",") : []);
-  };
-
-  const handleParameters = () => {
-    const params = new URLSearchParams(
-      filterList
-        .filter((filter) => filter.field)
-        .map((filter) => {
-          if (filter.lookup) {
-            return [filter.field + "__" + filter.lookup, filter.value];
-          } else {
-            return [filter.field, filter.value];
-          }
-        })
-        .concat(
-          filterActionList
-            .filter((field) => field)
-            .map((field) => [filterAction.toLowerCase(), field])
-        )
-        .concat(
-          [searchInput]
-            .filter((search) => search)
-            .map((search) => ["search", search])
-        )
-    );
-    props.handleSearch(params.toString());
-    props.handlePageNumber(1);
+    props.setFilterList([]);
   };
 
   return (
-    <>
-      <SearchBar
-        {...props}
-        searchInput={searchInput}
-        setSearchInput={setSearchInput}
-        handleParameters={handleParameters}
-      />
-      <Row className="g-2">
-        <Col md={8}>
-          <Card>
-            <Card.Header>
-              <span>Filter</span>
-              <Stack direction="horizontal" gap={1} className="float-end">
-                <Button
-                  size="sm"
-                  variant="dark"
-                  onClick={() => handleFilterAdd(filterList.length)}
-                >
-                  Add Filter
-                </Button>
-                <Button size="sm" variant="dark" onClick={handleFilterClear}>
-                  Clear Filters
-                </Button>
-              </Stack>
-            </Card.Header>
-            <Container fluid className="onyx-parameters-panel p-2">
-              <Stack gap={1}>
-                {filterList.map((filter, index) => (
-                  <Filter
-                    {...props}
-                    key={filter.key}
-                    filter={filter}
-                    fieldList={filterFieldOptions}
-                    handleFieldChange={(e) => handleFilterFieldChange(e, index)}
-                    handleLookupChange={(e) =>
-                      handleFilterLookupChange(e, index)
-                    }
-                    handleValueChange={(e) => handleFilterValueChange(e, index)}
-                    handleFilterAdd={() => handleFilterAdd(index + 1)}
-                    handleFilterRemove={() => handleFilterRemove(index)}
-                  />
-                ))}
-              </Stack>
-            </Container>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card>
-            <Card.Header>
-              <NavDropdown title={filterAction}>
-                {["Summarise", "Include", "Exclude"].map((action) => (
-                  <NavDropdown.Item
-                    key={action}
-                    onClick={() => handleFilterActionChange(action)}
-                  >
-                    {action}
-                  </NavDropdown.Item>
-                ))}
-              </NavDropdown>
-            </Card.Header>
-            <Container fluid className="onyx-parameters-panel p-2">
-              <MultiDropdown
-                options={
-                  filterAction === "Summarise"
-                    ? filterFieldOptions
-                    : listFieldOptions
-                }
-                titles={props.fieldDescriptions}
-                value={filterActionList}
-                placeholder={`${filterAction} fields...`}
-                onChange={handleFilterActionListChange}
-              />
-            </Container>
-          </Card>
-        </Col>
-      </Row>
-    </>
+    <Card>
+      <Card.Header>
+        <span>Filter</span>
+        <Stack direction="horizontal" gap={1} className="float-end">
+          <Button
+            size="sm"
+            variant="dark"
+            onClick={() => handleFilterAdd(props.filterList.length)}
+          >
+            Add Filter
+          </Button>
+          <Button size="sm" variant="dark" onClick={handleFilterClear}>
+            Clear Filters
+          </Button>
+        </Stack>
+      </Card.Header>
+      <Container fluid className="onyx-parameters-panel p-2">
+        <Stack gap={1}>
+          {props.filterList.map((filter, index) => (
+            <Filter
+              {...props}
+              key={filter.key}
+              filter={filter}
+              fieldList={props.filterFieldOptions}
+              handleFieldChange={(e) => handleFilterFieldChange(e, index)}
+              handleLookupChange={(e) => handleFilterLookupChange(e, index)}
+              handleValueChange={(e) => handleFilterValueChange(e, index)}
+              handleFilterAdd={() => handleFilterAdd(index + 1)}
+              handleFilterRemove={() => handleFilterRemove(index)}
+            />
+          ))}
+        </Stack>
+      </Container>
+    </Card>
   );
 }
 
-function Results(props: ResultsProps) {
+function TransformsPanel(props: TransformsPanelProps) {
+  const handleTransformChange = (action: string) => {
+    props.setTransform(action);
+    props.setTransformList([]);
+  };
+
+  const handleTransformListChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    props.setTransformList(e.target.value ? e.target.value.split(",") : []);
+  };
+
+  return (
+    <Card>
+      <Card.Header>
+        <NavDropdown title={props.transform}>
+          {["Summarise", "Include", "Exclude"].map((action) => (
+            <NavDropdown.Item
+              key={action}
+              onClick={() => handleTransformChange(action)}
+            >
+              {action}
+            </NavDropdown.Item>
+          ))}
+        </NavDropdown>
+      </Card.Header>
+      <Container fluid className="onyx-parameters-panel p-2">
+        <MultiDropdown
+          options={
+            props.transform === "Summarise"
+              ? props.filterFieldOptions
+              : props.listFieldOptions
+          }
+          titles={props.fieldDescriptions}
+          value={props.transformList}
+          placeholder={`${props.transform} fields...`}
+          onChange={handleTransformListChange}
+        />
+      </Container>
+    </Card>
+  );
+}
+
+function ResultsPanel(props: ResultsPanelProps) {
   const fileName = `${props.project}${
     props.pageNumber > 1 ? "_" + props.pageNumber.toString() : ""
   }`;
@@ -337,7 +289,7 @@ function Results(props: ResultsProps) {
           <ResultsTable
             data={props.resultData.data || []}
             titles={props.fieldDescriptions}
-            recordDetailHandler={props.recordDetailHandler}
+            handleRecordDetailShow={props.handleRecordDetailShow}
             s3PathHandler={props.s3PathHandler}
             isSortable={!props.resultData?.next && !props.resultData?.previous}
           />
@@ -348,10 +300,10 @@ function Results(props: ResultsProps) {
           <Pagination.Prev
             disabled={!props.resultData.previous}
             onClick={() => {
-              props.handleSearch(
+              props.setSearchParameters(
                 props.resultData.previous?.split("?", 2)[1] || ""
               );
-              props.handlePageNumber(props.pageNumber - 1);
+              props.setPageNumber(props.pageNumber - 1);
             }}
           />
           <Pagination.Item>
@@ -364,10 +316,10 @@ function Results(props: ResultsProps) {
           <Pagination.Next
             disabled={!props.resultData.next}
             onClick={() => {
-              props.handleSearch(
+              props.setSearchParameters(
                 props.resultData?.next?.split("?", 2)[1] || ""
               );
-              props.handlePageNumber(props.pageNumber + 1);
+              props.setPageNumber(props.pageNumber + 1);
             }}
           />
         </Pagination>
@@ -500,15 +452,33 @@ function RecordDetail(props: RecordDetailProps) {
 }
 
 function Data(props: DataProps) {
+  const defaultFilterList = () =>
+    [{ key: generateKey(), field: "", lookup: "", value: "" }] as FilterField[];
+  const [searchInput, setSearchInput] = useState("");
+  const [filterList, setFilterList] = useState(defaultFilterList());
+  const [transform, setTransform] = useState("Summarise");
+  const [transformList, setTransformList] = useState(new Array<string>());
   const [searchParameters, setSearchParameters] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
   const [recordDetailShow, setRecordDetailShow] = React.useState(false);
   const [recordDetailID, setRecordDetailID] = React.useState("");
+  const filterFieldOptions = Array.from(props.projectFields.entries())
+    .filter(([, projectField]) => projectField.actions.includes("filter"))
+    .map(([field]) => field);
+  const listFieldOptions = Array.from(props.projectFields.entries())
+    .filter(([, projectField]) => projectField.actions.includes("list"))
+    .map(([field]) => field);
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
+    setSearchInput("");
+    setFilterList(defaultFilterList());
+    setTransform("Summarise");
+    setTransformList([]);
     setSearchParameters("");
     setPageNumber(1);
+    setRecordDetailShow(false);
+    setRecordDetailID("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
@@ -529,6 +499,32 @@ function Data(props: DataProps) {
     cacheTime: 0.5 * 60 * 1000,
   });
 
+  const handleSearchParameters = () => {
+    const params = new URLSearchParams(
+      filterList
+        .filter((filter) => filter.field)
+        .map((filter) => {
+          if (filter.lookup) {
+            return [filter.field + "__" + filter.lookup, filter.value];
+          } else {
+            return [filter.field, filter.value];
+          }
+        })
+        .concat(
+          transformList
+            .filter((field) => field)
+            .map((field) => [transform.toLowerCase(), field])
+        )
+        .concat(
+          [searchInput]
+            .filter((search) => search)
+            .map((search) => ["search", search])
+        )
+    );
+    handleSearch(params.toString());
+    setPageNumber(1);
+  };
+
   const handleSearch = (search: string) => {
     if (searchParameters === search) {
       if (!resultPending) {
@@ -543,10 +539,13 @@ function Data(props: DataProps) {
     }
   };
 
-  const handleRecordDetailShow = (climbID: string) => {
+  // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
+  // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
+  // This noticeably improves responsiveness for large datasets
+  const handleRecordDetailShow = useCallback((climbID: string) => {
     setRecordDetailID(climbID);
     setRecordDetailShow(true);
-  };
+  }, []);
 
   return (
     <Container fluid className="g-2">
@@ -557,20 +556,42 @@ function Data(props: DataProps) {
           show={recordDetailShow}
           onHide={() => setRecordDetailShow(false)}
         />
-        <Parameters
+        <SearchBar
           {...props}
-          handleSearch={handleSearch}
-          handlePageNumber={setPageNumber}
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          handleSearchParameters={handleSearchParameters}
         />
-        <Results
+        <Row className="g-2">
+          <Col md={8}>
+            <FilterPanel
+              {...props}
+              filterList={filterList}
+              setFilterList={setFilterList}
+              filterFieldOptions={filterFieldOptions}
+            />
+          </Col>
+          <Col md={4}>
+            <TransformsPanel
+              {...props}
+              transform={transform}
+              setTransform={setTransform}
+              transformList={transformList}
+              setTransformList={setTransformList}
+              filterFieldOptions={filterFieldOptions}
+              listFieldOptions={listFieldOptions}
+            />
+          </Col>
+        </Row>
+        <ResultsPanel
           {...props}
-          handleSearch={setSearchParameters}
-          handlePageNumber={setPageNumber}
-          recordDetailHandler={handleRecordDetailShow}
           resultPending={resultPending}
           resultError={resultError instanceof Error ? resultError : null}
           resultData={resultData}
+          setSearchParameters={setSearchParameters}
           pageNumber={pageNumber}
+          setPageNumber={setPageNumber}
+          handleRecordDetailShow={handleRecordDetailShow}
         />
       </Stack>
     </Container>

@@ -6,13 +6,13 @@ import { ResultType } from "../types";
 const ResultsTable = memo(function ResultsTable({
   data,
   titles,
-  recordDetailHandler,
+  handleRecordDetailShow,
   s3PathHandler,
   isSortable = true,
 }: {
   data: ResultType[];
   titles?: Map<string, string>;
-  recordDetailHandler?: (climbID: string) => void;
+  handleRecordDetailShow?: (climbID: string) => void;
   s3PathHandler?: (path: string) => void;
   isSortable?: boolean;
 }) {
@@ -125,7 +125,7 @@ const ResultsTable = memo(function ResultsTable({
         {sortRows().map((row, rowIndex) => (
           <tr key={rowIndex}>
             {row.map((cell, cellIndex) =>
-              recordDetailHandler &&
+              handleRecordDetailShow &&
               cellIndex === climbIDIndex &&
               typeof cell === "string" ? (
                 <td key={cellIndex}>
@@ -133,7 +133,7 @@ const ResultsTable = memo(function ResultsTable({
                     size="sm"
                     variant="link"
                     onClick={() => {
-                      recordDetailHandler(cell);
+                      handleRecordDetailShow(cell);
                     }}
                   >
                     {cell}
