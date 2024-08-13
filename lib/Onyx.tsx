@@ -9,7 +9,8 @@ import {
 import Header from "./components/Header";
 import Data from "./pages/Data";
 import Stats from "./pages/Stats";
-import { OnyxProps, ProjectField } from "./types";
+import { ProjectField } from "./types";
+import { OnyxProps } from "./interfaces";
 
 import "./Onyx.css";
 import "./bootstrap.css";

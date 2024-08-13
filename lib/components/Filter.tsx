@@ -6,16 +6,11 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput } from "./Inputs";
+import { DataProps } from "../interfaces";
 
-interface FilterProps {
-  project: string;
-  httpPathHandler: (path: string) => Promise<Response>;
+interface FilterProps extends DataProps {
   filter: { field: string; lookup: string; value: string };
   fieldList: string[];
-  projectFields: Map<string, { type: string; values?: string[] }>;
-  typeLookups: Map<string, string[]>;
-  fieldDescriptions: Map<string, string>;
-  lookupDescriptions: Map<string, string>;
   handleFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleLookupChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleValueChange: React.ChangeEventHandler<

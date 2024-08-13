@@ -1,18 +1,18 @@
 import { memo, useMemo, useState } from "react";
-import Table from "react-bootstrap/Table";
+import { Table as BTable } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import { ResultType } from "../types";
 
-const ResultsTable = memo(function ResultsTable({
+const Table = memo(function Table({
   data,
   titles,
-  recordDetailHandler,
+  handleRecordDetailShow,
   s3PathHandler,
   isSortable = true,
 }: {
   data: ResultType[];
   titles?: Map<string, string>;
-  recordDetailHandler?: (climbID: string) => void;
+  handleRecordDetailShow?: (climbID: string) => void;
   s3PathHandler?: (path: string) => void;
   isSortable?: boolean;
 }) {
@@ -94,7 +94,7 @@ const ResultsTable = memo(function ResultsTable({
   const climbIDIndex = headers().indexOf("climb_id");
 
   return (
-    <Table className="onyx-results-table" striped bordered hover responsive>
+    <BTable className="onyx-results-table" striped bordered hover responsive>
       <thead>
         <tr>
           {headers().map((header, index) => (
@@ -125,7 +125,7 @@ const ResultsTable = memo(function ResultsTable({
         {sortRows().map((row, rowIndex) => (
           <tr key={rowIndex}>
             {row.map((cell, cellIndex) =>
-              recordDetailHandler &&
+              handleRecordDetailShow &&
               cellIndex === climbIDIndex &&
               typeof cell === "string" ? (
                 <td key={cellIndex}>
@@ -133,7 +133,7 @@ const ResultsTable = memo(function ResultsTable({
                     size="sm"
                     variant="link"
                     onClick={() => {
-                      recordDetailHandler(cell);
+                      handleRecordDetailShow(cell);
                     }}
                   >
                     {cell}
@@ -159,8 +159,8 @@ const ResultsTable = memo(function ResultsTable({
           </tr>
         ))}
       </tbody>
-    </Table>
+    </BTable>
   );
 });
 
-export default ResultsTable;
+export default Table;
