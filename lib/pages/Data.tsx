@@ -61,8 +61,8 @@ function Data(props: DataProps) {
     cacheTime: 0.5 * 60 * 1000,
   });
 
-  const handleSearchParameters = () => {
-    const params = new URLSearchParams(
+  const handleSearch = () => {
+    const search = new URLSearchParams(
       filterList
         .filter((filter) => filter.field)
         .map((filter) => {
@@ -82,12 +82,8 @@ function Data(props: DataProps) {
             .filter((search) => search)
             .map((search) => ["search", search])
         )
-    );
-    handleSearch(params.toString());
-    setPageNumber(1);
-  };
+    ).toString();
 
-  const handleSearch = (search: string) => {
     if (searchParameters === search) {
       if (!resultPending) {
         // If search parameters have not changed and nothing is pending
@@ -99,6 +95,7 @@ function Data(props: DataProps) {
       // This will trigger a new fetch
       setSearchParameters(search);
     }
+    setPageNumber(1);
   };
 
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
@@ -122,7 +119,7 @@ function Data(props: DataProps) {
           {...props}
           searchInput={searchInput}
           setSearchInput={setSearchInput}
-          handleSearchParameters={handleSearchParameters}
+          handleSearch={handleSearch}
         />
         <Row className="g-2">
           <Col md={8}>

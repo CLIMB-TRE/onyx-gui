@@ -1,11 +1,10 @@
-import { useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Pagination from "react-bootstrap/Pagination";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
-import { ServerTable } from "./Table";
+import Table, { ServerTable } from "./Table";
 import { LoadingAlert } from "./LoadingAlert";
 import ErrorMessages from "./ErrorMessages";
 import { ResultType, ErrorType } from "../types";
@@ -48,11 +47,6 @@ function ResultsPanel(props: ResultsPanelProps) {
     }
   };
 
-  const [defaultSort, setDefaultSort] = useState({
-    sortKey: "",
-    direction: "",
-  });
-
   return (
     <Card>
       <Card.Header>
@@ -74,35 +68,19 @@ function ResultsPanel(props: ResultsPanelProps) {
           <Alert variant="danger">Error: {props.resultError.message}</Alert>
         ) : props.resultData.messages ? (
           <ErrorMessages messages={props.resultData.messages} />
+        ) : !props.resultData?.next && !props.resultData?.previous ? (
+          <Table
+            data={props.resultData.data || []}
+            titles={props.fieldDescriptions}
+            handleRecordDetailShow={props.handleRecordDetailShow}
+            s3PathHandler={props.s3PathHandler}
+          />
         ) : (
           <ServerTable
             data={props.resultData.data || []}
             titles={props.fieldDescriptions}
             handleRecordDetailShow={props.handleRecordDetailShow}
             s3PathHandler={props.s3PathHandler}
-            // isSortable={!props.resultData?.next && !props.resultData?.previous}
-            isFilterable={
-              !props.resultData?.next && !props.resultData?.previous
-            }
-            handleColumnSort={(event: {
-              columns: { colId: string; sort: string }[];
-            }) => {
-              const field = event.columns[event.columns.length - 1].colId;
-              const direction = event.columns[event.columns.length - 1].sort;
-
-              if (direction === "asc") {
-                props.setSearchParameters(`order=${field}`);
-              } else if (direction === "desc") {
-                props.setSearchParameters(`order=-${field}`);
-              } else {
-                props.setSearchParameters("");
-              }
-              setDefaultSort({
-                sortKey: field,
-                direction: direction,
-              });
-            }}
-            defaultSort={defaultSort}
           />
         )}
       </Container>

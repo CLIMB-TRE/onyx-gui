@@ -1,45 +1,37 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { ResultType } from "../types";
 import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
 import Button from "react-bootstrap/Button";
 
+function convertData(data: ResultType[]) {
+  // Convert all non-number values to strings
+  return data.map((item) =>
+    Object.fromEntries(
+      Object.entries(item).map(([key, value]) => [
+        key,
+        typeof value === "number" ? value : value?.toString().trim() || "",
+      ])
+    )
+  );
+}
+
 function Table({
   data,
   titles,
   handleRecordDetailShow,
   s3PathHandler,
-  isSortable = true,
-  isFilterable = true,
-  height = 450,
+  height = 465,
 }: {
   data: ResultType[];
   titles?: Map<string, string>;
   handleRecordDetailShow?: (climbID: string) => void;
   s3PathHandler?: (path: string) => void;
-  isSortable?: boolean;
-  isFilterable?: boolean;
   height?: number;
 }) {
-  const gridOptions = {
-    enableBrowserTooltips: true,
-    defaultColDef: {
-      sortable: isSortable,
-      filter: isFilterable,
-    },
-  };
-
   const rowData = useMemo(() => {
-    // Convert all non-number values to strings
-    return data.map((item) =>
-      Object.fromEntries(
-        Object.entries(item).map(([key, value]) => [
-          key,
-          typeof value === "number" ? value : value?.toString().trim() || "",
-        ])
-      )
-    );
+    return convertData(data);
   }, [data]);
 
   const defaultColumnProperties = (key: string) => {
@@ -111,34 +103,16 @@ function Table({
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs()}
-        gridOptions={gridOptions}
+        gridOptions={{
+          enableBrowserTooltips: true,
+          defaultColDef: {
+            sortable: true,
+            filter: true,
+          },
+        }}
       />
     </div>
   );
-}
-
-function sortGrid(
-  event: {
-    api: {
-      applyColumnState: (columnState: {
-        state: { colId: string; sort: string }[];
-      }) => void;
-      ensureColumnVisible: (sortKey: string) => void;
-    };
-  },
-  sort: { sortKey: string; direction: string }
-) {
-  const columnState = {
-    // https://www.ag-grid.com/javascript-grid-column-state/#column-state-interface
-    state: [
-      {
-        colId: sort.sortKey,
-        sort: sort.direction,
-      },
-    ],
-  };
-  event.api.applyColumnState(columnState);
-  event.api.ensureColumnVisible(sort.sortKey);
 }
 
 function ServerTable({
@@ -146,56 +120,34 @@ function ServerTable({
   titles,
   handleRecordDetailShow,
   s3PathHandler,
-  isSortable = true,
-  isFilterable = true,
-  height = 450,
-  handleColumnSort,
-  defaultSort,
+  height = 465,
 }: {
   data: ResultType[];
   titles?: Map<string, string>;
   handleRecordDetailShow?: (climbID: string) => void;
   s3PathHandler?: (path: string) => void;
-  isSortable?: boolean;
-  isFilterable?: boolean;
   height?: number;
-  handleColumnSort?: (event: {
-    columns: { colId: string; sort: string }[];
-  }) => void;
-  defaultSort?: { sortKey: string; direction: string };
 }) {
-  const gridOptions = {
-    enableBrowserTooltips: true,
-    defaultColDef: {
-      sortable: isSortable,
-      filter: isFilterable,
-    },
-    onGridReady: (event: { columns: { colId: string; sort: string }[] }) => {
-      sortGrid(event, defaultSort);
-    },
-  };
+  const [rowData, setRowData] = useState<ResultType[]>(convertData(data));
+  const [loading, setLoading] = useState(false);
 
-  const rowData = useMemo(() => {
-    // Convert all non-number values to strings
-    return data.map((item) =>
-      Object.fromEntries(
-        Object.entries(item).map(([key, value]) => [
-          key,
-          typeof value === "number" ? value : value?.toString().trim() || "",
-        ])
-      )
-    );
-  }, [data]);
+  const defaultColumnProperties = (key: string) => {
+    return {
+      headerName: key,
+      field: key,
+      headerTooltip: titles?.get(key),
+      comparator: () => {
+        return null;
+      },
+    };
+  };
 
   const columnDefs = () => {
     if (data.length > 0) {
       return Object.keys(data[0]).map((key) => {
-        if (key === "climb_id" && handleRecordDetailShow) {
+        if (handleRecordDetailShow && key === "climb_id") {
           return {
-            headerName: key,
-            field: key,
-            headerTooltip: titles?.get(key),
-            comparator: null,
+            ...defaultColumnProperties(key),
             cellRenderer: (params: { value: string }) => {
               return (
                 <Button
@@ -211,15 +163,12 @@ function ServerTable({
             },
           };
         } else if (
+          s3PathHandler &&
           key.startsWith("s3://") &&
-          key.endsWith(".html") &&
-          s3PathHandler
+          key.endsWith(".html")
         ) {
           return {
-            headerName: key,
-            field: key,
-            headerTooltip: titles?.get(key),
-            comparator: null,
+            ...defaultColumnProperties(key),
             cellRenderer: (params: { value: string }) => {
               return (
                 <Button
@@ -234,21 +183,8 @@ function ServerTable({
               );
             },
           };
-        } else if (key === "Field" || key === "Value") {
-          // Set column to 50% grid space
-          return {
-            headerName: key,
-            field: key,
-            headerTooltip: titles?.get(key),
-            flex: 1,
-          };
         } else {
-          return {
-            headerName: key,
-            field: key,
-            headerTooltip: titles?.get(key),
-            comparator: null,
-          };
+          return { ...defaultColumnProperties(key) };
         }
       });
     } else {
@@ -256,15 +192,38 @@ function ServerTable({
     }
   };
 
+  const handleColumnSort = (event: {
+    columns: { colId: string; sort: string }[];
+  }) => {
+    const field = event.columns[event.columns.length - 1].colId;
+    const direction = event.columns[event.columns.length - 1].sort;
+
+    if (direction === "asc") {
+      console.log(`order=${field}`);
+    } else if (direction === "desc") {
+      console.log(`order=-${field}`);
+    } else {
+      console.log("");
+    }
+
+    // set timeout for 2 seconds to simulate server response
+    setLoading(true);
+    setTimeout(() => {
+      setRowData(convertData([...rowData].reverse()));
+      setLoading(false);
+    }, 500);
+  };
+
   return (
     <div className="ag-theme-quartz" style={{ height: height }}>
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs()}
-        gridOptions={gridOptions}
-        onSortChanged={(event) => {
-          handleColumnSort && handleColumnSort(event);
+        gridOptions={{
+          enableBrowserTooltips: true,
         }}
+        loading={loading}
+        onSortChanged={handleColumnSort}
       />
     </div>
   );
