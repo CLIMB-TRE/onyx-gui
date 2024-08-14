@@ -25,32 +25,6 @@
   --bs-btn-hover-border-color: var(--bs-gray-500);
 }
 
-.table {
-  font-family: monospace;
-  font-size: 10pt;
-  display: block;
-  overflow-x: auto;
-  overflow-y: scroll;
-  height: 47vh;
-  white-space: nowrap;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.table thead {
-  position: sticky;
-  top: 0px;
-}
-
-.table th {
-  user-select: none;
-  cursor: pointer;
-}
-
-.table td {
-  vertical-align: middle
-}
-
 .card-header {
   font-size: large;
   min-height: 50px;
@@ -60,24 +34,27 @@
   height: 50px;
 }
 
-.onyx-parameters-panel {
+.onyx-parameters-panel-body {
   height: 15vh;
   overflow-y: scroll;
 }
 
-.onyx-graphs-panel {
+.onyx-results-panel-body {
+  height: 480px;
+}
+
+.onyx-graphs-panel-body {
   height: 78vh;
   overflow-y : scroll;
 }
 
-.onyx-results-panel {
-  height: 48vh;
-}
-
-.onyx-record-detail .table {
-  height: 58vh;
-}
-
 .onyx-text-pink {
   color: var(--bs-code-color);
+}
+
+.ag-theme-quartz {
+  --ag-background-color: var(--bs-body-bg);
+  --ag-foreground-color: var(--bs-body-color);
+  --ag-checkbox-unchecked-color: var(--bs-green);
+  --ag-font-family: monospace;
 }

@@ -96,7 +96,7 @@ function FilterPanel(props: FilterPanelProps) {
           </Button>
         </Stack>
       </Card.Header>
-      <Container fluid className="onyx-parameters-panel p-2">
+      <Container fluid className="onyx-parameters-panel-body p-2">
         <Stack gap={1}>
           {props.filterList.map((filter, index) => (
             <Filter

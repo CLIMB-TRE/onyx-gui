@@ -114,6 +114,7 @@ function RecordDetail(props: RecordDetailProps) {
                         })) as ResultType[]
                     }
                     s3PathHandler={props.s3PathHandler}
+                    height={580}
                   />
                 </Tab>
                 {Object.entries(recordData.data)
@@ -124,6 +125,7 @@ function RecordDetail(props: RecordDetailProps) {
                       <Table
                         data={value as ResultType[]}
                         s3PathHandler={props.s3PathHandler}
+                        height={580}
                       />
                     </Tab>
                   ))}

@@ -40,7 +40,7 @@ function TransformsPanel(props: TransformsPanelProps) {
           ))}
         </NavDropdown>
       </Card.Header>
-      <Container fluid className="onyx-parameters-panel p-2">
+      <Container fluid className="onyx-parameters-panel-body p-2">
         <MultiDropdown
           options={
             props.transform === "Summarise"

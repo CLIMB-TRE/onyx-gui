@@ -350,7 +350,7 @@ function Stats(props: StatsProps) {
             </DropdownButton>
           </Stack>
         </Card.Header>
-        <Container fluid className="onyx-graphs-panel p-2">
+        <Container fluid className="onyx-graphs-panel-body p-2">
           <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
               <Col key={graphConfig.key} lg={viewMode === "wide" ? 12 : 6}>
