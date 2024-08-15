@@ -147,6 +147,7 @@ function Data(props: DataProps) {
           resultPending={resultPending}
           resultError={resultError instanceof Error ? resultError : null}
           resultData={resultData}
+          searchParameters={searchParameters}
           setSearchParameters={setSearchParameters}
           pageNumber={pageNumber}
           setPageNumber={setPageNumber}

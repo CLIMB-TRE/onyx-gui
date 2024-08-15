@@ -2,30 +2,23 @@ import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
-import Pagination from "react-bootstrap/Pagination";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
-import Table, { ServerTable } from "./Table";
+import Table from "./Table";
 import { LoadingAlert } from "./LoadingAlert";
 import ErrorMessages from "./ErrorMessages";
-import { ResultType, ErrorType } from "../types";
+import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
 
 interface ResultsPanelProps extends DataProps {
   resultPending: boolean;
   resultError: Error | null;
   resultData: ResultData;
+  searchParameters: string;
   setSearchParameters: (params: string) => void;
   pageNumber: number;
   setPageNumber: (page: number) => void;
   handleRecordDetailShow: (climbID: string) => void;
 }
-
-type ResultData = {
-  next?: string;
-  previous?: string;
-  data?: ResultType[];
-  messages?: ErrorType;
-};
 
 function ResultsPanel(props: ResultsPanelProps) {
   const fileName = `${props.project}${
@@ -68,51 +61,21 @@ function ResultsPanel(props: ResultsPanelProps) {
           <Alert variant="danger">Error: {props.resultError.message}</Alert>
         ) : props.resultData.messages ? (
           <ErrorMessages messages={props.resultData.messages} />
-        ) : !props.resultData?.next && !props.resultData?.previous ? (
-          <Table
-            data={props.resultData.data || []}
-            titles={props.fieldDescriptions}
-            handleRecordDetailShow={props.handleRecordDetailShow}
-            s3PathHandler={props.s3PathHandler}
-          />
         ) : (
-          <ServerTable
-            data={props.resultData.data || []}
+          <Table
+            project={props.project}
+            data={props.resultData || {}}
+            searchParameters={props.searchParameters}
             titles={props.fieldDescriptions}
             handleRecordDetailShow={props.handleRecordDetailShow}
+            httpPathHandler={props.httpPathHandler}
             s3PathHandler={props.s3PathHandler}
+            isServerData={
+              !(!props.resultData?.next && !props.resultData?.previous)
+            }
           />
         )}
       </Container>
-      <Card.Footer>
-        <Pagination size="sm">
-          <Pagination.Prev
-            disabled={!props.resultData.previous}
-            onClick={() => {
-              props.setSearchParameters(
-                props.resultData.previous?.split("?", 2)[1] || ""
-              );
-              props.setPageNumber(props.pageNumber - 1);
-            }}
-          />
-          <Pagination.Item>
-            {props.resultPending
-              ? "Loading..."
-              : `Showing ${props.resultData.data?.length || 0} results (Page ${
-                  props.pageNumber
-                })`}
-          </Pagination.Item>
-          <Pagination.Next
-            disabled={!props.resultData.next}
-            onClick={() => {
-              props.setSearchParameters(
-                props.resultData?.next?.split("?", 2)[1] || ""
-              );
-              props.setPageNumber(props.pageNumber + 1);
-            }}
-          />
-        </Pagination>
-      </Card.Footer>
     </Card>
   );
 }
