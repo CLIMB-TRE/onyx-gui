@@ -62,21 +62,24 @@ function Table({
   const [prevPageCount, setPrevPageCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const { isFetching: isCountLoading, data: countData = {} } = useQuery({
-    queryKey: ["count", project, searchParameters],
-    queryFn: async () => {
-      const search = new URLSearchParams(searchParameters);
-      search.set("count", "true");
+  const { isFetching: isCountLoading, data: countData = { count: 0 } } =
+    useQuery({
+      queryKey: ["count", project, searchParameters],
+      queryFn: async () => {
+        const search = new URLSearchParams(searchParameters);
+        search.set("count", "true");
 
-      if (httpPathHandler) {
-        return httpPathHandler(
-          `projects/${project}/?${search.toString()}`
-        ).then((response) => response.json());
-      }
-    },
-    enabled: !!project && isServerData,
-    cacheTime: 0.5 * 60 * 1000,
-  });
+        if (httpPathHandler) {
+          return httpPathHandler(`projects/${project}/?${search.toString()}`)
+            .then((response) => response.json())
+            .then((data) => {
+              return { count: data.data.count };
+            });
+        }
+      },
+      enabled: !!project && isServerData,
+      cacheTime: 0.5 * 60 * 1000,
+    });
 
   let defaultColDef: (key: string) => ColDef;
 
@@ -270,7 +273,7 @@ function Table({
               isServerData
                 ? isCountLoading
                   ? "Loading..."
-                  : countData.data.count
+                  : countData.count
                 : rowData.length
             }`}
           </Pagination.Item>
