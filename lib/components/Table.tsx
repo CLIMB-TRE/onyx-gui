@@ -1,13 +1,21 @@
 import { useState, useMemo } from "react";
-import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
-import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
-import "ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
-import { GridOptions, ColDef, SortChangedEvent } from "ag-grid-community";
+import { AgGridReact } from "@ag-grid-community/react"; // React Data Grid Component
+import "@ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
+import "@ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
+import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
+import {
+  GridOptions,
+  ColDef,
+  SortChangedEvent,
+  ModuleRegistry,
+} from "@ag-grid-community/core";
 import { useQuery } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import { Pagination } from "react-bootstrap";
 import Stack from "react-bootstrap/Stack";
 import { ResultData, ResultType } from "../types";
+
+ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 function convertData(data: ResultType[]) {
   // Convert all non-number values to strings
