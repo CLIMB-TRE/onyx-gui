@@ -75,10 +75,11 @@ function Table({
       queryKey: ["count", project, searchParameters],
       queryFn: async () => {
         const search = new URLSearchParams(searchParameters);
-        search.set("count", "true");
 
         if (httpPathHandler) {
-          return httpPathHandler(`projects/${project}/?${search.toString()}`)
+          return httpPathHandler(
+            `projects/${project}/count/?${search.toString()}`
+          )
             .then((response) => response.json())
             .then((data) => {
               return { count: data.data.count };
@@ -246,6 +247,9 @@ function Table({
     gridOptions = {
       enableCellTextSelection: true,
       onSortChanged: handleSortColumn,
+      defaultColDef: {
+        sortable: false,
+      },
     };
   } else {
     gridOptions = {
