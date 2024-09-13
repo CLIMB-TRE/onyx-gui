@@ -115,7 +115,7 @@ function RecordDetail(props: RecordDetailProps) {
                       } as unknown as ResultData
                     }
                     s3PathHandler={props.s3PathHandler}
-                    height={570}
+                    height={540}
                   />
                 </Tab>
                 {Object.entries(recordData.data)
@@ -123,13 +123,16 @@ function RecordDetail(props: RecordDetailProps) {
                   .sort()
                   .map(([key, value], index) => (
                     <Tab key={key} eventKey={index} title={key}>
-                      <Table
-                        data={{ data: value } as ResultData}
-                        titles={props.fieldDescriptions}
-                        titlePrefix={key + "__"}
-                        s3PathHandler={props.s3PathHandler}
-                        height={570}
-                      />
+                      <Stack gap={3} direction="vertical">
+                        {props.fieldDescriptions.get(key) || "No Description"}
+                        <Table
+                          data={{ data: value } as ResultData}
+                          titles={props.fieldDescriptions}
+                          titlePrefix={key + "__"}
+                          s3PathHandler={props.s3PathHandler}
+                          height={510}
+                        />
+                      </Stack>
                     </Tab>
                   ))}
               </Tabs>
