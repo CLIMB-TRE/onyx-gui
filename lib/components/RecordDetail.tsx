@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import Table from "./Table";
 import { DelayedLoadingAlert } from "./LoadingAlert";
 import ErrorMessages from "./ErrorMessages";
-import { ResultType } from "../types";
+import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
 
 interface RecordDetailProps extends DataProps {
@@ -87,7 +87,6 @@ function RecordDetail(props: RecordDetailProps) {
                     Export Record to JSON
                   </Button>
                 </h5>
-
                 <h5>
                   Site:{" "}
                   <span className="onyx-text-pink">
@@ -104,16 +103,19 @@ function RecordDetail(props: RecordDetailProps) {
                 <Tab eventKey="recordDetails" title="Details">
                   <Table
                     data={
-                      Object.entries(recordData.data)
-                        .filter(([, value]) => {
-                          return !(value instanceof Array);
-                        })
-                        .map(([key, value]) => ({
-                          Field: key,
-                          Value: value,
-                        })) as ResultType[]
+                      {
+                        data: Object.entries(recordData.data)
+                          .filter(([, value]) => {
+                            return !(value instanceof Array);
+                          })
+                          .map(([key, value]) => ({
+                            Field: key,
+                            Value: value,
+                          })),
+                      } as unknown as ResultData
                     }
                     s3PathHandler={props.s3PathHandler}
+                    height={540}
                   />
                 </Tab>
                 {Object.entries(recordData.data)
@@ -121,10 +123,16 @@ function RecordDetail(props: RecordDetailProps) {
                   .sort()
                   .map(([key, value], index) => (
                     <Tab key={key} eventKey={index} title={key}>
-                      <Table
-                        data={value as ResultType[]}
-                        s3PathHandler={props.s3PathHandler}
-                      />
+                      <Stack gap={3} direction="vertical">
+                        {props.fieldDescriptions.get(key) || "No Description"}
+                        <Table
+                          data={{ data: value } as ResultData}
+                          titles={props.fieldDescriptions}
+                          titlePrefix={key + "__"}
+                          s3PathHandler={props.s3PathHandler}
+                          height={510}
+                        />
+                      </Stack>
                     </Tab>
                   ))}
               </Tabs>

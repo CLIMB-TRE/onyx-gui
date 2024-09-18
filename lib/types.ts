@@ -19,4 +19,21 @@ type ResultType = Record<string, string | number | boolean | null>;
 
 type ErrorType = Record<string, string | string[]>;
 
-export type { ProjectField, FilterField, OptionType, ResultType, ErrorType };
+type ResultData = {
+  status: string;
+  code: number;
+  count?: number;
+  next?: string;
+  previous?: string;
+  data?: ResultType[];
+  messages?: ErrorType;
+};
+
+export type {
+  ProjectField,
+  FilterField,
+  OptionType,
+  ResultType,
+  ErrorType,
+  ResultData,
+};

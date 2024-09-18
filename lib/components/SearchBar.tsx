@@ -6,7 +6,7 @@ import { DataProps } from "../interfaces";
 interface SearchBarProps extends DataProps {
   searchInput: string;
   setSearchInput: (value: string) => void;
-  handleSearchParameters: () => void;
+  handleSearch: () => void;
 }
 
 function SearchBar(props: SearchBarProps) {
@@ -18,14 +18,14 @@ function SearchBar(props: SearchBarProps) {
         onChange={(e) => props.setSearchInput(e.target.value)}
         onKeyUp={(event) => {
           if (event.key === "Enter") {
-            props.handleSearchParameters();
+            props.handleSearch();
           }
         }}
       />
       <Button
         variant="primary"
         disabled={!props.project}
-        onClick={props.handleSearchParameters}
+        onClick={props.handleSearch}
       >
         Search
       </Button>

@@ -11,7 +11,7 @@
 
 [data-bs-theme=dark] {
   --onyx-dropdown-control-border-color: var(--bs-gray-700);
-  --onyx-dropdown-control-background-color: var(--bs-gray-900);
+  --onyx-dropdown-control-background-color: var(--bs-body-bg);
   --onyx-dropdown-menu-background-color: var(--bs-black);
   --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-700);
   --onyx-dropdown-label-color: var(--bs-white);
@@ -20,35 +20,25 @@
   --onyx-dropdown-option-description-color: var(--bs-gray-500);
 }
 
+[data-bs-theme=light] .btn-dark {
+  --bs-btn-color: #000;
+  --bs-btn-bg: var(--bs-gray-300);
+  --bs-btn-border-color: #f8f9fa;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #d3d4d5;
+  --bs-btn-hover-border-color: #c6c7c8;
+  --bs-btn-focus-shadow-rgb: 211, 212, 213;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: #c6c7c8;
+  --bs-btn-active-border-color: #babbbc;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #000;
+  --bs-btn-disabled-bg: #f8f9fa;
+  --bs-btn-disabled-border-color: #f8f9fa;
+}
+
 [data-bs-theme=dark] .btn-dark {
-  --bs-btn-border-color: var(--bs-gray-700);
-  --bs-btn-hover-border-color: var(--bs-gray-500);
-}
-
-.table {
-  font-family: monospace;
-  font-size: 10pt;
-  display: block;
-  overflow-x: auto;
-  overflow-y: scroll;
-  height: 47vh;
-  white-space: nowrap;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.table thead {
-  position: sticky;
-  top: 0px;
-}
-
-.table th {
-  user-select: none;
-  cursor: pointer;
-}
-
-.table td {
-  vertical-align: middle
+  --bs-btn-bg:  var(--bs-gray-700);
 }
 
 .card-header {
@@ -60,24 +50,27 @@
   height: 50px;
 }
 
-.onyx-parameters-panel {
+.onyx-parameters-panel-body {
   height: 15vh;
   overflow-y: scroll;
 }
 
-.onyx-graphs-panel {
+.onyx-results-panel-body {
+  height: 530px;
+}
+
+.onyx-graphs-panel-body {
   height: 78vh;
   overflow-y : scroll;
 }
 
-.onyx-results-panel {
-  height: 48vh;
-}
-
-.onyx-record-detail .table {
-  height: 58vh;
-}
-
 .onyx-text-pink {
   color: var(--bs-code-color);
+}
+
+.ag-theme-quartz {
+  --ag-background-color: var(--bs-body-bg);
+  --ag-foreground-color: var(--bs-body-color);
+  --ag-checkbox-unchecked-color: var(--bs-green);
+  --ag-font-family: monospace;
 }
