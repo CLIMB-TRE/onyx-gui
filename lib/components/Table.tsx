@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { AgGridReact } from "@ag-grid-community/react"; // React Data Grid Component
+import { useState, useCallback } from "react";
+import { AgGridReact, CustomCellRendererProps } from "@ag-grid-community/react"; // React Data Grid Component
 import "@ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "@ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
 import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
@@ -11,7 +11,7 @@ import {
 } from "@ag-grid-community/core";
 import { useQuery } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
-import { Pagination } from "react-bootstrap";
+import { Container, Pagination } from "react-bootstrap";
 import Stack from "react-bootstrap/Stack";
 import { ResultData, ResultType } from "../types";
 
@@ -29,16 +29,16 @@ function convertData(data: ResultType[]) {
   );
 }
 
-const getPageCounts = (
+function getPageCounts(
   pageNumber: number,
   pageLength: number,
   prevPageCount: number
-) => {
+) {
   return {
     fromCount: (pageNumber - 1) * prevPageCount + (pageLength >= 1 ? 1 : 0),
     toCount: (pageNumber - 1) * prevPageCount + pageLength,
   };
-};
+}
 
 function Table({
   project,
@@ -63,10 +63,11 @@ function Table({
   height?: number;
   isServerData?: boolean;
 }) {
-  const [tableData, setTableData] = useState<ResultData>(data || {});
+  const [rowData, setRowData] = useState<ResultType[]>([]);
+  const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
-  const nextPage = tableData.next || "";
-  const prevPage = tableData.previous || "";
+  const [nextPage, setNextPage] = useState("");
+  const [prevPage, setPrevPage] = useState("");
   const [prevPageCount, setPrevPageCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -90,6 +91,28 @@ function Table({
       cacheTime: 0.5 * 60 * 1000,
     });
 
+  const defaultCellRenderer = (params: CustomCellRendererProps) => {
+    if (
+      s3PathHandler &&
+      params.value.startswith("s3://") &&
+      params.value.endsWith(".html")
+    ) {
+      return (
+        <Button
+          size="sm"
+          variant="link"
+          onClick={() => {
+            s3PathHandler(params.value);
+          }}
+        >
+          {params.value}
+        </Button>
+      );
+    } else {
+      return params.value;
+    }
+  };
+
   let defaultColDef: (key: string) => ColDef;
 
   if (isServerData) {
@@ -98,6 +121,7 @@ function Table({
         headerName: key,
         field: key,
         headerTooltip: titles?.get(titlePrefix + key),
+        cellRenderer: defaultCellRenderer,
         comparator: () => {
           return 0;
         },
@@ -109,21 +133,27 @@ function Table({
         headerName: key,
         field: key,
         headerTooltip: titles?.get(titlePrefix + key),
+        cellRenderer: defaultCellRenderer,
       };
     };
   }
 
-  const rowData = useMemo(() => {
-    return convertData(tableData.data || []);
-  }, [tableData.data]);
+  const handleResultData = (data: ResultData) => {
+    setRowData(convertData(data.data || []));
+    setNextPage(data.next || "");
+    setPrevPage(data.previous || "");
+  };
 
-  const columnDefs = () => {
-    if (rowData.length > 0) {
-      return Object.keys(rowData[0]).map((key) => {
+  const onGridReady = useCallback(() => {
+    let colDefs: ColDef[];
+
+    if (data.data && data.data.length > 0) {
+      colDefs = Object.keys(data.data[0]).map((key) => {
         if (handleRecordDetailShow && key === "climb_id") {
           return {
             ...defaultColDef(key),
-            cellRenderer: (params: { value: string }) => {
+            pinned: "left",
+            cellRenderer: (params: CustomCellRendererProps) => {
               return (
                 <Button
                   size="sm"
@@ -137,31 +167,10 @@ function Table({
               );
             },
           };
-        } else if (
-          s3PathHandler &&
-          key.startsWith("s3://") &&
-          key.endsWith(".html")
-        ) {
-          return {
-            ...defaultColDef(key),
-            cellRenderer: (params: { value: string }) => {
-              return (
-                <Button
-                  size="sm"
-                  variant="link"
-                  onClick={() => {
-                    s3PathHandler(params.value);
-                  }}
-                >
-                  {params.value}
-                </Button>
-              );
-            },
-          };
         } else if (key === "Field" || key === "Value") {
-          // Set column to 50% grid space
           return {
             ...defaultColDef(key),
+            // Set column to 50% grid space
             flex: 1,
           };
         } else {
@@ -169,9 +178,12 @@ function Table({
         }
       });
     } else {
-      return [];
+      colDefs = [];
     }
-  };
+    handleResultData(data);
+    setColumnDefs(colDefs);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSortColumn = (event: SortChangedEvent) => {
     let field = "";
@@ -198,7 +210,7 @@ function Table({
       httpPathHandler(`projects/${project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((response) => {
-          setTableData(response);
+          handleResultData(response);
           setPageNumber(1);
         })
         .finally(() => {
@@ -216,7 +228,7 @@ function Table({
       )
         .then((response) => response.json())
         .then((response) => {
-          setTableData(response);
+          handleResultData(response);
           setPageNumber(pageNumber + 1);
         })
         .finally(() => {
@@ -233,7 +245,7 @@ function Table({
       )
         .then((response) => response.json())
         .then((response) => {
-          setTableData(response);
+          handleResultData(response);
           setPageNumber(pageNumber - 1);
         })
         .finally(() => {
@@ -271,36 +283,46 @@ function Table({
       <div className="ag-theme-quartz" style={{ height: height }}>
         <AgGridReact
           rowData={rowData}
-          columnDefs={columnDefs()}
+          columnDefs={columnDefs}
           tooltipMouseTrack={true}
           tooltipHideDelay={5000}
           gridOptions={gridOptions}
+          onGridReady={onGridReady}
           loading={loading}
         />
       </div>
-      <Stack direction="horizontal" gap={2}>
-        <Pagination size="sm">
-          <Pagination.Item>
-            {`${fromCount} to ${toCount} of ${
-              isServerData
-                ? isCountLoading
-                  ? "Loading..."
-                  : countData.count
-                : rowData.length
-            }`}
-          </Pagination.Item>
-        </Pagination>
-        {isServerData && (
-          <Pagination size="sm">
-            <Pagination.Prev
-              disabled={!prevPage}
-              onClick={handlePreviousPage}
-            />
-            <Pagination.Item>{`Page ${pageNumber}`}</Pagination.Item>
-            <Pagination.Next disabled={!nextPage} onClick={handleNextPage} />
-          </Pagination>
-        )}
-      </Stack>
+      <div>
+        <div style={{ float: "right" }}>
+          <Container>
+            <Stack direction="horizontal" gap={2}>
+              <Pagination size="sm">
+                <Pagination.Item>
+                  {isCountLoading
+                    ? "Loading..."
+                    : `${fromCount} to ${toCount} of ${
+                        isServerData ? countData.count : rowData.length
+                      }`}
+                </Pagination.Item>
+              </Pagination>
+              {isServerData && (
+                <Pagination size="sm">
+                  <Pagination.Prev
+                    disabled={!prevPage}
+                    onClick={handlePreviousPage}
+                  />
+                  <Pagination.Item
+                    style={{ minWidth: "75px", textAlign: "center" }}
+                  >{`Page ${pageNumber}`}</Pagination.Item>
+                  <Pagination.Next
+                    disabled={!nextPage}
+                    onClick={handleNextPage}
+                  />
+                </Pagination>
+              )}
+            </Stack>
+          </Container>
+        </div>
+      </div>
     </Stack>
   );
 }
