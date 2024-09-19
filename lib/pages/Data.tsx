@@ -106,6 +106,11 @@ function Data(props: DataProps) {
     setRecordDetailShow(true);
   }, []);
 
+  const handleRecordDetailHide = () => {
+    setRecordDetailID("");
+    setRecordDetailShow(false);
+  };
+
   return (
     <Container fluid className="g-2">
       <Stack gap={2}>
@@ -113,7 +118,7 @@ function Data(props: DataProps) {
           {...props}
           recordID={recordDetailID}
           show={recordDetailShow}
-          onHide={() => setRecordDetailShow(false)}
+          onHide={handleRecordDetailHide}
         />
         <SearchBar
           {...props}
