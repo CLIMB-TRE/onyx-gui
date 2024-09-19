@@ -4,4 +4,9 @@ function httpPathHandler(path: string) {
   });
 }
 
-export default httpPathHandler;
+function fileWriter(path: string, content: string) {
+  console.log("Writing file:", path);
+  console.log("Content:", content);
+}
+
+export { httpPathHandler, fileWriter };
