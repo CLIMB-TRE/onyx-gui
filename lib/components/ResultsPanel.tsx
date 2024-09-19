@@ -8,6 +8,7 @@ import { LoadingAlert } from "./LoadingAlert";
 import ErrorMessages from "./ErrorMessages";
 import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
+import formatData from "../utils/formatData";
 
 interface ResultsPanelProps extends DataProps {
   resultPending: boolean;
@@ -32,7 +33,7 @@ function ResultsPanel(props: ResultsPanelProps) {
 
   const handleExportToCSV = () => {
     const csvData = asString(
-      generateCsv(csvConfig)(props.resultData.data || [])
+      generateCsv(csvConfig)(formatData(props.resultData.data || []))
     );
 
     if (props.fileWriter) {

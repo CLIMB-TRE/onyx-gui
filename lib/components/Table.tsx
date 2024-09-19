@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { AgGridReact, CustomCellRendererProps } from "@ag-grid-community/react"; // React Data Grid Component
 import "@ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "@ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
@@ -8,37 +8,17 @@ import {
   ColDef,
   SortChangedEvent,
   ModuleRegistry,
+  ValueFormatterParams,
+  DataTypeDefinition,
 } from "@ag-grid-community/core";
 import { useQuery } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import { Container, Pagination } from "react-bootstrap";
 import Stack from "react-bootstrap/Stack";
 import { ResultData, ResultType } from "../types";
+import formatData from "../utils/formatData";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
-function convertData(data: ResultType[]) {
-  // Convert all non-number values to strings
-  return data.map((item) =>
-    Object.fromEntries(
-      Object.entries(item).map(([key, value]) => [
-        key,
-        typeof value === "number" ? value : value?.toString().trim() || "",
-      ])
-    )
-  );
-}
-
-function getPageCounts(
-  pageNumber: number,
-  pageLength: number,
-  prevPageCount: number
-) {
-  return {
-    fromCount: (pageNumber - 1) * prevPageCount + (pageLength >= 1 ? 1 : 0),
-    toCount: (pageNumber - 1) * prevPageCount + pageLength,
-  };
-}
 
 function Table({
   project,
@@ -94,7 +74,8 @@ function Table({
   const defaultCellRenderer = (params: CustomCellRendererProps) => {
     if (
       s3PathHandler &&
-      params.value.startswith("s3://") &&
+      typeof params.value === "string" &&
+      params.value.startsWith("s3://") &&
       params.value.endsWith(".html")
     ) {
       return (
@@ -109,7 +90,7 @@ function Table({
         </Button>
       );
     } else {
-      return params.value;
+      return params.valueFormatted || params.value;
     }
   };
 
@@ -139,7 +120,7 @@ function Table({
   }
 
   const handleResultData = (data: ResultData) => {
-    setRowData(convertData(data.data || []));
+    setRowData(formatData(data.data || []));
     setNextPage(data.next || "");
     setPrevPage(data.previous || "");
   };
@@ -272,11 +253,22 @@ function Table({
     };
   }
 
-  const { fromCount, toCount } = getPageCounts(
-    pageNumber,
-    rowData.length,
-    prevPageCount
-  );
+  const fromCount =
+    (pageNumber - 1) * prevPageCount + (rowData.length >= 1 ? 1 : 0);
+  const toCount = (pageNumber - 1) * prevPageCount + rowData.length;
+
+  const dataTypeDefinitions = useMemo(() => {
+    return {
+      // Override boolean and display as string
+      boolean: {
+        baseDataType: "boolean",
+        extendsDataType: "boolean",
+        valueFormatter: (params: ValueFormatterParams) => {
+          return params.value ? "true" : "false";
+        },
+      } as DataTypeDefinition,
+    };
+  }, []);
 
   return (
     <Stack gap={2}>
@@ -289,6 +281,7 @@ function Table({
           gridOptions={gridOptions}
           onGridReady={onGridReady}
           loading={loading}
+          dataTypeDefinitions={dataTypeDefinitions}
         />
       </div>
       <div>

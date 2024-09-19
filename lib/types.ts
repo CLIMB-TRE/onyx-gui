@@ -15,7 +15,7 @@ type FilterField = {
 
 type OptionType = { label: string; value: string };
 
-type ResultType = Record<string, string | number | boolean | null>;
+type ResultType = Record<string, string | number | boolean | object | null>;
 
 type ErrorType = Record<string, string | string[]>;
 
