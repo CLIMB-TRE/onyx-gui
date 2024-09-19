@@ -105,9 +105,10 @@ function RecordDetail(props: RecordDetailProps) {
                     data={
                       {
                         data: Object.entries(recordData.data)
-                          .filter(([, value]) => {
-                            return !(value instanceof Array);
-                          })
+                          .filter(
+                            ([key]) =>
+                              props.projectFields.get(key)?.type !== "relation"
+                          )
                           .map(([key, value]) => ({
                             Field: key,
                             Value: value,
@@ -119,7 +120,9 @@ function RecordDetail(props: RecordDetailProps) {
                   />
                 </Tab>
                 {Object.entries(recordData.data)
-                  .filter(([, value]) => value instanceof Array)
+                  .filter(
+                    ([key]) => props.projectFields.get(key)?.type === "relation"
+                  )
                   .sort()
                   .map(([key, value], index) => (
                     <Tab key={key} eventKey={index} title={key}>
