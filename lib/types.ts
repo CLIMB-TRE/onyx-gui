@@ -22,7 +22,6 @@ type ErrorType = Record<string, string | string[]>;
 type ResultData = {
   status: string;
   code: number;
-  count?: number;
   next?: string;
   previous?: string;
   data?: ResultType[];
