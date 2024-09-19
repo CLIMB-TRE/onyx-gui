@@ -304,21 +304,19 @@ function Table({
                       }`}
                 </Pagination.Item>
               </Pagination>
-              {isServerData && (
-                <Pagination size="sm">
-                  <Pagination.Prev
-                    disabled={!prevPage}
-                    onClick={handlePreviousPage}
-                  />
-                  <Pagination.Item
-                    style={{ minWidth: "75px", textAlign: "center" }}
-                  >{`Page ${pageNumber}`}</Pagination.Item>
-                  <Pagination.Next
-                    disabled={!nextPage}
-                    onClick={handleNextPage}
-                  />
-                </Pagination>
-              )}
+              <Pagination size="sm">
+                <Pagination.Prev
+                  disabled={!prevPage}
+                  onClick={handlePreviousPage}
+                />
+                <Pagination.Item
+                  style={{ minWidth: "75px", textAlign: "center" }}
+                >{`Page ${pageNumber}`}</Pagination.Item>
+                <Pagination.Next
+                  disabled={!nextPage}
+                  onClick={handleNextPage}
+                />
+              </Pagination>
             </Stack>
           </Container>
         </div>
