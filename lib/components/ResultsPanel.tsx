@@ -8,7 +8,6 @@ import { LoadingAlert } from "./LoadingAlert";
 import ErrorMessages from "./ErrorMessages";
 import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
-import formatData from "../utils/formatData";
 
 interface ResultsPanelProps extends DataProps {
   resultPending: boolean;
@@ -19,6 +18,27 @@ interface ResultsPanelProps extends DataProps {
   pageNumber: number;
   setPageNumber: (page: number) => void;
   handleRecordDetailShow: (climbID: string) => void;
+}
+
+function formatResultData(resultData: ResultData) {
+  // For CSV export, we allow string, number and boolean values
+  // All other types are converted to strings
+  return (
+    resultData.data?.map((row) =>
+      Object.fromEntries(
+        Object.entries(row).map(([key, value]) => [
+          key,
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean"
+            ? value
+            : value === null
+            ? ""
+            : JSON.stringify(value),
+        ])
+      )
+    ) || []
+  );
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
@@ -33,7 +53,7 @@ function ResultsPanel(props: ResultsPanelProps) {
 
   const handleExportToCSV = () => {
     const csvData = asString(
-      generateCsv(csvConfig)(formatData(props.resultData.data || []))
+      generateCsv(csvConfig)(formatResultData(props.resultData))
     );
 
     if (props.fileWriter) {

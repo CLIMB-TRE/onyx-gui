@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { AgGridReact, CustomCellRendererProps } from "@ag-grid-community/react"; // React Data Grid Component
 import "@ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "@ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
@@ -8,17 +8,33 @@ import {
   ColDef,
   SortChangedEvent,
   ModuleRegistry,
-  ValueFormatterParams,
-  DataTypeDefinition,
 } from "@ag-grid-community/core";
 import { useQuery } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import { Container, Pagination } from "react-bootstrap";
 import Stack from "react-bootstrap/Stack";
 import { ResultData, ResultType } from "../types";
-import formatData from "../utils/formatData";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
+
+function formatResultData(resultData: ResultData) {
+  // For table display, we allow string and number values
+  // All other types are converted to strings
+  return (
+    resultData.data?.map((row) =>
+      Object.fromEntries(
+        Object.entries(row).map(([key, value]) => [
+          key,
+          typeof value === "string" || typeof value === "number"
+            ? value
+            : typeof value === "boolean" || value === null
+            ? value?.toString() || ""
+            : JSON.stringify(value),
+        ])
+      )
+    ) || []
+  );
+}
 
 function Table({
   project,
@@ -90,7 +106,7 @@ function Table({
         </Button>
       );
     } else {
-      return params.valueFormatted || params.value;
+      return params.value;
     }
   };
 
@@ -120,7 +136,7 @@ function Table({
   }
 
   const handleResultData = (data: ResultData) => {
-    setRowData(formatData(data.data || []));
+    setRowData(formatResultData(data));
     setNextPage(data.next || "");
     setPrevPage(data.previous || "");
   };
@@ -257,19 +273,6 @@ function Table({
     (pageNumber - 1) * prevPageCount + (rowData.length >= 1 ? 1 : 0);
   const toCount = (pageNumber - 1) * prevPageCount + rowData.length;
 
-  const dataTypeDefinitions = useMemo(() => {
-    return {
-      // Override boolean and display as string
-      boolean: {
-        baseDataType: "boolean",
-        extendsDataType: "boolean",
-        valueFormatter: (params: ValueFormatterParams) => {
-          return params.value ? "true" : "false";
-        },
-      } as DataTypeDefinition,
-    };
-  }, []);
-
   return (
     <Stack gap={2}>
       <div className="ag-theme-quartz" style={{ height: height }}>
@@ -281,7 +284,6 @@ function Table({
           gridOptions={gridOptions}
           onGridReady={onGridReady}
           loading={loading}
-          dataTypeDefinitions={dataTypeDefinitions}
         />
       </div>
       <div>
