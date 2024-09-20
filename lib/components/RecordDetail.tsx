@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
@@ -7,6 +8,7 @@ import Tabs from "react-bootstrap/Tabs";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
+import Toast from "react-bootstrap/Toast";
 import { useQuery } from "@tanstack/react-query";
 import Table from "./Table";
 import { DelayedLoadingAlert } from "./LoadingAlert";
@@ -25,10 +27,13 @@ interface RecordDataProps extends RecordDetailProps {
 }
 
 function RecordData(props: RecordDataProps) {
+  const [showExportToast, setShowExportToast] = useState(false);
+
   const handleExportToJSON = () => {
     const jsonData = JSON.stringify(props.record);
 
     if (props.fileWriter) {
+      setShowExportToast(true);
       props.fileWriter(props.recordID + ".json", jsonData);
     }
   };
@@ -59,14 +64,29 @@ function RecordData(props: RecordDataProps) {
               ))}
           </Nav>
           <hr />
-          <Button
-            size="sm"
-            disabled={!props.fileWriter}
-            variant="dark"
-            onClick={handleExportToJSON}
-          >
-            Export Record to JSON
-          </Button>
+          <Stack gap={2}>
+            <Button
+              size="sm"
+              disabled={!props.fileWriter}
+              variant="dark"
+              onClick={handleExportToJSON}
+            >
+              Export Record to JSON
+            </Button>
+            <Toast
+              onClose={() => setShowExportToast(false)}
+              show={showExportToast}
+              delay={3000}
+              autohide
+            >
+              <Toast.Header>
+                <strong className="me-auto">Export Started</strong>
+              </Toast.Header>
+              <Toast.Body>
+                File: <strong>{props.recordID}.json</strong>
+              </Toast.Body>
+            </Toast>
+          </Stack>
         </Col>
         <Col sm={10}>
           <Tab.Content style={{ height: "100%" }}>
