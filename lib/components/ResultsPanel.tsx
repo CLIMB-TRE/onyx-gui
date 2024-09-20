@@ -1,7 +1,9 @@
+import { useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
+import Toast from "react-bootstrap/Toast";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import Table from "./Table";
 import { DelayedLoadingAlert } from "./LoadingAlert";
@@ -42,6 +44,8 @@ function formatResultData(resultData: ResultData) {
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
+  const [showExportToast, setShowExportToast] = useState(false);
+
   const fileName = `${props.project}${
     props.pageNumber > 1 ? "_" + props.pageNumber.toString() : ""
   }`;
@@ -57,6 +61,7 @@ function ResultsPanel(props: ResultsPanelProps) {
     );
 
     if (props.fileWriter) {
+      setShowExportToast(true);
       props.fileWriter(fileName + ".csv", csvData);
     }
   };
@@ -74,6 +79,25 @@ function ResultsPanel(props: ResultsPanelProps) {
         >
           Export Page to CSV
         </Button>
+        <Toast
+          onClose={() => setShowExportToast(false)}
+          show={showExportToast}
+          delay={3000}
+          autohide
+          style={{
+            position: "absolute",
+            top: 50,
+            right: 15,
+            zIndex: 9999,
+          }}
+        >
+          <Toast.Header>
+            <strong className="me-auto">Export Started</strong>
+          </Toast.Header>
+          <Toast.Body>
+            File: <strong>{fileName}.csv</strong>
+          </Toast.Body>
+        </Toast>
       </Card.Header>
       <Container fluid className="onyx-results-panel-body p-2">
         {props.resultPending ? (
