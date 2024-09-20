@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { AgGridReact, CustomCellRendererProps } from "@ag-grid-community/react"; // React Data Grid Component
 import "@ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "@ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
@@ -36,29 +36,39 @@ function formatResultData(resultData: ResultData) {
   );
 }
 
+function formatTitle(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function Table({
   project,
   data,
   searchParameters,
   titles,
   titlePrefix = "",
+  flexColumns,
   handleRecordDetailShow,
   httpPathHandler,
   s3PathHandler,
-  height = 475,
   isServerData = false,
+  footer = "",
+  formatTitles = false,
 }: {
   data: ResultData;
   project?: string;
   searchParameters?: string;
   titles?: Map<string, string>;
   titlePrefix?: string;
+  flexColumns?: string[];
   handleRecordDetailShow?: (climbID: string) => void;
   httpPathHandler?: (path: string) => Promise<Response>;
   s3PathHandler?: (path: string) => void;
-  height?: number;
   isServerData?: boolean;
+  footer?: string;
+  formatTitles?: boolean;
 }) {
+  const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
+  const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
   const [rowData, setRowData] = useState<ResultType[]>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
@@ -115,7 +125,7 @@ function Table({
   if (isServerData) {
     defaultColDef = (key: string) => {
       return {
-        headerName: key,
+        headerName: formatTitles ? formatTitle(key) : key,
         field: key,
         headerTooltip: titles?.get(titlePrefix + key),
         cellRenderer: defaultCellRenderer,
@@ -127,7 +137,7 @@ function Table({
   } else {
     defaultColDef = (key: string) => {
       return {
-        headerName: key,
+        headerName: formatTitles ? formatTitle(key) : key,
         field: key,
         headerTooltip: titles?.get(titlePrefix + key),
         cellRenderer: defaultCellRenderer,
@@ -164,10 +174,9 @@ function Table({
               );
             },
           };
-        } else if (key === "Field" || key === "Value") {
+        } else if (flexColumns && flexColumns.includes(key)) {
           return {
             ...defaultColDef(key),
-            // Set column to 50% grid space
             flex: 1,
           };
         } else {
@@ -274,8 +283,8 @@ function Table({
   const toCount = (pageNumber - 1) * prevPageCount + rowData.length;
 
   return (
-    <Stack gap={2}>
-      <div className="ag-theme-quartz" style={{ height: height }}>
+    <Stack gap={2} style={containerStyle}>
+      <div className="ag-theme-quartz" style={gridStyle}>
         <AgGridReact
           rowData={rowData}
           columnDefs={columnDefs}
@@ -287,6 +296,7 @@ function Table({
         />
       </div>
       <div>
+        <i className="text-secondary">{footer}</i>
         <div style={{ float: "right" }}>
           <Container>
             <Stack direction="horizontal" gap={2}>

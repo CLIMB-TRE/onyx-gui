@@ -56,7 +56,7 @@
 }
 
 .onyx-results-panel-body {
-  height: 530px;
+  height: 53vh;
 }
 
 .onyx-graphs-panel-body {
@@ -73,4 +73,16 @@
   --ag-foreground-color: var(--bs-body-color);
   --ag-checkbox-unchecked-color: var(--bs-green);
   --ag-font-family: monospace;
+}
+
+.onyx-modal-dialog {
+  --bs-modal-width: 90vw;
+} 
+
+.onyx-modal-content {
+  height: 95vh;
+}
+
+.onyx-modal-tab-pane {
+  height: 59vh;
 }
