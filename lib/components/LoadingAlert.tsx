@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
 import Stack from "react-bootstrap/Stack";
-import Alert from "react-bootstrap/Alert";
 import { Spinner } from "react-bootstrap";
 
 function LoadingAlert() {
   return (
-    <Alert variant="light">
+    <div className="d-flex justify-content-center">
       <Stack direction="horizontal" gap={2}>
         <Spinner />
         <span>Loading...</span>
       </Stack>
-    </Alert>
+    </div>
   );
 }
 
@@ -18,7 +17,7 @@ function DelayedLoadingAlert() {
   const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowAlert(true), 200);
+    const timer = setTimeout(() => setShowAlert(true), 500);
     return () => clearTimeout(timer);
   });
 

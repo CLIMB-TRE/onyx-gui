@@ -4,7 +4,7 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import Table from "./Table";
-import { LoadingAlert } from "./LoadingAlert";
+import { DelayedLoadingAlert } from "./LoadingAlert";
 import ErrorMessages from "./ErrorMessages";
 import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
@@ -77,7 +77,7 @@ function ResultsPanel(props: ResultsPanelProps) {
       </Card.Header>
       <Container fluid className="onyx-results-panel-body p-2">
         {props.resultPending ? (
-          <LoadingAlert />
+          <DelayedLoadingAlert />
         ) : props.resultError ? (
           <Alert variant="danger">Error: {props.resultError.message}</Alert>
         ) : props.resultData.messages ? (
