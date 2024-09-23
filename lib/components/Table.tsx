@@ -53,6 +53,7 @@ function Table({
   isServerData = false,
   footer = "",
   formatTitles = false,
+  cellRenderers,
 }: {
   data: ResultData;
   project?: string;
@@ -66,6 +67,7 @@ function Table({
   isServerData?: boolean;
   footer?: string;
   formatTitles?: boolean;
+  cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
 }) {
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
@@ -178,9 +180,17 @@ function Table({
           return {
             ...defaultColDef(key),
             flex: 1,
+            cellRenderer: cellRenderers?.get(key) || defaultCellRenderer,
+            autoHeight: cellRenderers?.get(key) ? true : false,
+            wrapText: cellRenderers?.get(key) ? true : false,
           };
         } else {
-          return { ...defaultColDef(key) };
+          return {
+            ...defaultColDef(key),
+            cellRenderer: cellRenderers?.get(key) || defaultCellRenderer,
+            autoHeight: cellRenderers?.get(key) ? true : false,
+            wrapText: cellRenderers?.get(key) ? true : false,
+          };
         }
       });
     } else {

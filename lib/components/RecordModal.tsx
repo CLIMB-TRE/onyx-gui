@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { CustomCellRendererProps } from "@ag-grid-community/react";
+import Badge from "react-bootstrap/Badge";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
@@ -203,6 +205,68 @@ function RecordData(props: RecordModalProps) {
   );
 }
 
+function ActionCellRenderer(props: CustomCellRendererProps) {
+  const action = props.value.toString().toLowerCase();
+
+  // Change text colour based on action type
+  if (action === "add") {
+    return <Badge bg="dark">{action}</Badge>;
+  } else if (action === "change") {
+    return (
+      <Badge bg="info" className="text-dark">
+        {action}
+      </Badge>
+    );
+  } else if (action === "delete") {
+    return <Badge bg="danger">{action}</Badge>;
+  } else {
+    return <Badge bg="secondary">{action}</Badge>;
+  }
+}
+
+function ChangeCellRenderer(props: CustomCellRendererProps) {
+  const changes = JSON.parse(props.value);
+
+  return (
+    <ul>
+      {changes.map((change: ResultType, index: number) => {
+        if (change.type === "relation") {
+          let verb: string;
+          if (change.action === "add") {
+            verb = "Added";
+          } else if (change.action === "change") {
+            verb = "Changed";
+          } else if (change.action === "delete") {
+            verb = "Deleted";
+          } else {
+            verb = "Modified";
+          }
+          return (
+            <li key={index}>
+              <strong>{change.field?.toString()}</strong>: {verb}{" "}
+              <span className="onyx-text-pink">{change.count?.toString()}</span>{" "}
+              record{change.count === 1 ? "" : "s"}.
+            </li>
+          );
+        } else {
+          return (
+            <li key={index}>
+              <strong>{change.field?.toString()}</strong>:{" "}
+              <span className="onyx-text-pink">
+                {JSON.stringify(change.from)}
+              </span>{" "}
+              &rarr;{" "}
+              <span className="onyx-text-pink">
+                {JSON.stringify(change.to)}
+              </span>
+            </li>
+          );
+        }
+      })}
+    </ul>
+  );
+}
+
 function RecordHistory(props: RecordModalProps) {
   // Fetch record history, depending on project and record ID
   const {
@@ -236,6 +300,12 @@ function RecordHistory(props: RecordModalProps) {
         flexColumns={["changes"]}
         formatTitles
         footer="Table showing the complete change history for the record."
+        cellRenderers={
+          new Map([
+            ["action", ActionCellRenderer],
+            ["changes", ChangeCellRenderer],
+          ])
+        }
       />
     </>
   );
