@@ -9,6 +9,7 @@ import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
 import Toast from "react-bootstrap/Toast";
+import Container from "react-bootstrap/Container";
 import { useQuery } from "@tanstack/react-query";
 import Table from "./Table";
 import { DelayedLoadingAlert } from "./LoadingAlert";
@@ -22,15 +23,52 @@ interface RecordDetailProps extends DataProps {
   onHide: () => void;
 }
 
-interface RecordDataProps extends RecordDetailProps {
+function RecordDataField({
+  record,
+  field,
+  name,
+}: {
   record: ResultType;
+  field: string;
+  name: string;
+}) {
+  return (
+    <Row>
+      <Col xs={6}>
+        <h6>{name}:</h6>
+      </Col>
+      <Col xs={6}>
+        <h6>
+          <span className="onyx-text-pink">
+            {record[field]?.toString() || ""}
+          </span>
+        </h6>
+      </Col>
+    </Row>
+  );
 }
 
-function RecordData(props: RecordDataProps) {
+function RecordData(props: RecordDetailProps) {
   const [showExportToast, setShowExportToast] = useState(false);
 
+  // Fetch record data, depending on project and record ID
+  const {
+    isFetching: recordDataPending,
+    error: recordDataError,
+    data: recordData = { data: {} },
+  } = useQuery({
+    queryKey: ["record-data", props.project, props.recordID],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/${props.recordID}/`)
+        .then((response) => response.json());
+    },
+    enabled: !!(props.project && props.recordID),
+    staleTime: 1 * 60 * 1000,
+  });
+
   const handleExportToJSON = () => {
-    const jsonData = JSON.stringify(props.record);
+    const jsonData = JSON.stringify(recordData.data);
 
     if (props.fileWriter) {
       setShowExportToast(true);
@@ -45,26 +83,66 @@ function RecordData(props: RecordDataProps) {
       .join(" ");
   };
 
-  return (
-    <Tab.Container id="left-tabs-example" defaultActiveKey="Details">
+  const detailFields = Object.entries(recordData.data).filter(
+    ([key]) => props.projectFields.get(key)?.type !== "relation"
+  );
+
+  const relationFields = Object.entries(recordData.data).filter(
+    ([key]) => props.projectFields.get(key)?.type === "relation"
+  );
+
+  return recordDataPending ? (
+    <DelayedLoadingAlert />
+  ) : recordDataError ? (
+    <Alert variant="danger">Error: {(recordDataError as Error).message}</Alert>
+  ) : recordData.messages ? (
+    <ErrorMessages messages={recordData.messages} />
+  ) : (
+    <Tab.Container
+      id="left-tabs-example"
+      defaultActiveKey="record-data-details"
+    >
       <Row style={{ height: "100%" }}>
-        <Col sm={2}>
-          <Nav variant="pills" className="flex-column">
-            <Nav.Item>
-              <Nav.Link eventKey="Details">Details</Nav.Link>
-            </Nav.Item>
-            {Object.entries(props.record)
-              .filter(
-                ([key]) => props.projectFields.get(key)?.type === "relation"
-              )
-              .map(([key]) => (
-                <Nav.Item key={key}>
-                  <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
-                </Nav.Item>
-              ))}
-          </Nav>
-          <hr />
-          <Stack gap={2}>
+        <Col xl={2}>
+          <Stack gap={1}>
+            <Row>
+              <Col xs={6} xl={12}>
+                <hr />
+                <Container>
+                  <RecordDataField
+                    record={recordData.data}
+                    field="published_date"
+                    name="Date"
+                  />
+                  <RecordDataField
+                    record={recordData.data}
+                    field="site"
+                    name="Site"
+                  />
+                  {recordData.data["platform"] && (
+                    <RecordDataField
+                      record={recordData.data}
+                      field="platform"
+                      name="Platform"
+                    />
+                  )}
+                </Container>
+              </Col>
+              <Col xs={6} xl={12}>
+                <hr />
+                <Nav variant="pills" className="flex-column">
+                  <Nav.Item>
+                    <Nav.Link eventKey="record-data-details">Details</Nav.Link>
+                  </Nav.Item>
+                  {relationFields.map(([key]) => (
+                    <Nav.Item key={key}>
+                      <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                    </Nav.Item>
+                  ))}
+                </Nav>
+              </Col>
+            </Row>
+            <hr />
             <Button
               size="sm"
               disabled={!props.fileWriter}
@@ -88,22 +166,17 @@ function RecordData(props: RecordDataProps) {
             </Toast>
           </Stack>
         </Col>
-        <Col sm={10}>
+        <Col xl={10}>
           <Tab.Content style={{ height: "100%" }}>
-            <Tab.Pane eventKey="Details" style={{ height: "100%" }}>
+            <Tab.Pane eventKey="record-data-details" style={{ height: "100%" }}>
               <h5>Details</h5>
               <Table
                 data={
                   {
-                    data: Object.entries(props.record)
-                      .filter(
-                        ([key]) =>
-                          props.projectFields.get(key)?.type !== "relation"
-                      )
-                      .map(([key, value]) => ({
-                        Field: key,
-                        Value: value,
-                      })),
+                    data: detailFields.map(([key, value]) => ({
+                      Field: key,
+                      Value: value,
+                    })),
                   } as unknown as ResultData
                 }
                 flexColumns={["Field", "Value"]}
@@ -111,24 +184,18 @@ function RecordData(props: RecordDataProps) {
                 footer="Table showing the top-level fields for the record."
               />
             </Tab.Pane>
-            {Object.entries(props.record)
-              .filter(
-                ([key]) => props.projectFields.get(key)?.type === "relation"
-              )
-              .map(([key, value]) => (
-                <Tab.Pane key={key} eventKey={key} style={{ height: "100%" }}>
-                  <h5>{formatTitle(key)}</h5>
-                  <Table
-                    data={{ data: value } as ResultData}
-                    titles={props.fieldDescriptions}
-                    titlePrefix={key + "__"}
-                    s3PathHandler={props.s3PathHandler}
-                    footer={
-                      props.fieldDescriptions.get(key) || "No Description"
-                    }
-                  />
-                </Tab.Pane>
-              ))}
+            {relationFields.map(([key, value]) => (
+              <Tab.Pane key={key} eventKey={key} style={{ height: "100%" }}>
+                <h5>{formatTitle(key)}</h5>
+                <Table
+                  data={{ data: value } as ResultData}
+                  titles={props.fieldDescriptions}
+                  titlePrefix={key + "__"}
+                  s3PathHandler={props.s3PathHandler}
+                  footer={props.fieldDescriptions.get(key) || "No Description."}
+                />
+              </Tab.Pane>
+            ))}
           </Tab.Content>
         </Col>
       </Row>
@@ -141,9 +208,9 @@ function RecordHistory(props: RecordDetailProps) {
   const {
     isFetching: recordHistoryPending,
     error: recordHistoryError,
-    data: recordHistory = {},
+    data: recordHistory = { data: {} },
   } = useQuery({
-    queryKey: ["history", props.project, props.recordID],
+    queryKey: ["record-history", props.project, props.recordID],
     queryFn: async () => {
       return props
         .httpPathHandler(`projects/${props.project}/history/${props.recordID}/`)
@@ -162,37 +229,19 @@ function RecordHistory(props: RecordDetailProps) {
   ) : recordHistory.messages ? (
     <ErrorMessages messages={recordHistory.messages} />
   ) : (
-    recordHistory.data && (
-      <>
-        <h5>History</h5>
-        <Table
-          data={{ data: recordHistory.data.history } as ResultData}
-          flexColumns={["changes"]}
-          formatTitles
-          footer="Table showing the complete change history for the record."
-        />
-      </>
-    )
+    <>
+      <h5>History</h5>
+      <Table
+        data={{ data: recordHistory.data.history } as ResultData}
+        flexColumns={["changes"]}
+        formatTitles
+        footer="Table showing the complete change history for the record."
+      />
+    </>
   );
 }
 
 function RecordDetail(props: RecordDetailProps) {
-  // Fetch record, depending on project and record ID
-  const {
-    isFetching: recordPending,
-    error: recordError,
-    data: recordData = {},
-  } = useQuery({
-    queryKey: ["results", props.project, props.recordID],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/${props.recordID}/`)
-        .then((response) => response.json());
-    },
-    enabled: !!(props.project && props.recordID),
-    staleTime: 1 * 60 * 1000,
-  });
-
   return (
     <Modal
       dialogClassName="onyx-modal-dialog"
@@ -209,56 +258,28 @@ function RecordDetail(props: RecordDetailProps) {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {recordPending ? (
-          <DelayedLoadingAlert />
-        ) : recordError ? (
-          <Alert variant="danger">
-            Error: {(recordError as Error).message}
-          </Alert>
-        ) : recordData.messages ? (
-          <ErrorMessages messages={recordData.messages} />
-        ) : (
-          recordData.data && (
-            <>
-              <Stack gap={2}>
-                <h5>
-                  Published Date:{" "}
-                  <span className="onyx-text-pink">
-                    {recordData.data["published_date"]}
-                  </span>
-                </h5>
-                <h5>
-                  Site:{" "}
-                  <span className="onyx-text-pink">
-                    {recordData.data["site"]}
-                  </span>
-                </h5>
-              </Stack>
-              <hr />
-              <Tabs
-                defaultActiveKey="data"
-                id="uncontrolled-tab-example"
-                className="mb-3"
-              >
-                <Tab
-                  eventKey="data"
-                  title="Data"
-                  className="onyx-modal-tab-pane"
-                >
-                  <RecordData {...props} record={recordData.data} />
-                </Tab>
-                <Tab
-                  eventKey="history"
-                  title="History"
-                  mountOnEnter
-                  className="onyx-modal-tab-pane"
-                >
-                  <RecordHistory {...props} />
-                </Tab>
-              </Tabs>
-            </>
-          )
-        )}
+        <Tabs
+          defaultActiveKey="record-data"
+          id="uncontrolled-tab-example"
+          className="mb-3"
+        >
+          <Tab
+            eventKey="record-data"
+            title="Data"
+            className="onyx-modal-tab-pane"
+            mountOnEnter
+          >
+            <RecordData {...props} />
+          </Tab>
+          <Tab
+            eventKey="record-history"
+            title="History"
+            className="onyx-modal-tab-pane"
+            mountOnEnter
+          >
+            <RecordHistory {...props} />
+          </Tab>
+        </Tabs>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="dark" onClick={props.onHide}>
