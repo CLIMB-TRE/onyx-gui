@@ -19,7 +19,7 @@ interface ResultsPanelProps extends DataProps {
   setSearchParameters: (params: string) => void;
   pageNumber: number;
   setPageNumber: (page: number) => void;
-  handleRecordDetailShow: (climbID: string) => void;
+  handleRecordModalShow: (climbID: string) => void;
 }
 
 function formatResultData(resultData: ResultData) {
@@ -112,7 +112,7 @@ function ResultsPanel(props: ResultsPanelProps) {
             data={props.resultData || {}}
             searchParameters={props.searchParameters}
             titles={props.fieldDescriptions}
-            handleRecordDetailShow={props.handleRecordDetailShow}
+            handleRecordModalShow={props.handleRecordModalShow}
             httpPathHandler={props.httpPathHandler}
             s3PathHandler={props.s3PathHandler}
             isServerData={

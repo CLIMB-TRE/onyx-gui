@@ -8,7 +8,7 @@ import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
 import TransformsPanel from "../components/TransformsPanel";
 import ResultsPanel from "../components/ResultsPanel";
-import RecordDetail from "../components/RecordDetail";
+import RecordModal from "../components/RecordModal";
 import { FilterField } from "../types";
 import { DataProps } from "../interfaces";
 import generateKey from "../utils/generateKey";
@@ -22,8 +22,8 @@ function Data(props: DataProps) {
   const [transformList, setTransformList] = useState(new Array<string>());
   const [searchParameters, setSearchParameters] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
-  const [recordDetailShow, setRecordDetailShow] = React.useState(false);
-  const [recordDetailID, setRecordDetailID] = React.useState("");
+  const [recordModalShow, setRecordModalShow] = React.useState(false);
+  const [recordModalID, setRecordModalID] = React.useState("");
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("filter"))
     .map(([field]) => field);
@@ -39,8 +39,8 @@ function Data(props: DataProps) {
     setTransformList([]);
     setSearchParameters("");
     setPageNumber(1);
-    setRecordDetailShow(false);
-    setRecordDetailID("");
+    setRecordModalShow(false);
+    setRecordModalID("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
@@ -101,24 +101,24 @@ function Data(props: DataProps) {
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
-  const handleRecordDetailShow = useCallback((climbID: string) => {
-    setRecordDetailID(climbID);
-    setRecordDetailShow(true);
+  const handleRecordModalShow = useCallback((climbID: string) => {
+    setRecordModalID(climbID);
+    setRecordModalShow(true);
   }, []);
 
-  const handleRecordDetailHide = () => {
-    setRecordDetailID("");
-    setRecordDetailShow(false);
+  const handleRecordModalHide = () => {
+    setRecordModalID("");
+    setRecordModalShow(false);
   };
 
   return (
     <Container fluid className="g-2">
       <Stack gap={2}>
-        <RecordDetail
+        <RecordModal
           {...props}
-          recordID={recordDetailID}
-          show={recordDetailShow}
-          onHide={handleRecordDetailHide}
+          recordID={recordModalID}
+          show={recordModalShow}
+          onHide={handleRecordModalHide}
         />
         <SearchBar
           {...props}
@@ -156,7 +156,7 @@ function Data(props: DataProps) {
           setSearchParameters={setSearchParameters}
           pageNumber={pageNumber}
           setPageNumber={setPageNumber}
-          handleRecordDetailShow={handleRecordDetailShow}
+          handleRecordModalShow={handleRecordModalShow}
         />
       </Stack>
     </Container>

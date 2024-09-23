@@ -47,7 +47,7 @@ function Table({
   titles,
   titlePrefix = "",
   flexColumns,
-  handleRecordDetailShow,
+  handleRecordModalShow,
   httpPathHandler,
   s3PathHandler,
   isServerData = false,
@@ -60,7 +60,7 @@ function Table({
   titles?: Map<string, string>;
   titlePrefix?: string;
   flexColumns?: string[];
-  handleRecordDetailShow?: (climbID: string) => void;
+  handleRecordModalShow?: (climbID: string) => void;
   httpPathHandler?: (path: string) => Promise<Response>;
   s3PathHandler?: (path: string) => void;
   isServerData?: boolean;
@@ -156,7 +156,7 @@ function Table({
 
     if (data.data && data.data.length > 0) {
       colDefs = Object.keys(data.data[0]).map((key) => {
-        if (handleRecordDetailShow && key === "climb_id") {
+        if (handleRecordModalShow && key === "climb_id") {
           return {
             ...defaultColDef(key),
             pinned: "left",
@@ -166,7 +166,7 @@ function Table({
                   size="sm"
                   variant="link"
                   onClick={() => {
-                    handleRecordDetailShow(params.value);
+                    handleRecordModalShow(params.value);
                   }}
                 >
                   {params.value}

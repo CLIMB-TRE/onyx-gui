@@ -17,7 +17,7 @@ import ErrorMessages from "./ErrorMessages";
 import { ResultData, ResultType } from "../types";
 import { DataProps } from "../interfaces";
 
-interface RecordDetailProps extends DataProps {
+interface RecordModalProps extends DataProps {
   recordID: string;
   show: boolean;
   onHide: () => void;
@@ -48,7 +48,7 @@ function RecordDataField({
   );
 }
 
-function RecordData(props: RecordDetailProps) {
+function RecordData(props: RecordModalProps) {
   const [showExportToast, setShowExportToast] = useState(false);
 
   // Fetch record data, depending on project and record ID
@@ -203,7 +203,7 @@ function RecordData(props: RecordDetailProps) {
   );
 }
 
-function RecordHistory(props: RecordDetailProps) {
+function RecordHistory(props: RecordModalProps) {
   // Fetch record history, depending on project and record ID
   const {
     isFetching: recordHistoryPending,
@@ -241,7 +241,7 @@ function RecordHistory(props: RecordDetailProps) {
   );
 }
 
-function RecordDetail(props: RecordDetailProps) {
+function RecordModal(props: RecordModalProps) {
   return (
     <Modal
       dialogClassName="onyx-modal-dialog"
@@ -290,4 +290,4 @@ function RecordDetail(props: RecordDetailProps) {
   );
 }
 
-export default RecordDetail;
+export default RecordModal;
