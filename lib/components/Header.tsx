@@ -7,6 +7,19 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { useQuery } from "@tanstack/react-query";
 
+interface HeaderProps {
+  httpPathHandler: (path: string) => Promise<Response>;
+  projectName: string;
+  projectList: string[];
+  handleProjectChange: (p: string) => void;
+  guiVersion?: string;
+  extVersion?: string;
+  tabKey: string;
+  setTabKey: (k: string) => void;
+  darkMode: boolean;
+  handleThemeChange: () => void;
+}
+
 function HeaderText({ label, value }: { label: string; value: string }) {
   return (
     <Navbar.Text>
@@ -32,19 +45,6 @@ function HeaderVersion({
       )}
     </Navbar.Text>
   );
-}
-
-interface HeaderProps {
-  httpPathHandler: (path: string) => Promise<Response>;
-  projectName: string;
-  projectList: string[];
-  handleProjectChange: (p: string) => void;
-  guiVersion?: string;
-  extVersion?: string;
-  tabKey: string;
-  setTabKey: (k: string) => void;
-  darkMode: boolean;
-  handleThemeChange: () => void;
 }
 
 function Header(props: HeaderProps) {
