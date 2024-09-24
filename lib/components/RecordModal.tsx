@@ -34,10 +34,10 @@ function RecordDataField({
 }) {
   return (
     <Row>
-      <Col xs={6}>
+      <Col md={6}>
         <h6>{name}:</h6>
       </Col>
-      <Col xs={6}>
+      <Col md={6}>
         <span className="onyx-text-pink">
           {record[field]?.toString() || ""}
         </span>
@@ -100,47 +100,39 @@ function RecordData(props: RecordModalProps) {
         defaultActiveKey="record-data-details"
       >
         <Row style={{ height: "100%" }}>
-          <Col xl={2}>
+          <Col xs={3} xl={2}>
             <Stack gap={1}>
-              <Row>
-                <Col xs={6} xl={12}>
-                  <hr />
-                  <Container>
-                    <RecordDataField
-                      record={recordData.data}
-                      field="published_date"
-                      name="Date"
-                    />
-                    <RecordDataField
-                      record={recordData.data}
-                      field="site"
-                      name="Site"
-                    />
-                    {recordData.data["platform"] && (
-                      <RecordDataField
-                        record={recordData.data}
-                        field="platform"
-                        name="Platform"
-                      />
-                    )}
-                  </Container>
-                </Col>
-                <Col xs={6} xl={12}>
-                  <hr />
-                  <Nav variant="pills" className="flex-column">
-                    <Nav.Item>
-                      <Nav.Link eventKey="record-data-details">
-                        Details
-                      </Nav.Link>
-                    </Nav.Item>
-                    {relationFields.map(([key]) => (
-                      <Nav.Item key={key}>
-                        <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
-                      </Nav.Item>
-                    ))}
-                  </Nav>
-                </Col>
-              </Row>
+              <hr />
+              <Container>
+                <RecordDataField
+                  record={recordData.data}
+                  field="published_date"
+                  name="Date"
+                />
+                <RecordDataField
+                  record={recordData.data}
+                  field="site"
+                  name="Site"
+                />
+                {recordData.data["platform"] && (
+                  <RecordDataField
+                    record={recordData.data}
+                    field="platform"
+                    name="Platform"
+                  />
+                )}
+              </Container>
+              <hr />
+              <Nav variant="pills" className="flex-column">
+                <Nav.Item>
+                  <Nav.Link eventKey="record-data-details">Details</Nav.Link>
+                </Nav.Item>
+                {relationFields.map(([key]) => (
+                  <Nav.Item key={key}>
+                    <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                  </Nav.Item>
+                ))}
+              </Nav>
               <hr />
               <Button
                 size="sm"
@@ -165,7 +157,7 @@ function RecordData(props: RecordModalProps) {
               </Toast>
             </Stack>
           </Col>
-          <Col xl={10}>
+          <Col xs={9} xl={10}>
             <Tab.Content style={{ height: "100%" }}>
               <Tab.Pane
                 eventKey="record-data-details"
