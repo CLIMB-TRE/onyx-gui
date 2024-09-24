@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Badge from "react-bootstrap/Badge";
-import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -14,8 +13,7 @@ import Toast from "react-bootstrap/Toast";
 import Container from "react-bootstrap/Container";
 import { useQuery } from "@tanstack/react-query";
 import Table from "./Table";
-import { DelayedLoadingAlert } from "./LoadingAlert";
-import ErrorMessages from "./ErrorMessages";
+import QueryHandler from "./QueryHandler";
 import { ResultData, ResultType } from "../types";
 import { DataProps } from "../interfaces";
 
@@ -40,11 +38,9 @@ function RecordDataField({
         <h6>{name}:</h6>
       </Col>
       <Col xs={6}>
-        <h6>
-          <span className="onyx-text-pink">
-            {record[field]?.toString() || ""}
-          </span>
-        </h6>
+        <span className="onyx-text-pink">
+          {record[field]?.toString() || ""}
+        </span>
       </Col>
     </Row>
   );
@@ -93,115 +89,122 @@ function RecordData(props: RecordModalProps) {
     ([key]) => props.projectFields.get(key)?.type === "relation"
   );
 
-  return recordDataPending ? (
-    <DelayedLoadingAlert />
-  ) : recordDataError ? (
-    <Alert variant="danger">Error: {(recordDataError as Error).message}</Alert>
-  ) : recordData.messages ? (
-    <ErrorMessages messages={recordData.messages} />
-  ) : (
-    <Tab.Container
-      id="left-tabs-example"
-      defaultActiveKey="record-data-details"
+  return (
+    <QueryHandler
+      isFetching={recordDataPending}
+      error={recordDataError as Error}
+      data={recordData}
     >
-      <Row style={{ height: "100%" }}>
-        <Col xl={2}>
-          <Stack gap={1}>
-            <Row>
-              <Col xs={6} xl={12}>
-                <hr />
-                <Container>
-                  <RecordDataField
-                    record={recordData.data}
-                    field="published_date"
-                    name="Date"
-                  />
-                  <RecordDataField
-                    record={recordData.data}
-                    field="site"
-                    name="Site"
-                  />
-                  {recordData.data["platform"] && (
+      <Tab.Container
+        id="record-data-tabs"
+        defaultActiveKey="record-data-details"
+      >
+        <Row style={{ height: "100%" }}>
+          <Col xl={2}>
+            <Stack gap={1}>
+              <Row>
+                <Col xs={6} xl={12}>
+                  <hr />
+                  <Container>
                     <RecordDataField
                       record={recordData.data}
-                      field="platform"
-                      name="Platform"
+                      field="published_date"
+                      name="Date"
                     />
-                  )}
-                </Container>
-              </Col>
-              <Col xs={6} xl={12}>
-                <hr />
-                <Nav variant="pills" className="flex-column">
-                  <Nav.Item>
-                    <Nav.Link eventKey="record-data-details">Details</Nav.Link>
-                  </Nav.Item>
-                  {relationFields.map(([key]) => (
-                    <Nav.Item key={key}>
-                      <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                    <RecordDataField
+                      record={recordData.data}
+                      field="site"
+                      name="Site"
+                    />
+                    {recordData.data["platform"] && (
+                      <RecordDataField
+                        record={recordData.data}
+                        field="platform"
+                        name="Platform"
+                      />
+                    )}
+                  </Container>
+                </Col>
+                <Col xs={6} xl={12}>
+                  <hr />
+                  <Nav variant="pills" className="flex-column">
+                    <Nav.Item>
+                      <Nav.Link eventKey="record-data-details">
+                        Details
+                      </Nav.Link>
                     </Nav.Item>
-                  ))}
-                </Nav>
-              </Col>
-            </Row>
-            <hr />
-            <Button
-              size="sm"
-              disabled={!props.fileWriter}
-              variant="dark"
-              onClick={handleExportToJSON}
-            >
-              Export Record to JSON
-            </Button>
-            <Toast
-              onClose={() => setShowExportToast(false)}
-              show={showExportToast}
-              delay={3000}
-              autohide
-            >
-              <Toast.Header>
-                <strong className="me-auto">Export Started</strong>
-              </Toast.Header>
-              <Toast.Body>
-                File: <strong>{props.recordID}.json</strong>
-              </Toast.Body>
-            </Toast>
-          </Stack>
-        </Col>
-        <Col xl={10}>
-          <Tab.Content style={{ height: "100%" }}>
-            <Tab.Pane eventKey="record-data-details" style={{ height: "100%" }}>
-              <h5>Details</h5>
-              <Table
-                data={
-                  {
-                    data: detailFields.map(([key, value]) => ({
-                      Field: key,
-                      Value: value,
-                    })),
-                  } as unknown as ResultData
-                }
-                flexColumns={["Field", "Value"]}
-                s3PathHandler={props.s3PathHandler}
-                footer="Table showing the top-level fields for the record."
-              />
-            </Tab.Pane>
-            {relationFields.map(([key, value]) => (
-              <Tab.Pane key={key} eventKey={key} style={{ height: "100%" }}>
-                <h5>{formatTitle(key)}</h5>
+                    {relationFields.map(([key]) => (
+                      <Nav.Item key={key}>
+                        <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                      </Nav.Item>
+                    ))}
+                  </Nav>
+                </Col>
+              </Row>
+              <hr />
+              <Button
+                size="sm"
+                disabled={!props.fileWriter}
+                variant="dark"
+                onClick={handleExportToJSON}
+              >
+                Export Record to JSON
+              </Button>
+              <Toast
+                onClose={() => setShowExportToast(false)}
+                show={showExportToast}
+                delay={3000}
+                autohide
+              >
+                <Toast.Header>
+                  <strong className="me-auto">Export Started</strong>
+                </Toast.Header>
+                <Toast.Body>
+                  File: <strong>{props.recordID}.json</strong>
+                </Toast.Body>
+              </Toast>
+            </Stack>
+          </Col>
+          <Col xl={10}>
+            <Tab.Content style={{ height: "100%" }}>
+              <Tab.Pane
+                eventKey="record-data-details"
+                style={{ height: "100%" }}
+              >
+                <h5>Details</h5>
                 <Table
-                  data={{ data: value } as ResultData}
-                  titles={props.fieldDescriptions}
-                  titlePrefix={key + "__"}
+                  data={
+                    {
+                      data: detailFields.map(([key, value]) => ({
+                        Field: key,
+                        Value: value,
+                      })),
+                    } as unknown as ResultData
+                  }
+                  flexColumns={["Field", "Value"]}
                   s3PathHandler={props.s3PathHandler}
-                  footer={props.fieldDescriptions.get(key) || "No Description."}
+                  footer="Table showing the top-level fields for the record."
                 />
               </Tab.Pane>
-            ))}
-          </Tab.Content>
-        </Col>
-      </Row>
-    </Tab.Container>
+              {relationFields.map(([key, value]) => (
+                <Tab.Pane key={key} eventKey={key} style={{ height: "100%" }}>
+                  <h5>{formatTitle(key)}</h5>
+                  <Table
+                    data={{ data: value } as ResultData}
+                    titles={props.fieldDescriptions}
+                    titlePrefix={key + "__"}
+                    s3PathHandler={props.s3PathHandler}
+                    footer={
+                      props.fieldDescriptions.get(key) || "No Description."
+                    }
+                  />
+                </Tab.Pane>
+              ))}
+            </Tab.Content>
+          </Col>
+        </Row>
+      </Tab.Container>
+    </QueryHandler>
   );
 }
 
@@ -284,30 +287,28 @@ function RecordHistory(props: RecordModalProps) {
     staleTime: 1 * 60 * 1000,
   });
 
-  return recordHistoryPending ? (
-    <DelayedLoadingAlert />
-  ) : recordHistoryError ? (
-    <Alert variant="danger">
-      Error: {(recordHistoryError as Error).message}
-    </Alert>
-  ) : recordHistory.messages ? (
-    <ErrorMessages messages={recordHistory.messages} />
-  ) : (
-    <>
-      <h5>History</h5>
-      <Table
-        data={{ data: recordHistory.data.history } as ResultData}
-        flexColumns={["changes"]}
-        formatTitles
-        footer="Table showing the complete change history for the record."
-        cellRenderers={
-          new Map([
-            ["action", ActionCellRenderer],
-            ["changes", ChangeCellRenderer],
-          ])
-        }
-      />
-    </>
+  return (
+    <QueryHandler
+      isFetching={recordHistoryPending}
+      error={recordHistoryError as Error}
+      data={recordHistory}
+    >
+      <>
+        <h5>History</h5>
+        <Table
+          data={{ data: recordHistory.data?.history } as ResultData}
+          flexColumns={["changes"]}
+          formatTitles
+          footer="Table showing the complete change history for the record."
+          cellRenderers={
+            new Map([
+              ["action", ActionCellRenderer],
+              ["changes", ChangeCellRenderer],
+            ])
+          }
+        />
+      </>
+    </QueryHandler>
   );
 }
 
@@ -318,19 +319,19 @@ function RecordModal(props: RecordModalProps) {
       contentClassName="onyx-modal-content"
       show={props.show}
       onHide={props.onHide}
-      aria-labelledby="contained-modal-title-vcenter"
+      aria-labelledby="record-modal-title"
       scrollable
       centered
     >
       <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
+        <Modal.Title id="record-modal-title">
           CLIMB ID: <span className="onyx-text-pink">{props.recordID}</span>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Tabs
           defaultActiveKey="record-data"
-          id="uncontrolled-tab-example"
+          id="record-modal-tabs"
           className="mb-3"
         >
           <Tab

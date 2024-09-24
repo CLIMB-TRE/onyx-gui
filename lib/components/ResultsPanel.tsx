@@ -1,13 +1,11 @@
 import { useState } from "react";
-import Alert from "react-bootstrap/Alert";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Toast from "react-bootstrap/Toast";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import Table from "./Table";
-import { DelayedLoadingAlert } from "./LoadingAlert";
-import ErrorMessages from "./ErrorMessages";
+import QueryHandler from "./QueryHandler";
 import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
 
@@ -100,13 +98,11 @@ function ResultsPanel(props: ResultsPanelProps) {
         </Toast>
       </Card.Header>
       <Container fluid className="onyx-results-panel-body p-2">
-        {props.resultPending ? (
-          <DelayedLoadingAlert />
-        ) : props.resultError ? (
-          <Alert variant="danger">Error: {props.resultError.message}</Alert>
-        ) : props.resultData.messages ? (
-          <ErrorMessages messages={props.resultData.messages} />
-        ) : (
+        <QueryHandler
+          isFetching={props.resultPending}
+          error={props.resultError}
+          data={props.resultData}
+        >
           <Table
             project={props.project}
             data={props.resultData || {}}
@@ -119,7 +115,7 @@ function ResultsPanel(props: ResultsPanelProps) {
               !(!props.resultData?.next && !props.resultData?.previous)
             }
           />
-        )}
+        </QueryHandler>
       </Container>
     </Card>
   );
