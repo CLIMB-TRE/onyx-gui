@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Plotly from "plotly.js-basic-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
@@ -18,7 +18,7 @@ interface BaseGraphProps {
   legendTitle?: string;
   layout?: Record<string, unknown>;
   darkMode: boolean;
-  uirevision: number;
+  uirevision: string;
 }
 
 interface GraphProps extends StatsProps {
@@ -113,34 +113,6 @@ const useGroupedSummaryQuery = (props: GroupedGraphProps) => {
   });
 };
 
-const useUIRevision = (field: string) => {
-  const [uirevision, setUIRevision] = useState(0);
-
-  useEffect(
-    () => {
-      setUIRevision((uirevision + 1) % 2);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [field]
-  );
-
-  return uirevision;
-};
-
-const useGroupedUIRevision = (field: string, groupBy: string) => {
-  const [uirevision, setUIRevision] = useState(0);
-
-  useEffect(
-    () => {
-      setUIRevision((uirevision + 1) % 2);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [field, groupBy]
-  );
-
-  return uirevision;
-};
-
 function getTitle(
   projectFields: Map<string, ProjectField>,
   field: string,
@@ -225,8 +197,6 @@ function BaseGraph(props: BaseGraphProps) {
 }
 
 function ScatterGraph(props: GraphProps) {
-  const uirevision = useUIRevision(props.field);
-
   const {
     data = {
       field_data: [],
@@ -248,14 +218,12 @@ function ScatterGraph(props: GraphProps) {
       title={getTitle(props.projectFields, props.field, data)}
       xTitle={props.field}
       yTitle="count"
-      uirevision={uirevision}
+      uirevision={props.field}
     />
   );
 }
 
 function BarGraph(props: GraphProps) {
-  const uirevision = useUIRevision(props.field);
-
   const {
     data = {
       field_data: [],
@@ -276,14 +244,12 @@ function BarGraph(props: GraphProps) {
       title={getTitle(props.projectFields, props.field, data)}
       xTitle={props.field}
       yTitle="count"
-      uirevision={uirevision}
+      uirevision={props.field}
     />
   );
 }
 
 function PieGraph(props: GraphProps) {
-  const uirevision = useUIRevision(props.field);
-
   const {
     data = {
       field_data: [],
@@ -304,14 +270,12 @@ function PieGraph(props: GraphProps) {
       ]}
       title={getTitle(props.projectFields, props.field, data)}
       legendTitle={props.field}
-      uirevision={uirevision}
+      uirevision={props.field}
     />
   );
 }
 
 function GroupedScatterGraph(props: GroupedGraphProps) {
-  const uirevision = useGroupedUIRevision(props.field, props.groupBy);
-
   const {
     data = new Map<string, { field_data: string[]; count_data: number[] }>(),
   } = useGroupedSummaryQuery(props);
@@ -341,14 +305,12 @@ function GroupedScatterGraph(props: GroupedGraphProps) {
       xTitle={props.field}
       yTitle="count"
       legendTitle={props.groupBy}
-      uirevision={uirevision}
+      uirevision={`${props.field}-${props.groupBy}`}
     />
   );
 }
 
 function GroupedBarGraph(props: GroupedGraphProps) {
-  const uirevision = useGroupedUIRevision(props.field, props.groupBy);
-
   const {
     data = new Map<string, { field_data: string[]; count_data: number[] }>(),
   } = useGroupedSummaryQuery(props);
@@ -390,7 +352,7 @@ function GroupedBarGraph(props: GroupedGraphProps) {
       yTitle={yTitle}
       legendTitle={props.groupBy}
       layout={layout}
-      uirevision={uirevision}
+      uirevision={`${props.field}-${props.groupBy}`}
     />
   );
 }
