@@ -76,7 +76,6 @@ function Table({
   const [pageNumber, setPageNumber] = useState(1);
   const [nextPage, setNextPage] = useState("");
   const [prevPage, setPrevPage] = useState("");
-  const [prevPageCount, setPrevPageCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const { isFetching: isCountLoading, data: countData = { count: 0 } } =
@@ -218,11 +217,15 @@ function Table({
     }
 
     const search = new URLSearchParams(searchParameters);
-    search.set("order", order);
-    search.set("page", "1");
 
-    if (httpPathHandler) {
+    if (order) {
+      search.set("order", order);
+      search.set("page", "1");
+    }
+
+    if (httpPathHandler && !loading) {
       setLoading(true);
+
       httpPathHandler(`projects/${project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((response) => {
@@ -235,34 +238,17 @@ function Table({
     }
   };
 
-  const handleNextPage = () => {
+  const handlePageChange = (url: string, page: number) => {
     if (httpPathHandler && !loading) {
-      setPrevPageCount(rowData.length);
       setLoading(true);
-      httpPathHandler(
-        `projects/${project}/?${nextPage?.split("?", 2)[1] || ""}`
-      )
-        .then((response) => response.json())
-        .then((response) => {
-          handleResultData(response);
-          setPageNumber(pageNumber + 1);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  };
+      const search = new URLSearchParams(url.split("?", 2)[1]);
+      search.set("page", page.toString());
 
-  const handlePreviousPage = () => {
-    if (httpPathHandler && !loading) {
-      setLoading(true);
-      httpPathHandler(
-        `projects/${project}/?${prevPage?.split("?", 2)[1] || ""}`
-      )
+      httpPathHandler(`projects/${project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((response) => {
           handleResultData(response);
-          setPageNumber(pageNumber - 1);
+          setPageNumber(page);
         })
         .finally(() => {
           setLoading(false);
@@ -275,9 +261,6 @@ function Table({
     gridOptions = {
       enableCellTextSelection: true,
       onSortChanged: handleSortColumn,
-      defaultColDef: {
-        sortable: false,
-      },
     };
   } else {
     gridOptions = {
@@ -288,9 +271,20 @@ function Table({
     };
   }
 
+  const serverDataMaxRows = 1000;
   const fromCount =
-    (pageNumber - 1) * prevPageCount + (rowData.length >= 1 ? 1 : 0);
-  const toCount = (pageNumber - 1) * prevPageCount + rowData.length;
+    (pageNumber - 1) * serverDataMaxRows + (rowData.length >= 1 ? 1 : 0);
+  const toCount = (pageNumber - 1) * serverDataMaxRows + rowData.length;
+  const countMessage = isCountLoading
+    ? "Loading..."
+    : `${fromCount} to ${toCount} of ${
+        isServerData ? countData.count : rowData.length
+      }`;
+  const pageMessage = isCountLoading
+    ? "Loading..."
+    : `Page ${pageNumber} of ${
+        isServerData ? Math.ceil(countData.count / serverDataMaxRows) : 1
+      }`;
 
   return (
     <Stack gap={2} style={containerStyle}>
@@ -302,6 +296,7 @@ function Table({
           tooltipHideDelay={5000}
           gridOptions={gridOptions}
           onGridReady={onGridReady}
+          suppressMultiSort={true}
           loading={loading}
         />
       </div>
@@ -311,25 +306,34 @@ function Table({
           <Container>
             <Stack direction="horizontal" gap={2}>
               <Pagination size="sm">
-                <Pagination.Item>
-                  {isCountLoading
-                    ? "Loading..."
-                    : `${fromCount} to ${toCount} of ${
-                        isServerData ? countData.count : rowData.length
-                      }`}
-                </Pagination.Item>
+                <Pagination.Item>{countMessage}</Pagination.Item>
               </Pagination>
               <Pagination size="sm">
+                <Pagination.First
+                  disabled={!prevPage}
+                  onClick={() => handlePageChange(prevPage, 1)}
+                />
                 <Pagination.Prev
                   disabled={!prevPage}
-                  onClick={handlePreviousPage}
+                  onClick={() => handlePageChange(prevPage, pageNumber - 1)}
                 />
                 <Pagination.Item
                   style={{ minWidth: "75px", textAlign: "center" }}
-                >{`Page ${pageNumber}`}</Pagination.Item>
+                >
+                  {pageMessage}
+                </Pagination.Item>
                 <Pagination.Next
                   disabled={!nextPage}
-                  onClick={handleNextPage}
+                  onClick={() => handlePageChange(nextPage, pageNumber + 1)}
+                />
+                <Pagination.Last
+                  disabled={!nextPage}
+                  onClick={() =>
+                    handlePageChange(
+                      nextPage,
+                      Math.ceil(countData.count / serverDataMaxRows)
+                    )
+                  }
                 />
               </Pagination>
             </Stack>
