@@ -321,6 +321,7 @@ function RecordHistory(props: RecordModalProps) {
 function RecordModal(props: RecordModalProps) {
   return (
     <Modal
+      className="onyx-modal"
       dialogClassName="onyx-modal-dialog"
       contentClassName="onyx-modal-content"
       show={props.show}

@@ -75,6 +75,10 @@
   --ag-font-family: monospace;
 }
 
+.onyx-modal {
+  font-size: var(--bs-body-font-size);
+}
+
 .onyx-modal-dialog {
   --bs-modal-width: 90vw;
 } 
