@@ -65,7 +65,12 @@ function Header(props: HeaderProps) {
   });
 
   return (
-    <Navbar bg="dark" variant="dark" collapseOnSelect expand="lg">
+    <Navbar
+      style={{ backgroundColor: "#16181a" }}
+      variant="dark"
+      collapseOnSelect
+      expand="lg"
+    >
       <Container fluid>
         <Navbar.Brand>⬗ Onyx</Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" />
