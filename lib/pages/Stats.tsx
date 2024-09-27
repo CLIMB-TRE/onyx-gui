@@ -75,7 +75,9 @@ function GraphPanelGraph(props: GraphPanelProps) {
       g = <PieGraph {...props} field={props.field} />;
       break;
     default:
-      g = <BaseGraph {...props} data={[]} title="Empty Graph" uirevision={0} />;
+      g = (
+        <BaseGraph {...props} data={[]} title="Empty Graph" uirevision={""} />
+      );
   }
   return g;
 }
