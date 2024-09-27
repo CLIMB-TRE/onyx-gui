@@ -37,10 +37,6 @@ function formatResultData(resultData: ResultData) {
   );
 }
 
-function formatTitle(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
 function urlToParams(url: string) {
   return url.split("?", 2)[1];
 }
@@ -49,32 +45,32 @@ function Table({
   project,
   data,
   searchParameters,
-  titles,
-  titlePrefix = "",
-  flexOnly,
+  headerNames,
+  headerTooltips,
+  headerTooltipPrefix = "",
   tooltipFields,
+  flexOnly,
+  isServerData = false,
+  footer = "",
+  cellRenderers,
   handleRecordModalShow,
   httpPathHandler,
   s3PathHandler,
-  isServerData = false,
-  footer = "",
-  formatTitles = false,
-  cellRenderers,
 }: {
   data: ResultData;
   project?: string;
   searchParameters?: string;
-  titles?: Map<string, string>;
-  titlePrefix?: string;
-  flexOnly?: string[];
+  headerNames?: Map<string, string>;
+  headerTooltips?: Map<string, string>;
+  headerTooltipPrefix?: string;
   tooltipFields?: string[];
+  flexOnly?: string[];
+  isServerData?: boolean;
+  footer?: string;
+  cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
   handleRecordModalShow?: (climbID: string) => void;
   httpPathHandler?: (path: string) => Promise<Response>;
   s3PathHandler?: (path: string) => void;
-  isServerData?: boolean;
-  footer?: string;
-  formatTitles?: boolean;
-  cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
 }) {
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
@@ -128,31 +124,29 @@ function Table({
     }
   };
 
+  const baseDefaultColDef = (key: string) => {
+    return {
+      field: key,
+      headerName: headerNames?.get(key) || key,
+      minWidth: 200,
+      headerTooltip: headerTooltips?.get(headerTooltipPrefix + key),
+      cellRenderer: defaultCellRenderer,
+    };
+  };
+
   let defaultColDef: (key: string) => ColDef;
 
   if (isServerData) {
     defaultColDef = (key: string) => {
       return {
-        headerName: formatTitles ? formatTitle(key) : key,
-        field: key,
-        minWidth: 200,
-        headerTooltip: titles?.get(titlePrefix + key),
-        cellRenderer: defaultCellRenderer,
+        ...baseDefaultColDef(key),
         comparator: () => {
           return 0;
         },
       };
     };
   } else {
-    defaultColDef = (key: string) => {
-      return {
-        headerName: formatTitles ? formatTitle(key) : key,
-        field: key,
-        minWidth: 200,
-        headerTooltip: titles?.get(titlePrefix + key),
-        cellRenderer: defaultCellRenderer,
-      };
-    };
+    defaultColDef = baseDefaultColDef;
   }
 
   const handleResultData = (data: ResultData) => {

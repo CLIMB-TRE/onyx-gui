@@ -182,8 +182,8 @@ function RecordData(props: RecordModalProps) {
                   <h5>{formatTitle(key)}</h5>
                   <Table
                     data={{ data: value } as ResultData}
-                    titles={props.fieldDescriptions}
-                    titlePrefix={key + "__"}
+                    headerTooltips={props.fieldDescriptions}
+                    headerTooltipPrefix={key + "__"}
                     s3PathHandler={props.s3PathHandler}
                     footer={
                       props.fieldDescriptions.get(key) || "No Description."
@@ -295,7 +295,14 @@ function RecordHistory(props: RecordModalProps) {
           data={{ data: recordHistory.data?.history } as ResultData}
           flexOnly={["changes"]}
           tooltipFields={["timestamp"]}
-          formatTitles
+          headerNames={
+            new Map([
+              ["username", "User"],
+              ["timestamp", "Date"],
+              ["action", "Action"],
+              ["changes", "Changes"],
+            ])
+          }
           footer="Table showing the complete change history for the record."
           cellRenderers={
             new Map([

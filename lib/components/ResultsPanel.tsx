@@ -107,7 +107,7 @@ function ResultsPanel(props: ResultsPanelProps) {
             project={props.project}
             data={props.resultData || {}}
             searchParameters={props.searchParameters}
-            titles={props.fieldDescriptions}
+            headerTooltips={props.fieldDescriptions}
             handleRecordModalShow={props.handleRecordModalShow}
             httpPathHandler={props.httpPathHandler}
             s3PathHandler={props.s3PathHandler}
