@@ -40,13 +40,17 @@ function formatTitle(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+function urlToParams(url: string) {
+  return url.split("?", 2)[1];
+}
+
 function Table({
   project,
   data,
   searchParameters,
   titles,
   titlePrefix = "",
-  flexColumns,
+  flexOnly,
   handleRecordModalShow,
   httpPathHandler,
   s3PathHandler,
@@ -60,7 +64,7 @@ function Table({
   searchParameters?: string;
   titles?: Map<string, string>;
   titlePrefix?: string;
-  flexColumns?: string[];
+  flexOnly?: string[];
   handleRecordModalShow?: (climbID: string) => void;
   httpPathHandler?: (path: string) => Promise<Response>;
   s3PathHandler?: (path: string) => void;
@@ -128,6 +132,7 @@ function Table({
       return {
         headerName: formatTitles ? formatTitle(key) : key,
         field: key,
+        minWidth: 200,
         headerTooltip: titles?.get(titlePrefix + key),
         cellRenderer: defaultCellRenderer,
         comparator: () => {
@@ -140,6 +145,7 @@ function Table({
       return {
         headerName: formatTitles ? formatTitle(key) : key,
         field: key,
+        minWidth: 200,
         headerTooltip: titles?.get(titlePrefix + key),
         cellRenderer: defaultCellRenderer,
       };
@@ -175,7 +181,7 @@ function Table({
               );
             },
           };
-        } else if (flexColumns && flexColumns.includes(key)) {
+        } else if (!flexOnly || (flexOnly && flexOnly.includes(key))) {
           return {
             ...defaultColDef(key),
             flex: 1,
@@ -220,28 +226,15 @@ function Table({
 
     if (order) {
       search.set("order", order);
-      search.set("page", "1");
     }
 
-    if (httpPathHandler && !loading) {
-      setLoading(true);
-
-      httpPathHandler(`projects/${project}/?${search.toString()}`)
-        .then((response) => response.json())
-        .then((response) => {
-          handleResultData(response);
-          setPageNumber(1);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
+    handlePageChange(search.toString(), 1);
   };
 
-  const handlePageChange = (url: string, page: number) => {
+  const handlePageChange = (params: string, page: number) => {
     if (httpPathHandler && !loading) {
       setLoading(true);
-      const search = new URLSearchParams(url.split("?", 2)[1]);
+      const search = new URLSearchParams(params);
       search.set("page", page.toString());
 
       httpPathHandler(`projects/${project}/?${search.toString()}`)
@@ -272,6 +265,7 @@ function Table({
   }
 
   const serverDataMaxRows = 1000;
+  const pageCount = Math.ceil(countData.count / serverDataMaxRows);
   const fromCount =
     (pageNumber - 1) * serverDataMaxRows + (rowData.length >= 1 ? 1 : 0);
   const toCount = (pageNumber - 1) * serverDataMaxRows + rowData.length;
@@ -282,9 +276,7 @@ function Table({
       }`;
   const pageMessage = isCountLoading
     ? "Loading..."
-    : `Page ${pageNumber} of ${
-        isServerData ? Math.ceil(countData.count / serverDataMaxRows) : 1
-      }`;
+    : `Page ${pageNumber} of ${isServerData ? pageCount : 1}`;
 
   return (
     <Stack gap={2} style={containerStyle}>
@@ -311,28 +303,29 @@ function Table({
               <Pagination size="sm">
                 <Pagination.First
                   disabled={!prevPage}
-                  onClick={() => handlePageChange(prevPage, 1)}
+                  onClick={() => handlePageChange(urlToParams(prevPage), 1)}
                 />
                 <Pagination.Prev
                   disabled={!prevPage}
-                  onClick={() => handlePageChange(prevPage, pageNumber - 1)}
+                  onClick={() =>
+                    handlePageChange(urlToParams(prevPage), pageNumber - 1)
+                  }
                 />
                 <Pagination.Item
-                  style={{ minWidth: "75px", textAlign: "center" }}
+                  style={{ minWidth: "100px", textAlign: "center" }}
                 >
                   {pageMessage}
                 </Pagination.Item>
                 <Pagination.Next
                   disabled={!nextPage}
-                  onClick={() => handlePageChange(nextPage, pageNumber + 1)}
+                  onClick={() =>
+                    handlePageChange(urlToParams(nextPage), pageNumber + 1)
+                  }
                 />
                 <Pagination.Last
                   disabled={!nextPage}
                   onClick={() =>
-                    handlePageChange(
-                      nextPage,
-                      Math.ceil(countData.count / serverDataMaxRows)
-                    )
+                    handlePageChange(urlToParams(nextPage), pageCount)
                   }
                 />
               </Pagination>

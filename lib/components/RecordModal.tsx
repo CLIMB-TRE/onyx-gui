@@ -173,7 +173,6 @@ function RecordData(props: RecordModalProps) {
                       })),
                     } as unknown as ResultData
                   }
-                  flexColumns={["Field", "Value"]}
                   s3PathHandler={props.s3PathHandler}
                   footer="Table showing the top-level fields for the record."
                 />
@@ -289,7 +288,7 @@ function RecordHistory(props: RecordModalProps) {
         <h5>History</h5>
         <Table
           data={{ data: recordHistory.data?.history } as ResultData}
-          flexColumns={["changes"]}
+          flexOnly={["changes"]}
           formatTitles
           footer="Table showing the complete change history for the record."
           cellRenderers={
