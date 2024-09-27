@@ -8,6 +8,7 @@ import {
   ColDef,
   SortChangedEvent,
   ModuleRegistry,
+  ITooltipParams,
 } from "@ag-grid-community/core";
 import { useQuery } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
@@ -51,6 +52,7 @@ function Table({
   titles,
   titlePrefix = "",
   flexOnly,
+  tooltipFields,
   handleRecordModalShow,
   httpPathHandler,
   s3PathHandler,
@@ -65,6 +67,7 @@ function Table({
   titles?: Map<string, string>;
   titlePrefix?: string;
   flexOnly?: string[];
+  tooltipFields?: string[];
   handleRecordModalShow?: (climbID: string) => void;
   httpPathHandler?: (path: string) => Promise<Response>;
   s3PathHandler?: (path: string) => void;
@@ -181,21 +184,21 @@ function Table({
               );
             },
           };
-        } else if (!flexOnly || (flexOnly && flexOnly.includes(key))) {
-          return {
-            ...defaultColDef(key),
-            flex: 1,
-            cellRenderer: cellRenderers?.get(key) || defaultCellRenderer,
-            autoHeight: cellRenderers?.get(key) ? true : false,
-            wrapText: cellRenderers?.get(key) ? true : false,
-          };
         } else {
-          return {
+          const colDef = {
             ...defaultColDef(key),
             cellRenderer: cellRenderers?.get(key) || defaultCellRenderer,
             autoHeight: cellRenderers?.get(key) ? true : false,
             wrapText: cellRenderers?.get(key) ? true : false,
+            tooltipValueGetter: tooltipFields?.includes(key)
+              ? (p: ITooltipParams) => p.value.toString()
+              : undefined,
           };
+
+          if (!flexOnly || flexOnly.includes(key)) {
+            colDef.flex = 1;
+          }
+          return colDef;
         }
       });
     } else {

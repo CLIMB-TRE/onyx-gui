@@ -199,6 +199,11 @@ function RecordData(props: RecordModalProps) {
   );
 }
 
+function TimestampCellRenderer(props: CustomCellRendererProps) {
+  const date = new Date(props.value.toString());
+  return <span>{date.toDateString()}</span>;
+}
+
 function ActionCellRenderer(props: CustomCellRendererProps) {
   const action = props.value.toString().toLowerCase();
 
@@ -289,11 +294,14 @@ function RecordHistory(props: RecordModalProps) {
         <Table
           data={{ data: recordHistory.data?.history } as ResultData}
           flexOnly={["changes"]}
+          tooltipFields={["timestamp"]}
           formatTitles
           footer="Table showing the complete change history for the record."
           cellRenderers={
             new Map([
+              ["timestamp", TimestampCellRenderer],
               ["action", ActionCellRenderer],
+
               ["changes", ChangeCellRenderer],
             ])
           }
