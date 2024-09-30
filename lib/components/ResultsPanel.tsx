@@ -97,7 +97,7 @@ function ResultsPanel(props: ResultsPanelProps) {
           </Toast.Body>
         </Toast>
       </Card.Header>
-      <Container fluid className="onyx-results-panel-body p-2">
+      <Container fluid className="onyx-results-panel-body p-2 pb-0">
         <QueryHandler
           isFetching={props.resultPending}
           error={props.resultError}

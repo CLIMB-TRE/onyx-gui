@@ -56,11 +56,11 @@
 }
 
 .onyx-results-panel-body {
-  height: 53vh;
+  height: 52.4vh;
 }
 
 .onyx-graphs-panel-body {
-  height: 78.6vh;
+  height: 78vh;
   overflow-y : scroll;
 }
 
