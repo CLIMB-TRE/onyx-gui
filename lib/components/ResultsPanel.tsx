@@ -5,6 +5,7 @@ import Card from "react-bootstrap/Card";
 import Toast from "react-bootstrap/Toast";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import Table from "./Table";
+import { ServerPaginatedTable } from "./Table";
 import QueryHandler from "./QueryHandler";
 import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
@@ -103,18 +104,24 @@ function ResultsPanel(props: ResultsPanelProps) {
           error={props.resultError}
           data={props.resultData}
         >
-          <Table
-            project={props.project}
-            data={props.resultData || {}}
-            searchParameters={props.searchParameters}
-            headerTooltips={props.fieldDescriptions}
-            handleRecordModalShow={props.handleRecordModalShow}
-            httpPathHandler={props.httpPathHandler}
-            s3PathHandler={props.s3PathHandler}
-            isServerData={
-              !(!props.resultData?.next && !props.resultData?.previous)
-            }
-          />
+          {props.searchParameters.includes("summarise=") ? (
+            <Table
+              data={props.resultData || {}}
+              headerTooltips={props.fieldDescriptions}
+              handleRecordModalShow={props.handleRecordModalShow}
+              s3PathHandler={props.s3PathHandler}
+            />
+          ) : (
+            <ServerPaginatedTable
+              project={props.project}
+              data={props.resultData || {}}
+              searchParameters={props.searchParameters}
+              headerTooltips={props.fieldDescriptions}
+              handleRecordModalShow={props.handleRecordModalShow}
+              httpPathHandler={props.httpPathHandler}
+              s3PathHandler={props.s3PathHandler}
+            />
+          )}
         </QueryHandler>
       </Container>
     </Card>
