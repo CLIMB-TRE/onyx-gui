@@ -85,9 +85,9 @@ function RecordData(props: RecordModalProps) {
     ([key]) => props.projectFields.get(key)?.type !== "relation"
   );
 
-  const relationFields = Object.entries(recordData.data).filter(
-    ([key]) => props.projectFields.get(key)?.type === "relation"
-  );
+  const relationFields = Object.entries(recordData.data)
+    .filter(([key]) => props.projectFields.get(key)?.type === "relation")
+    .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1));
 
   return (
     <QueryHandler
