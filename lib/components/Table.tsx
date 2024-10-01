@@ -234,8 +234,8 @@ function ServerPaginatedTable({
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
   const [userPageNumber, setUserPageNumber] = useState(1);
   const [serverPageNumber, setServerPageNumber] = useState(1);
-  const [nextPage, setNextPage] = useState("");
-  const [prevPage, setPrevPage] = useState("");
+  const [prevParams, setPrevParams] = useState("");
+  const [nextParams, setNextParams] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { isFetching: isCountLoading, data: countData = { count: 0 } } =
@@ -292,10 +292,8 @@ function ServerPaginatedTable({
   const fromCount =
     (userPageNumber - 1) * userPageMaxRows + (rowData.length >= 1 ? 1 : 0);
   const toCount = (userPageNumber - 1) * userPageMaxRows + rowData.length;
-  const nextParams = nextPage.split("?", 2)[1];
-  const prevParams = prevPage.split("?", 2)[1];
-  const noPrevPage = !prevPage && userPageNumber <= 1;
-  const noNextPage = !nextPage && userPageNumber >= numUserPages;
+  const prevPage = prevParams || userPageNumber > 1;
+  const nextPage = nextParams || userPageNumber < numUserPages;
 
   const getRowData = (resultData: ResultType[], resultsPage: number) => {
     return resultData.slice(
@@ -307,7 +305,7 @@ function ServerPaginatedTable({
   const getPageNumbers = (userPage: number) => {
     return {
       resultsPage: userPage % numResultsPages || numResultsPages,
-      serverPage: Math.ceil((userPage * userPageMaxRows) / 1000),
+      serverPage: Math.ceil((userPage * userPageMaxRows) / resultsPageMaxRows),
     };
   };
 
@@ -315,8 +313,8 @@ function ServerPaginatedTable({
     const formattedResultData = formatResultData(resultData);
     setResultData(formattedResultData);
     setRowData(getRowData(formattedResultData, resultsPage));
-    setNextPage(resultData.next || "");
-    setPrevPage(resultData.previous || "");
+    setPrevParams(resultData.previous?.split("?", 2)[1] || "");
+    setNextParams(resultData.next?.split("?", 2)[1] || "");
   };
 
   const handleSortColumn = (event: SortChangedEvent) => {
@@ -444,11 +442,11 @@ function ServerPaginatedTable({
               </Pagination>
               <Pagination size="sm">
                 <Pagination.First
-                  disabled={noPrevPage}
+                  disabled={!prevPage}
                   onClick={() => handleUserPageChange(prevParams, 1)}
                 />
                 <Pagination.Prev
-                  disabled={noPrevPage}
+                  disabled={!prevPage}
                   onClick={() =>
                     handleUserPageChange(prevParams, userPageNumber - 1)
                   }
@@ -461,13 +459,13 @@ function ServerPaginatedTable({
                     : `Page ${userPageNumber} of ${numUserPages}`}
                 </Pagination.Item>
                 <Pagination.Next
-                  disabled={noNextPage}
+                  disabled={!nextPage}
                   onClick={() =>
                     handleUserPageChange(nextParams, userPageNumber + 1)
                   }
                 />
                 <Pagination.Last
-                  disabled={noNextPage}
+                  disabled={!nextPage}
                   onClick={() => handleUserPageChange(nextParams, numUserPages)}
                 />
               </Pagination>
