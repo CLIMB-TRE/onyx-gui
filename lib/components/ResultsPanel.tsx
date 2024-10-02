@@ -42,6 +42,29 @@ function formatResultData(resultData: ResultData) {
   );
 }
 
+// async function getAllResultData(
+//   project: string,
+//   resultData: ResultData,
+//   httpPathHandler: (path: string) => Promise<Response>
+// ) {
+//   const allResultData = formatResultData(resultData);
+//   let nextParams = resultData.next?.split("?", 2)[1] || "";
+
+//   while (nextParams) {
+//     const search = new URLSearchParams(nextParams);
+//     const data = httpPathHandler(
+//       `projects/${project}/?${search.toString()}`
+//     ).then((response) => response.json());
+
+//     await data.then((result) => {
+//       allResultData.concat(formatResultData(result));
+//       nextParams = result.next?.split("?", 2)[1] || "";
+//     });
+//   }
+
+//   return allResultData;
+// }
+
 function ResultsPanel(props: ResultsPanelProps) {
   const [showExportToast, setShowExportToast] = useState(false);
 
@@ -73,7 +96,7 @@ function ResultsPanel(props: ResultsPanelProps) {
           className="float-end"
           size="sm"
           disabled={!props.fileWriter}
-          variant="success"
+          variant="dark"
           onClick={handleExportToCSV}
         >
           Export Page to CSV
