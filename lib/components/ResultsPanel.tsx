@@ -129,20 +129,18 @@ function ResultsPanel(props: ResultsPanelProps) {
         >
           {props.searchParameters.includes("summarise=") ? (
             <Table
+              {...props}
               data={props.resultData || {}}
               headerTooltips={props.fieldDescriptions}
               handleRecordModalShow={props.handleRecordModalShow}
-              s3PathHandler={props.s3PathHandler}
             />
           ) : (
             <ServerPaginatedTable
-              project={props.project}
-              data={props.resultData || {}}
+              {...props}
               searchParameters={props.searchParameters}
+              data={props.resultData || {}}
               headerTooltips={props.fieldDescriptions}
               handleRecordModalShow={props.handleRecordModalShow}
-              httpPathHandler={props.httpPathHandler}
-              s3PathHandler={props.s3PathHandler}
             />
           )}
         </QueryHandler>

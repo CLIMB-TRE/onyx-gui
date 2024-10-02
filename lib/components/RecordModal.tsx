@@ -165,6 +165,7 @@ function RecordData(props: RecordModalProps) {
               >
                 <h5>Details</h5>
                 <Table
+                  {...props}
                   data={
                     {
                       data: detailFields.map(([key, value]) => ({
@@ -173,7 +174,6 @@ function RecordData(props: RecordModalProps) {
                       })),
                     } as unknown as ResultData
                   }
-                  s3PathHandler={props.s3PathHandler}
                   footer="Table showing the top-level fields for the record."
                 />
               </Tab.Pane>
@@ -181,10 +181,10 @@ function RecordData(props: RecordModalProps) {
                 <Tab.Pane key={key} eventKey={key} style={{ height: "100%" }}>
                   <h5>{formatTitle(key)}</h5>
                   <Table
+                    {...props}
                     data={{ data: value } as ResultData}
                     headerTooltips={props.fieldDescriptions}
                     headerTooltipPrefix={key + "__"}
-                    s3PathHandler={props.s3PathHandler}
                     footer={
                       props.fieldDescriptions.get(key) || "No Description."
                     }
@@ -292,6 +292,7 @@ function RecordHistory(props: RecordModalProps) {
       <>
         <h5>History</h5>
         <Table
+          {...props}
           data={{ data: recordHistory.data?.history } as ResultData}
           flexOnly={["changes"]}
           tooltipFields={["timestamp"]}

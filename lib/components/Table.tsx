@@ -15,6 +15,7 @@ import Container from "react-bootstrap/Container";
 import Pagination from "react-bootstrap/Pagination";
 import Stack from "react-bootstrap/Stack";
 import { ResultData, ResultType } from "../types";
+import { DataProps } from "../interfaces";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -37,18 +38,7 @@ function formatResultData(resultData: ResultData) {
   );
 }
 
-function Table({
-  data,
-  headerNames,
-  headerTooltips,
-  headerTooltipPrefix = "",
-  tooltipFields,
-  flexOnly,
-  footer = "",
-  cellRenderers,
-  handleRecordModalShow,
-  s3PathHandler,
-}: {
+interface TableProps extends DataProps {
   data: ResultData;
   headerNames?: Map<string, string>;
   headerTooltips?: Map<string, string>;
@@ -58,8 +48,13 @@ function Table({
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
   handleRecordModalShow?: (climbID: string) => void;
-  s3PathHandler?: (path: string) => void;
-}) {
+}
+
+interface ServerPaginatedTableProps extends TableProps {
+  searchParameters: string;
+}
+
+function Table(props: TableProps) {
   const gridRef = useRef<AgGridReact<ResultType>>(null);
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
@@ -68,7 +63,7 @@ function Table({
 
   const defaultCellRenderer = (params: CustomCellRendererProps) => {
     if (
-      s3PathHandler &&
+      props.s3PathHandler &&
       typeof params.value === "string" &&
       params.value.startsWith("s3://") &&
       params.value.endsWith(".html")
@@ -77,7 +72,9 @@ function Table({
         <Button
           size="sm"
           variant="link"
-          onClick={() => s3PathHandler(params.value)}
+          onClick={() =>
+            props.s3PathHandler && props.s3PathHandler(params.value)
+          }
         >
           {params.value}
         </Button>
@@ -90,9 +87,9 @@ function Table({
   const defaultColDef = (key: string) => {
     return {
       field: key,
-      headerName: headerNames?.get(key) || key,
+      headerName: props.headerNames?.get(key) || key,
       minWidth: 200,
-      headerTooltip: headerTooltips?.get(headerTooltipPrefix + key),
+      headerTooltip: props.headerTooltips?.get(props.headerTooltipPrefix + key),
       cellRenderer: defaultCellRenderer,
     } as ColDef;
   };
@@ -100,9 +97,9 @@ function Table({
   const onGridReady = useCallback(() => {
     let colDefs: ColDef[];
 
-    if (data.data && data.data.length > 0) {
-      colDefs = Object.keys(data.data[0]).map((key) => {
-        if (handleRecordModalShow && key === "climb_id") {
+    if (props.data.data && props.data.data.length > 0) {
+      colDefs = Object.keys(props.data.data[0]).map((key) => {
+        if (props.handleRecordModalShow && key === "climb_id") {
           return {
             ...defaultColDef(key),
             pinned: "left",
@@ -111,7 +108,11 @@ function Table({
                 <Button
                   size="sm"
                   variant="link"
-                  onClick={() => handleRecordModalShow(params.value)}
+                  onClick={() =>
+                    props.handleRecordModalShow
+                      ? props.handleRecordModalShow(params.value)
+                      : null
+                  }
                 >
                   {params.value}
                 </Button>
@@ -121,18 +122,18 @@ function Table({
         } else {
           const colDef = defaultColDef(key);
 
-          if (cellRenderers?.get(key)) {
-            colDef.cellRenderer = cellRenderers.get(key);
+          if (props.cellRenderers?.get(key)) {
+            colDef.cellRenderer = props.cellRenderers.get(key);
             colDef.autoHeight = true;
             colDef.wrapText = true;
           }
 
-          if (tooltipFields?.includes(key)) {
+          if (props.tooltipFields?.includes(key)) {
             colDef.tooltipValueGetter = (p: ITooltipParams) =>
               p.value.toString();
           }
 
-          if (!flexOnly || flexOnly.includes(key)) {
+          if (!props.flexOnly || props.flexOnly.includes(key)) {
             colDef.flex = 1;
           }
           return colDef;
@@ -141,7 +142,7 @@ function Table({
     } else {
       colDefs = [];
     }
-    setRowData(formatResultData(data));
+    setRowData(formatResultData(props.data));
     setColumnDefs(colDefs);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -174,7 +175,7 @@ function Table({
         />
       </div>
       <div>
-        <i className="text-secondary">{footer}</i>
+        <i className="text-secondary">{props.footer}</i>
         <div style={{ float: "right" }}>
           <Container>
             <Stack direction="horizontal" gap={2}>
@@ -198,35 +199,7 @@ function Table({
   );
 }
 
-function ServerPaginatedTable({
-  data,
-  project,
-  searchParameters,
-  headerNames,
-  headerTooltips,
-  headerTooltipPrefix = "",
-  tooltipFields,
-  flexOnly,
-  footer = "",
-  cellRenderers,
-  handleRecordModalShow,
-  httpPathHandler,
-  s3PathHandler,
-}: {
-  data: ResultData;
-  project: string;
-  searchParameters: string;
-  headerNames?: Map<string, string>;
-  headerTooltips?: Map<string, string>;
-  headerTooltipPrefix?: string;
-  tooltipFields?: string[];
-  flexOnly?: string[];
-  footer?: string;
-  cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
-  handleRecordModalShow: (climbID: string) => void;
-  httpPathHandler: (path: string) => Promise<Response>;
-  s3PathHandler?: (path: string) => void;
-}) {
+function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
   const [resultData, setResultData] = useState<ResultType[]>([]);
@@ -240,22 +213,23 @@ function ServerPaginatedTable({
 
   const { isFetching: isCountLoading, data: countData = { count: 0 } } =
     useQuery({
-      queryKey: ["count", project, searchParameters],
+      queryKey: ["count", props.project, props.searchParameters],
       queryFn: async () => {
-        const search = new URLSearchParams(searchParameters).toString();
-        return httpPathHandler(`projects/${project}/count/?${search}`)
+        const search = new URLSearchParams(props.searchParameters).toString();
+        return props
+          .httpPathHandler(`projects/${props.project}/count/?${search}`)
           .then((response) => response.json())
           .then((data) => {
             return { count: data.data.count };
           });
       },
-      enabled: !!project,
+      enabled: !!props.project,
       cacheTime: 0.5 * 60 * 1000,
     });
 
   const defaultCellRenderer = (params: CustomCellRendererProps) => {
     if (
-      s3PathHandler &&
+      props.s3PathHandler &&
       typeof params.value === "string" &&
       params.value.startsWith("s3://") &&
       params.value.endsWith(".html")
@@ -264,7 +238,9 @@ function ServerPaginatedTable({
         <Button
           size="sm"
           variant="link"
-          onClick={() => s3PathHandler(params.value)}
+          onClick={() =>
+            props.s3PathHandler && props.s3PathHandler(params.value)
+          }
         >
           {params.value}
         </Button>
@@ -277,9 +253,9 @@ function ServerPaginatedTable({
   const defaultColDef = (key: string) => {
     return {
       field: key,
-      headerName: headerNames?.get(key) || key,
+      headerName: props.headerNames?.get(key) || key,
       minWidth: 200,
-      headerTooltip: headerTooltips?.get(headerTooltipPrefix + key),
+      headerTooltip: props.headerTooltips?.get(props.headerTooltipPrefix + key),
       cellRenderer: defaultCellRenderer,
       comparator: () => 0,
     } as ColDef;
@@ -318,7 +294,7 @@ function ServerPaginatedTable({
   };
 
   const handleSortColumn = (event: SortChangedEvent) => {
-    const search = new URLSearchParams(searchParameters);
+    const search = new URLSearchParams(props.searchParameters);
 
     if (event.columns && event.columns.length > 0) {
       const field = event.columns[event.columns.length - 1].getId();
@@ -349,7 +325,8 @@ function ServerPaginatedTable({
       search.set("page", serverPage.toString());
       search.delete("cursor");
 
-      httpPathHandler(`projects/${project}/?${search.toString()}`)
+      props
+        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((response) => handleResultData(response, resultsPage))
         .finally(() => setLoading(false));
@@ -361,9 +338,9 @@ function ServerPaginatedTable({
   const onGridReady = useCallback(() => {
     let colDefs: ColDef[];
 
-    if (data.data && data.data.length > 0) {
-      colDefs = Object.keys(data.data[0]).map((key) => {
-        if (key === "climb_id") {
+    if (props.data.data && props.data.data.length > 0) {
+      colDefs = Object.keys(props.data.data[0]).map((key) => {
+        if (props.handleRecordModalShow && key === "climb_id") {
           return {
             ...defaultColDef(key),
             pinned: "left",
@@ -372,7 +349,10 @@ function ServerPaginatedTable({
                 <Button
                   size="sm"
                   variant="link"
-                  onClick={() => handleRecordModalShow(params.value)}
+                  onClick={() =>
+                    props.handleRecordModalShow &&
+                    props.handleRecordModalShow(params.value)
+                  }
                 >
                   {params.value}
                 </Button>
@@ -382,18 +362,18 @@ function ServerPaginatedTable({
         } else {
           const colDef = defaultColDef(key);
 
-          if (cellRenderers?.get(key)) {
-            colDef.cellRenderer = cellRenderers.get(key);
+          if (props.cellRenderers?.get(key)) {
+            colDef.cellRenderer = props.cellRenderers.get(key);
             colDef.autoHeight = true;
             colDef.wrapText = true;
           }
 
-          if (tooltipFields?.includes(key)) {
+          if (props.tooltipFields?.includes(key)) {
             colDef.tooltipValueGetter = (p: ITooltipParams) =>
               p.value.toString();
           }
 
-          if (!flexOnly || flexOnly.includes(key)) {
+          if (!props.flexOnly || props.flexOnly.includes(key)) {
             colDef.flex = 1;
           }
           return colDef;
@@ -402,7 +382,7 @@ function ServerPaginatedTable({
     } else {
       colDefs = [];
     }
-    handleResultData(data, 1);
+    handleResultData(props.data, 1);
     setColumnDefs(colDefs);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -429,7 +409,7 @@ function ServerPaginatedTable({
         />
       </div>
       <div>
-        <i className="text-secondary">{footer}</i>
+        <i className="text-secondary">{props.footer}</i>
         <div style={{ float: "right" }}>
           <Container>
             <Stack direction="horizontal" gap={2}>
