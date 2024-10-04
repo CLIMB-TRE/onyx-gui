@@ -17,11 +17,34 @@ import Pagination from "react-bootstrap/Pagination";
 import Toast from "react-bootstrap/Toast";
 import ToastContainer from "react-bootstrap/ToastContainer";
 import Stack from "react-bootstrap/Stack";
+import Dropdown from "react-bootstrap/Dropdown";
+import DropdownButton from "react-bootstrap/DropdownButton";
+import DropdownDivider from "react-bootstrap/DropdownDivider";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
+
+interface TablePaginationProps {
+  isPaginated: boolean;
+  paginationParams: {
+    pageCountMessage: string;
+    pageNumber: number;
+    numPages: number;
+    prevPage: boolean;
+    nextPage: boolean;
+    prevParams: string;
+    nextParams: string;
+    handleUserPageChange: (params: string, userPage: number) => void;
+  };
+}
+
+interface TableOptionsProps extends DataProps {
+  gridRef: React.RefObject<AgGridReact<Record<string, string | number>>>;
+  isFilterable: boolean;
+  handleExportToCSV: () => void;
+}
 
 interface BaseTableProps extends DataProps {
   rowData: Record<string, string | number>[];
@@ -101,6 +124,114 @@ function formatResultData(resultData: ResultData) {
 //   );
 // }
 
+function TablePagination(props: TablePaginationProps) {
+  return (
+    <Pagination size="sm">
+      <Pagination.First
+        disabled={!(props.isPaginated && props.paginationParams.prevPage)}
+        onClick={() =>
+          props.paginationParams.handleUserPageChange(
+            props.paginationParams.prevParams,
+            1
+          )
+        }
+      />
+      <Pagination.Prev
+        disabled={!(props.isPaginated && props.paginationParams.prevPage)}
+        onClick={() =>
+          props.paginationParams.handleUserPageChange(
+            props.paginationParams.prevParams,
+            props.paginationParams.pageNumber - 1
+          )
+        }
+      />
+      <Pagination.Item
+        disabled={!props.isPaginated}
+        style={{ minWidth: "125px", textAlign: "center" }}
+      >
+        {props.paginationParams.pageCountMessage}
+      </Pagination.Item>
+      <Pagination.Next
+        disabled={!(props.isPaginated && props.paginationParams.nextPage)}
+        onClick={() =>
+          props.paginationParams.handleUserPageChange(
+            props.paginationParams.nextParams,
+            props.paginationParams.pageNumber + 1
+          )
+        }
+      />
+      <Pagination.Last
+        disabled={!(props.isPaginated && props.paginationParams.nextPage)}
+        onClick={() =>
+          props.paginationParams.handleUserPageChange(
+            props.paginationParams.nextParams,
+            props.paginationParams.numPages
+          )
+        }
+      />
+    </Pagination>
+  );
+}
+
+function TableOptions(props: TableOptionsProps) {
+  const resetColumns = useCallback(() => {
+    props.gridRef.current?.api.resetColumnState();
+    props.gridRef.current?.api.sizeColumnsToFit();
+  }, [props.gridRef]);
+
+  const unpinAllColumns = useCallback(
+    () =>
+      props.gridRef.current?.api.setColumnsPinned(
+        props.gridRef.current?.api.getColumns()?.map((col) => col.getId()) ||
+          [],
+        null
+      ),
+    [props.gridRef]
+  );
+
+  const clearTableFilters = useCallback(
+    () => props.gridRef.current!.api.setFilterModel(null),
+    [props.gridRef]
+  );
+
+  return (
+    <Pagination size="sm">
+      <DropdownButton
+        id="table-options"
+        title="Options"
+        size="sm"
+        variant="dark"
+      >
+        <Dropdown.Header>Column Controls</Dropdown.Header>
+        <Dropdown.Item key="resetAll" onClick={resetColumns}>
+          Reset Columns
+        </Dropdown.Item>
+        <Dropdown.Item key="unpinAll" onClick={unpinAllColumns}>
+          Unpin All Columns
+        </Dropdown.Item>
+        <DropdownDivider />
+        <Dropdown.Header>Filter Controls</Dropdown.Header>
+        <Dropdown.Item
+          key="clearFilters"
+          disabled={!props.isFilterable}
+          onClick={clearTableFilters}
+        >
+          Clear Table Filters
+        </Dropdown.Item>
+        <DropdownDivider />
+        <Dropdown.Header>Export Data</Dropdown.Header>
+        <Dropdown.Item
+          key="exportToCSV"
+          disabled={!props.fileWriter}
+          onClick={props.handleExportToCSV}
+        >
+          Export to CSV
+        </Dropdown.Item>
+      </DropdownButton>
+    </Pagination>
+  );
+}
+
 function BaseTable(props: BaseTableProps) {
   const gridRef = useRef<AgGridReact<Record<string, string | number>>>(null);
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
@@ -129,10 +260,6 @@ function BaseTable(props: BaseTableProps) {
     setToastMessage(message);
     setToastVisible(true);
   };
-
-  const clearTableFilters = useCallback(() => {
-    gridRef.current!.api.setFilterModel(null);
-  }, []);
 
   return (
     <Stack gap={2} style={containerStyle}>
@@ -188,68 +315,13 @@ function BaseTable(props: BaseTableProps) {
               <Pagination size="sm">
                 <Pagination.Item>{props.rowCountMessage}</Pagination.Item>
               </Pagination>
-              {props.isPaginated && (
-                <Pagination size="sm">
-                  <Pagination.First
-                    disabled={!props.paginationParams.prevPage}
-                    onClick={() =>
-                      props.paginationParams.handleUserPageChange(
-                        props.paginationParams.prevParams,
-                        1
-                      )
-                    }
-                  />
-                  <Pagination.Prev
-                    disabled={!props.paginationParams.prevPage}
-                    onClick={() =>
-                      props.paginationParams.handleUserPageChange(
-                        props.paginationParams.prevParams,
-                        props.paginationParams.pageNumber - 1
-                      )
-                    }
-                  />
-                  <Pagination.Item
-                    style={{ minWidth: "150px", textAlign: "center" }}
-                  >
-                    {props.paginationParams.pageCountMessage}
-                  </Pagination.Item>
-                  <Pagination.Next
-                    disabled={!props.paginationParams.nextPage}
-                    onClick={() =>
-                      props.paginationParams.handleUserPageChange(
-                        props.paginationParams.nextParams,
-                        props.paginationParams.pageNumber + 1
-                      )
-                    }
-                  />
-                  <Pagination.Last
-                    disabled={!props.paginationParams.nextPage}
-                    onClick={() =>
-                      props.paginationParams.handleUserPageChange(
-                        props.paginationParams.nextParams,
-                        props.paginationParams.numPages
-                      )
-                    }
-                  />
-                </Pagination>
-              )}
-              {props.isFilterable && (
-                <Pagination size="sm">
-                  <Button size="sm" variant="dark" onClick={clearTableFilters}>
-                    Clear Filters
-                  </Button>
-                </Pagination>
-              )}
-              <Pagination size="sm">
-                <Button
-                  size="sm"
-                  disabled={!props.fileWriter}
-                  variant="dark"
-                  onClick={handleExportToCSV}
-                >
-                  Export to CSV
-                </Button>
-              </Pagination>
+              <TablePagination {...props} />
+              <TableOptions
+                {...props}
+                gridRef={gridRef}
+                isFilterable={props.isFilterable}
+                handleExportToCSV={handleExportToCSV}
+              />
             </Stack>
           </Container>
         </div>
@@ -363,7 +435,7 @@ function Table(props: TableProps) {
       paginationParams={{
         pageNumber: 1,
         numPages: 1,
-        pageCountMessage: "",
+        pageCountMessage: "Page 1 of 1",
         prevPage: false,
         nextPage: false,
         prevParams: "",
