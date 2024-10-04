@@ -385,22 +385,36 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const [prevParams, setPrevParams] = useState("");
   const [nextParams, setNextParams] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fromCount, setFromCount] = useState(0);
+  const [toCount, setToCount] = useState(0);
 
-  const { isFetching: isCountLoading, data: countData = { count: 0 } } =
-    useQuery({
-      queryKey: ["count", props.project, props.searchParameters],
-      queryFn: async () => {
-        const search = new URLSearchParams(props.searchParameters).toString();
-        return props
-          .httpPathHandler(`projects/${props.project}/count/?${search}`)
-          .then((response) => response.json())
-          .then((data) => {
-            return { count: data.data.count };
-          });
-      },
-      enabled: !!props.project,
-      cacheTime: 0.5 * 60 * 1000,
-    });
+  const userPageMaxRows = 50;
+  const resultsPageMaxRows = 1000;
+  const numResultsPages = resultsPageMaxRows / userPageMaxRows;
+
+  const {
+    isFetching: isCountLoading,
+    data: countData = { count: 0, numPages: 0 },
+  } = useQuery({
+    queryKey: ["count", props.project, props.searchParameters],
+    queryFn: async () => {
+      const search = new URLSearchParams(props.searchParameters).toString();
+      return props
+        .httpPathHandler(`projects/${props.project}/count/?${search}`)
+        .then((response) => response.json())
+        .then((data) => {
+          return {
+            count: data.data.count,
+            numPages: Math.ceil(data.data.count / userPageMaxRows),
+          };
+        });
+    },
+    enabled: !!props.project,
+    cacheTime: 0.5 * 60 * 1000,
+  });
+
+  const prevPage = !!(prevParams || userPageNumber > 1);
+  const nextPage = !!(nextParams || userPageNumber < countData.numPages);
 
   const defaultCellRenderer = (params: CustomCellRendererProps) => {
     if (
@@ -436,16 +450,6 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     } as ColDef;
   };
 
-  const userPageMaxRows = 50;
-  const resultsPageMaxRows = 1000;
-  const numUserPages = Math.ceil(countData.count / userPageMaxRows);
-  const numResultsPages = resultsPageMaxRows / userPageMaxRows;
-  const fromCount =
-    (userPageNumber - 1) * userPageMaxRows + (rowData.length >= 1 ? 1 : 0);
-  const toCount = (userPageNumber - 1) * userPageMaxRows + rowData.length;
-  const prevPage = !!(prevParams || userPageNumber > 1);
-  const nextPage = !!(nextParams || userPageNumber < numUserPages);
-
   const getRowData = (
     resultData: Record<string, string | number>[],
     resultsPage: number
@@ -463,10 +467,25 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     };
   };
 
-  const handleResultData = (resultData: ResultData, resultsPage: number) => {
+  const handleRowData = (
+    rowData: Record<string, string | number>[],
+    userPage: number
+  ) => {
+    setRowData(rowData);
+    setFromCount(
+      (userPage - 1) * userPageMaxRows + (rowData.length >= 1 ? 1 : 0)
+    );
+    setToCount((userPage - 1) * userPageMaxRows + rowData.length);
+  };
+
+  const handleResultData = (
+    resultData: ResultData,
+    resultsPage: number,
+    userPage: number
+  ) => {
     const formattedResultData = formatResultData(resultData);
     setResultData(formattedResultData);
-    setRowData(getRowData(formattedResultData, resultsPage));
+    handleRowData(getRowData(formattedResultData, resultsPage), userPage);
     setPrevParams(resultData.previous?.split("?", 2)[1] || "");
     setNextParams(resultData.next?.split("?", 2)[1] || "");
   };
@@ -506,10 +525,10 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       props
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
-        .then((response) => handleResultData(response, resultsPage))
+        .then((response) => handleResultData(response, resultsPage, userPage))
         .finally(() => setLoading(false));
     } else {
-      setRowData(getRowData(resultData, resultsPage));
+      handleRowData(getRowData(resultData, resultsPage), userPage);
     }
   };
 
@@ -560,7 +579,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     } else {
       colDefs = [];
     }
-    handleResultData(props.data, 1);
+    handleResultData(props.data, 1, 1);
     setColumnDefs(colDefs);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -574,7 +593,11 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
         onSortChanged: handleSortColumn,
       }}
       onGridReady={onGridReady}
-      rowCountMessage={`${fromCount} to ${toCount} of ${countData.count}`}
+      rowCountMessage={
+        isCountLoading
+          ? "Loading..."
+          : `${fromCount} to ${toCount} of ${countData.count}`
+      }
       footer={props.footer}
       loading={loading}
       isFilterable={false}
@@ -582,9 +605,9 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       paginationParams={{
         pageCountMessage: isCountLoading
           ? "Loading..."
-          : `Page ${userPageNumber} of ${numUserPages}`,
+          : `Page ${userPageNumber} of ${countData.numPages}`,
         pageNumber: userPageNumber,
-        numPages: numUserPages,
+        numPages: countData.numPages,
         prevPage,
         nextPage,
         prevParams,
