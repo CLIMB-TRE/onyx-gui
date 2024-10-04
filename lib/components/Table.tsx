@@ -206,10 +206,10 @@ function TableOptions(props: TableOptionsProps) {
         <DropdownDivider />
         <Dropdown.Header> Page Size </Dropdown.Header>
         {[10, 50, 100, 500, 1000].map((size) => (
-          <Dropdown.Item
-            key={`pageSize${size}`}
-            disabled={!props.isPaginated}
-          >{`${size} rows`}</Dropdown.Item>
+          <Dropdown.Item key={`pageSize${size}`} disabled={!props.isPaginated}>
+            <span>{`${size} rows`}</span>
+            <span style={{ float: "right" }}>{size === 50 ? "✓" : ""}</span>
+          </Dropdown.Item>
         ))}
         <Dropdown.Header>Export Data</Dropdown.Header>
         <Dropdown.Item
