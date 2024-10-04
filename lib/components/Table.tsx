@@ -26,26 +26,6 @@ import { DataProps } from "../interfaces";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
-interface TablePaginationProps {
-  isPaginated: boolean;
-  paginationParams: {
-    pageCountMessage: string;
-    pageNumber: number;
-    numPages: number;
-    prevPage: boolean;
-    nextPage: boolean;
-    prevParams: string;
-    nextParams: string;
-    handleUserPageChange: (params: string, userPage: number) => void;
-  };
-}
-
-interface TableOptionsProps extends DataProps {
-  gridRef: React.RefObject<AgGridReact<Record<string, string | number>>>;
-  isFilterable: boolean;
-  handleExportToCSV: () => void;
-}
-
 interface BaseTableProps extends DataProps {
   rowData: Record<string, string | number>[];
   columnDefs: ColDef[];
@@ -66,6 +46,11 @@ interface BaseTableProps extends DataProps {
     nextParams: string;
     handleUserPageChange: (params: string, userPage: number) => void;
   };
+}
+
+interface TableOptionsProps extends BaseTableProps {
+  gridRef: React.RefObject<AgGridReact<Record<string, string | number>>>;
+  handleExportToCSV: () => void;
 }
 
 interface TableProps extends DataProps {
@@ -124,7 +109,7 @@ function formatResultData(resultData: ResultData) {
 //   );
 // }
 
-function TablePagination(props: TablePaginationProps) {
+function TablePagination(props: BaseTableProps) {
   return (
     <Pagination size="sm">
       <Pagination.First
@@ -219,6 +204,13 @@ function TableOptions(props: TableOptionsProps) {
           Clear Table Filters
         </Dropdown.Item>
         <DropdownDivider />
+        <Dropdown.Header> Page Size </Dropdown.Header>
+        {[10, 50, 100, 500, 1000].map((size) => (
+          <Dropdown.Item
+            key={`pageSize${size}`}
+            disabled={!props.isPaginated}
+          >{`${size} rows`}</Dropdown.Item>
+        ))}
         <Dropdown.Header>Export Data</Dropdown.Header>
         <Dropdown.Item
           key="exportToCSV"
