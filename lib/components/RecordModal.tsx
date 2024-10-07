@@ -49,6 +49,30 @@ function RecordDataField({
 function RecordData(props: RecordModalProps) {
   const [showExportToast, setShowExportToast] = useState(false);
 
+  const DetailCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
+    if (
+      props.s3PathHandler &&
+      typeof cellRendererProps.value === "string" &&
+      cellRendererProps.value.startsWith("s3://") &&
+      cellRendererProps.value.endsWith(".html")
+    ) {
+      return (
+        <Button
+          className="p-0"
+          size="sm"
+          variant="link"
+          onClick={() =>
+            props.s3PathHandler && props.s3PathHandler(cellRendererProps.value)
+          }
+        >
+          {cellRendererProps.value}
+        </Button>
+      );
+    } else {
+      return cellRendererProps.value;
+    }
+  };
+
   // Fetch record data, depending on project and record ID
   const {
     isFetching: recordDataPending,
@@ -175,6 +199,7 @@ function RecordData(props: RecordModalProps) {
                     } as unknown as ResultData
                   }
                   footer="Table showing the top-level fields for the record."
+                  cellRenderers={new Map([["Value", DetailCellRenderer]])}
                 />
               </Tab.Pane>
               {relationFields.map(([key, value]) => (
