@@ -26,8 +26,10 @@ import { DataProps } from "../interfaces";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
+type FormattedRowData = Record<string, string | number>[];
+
 interface BaseTableProps extends DataProps {
-  rowData: Record<string, string | number>[];
+  rowData: FormattedRowData;
   columnDefs: ColDef[];
   gridOptions?: GridOptions;
   onGridReady: () => void;
@@ -369,7 +371,7 @@ function BaseTable(props: BaseTableProps) {
 }
 
 function Table(props: TableProps) {
-  const [rowData, setRowData] = useState<Record<string, string | number>[]>([]);
+  const [rowData, setRowData] = useState<FormattedRowData>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
 
   const defaultColDef = (key: string) => {
@@ -415,10 +417,8 @@ function Table(props: TableProps) {
 }
 
 function ServerPaginatedTable(props: ServerPaginatedTableProps) {
-  const [resultData, setResultData] = useState<
-    Record<string, string | number>[]
-  >([]);
-  const [rowData, setRowData] = useState<Record<string, string | number>[]>([]);
+  const [resultData, setResultData] = useState<FormattedRowData>([]);
+  const [rowData, setRowData] = useState<FormattedRowData>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
   const [userPageNumber, setUserPageNumber] = useState(1);
   const [serverPageNumber, setServerPageNumber] = useState(1);
@@ -457,10 +457,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const prevPage = !!(prevParams || userPageNumber > 1);
   const nextPage = !!(nextParams || userPageNumber < countData.numPages);
 
-  const getRowData = (
-    resultData: Record<string, string | number>[],
-    resultsPage: number
-  ) => {
+  const getRowData = (resultData: FormattedRowData, resultsPage: number) => {
     return resultData.slice(
       (resultsPage - 1) * userPageSize,
       resultsPage * userPageSize
@@ -476,10 +473,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     };
   };
 
-  const handleRowData = (
-    rowData: Record<string, string | number>[],
-    userPage: number
-  ) => {
+  const handleRowData = (rowData: FormattedRowData, userPage: number) => {
     setRowData(rowData);
     setUserRowCounts({
       fromCount: (userPage - 1) * userPageSize + (rowData.length >= 1 ? 1 : 0),
