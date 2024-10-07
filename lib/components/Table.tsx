@@ -44,7 +44,9 @@ interface BaseTableProps extends DataProps {
     nextPage: boolean;
     prevParams: string;
     nextParams: string;
+    userPageSize: number;
     handleUserPageChange: (params: string, userPage: number) => void;
+    handleUserPageSizeChange: (size: number) => void;
   };
 }
 
@@ -108,6 +110,57 @@ function formatResultData(resultData: ResultData) {
 //     ) || []
 //   );
 // }
+
+function getColDefs(props: TableProps, defaultColDef: (key: string) => ColDef) {
+  let colDefs: ColDef[];
+
+  if (props.data.data && props.data.data.length > 0) {
+    colDefs = Object.keys(props.data.data[0]).map((key) => {
+      if (key === "climb_id") {
+        return {
+          ...defaultColDef(key),
+          pinned: "left",
+          cellRenderer: (params: CustomCellRendererProps) => {
+            return (
+              <Button
+                className="p-0"
+                size="sm"
+                variant="link"
+                onClick={() =>
+                  props.handleRecordModalShow &&
+                  props.handleRecordModalShow(params.value)
+                }
+              >
+                {params.value}
+              </Button>
+            );
+          },
+        };
+      } else {
+        const colDef = defaultColDef(key);
+
+        if (props.cellRenderers?.get(key)) {
+          colDef.cellRenderer = props.cellRenderers.get(key);
+          colDef.autoHeight = true;
+          colDef.wrapText = true;
+        }
+
+        if (props.tooltipFields?.includes(key)) {
+          colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
+        }
+
+        if (!props.flexOnly || props.flexOnly.includes(key)) {
+          colDef.flex = 1;
+        }
+        return colDef;
+      }
+    });
+  } else {
+    colDefs = [];
+  }
+
+  return colDefs;
+}
 
 function TablePagination(props: BaseTableProps) {
   return (
@@ -188,16 +241,16 @@ function TableOptions(props: TableOptionsProps) {
         variant="dark"
       >
         <Dropdown.Header>Column Controls</Dropdown.Header>
-        <Dropdown.Item key="resetAll" onClick={resetColumns}>
-          Reset Columns
+        <Dropdown.Item key="resetAllColumns" onClick={resetColumns}>
+          Reset All Columns
         </Dropdown.Item>
-        <Dropdown.Item key="unpinAll" onClick={unpinAllColumns}>
+        <Dropdown.Item key="unpinAllColumns" onClick={unpinAllColumns}>
           Unpin All Columns
         </Dropdown.Item>
         <DropdownDivider />
         <Dropdown.Header>Filter Controls</Dropdown.Header>
         <Dropdown.Item
-          key="clearFilters"
+          key="clearTableFilters"
           disabled={!props.isFilterable}
           onClick={clearTableFilters}
         >
@@ -206,18 +259,29 @@ function TableOptions(props: TableOptionsProps) {
         <DropdownDivider />
         <Dropdown.Header> Page Size </Dropdown.Header>
         {[10, 50, 100, 500, 1000].map((size) => (
-          <Dropdown.Item key={`pageSize${size}`} disabled={!props.isPaginated}>
-            <span>{`${size} rows`}</span>
-            <span style={{ float: "right" }}>{size === 50 ? "✓" : ""}</span>
+          <Dropdown.Item
+            key={`pageSize${size}`}
+            disabled={!props.isPaginated}
+            onClick={() =>
+              props.paginationParams.handleUserPageSizeChange(size)
+            }
+          >
+            {size} rows
+            <span style={{ float: "right" }}>
+              {props.isPaginated && size === props.paginationParams.userPageSize
+                ? "✓"
+                : ""}
+            </span>
           </Dropdown.Item>
         ))}
+        <DropdownDivider />
         <Dropdown.Header>Export Data</Dropdown.Header>
         <Dropdown.Item
-          key="exportToCSV"
+          key="exportPageToCSV"
           disabled={!props.fileWriter}
           onClick={props.handleExportToCSV}
         >
-          Export to CSV
+          Export Page to CSV
         </Dropdown.Item>
       </DropdownButton>
     </Pagination>
@@ -294,6 +358,7 @@ function BaseTable(props: BaseTableProps) {
             onGridReady={props.onGridReady}
             suppressMultiSort={true}
             suppressColumnVirtualisation={true}
+            suppressCellFocus={true}
             rowBuffer={30}
             loading={props.loading}
           />
@@ -326,89 +391,18 @@ function Table(props: TableProps) {
   const [rowData, setRowData] = useState<Record<string, string | number>[]>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
 
-  const defaultCellRenderer = (params: CustomCellRendererProps) => {
-    if (
-      props.s3PathHandler &&
-      typeof params.value === "string" &&
-      params.value.startsWith("s3://") &&
-      params.value.endsWith(".html")
-    ) {
-      return (
-        <Button
-          size="sm"
-          variant="link"
-          onClick={() =>
-            props.s3PathHandler && props.s3PathHandler(params.value)
-          }
-        >
-          {params.value}
-        </Button>
-      );
-    } else {
-      return params.value;
-    }
-  };
-
   const defaultColDef = (key: string) => {
     return {
       field: key,
       headerName: props.headerNames?.get(key) || key,
       minWidth: 200,
       headerTooltip: props.headerTooltips?.get(props.headerTooltipPrefix + key),
-      cellRenderer: defaultCellRenderer,
     } as ColDef;
   };
 
   const onGridReady = useCallback(() => {
-    let colDefs: ColDef[];
-
-    if (props.data.data && props.data.data.length > 0) {
-      colDefs = Object.keys(props.data.data[0]).map((key) => {
-        if (props.handleRecordModalShow && key === "climb_id") {
-          return {
-            ...defaultColDef(key),
-            pinned: "left",
-            cellRenderer: (params: CustomCellRendererProps) => {
-              return (
-                <Button
-                  size="sm"
-                  variant="link"
-                  onClick={() =>
-                    props.handleRecordModalShow
-                      ? props.handleRecordModalShow(params.value)
-                      : null
-                  }
-                >
-                  {params.value}
-                </Button>
-              );
-            },
-          };
-        } else {
-          const colDef = defaultColDef(key);
-
-          if (props.cellRenderers?.get(key)) {
-            colDef.cellRenderer = props.cellRenderers.get(key);
-            colDef.autoHeight = true;
-            colDef.wrapText = true;
-          }
-
-          if (props.tooltipFields?.includes(key)) {
-            colDef.tooltipValueGetter = (p: ITooltipParams) =>
-              p.value.toString();
-          }
-
-          if (!props.flexOnly || props.flexOnly.includes(key)) {
-            colDef.flex = 1;
-          }
-          return colDef;
-        }
-      });
-    } else {
-      colDefs = [];
-    }
     setRowData(formatResultData(props.data));
-    setColumnDefs(colDefs);
+    setColumnDefs(getColDefs(props, defaultColDef));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -432,6 +426,8 @@ function Table(props: TableProps) {
         nextPage: false,
         prevParams: "",
         nextParams: "",
+        userPageSize: 0,
+        handleUserPageSizeChange: () => {},
         handleUserPageChange: () => {},
       }}
     />
@@ -451,10 +447,10 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const [loading, setLoading] = useState(false);
   const [fromCount, setFromCount] = useState(0);
   const [toCount, setToCount] = useState(0);
+  const [userPageSize, setUserPageSize] = useState(50);
 
-  const userPageMaxRows = 50;
-  const resultsPageMaxRows = 1000;
-  const numResultsPages = resultsPageMaxRows / userPageMaxRows;
+  const resultsPageSize = 1000;
+  const numResultsPages = resultsPageSize / userPageSize;
 
   const {
     isFetching: isCountLoading,
@@ -469,7 +465,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
         .then((data) => {
           return {
             count: data.data.count,
-            numPages: Math.ceil(data.data.count / userPageMaxRows),
+            numPages: Math.ceil(data.data.count / userPageSize),
           };
         });
     },
@@ -480,54 +476,20 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const prevPage = !!(prevParams || userPageNumber > 1);
   const nextPage = !!(nextParams || userPageNumber < countData.numPages);
 
-  const defaultCellRenderer = (params: CustomCellRendererProps) => {
-    if (
-      props.s3PathHandler &&
-      typeof params.value === "string" &&
-      params.value.startsWith("s3://") &&
-      params.value.endsWith(".html")
-    ) {
-      return (
-        <Button
-          size="sm"
-          variant="link"
-          onClick={() =>
-            props.s3PathHandler && props.s3PathHandler(params.value)
-          }
-        >
-          {params.value}
-        </Button>
-      );
-    } else {
-      return params.value;
-    }
-  };
-
-  const defaultColDef = (key: string) => {
-    return {
-      field: key,
-      headerName: props.headerNames?.get(key) || key,
-      minWidth: 200,
-      headerTooltip: props.headerTooltips?.get(props.headerTooltipPrefix + key),
-      cellRenderer: defaultCellRenderer,
-      comparator: () => 0,
-    } as ColDef;
-  };
-
   const getRowData = (
     resultData: Record<string, string | number>[],
     resultsPage: number
   ) => {
     return resultData.slice(
-      (resultsPage - 1) * userPageMaxRows,
-      resultsPage * userPageMaxRows
+      (resultsPage - 1) * userPageSize,
+      resultsPage * userPageSize
     );
   };
 
   const getPageNumbers = (userPage: number) => {
     return {
       resultsPage: userPage % numResultsPages || numResultsPages,
-      serverPage: Math.ceil((userPage * userPageMaxRows) / resultsPageMaxRows),
+      serverPage: Math.ceil((userPage * userPageSize) / resultsPageSize),
     };
   };
 
@@ -536,10 +498,8 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     userPage: number
   ) => {
     setRowData(rowData);
-    setFromCount(
-      (userPage - 1) * userPageMaxRows + (rowData.length >= 1 ? 1 : 0)
-    );
-    setToCount((userPage - 1) * userPageMaxRows + rowData.length);
+    setFromCount((userPage - 1) * userPageSize + (rowData.length >= 1 ? 1 : 0));
+    setToCount((userPage - 1) * userPageSize + rowData.length);
   };
 
   const handleResultData = (
@@ -596,55 +556,24 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     }
   };
 
+  const handleUserPageSizeChange = (size: number) => {
+    setUserPageSize(size);
+    handleUserPageChange(props.searchParameters, 1, true);
+  };
+
+  const defaultColDef = (key: string) => {
+    return {
+      field: key,
+      headerName: props.headerNames?.get(key) || key,
+      minWidth: 200,
+      headerTooltip: props.headerTooltips?.get(props.headerTooltipPrefix + key),
+      comparator: () => 0,
+    } as ColDef;
+  };
+
   const onGridReady = useCallback(() => {
-    let colDefs: ColDef[];
-
-    if (props.data.data && props.data.data.length > 0) {
-      colDefs = Object.keys(props.data.data[0]).map((key) => {
-        if (props.handleRecordModalShow && key === "climb_id") {
-          return {
-            ...defaultColDef(key),
-            pinned: "left",
-            cellRenderer: (params: CustomCellRendererProps) => {
-              return (
-                <Button
-                  size="sm"
-                  variant="link"
-                  onClick={() =>
-                    props.handleRecordModalShow &&
-                    props.handleRecordModalShow(params.value)
-                  }
-                >
-                  {params.value}
-                </Button>
-              );
-            },
-          };
-        } else {
-          const colDef = defaultColDef(key);
-
-          if (props.cellRenderers?.get(key)) {
-            colDef.cellRenderer = props.cellRenderers.get(key);
-            colDef.autoHeight = true;
-            colDef.wrapText = true;
-          }
-
-          if (props.tooltipFields?.includes(key)) {
-            colDef.tooltipValueGetter = (p: ITooltipParams) =>
-              p.value.toString();
-          }
-
-          if (!props.flexOnly || props.flexOnly.includes(key)) {
-            colDef.flex = 1;
-          }
-          return colDef;
-        }
-      });
-    } else {
-      colDefs = [];
-    }
     handleResultData(props.data, 1, 1);
-    setColumnDefs(colDefs);
+    setColumnDefs(getColDefs(props, defaultColDef));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -676,6 +605,8 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
         nextPage,
         prevParams,
         nextParams,
+        userPageSize,
+        handleUserPageSizeChange,
         handleUserPageChange,
       }}
     />
