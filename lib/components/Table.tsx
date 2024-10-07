@@ -46,7 +46,6 @@ interface BaseTableProps extends DataProps {
     nextParams: string;
     userPageSize: number;
     handleUserPageChange: (params: string, userPage: number) => void;
-    handleUserPageSizeChange: (size: number) => void;
   };
 }
 
@@ -257,31 +256,13 @@ function TableOptions(props: TableOptionsProps) {
           Clear Table Filters
         </Dropdown.Item>
         <DropdownDivider />
-        <Dropdown.Header> Page Size </Dropdown.Header>
-        {[10, 50, 100, 500, 1000].map((size) => (
-          <Dropdown.Item
-            key={`pageSize${size}`}
-            disabled={!props.isPaginated}
-            onClick={() =>
-              props.paginationParams.handleUserPageSizeChange(size)
-            }
-          >
-            {size} rows
-            <span style={{ float: "right" }}>
-              {props.isPaginated && size === props.paginationParams.userPageSize
-                ? "✓"
-                : ""}
-            </span>
-          </Dropdown.Item>
-        ))}
-        <DropdownDivider />
         <Dropdown.Header>Export Data</Dropdown.Header>
         <Dropdown.Item
-          key="exportPageToCSV"
+          key="exportToCSV"
           disabled={!props.fileWriter}
           onClick={props.handleExportToCSV}
         >
-          Export Page to CSV
+          Export to CSV
         </Dropdown.Item>
       </DropdownButton>
     </Pagination>
@@ -427,7 +408,6 @@ function Table(props: TableProps) {
         prevParams: "",
         nextParams: "",
         userPageSize: 0,
-        handleUserPageSizeChange: () => {},
         handleUserPageChange: () => {},
       }}
     />
@@ -445,12 +425,13 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const [prevParams, setPrevParams] = useState("");
   const [nextParams, setNextParams] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fromCount, setFromCount] = useState(0);
-  const [toCount, setToCount] = useState(0);
-  const [userPageSize, setUserPageSize] = useState(50);
+  const [userRowCounts, setUserRowCounts] = useState({
+    fromCount: 0,
+    toCount: 0,
+  });
 
   const resultsPageSize = 1000;
-  const numResultsPages = resultsPageSize / userPageSize;
+  const userPageSize = 50;
 
   const {
     isFetching: isCountLoading,
@@ -487,6 +468,8 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   };
 
   const getPageNumbers = (userPage: number) => {
+    const numResultsPages = resultsPageSize / userPageSize;
+
     return {
       resultsPage: userPage % numResultsPages || numResultsPages,
       serverPage: Math.ceil((userPage * userPageSize) / resultsPageSize),
@@ -498,8 +481,10 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     userPage: number
   ) => {
     setRowData(rowData);
-    setFromCount((userPage - 1) * userPageSize + (rowData.length >= 1 ? 1 : 0));
-    setToCount((userPage - 1) * userPageSize + rowData.length);
+    setUserRowCounts({
+      fromCount: (userPage - 1) * userPageSize + (rowData.length >= 1 ? 1 : 0),
+      toCount: (userPage - 1) * userPageSize + rowData.length,
+    });
   };
 
   const handleResultData = (
@@ -556,11 +541,6 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     }
   };
 
-  const handleUserPageSizeChange = (size: number) => {
-    setUserPageSize(size);
-    handleUserPageChange(props.searchParameters, 1, true);
-  };
-
   const defaultColDef = (key: string) => {
     return {
       field: key,
@@ -589,7 +569,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       rowCountMessage={
         isCountLoading
           ? "Loading..."
-          : `${fromCount} to ${toCount} of ${countData.count}`
+          : `${userRowCounts.fromCount} to ${userRowCounts.toCount} of ${countData.count}`
       }
       footer={props.footer}
       loading={loading}
@@ -606,7 +586,6 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
         prevParams,
         nextParams,
         userPageSize,
-        handleUserPageSizeChange,
         handleUserPageChange,
       }}
     />
