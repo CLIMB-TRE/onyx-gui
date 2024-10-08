@@ -12,31 +12,35 @@ function LoadingSpinner() {
     return () => clearTimeout(timer);
   });
 
-  return (
-    showAlert && (
-      <div className="d-flex justify-content-center">
-        <Stack direction="horizontal" gap={2}>
-          <Spinner />
-          <span>Loading...</span>
-        </Stack>
-      </div>
-    )
+  return showAlert ? (
+    <div className="d-flex justify-content-center">
+      <Stack direction="horizontal" gap={2}>
+        <Spinner />
+        <span>Loading...</span>
+      </Stack>
+    </div>
+  ) : (
+    <></>
   );
 }
 
 function ErrorMessages(props: { messages: ErrorType }) {
-  return Object.entries(props.messages).map(([key, value]) =>
-    Array.isArray(value) ? (
-      value.map((v: string) => (
-        <Alert key={key} variant="danger">
-          {key}: {v}
-        </Alert>
-      ))
-    ) : (
-      <Alert key={key} variant="danger">
-        {key}: {value}
-      </Alert>
-    )
+  return (
+    <>
+      {Object.entries(props.messages).map(([key, value]) =>
+        Array.isArray(value) ? (
+          value.map((v: string) => (
+            <Alert key={key} variant="danger">
+              {key}: {v}
+            </Alert>
+          ))
+        ) : (
+          <Alert key={key} variant="danger">
+            {key}: {value}
+          </Alert>
+        )
+      )}
+    </>
   );
 }
 
