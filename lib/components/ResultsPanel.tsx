@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import Table from "./Table";
@@ -15,7 +16,24 @@ interface ResultsPanelProps extends DataProps {
   handleRecordModalShow: (climbID: string) => void;
 }
 
+function getDefaultFileNamePrefix(project: string, searchParameters: string) {
+  // Create the default file name prefix based on the project and search parameters
+  // Use only the values of the search parameters, and limit to 20 characters
+  return [["", project]]
+    .concat(Array.from(new URLSearchParams(searchParameters).entries()))
+    .map(([, value]) => value)
+    .map((value) => value.split(",").map((v) => v.replace(/[\W_]+/g, "")))
+    .flat()
+    .join("_")
+    .slice(0, 50);
+}
+
 function ResultsPanel(props: ResultsPanelProps) {
+  const defaultFileNamePrefix = useMemo(
+    () => getDefaultFileNamePrefix(props.project, props.searchParameters),
+    [props.project, props.searchParameters]
+  );
+
   return (
     <Card>
       <Card.Header>Results</Card.Header>
@@ -29,6 +47,7 @@ function ResultsPanel(props: ResultsPanelProps) {
             <Table
               {...props}
               data={props.resultData || {}}
+              defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={props.fieldDescriptions}
               handleRecordModalShow={props.handleRecordModalShow}
             />
@@ -36,6 +55,7 @@ function ResultsPanel(props: ResultsPanelProps) {
             <ServerPaginatedTable
               {...props}
               searchParameters={props.searchParameters}
+              defaultFileNamePrefix={defaultFileNamePrefix}
               data={props.resultData || {}}
               headerTooltips={props.fieldDescriptions}
               handleRecordModalShow={props.handleRecordModalShow}

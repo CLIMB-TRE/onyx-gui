@@ -14,15 +14,14 @@ import { useQuery } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Pagination from "react-bootstrap/Pagination";
-import Toast from "react-bootstrap/Toast";
-import ToastContainer from "react-bootstrap/ToastContainer";
 import Stack from "react-bootstrap/Stack";
 import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import DropdownDivider from "react-bootstrap/DropdownDivider";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
-import { ResultData } from "../types";
+import { ResultData, ExportStatus } from "../types";
 import { DataProps } from "../interfaces";
+import ExportModal from "./ExportModal";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -31,13 +30,20 @@ type FormattedRowData = Record<string, string | number>[];
 interface BaseTableProps extends DataProps {
   rowData: FormattedRowData;
   columnDefs: ColDef[];
+  searchParameters: string;
+  defaultFileNamePrefix: string;
   gridOptions?: GridOptions;
   onGridReady: () => void;
-  rowCountMessage: string;
   footer?: string;
-  loading?: boolean;
+  isDataLoading?: boolean;
+  isCountLoading?: boolean;
   isFilterable: boolean;
   isPaginated: boolean;
+  rowDisplayParams: {
+    from: number;
+    to: number;
+    of: number;
+  };
   paginationParams: {
     pageCountMessage: string;
     pageNumber: number;
@@ -53,11 +59,11 @@ interface BaseTableProps extends DataProps {
 
 interface TableOptionsProps extends BaseTableProps {
   gridRef: React.RefObject<AgGridReact<Record<string, string | number>>>;
-  handleExportToCSV: () => void;
 }
 
 interface TableProps extends DataProps {
   data: ResultData;
+  defaultFileNamePrefix: string;
   headerNames?: Map<string, string>;
   headerTooltips?: Map<string, string>;
   headerTooltipPrefix?: string;
@@ -90,27 +96,6 @@ function formatResultData(resultData: ResultData) {
     ) || []
   );
 }
-
-// function formatResultData(resultData: ResultData) {
-//   // For CSV export, we allow string, number and boolean values
-//   // All other types are converted to strings
-//   return (
-//     resultData.data?.map((row) =>
-//       Object.fromEntries(
-//         Object.entries(row).map(([key, value]) => [
-//           key,
-//           typeof value === "string" ||
-//           typeof value === "number" ||
-//           typeof value === "boolean"
-//             ? value
-//             : value === null
-//             ? ""
-//             : JSON.stringify(value),
-//         ])
-//       )
-//     ) || []
-//   );
-// }
 
 function getColDefs(props: TableProps, defaultColDef: (key: string) => ColDef) {
   let colDefs: ColDef[];
@@ -212,8 +197,57 @@ function TablePagination(props: BaseTableProps) {
   );
 }
 
+function formatExportResultData(resultData: ResultData) {
+  // For CSV export, we allow string, number and boolean values
+  // All other types are converted to strings
+  return (resultData.data?.map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [
+        key,
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+          ? value
+          : value === null
+          ? ""
+          : JSON.stringify(value),
+      ])
+    )
+  ) || []) as FormattedRowData;
+}
+
+async function getAllResultData(
+  project: string,
+  searchParams: string,
+  numPages: number,
+  httpPathHandler: (path: string) => Promise<Response>,
+  setExportProgress: (exportProgress: number) => void,
+  exportStatus: { status: ExportStatus }
+) {
+  const datas: FormattedRowData[] = [];
+  let nextParams = new URLSearchParams(searchParams);
+
+  while (nextParams && exportStatus.status !== ExportStatus.CANCELLED) {
+    const search = new URLSearchParams(nextParams);
+
+    await httpPathHandler(`projects/${project}/?${search.toString()}`)
+      .then((response) => response.json())
+      .then((result) => {
+        const data = formatExportResultData(result);
+        datas.push(data);
+        nextParams = result.next?.split("?", 2)[1] || "";
+        setExportProgress(((datas.length * 1000) / (numPages * 50)) * 100);
+      });
+  }
+
+  const resultData = Array.prototype.concat.apply([], datas);
+  return resultData;
+}
+
 function TableOptions(props: TableOptionsProps) {
-  const resetColumns = useCallback(() => {
+  const [exportModalShow, setExportModalShow] = useState(false);
+
+  const resetAllColumns = useCallback(() => {
     props.gridRef.current?.api.resetColumnState();
     props.gridRef.current?.api.sizeColumnsToFit();
   }, [props.gridRef]);
@@ -233,8 +267,58 @@ function TableOptions(props: TableOptionsProps) {
     [props.gridRef]
   );
 
+  const handleCSVExport = (
+    fileName: string,
+    statusToken: { status: ExportStatus },
+    setExportProgress: (exportProgress: number) => void,
+    setExportStatus: (exportStatus: ExportStatus) => void
+  ) => {
+    const csvConfig = mkConfig({
+      useKeysAsHeaders: true,
+    });
+    const fileWriter = props.fileWriter;
+
+    if (fileWriter) {
+      if (props.isPaginated) {
+        getAllResultData(
+          props.project,
+          props.searchParameters,
+          props.paginationParams.numPages,
+          props.httpPathHandler,
+          setExportProgress,
+          statusToken
+        ).then((data) => {
+          const csvData = asString(generateCsv(csvConfig)(data));
+          fileWriter(fileName + ".csv", csvData);
+          setExportStatus(ExportStatus.FINISHED);
+        });
+      } else {
+        if (statusToken.status !== ExportStatus.CANCELLED) {
+          setTimeout(() => {
+            const csvData = asString(generateCsv(csvConfig)(props.rowData));
+            fileWriter(fileName + ".csv", csvData);
+            setExportProgress(100);
+            setTimeout(() => setExportStatus(ExportStatus.FINISHED), 1000);
+          }, 100);
+        }
+      }
+    }
+  };
+
   return (
     <Pagination size="sm">
+      <ExportModal
+        {...props}
+        fileExtension=".csv"
+        show={exportModalShow}
+        handleExport={handleCSVExport}
+        onHide={() => setExportModalShow(false)}
+        exportProgressMessage={
+          props.isPaginated
+            ? `Gathering ${props.rowDisplayParams.of} records...`
+            : `Gathering ${props.rowData.length} rows...`
+        }
+      />
       <DropdownButton
         id="table-options"
         title="Options"
@@ -242,7 +326,7 @@ function TableOptions(props: TableOptionsProps) {
         variant="dark"
       >
         <Dropdown.Header>Column Controls</Dropdown.Header>
-        <Dropdown.Item key="resetAllColumns" onClick={resetColumns}>
+        <Dropdown.Item key="resetAllColumns" onClick={resetAllColumns}>
           Reset All Columns
         </Dropdown.Item>
         <Dropdown.Item key="unpinAllColumns" onClick={unpinAllColumns}>
@@ -262,7 +346,7 @@ function TableOptions(props: TableOptionsProps) {
         <Dropdown.Item
           key="exportToCSV"
           disabled={!props.fileWriter}
-          onClick={props.handleExportToCSV}
+          onClick={() => setExportModalShow(true)}
         >
           Export to CSV
         </Dropdown.Item>
@@ -275,77 +359,30 @@ function BaseTable(props: BaseTableProps) {
   const gridRef = useRef<AgGridReact<Record<string, string | number>>>(null);
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const csvConfig = mkConfig({
-    filename: props.project,
-    useKeysAsHeaders: true,
-  });
-
-  const handleExportToCSV = () => {
-    // const fileName = `${props.project}${
-    //   props.pageNumber > 1 ? "_" + props.pageNumber.toString() : ""
-    // }`;
-
-    const csvData = asString(generateCsv(csvConfig)(props.rowData));
-
-    if (props.fileWriter) {
-      showNotification("Starting export: " + props.project + ".csv");
-      props.fileWriter(props.project + ".csv", csvData);
-    }
-  };
-
-  const showNotification = (message: string) => {
-    setToastMessage(message);
-    setToastVisible(true);
-  };
 
   return (
     <Stack gap={2} style={containerStyle}>
       <div className="ag-theme-quartz" style={gridStyle}>
-        <Container
-          fluid
-          className="p-0 position-relative"
-          style={containerStyle}
-        >
-          <ToastContainer
-            className="p-3"
-            position="bottom-end"
-            style={{ zIndex: 1 }}
-          >
-            <Toast
-              onClose={() => setToastVisible(false)}
-              show={toastVisible}
-              delay={3000}
-              autohide
-            >
-              <Toast.Header>
-                <strong className="me-auto">Notification</strong>
-              </Toast.Header>
-              <Toast.Body>{toastMessage}</Toast.Body>
-            </Toast>
-          </ToastContainer>
-          <AgGridReact
-            ref={gridRef}
-            rowData={props.rowData}
-            columnDefs={props.columnDefs}
-            tooltipMouseTrack={true}
-            tooltipHideDelay={5000}
-            gridOptions={{
-              ...props.gridOptions,
-              enableCellTextSelection: true,
-              defaultColDef: {
-                filter: props.isFilterable,
-              },
-            }}
-            onGridReady={props.onGridReady}
-            suppressMultiSort={true}
-            suppressColumnVirtualisation={true}
-            suppressCellFocus={true}
-            rowBuffer={30}
-            loading={props.loading}
-          />
-        </Container>
+        <AgGridReact
+          ref={gridRef}
+          rowData={props.rowData}
+          columnDefs={props.columnDefs}
+          tooltipMouseTrack={true}
+          tooltipHideDelay={5000}
+          gridOptions={{
+            ...props.gridOptions,
+            enableCellTextSelection: true,
+            defaultColDef: {
+              filter: props.isFilterable,
+            },
+          }}
+          onGridReady={props.onGridReady}
+          suppressMultiSort={true}
+          suppressColumnVirtualisation={true}
+          suppressCellFocus={true}
+          rowBuffer={50}
+          loading={props.isDataLoading}
+        />
       </div>
       <div>
         <i className="text-secondary">{props.footer || ""}</i>
@@ -353,14 +390,17 @@ function BaseTable(props: BaseTableProps) {
           <Container>
             <Stack direction="horizontal" gap={2}>
               <Pagination size="sm">
-                <Pagination.Item>{props.rowCountMessage}</Pagination.Item>
+                <Pagination.Item>
+                  {props.isCountLoading
+                    ? "Loading..."
+                    : `${props.rowDisplayParams.from} to ${props.rowDisplayParams.to} of ${props.rowDisplayParams.of}`}
+                </Pagination.Item>
               </Pagination>
               <TablePagination {...props} />
               <TableOptions
                 {...props}
                 gridRef={gridRef}
                 isFilterable={props.isFilterable}
-                handleExportToCSV={handleExportToCSV}
               />
             </Stack>
           </Container>
@@ -394,10 +434,13 @@ function Table(props: TableProps) {
       {...props}
       rowData={rowData}
       columnDefs={columnDefs}
+      searchParameters=""
       onGridReady={onGridReady}
-      rowCountMessage={`${rowData.length >= 1 ? 1 : 0} to ${
-        rowData.length
-      } of ${rowData.length}`}
+      rowDisplayParams={{
+        from: rowData.length >= 1 ? 1 : 0,
+        to: rowData.length,
+        of: rowData.length,
+      }}
       footer={props.footer}
       isFilterable
       isPaginated={false}
@@ -560,13 +603,14 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
         onSortChanged: handleSortColumn,
       }}
       onGridReady={onGridReady}
-      rowCountMessage={
-        isCountLoading
-          ? "Loading..."
-          : `${userRowCounts.fromCount} to ${userRowCounts.toCount} of ${countData.count}`
-      }
+      rowDisplayParams={{
+        from: userRowCounts.fromCount,
+        to: userRowCounts.toCount,
+        of: countData.count,
+      }}
       footer={props.footer}
-      loading={loading}
+      isDataLoading={loading}
+      isCountLoading={isCountLoading}
       isFilterable={false}
       isPaginated
       paginationParams={{

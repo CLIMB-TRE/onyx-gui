@@ -198,6 +198,7 @@ function RecordData(props: RecordModalProps) {
                       })),
                     } as unknown as ResultData
                   }
+                  defaultFileNamePrefix={`${props.recordID}_details`}
                   footer="Table showing the top-level fields for the record."
                   cellRenderers={new Map([["Value", DetailCellRenderer]])}
                 />
@@ -208,6 +209,7 @@ function RecordData(props: RecordModalProps) {
                   <Table
                     {...props}
                     data={{ data: value } as ResultData}
+                    defaultFileNamePrefix={`${props.recordID}_${key}`}
                     headerTooltips={props.fieldDescriptions}
                     headerTooltipPrefix={key + "__"}
                     footer={
@@ -319,6 +321,7 @@ function RecordHistory(props: RecordModalProps) {
         <Table
           {...props}
           data={{ data: recordHistory.data?.history } as ResultData}
+          defaultFileNamePrefix={`${props.recordID}_history`}
           flexOnly={["changes"]}
           tooltipFields={["timestamp"]}
           headerNames={
