@@ -49,6 +49,30 @@ function RecordDataField({
 function RecordData(props: RecordModalProps) {
   const [showExportToast, setShowExportToast] = useState(false);
 
+  const DetailCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
+    if (
+      props.s3PathHandler &&
+      typeof cellRendererProps.value === "string" &&
+      cellRendererProps.value.startsWith("s3://") &&
+      cellRendererProps.value.endsWith(".html")
+    ) {
+      return (
+        <Button
+          className="p-0"
+          size="sm"
+          variant="link"
+          onClick={() =>
+            props.s3PathHandler && props.s3PathHandler(cellRendererProps.value)
+          }
+        >
+          {cellRendererProps.value}
+        </Button>
+      );
+    } else {
+      return cellRendererProps.value;
+    }
+  };
+
   // Fetch record data, depending on project and record ID
   const {
     isFetching: recordDataPending,
@@ -85,9 +109,9 @@ function RecordData(props: RecordModalProps) {
     ([key]) => props.projectFields.get(key)?.type !== "relation"
   );
 
-  const relationFields = Object.entries(recordData.data).filter(
-    ([key]) => props.projectFields.get(key)?.type === "relation"
-  );
+  const relationFields = Object.entries(recordData.data)
+    .filter(([key]) => props.projectFields.get(key)?.type === "relation")
+    .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1));
 
   return (
     <QueryHandler
@@ -165,6 +189,7 @@ function RecordData(props: RecordModalProps) {
               >
                 <h5>Details</h5>
                 <Table
+                  {...props}
                   data={
                     {
                       data: detailFields.map(([key, value]) => ({
@@ -173,18 +198,20 @@ function RecordData(props: RecordModalProps) {
                       })),
                     } as unknown as ResultData
                   }
-                  s3PathHandler={props.s3PathHandler}
+                  defaultFileNamePrefix={`${props.recordID}_details`}
                   footer="Table showing the top-level fields for the record."
+                  cellRenderers={new Map([["Value", DetailCellRenderer]])}
                 />
               </Tab.Pane>
               {relationFields.map(([key, value]) => (
                 <Tab.Pane key={key} eventKey={key} style={{ height: "100%" }}>
                   <h5>{formatTitle(key)}</h5>
                   <Table
+                    {...props}
                     data={{ data: value } as ResultData}
+                    defaultFileNamePrefix={`${props.recordID}_${key}`}
                     headerTooltips={props.fieldDescriptions}
                     headerTooltipPrefix={key + "__"}
-                    s3PathHandler={props.s3PathHandler}
                     footer={
                       props.fieldDescriptions.get(key) || "No Description."
                     }
@@ -292,7 +319,9 @@ function RecordHistory(props: RecordModalProps) {
       <>
         <h5>History</h5>
         <Table
+          {...props}
           data={{ data: recordHistory.data?.history } as ResultData}
+          defaultFileNamePrefix={`${props.recordID}_history`}
           flexOnly={["changes"]}
           tooltipFields={["timestamp"]}
           headerNames={

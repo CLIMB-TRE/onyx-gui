@@ -21,7 +21,6 @@ function Data(props: DataProps) {
   const [transform, setTransform] = useState("Summarise");
   const [transformList, setTransformList] = useState(new Array<string>());
   const [searchParameters, setSearchParameters] = useState("");
-  const [pageNumber, setPageNumber] = useState(1);
   const [recordModalShow, setRecordModalShow] = React.useState(false);
   const [recordModalID, setRecordModalID] = React.useState("");
   const filterFieldOptions = Array.from(props.projectFields.entries())
@@ -38,7 +37,6 @@ function Data(props: DataProps) {
     setTransform("Summarise");
     setTransformList([]);
     setSearchParameters("");
-    setPageNumber(1);
     setRecordModalShow(false);
     setRecordModalID("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,7 +93,6 @@ function Data(props: DataProps) {
       // This will trigger a new fetch
       setSearchParameters(search);
     }
-    setPageNumber(1);
   };
 
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
@@ -154,8 +151,6 @@ function Data(props: DataProps) {
           resultData={resultData}
           searchParameters={searchParameters}
           setSearchParameters={setSearchParameters}
-          pageNumber={pageNumber}
-          setPageNumber={setPageNumber}
           handleRecordModalShow={handleRecordModalShow}
         />
       </Stack>

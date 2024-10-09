@@ -71,7 +71,6 @@
 .ag-theme-quartz {
   --ag-background-color: var(--bs-body-bg);
   --ag-foreground-color: var(--bs-body-color);
-  --ag-checkbox-unchecked-color: var(--bs-green);
   --ag-font-family: monospace;
 }
 

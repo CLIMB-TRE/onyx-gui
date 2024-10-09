@@ -67,7 +67,7 @@ function App(props: OnyxProps) {
 
   // Set the first project as the default
   useEffect(() => {
-    if (!project && projects) {
+    if (!project && projects.length > 0) {
       setProject(projects[0]);
     }
   }, [project, projects]);
