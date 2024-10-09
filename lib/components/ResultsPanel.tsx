@@ -18,7 +18,7 @@ interface ResultsPanelProps extends DataProps {
 
 function getDefaultFileNamePrefix(project: string, searchParameters: string) {
   // Create the default file name prefix based on the project and search parameters
-  // Use only the values of the search parameters, and limit to 20 characters
+  // Use the underscore+alphanumeric characters of the search values, and limits prefix to 50 characters
   return [["", project]]
     .concat(Array.from(new URLSearchParams(searchParameters).entries()))
     .map(([, value]) => value)
