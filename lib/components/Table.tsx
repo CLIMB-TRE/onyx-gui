@@ -227,12 +227,16 @@ async function getAllResultData(
   const datas: FormattedRowData[] = [];
   let nextParams = new URLSearchParams(searchParams);
 
-  while (nextParams && exportStatus.status !== ExportStatus.CANCELLED) {
+  while (nextParams) {
     const search = new URLSearchParams(nextParams);
 
     await httpPathHandler(`projects/${project}/?${search.toString()}`)
       .then((response) => response.json())
       .then((result) => {
+        if (exportStatus.status === ExportStatus.CANCELLED) {
+          throw new Error("Export cancelled");
+        }
+
         const data = formatExportResultData(result);
         datas.push(data);
         nextParams = result.next?.split("?", 2)[1] || "";
@@ -287,11 +291,13 @@ function TableOptions(props: TableOptionsProps) {
           props.httpPathHandler,
           setExportProgress,
           statusToken
-        ).then((data) => {
-          const csvData = asString(generateCsv(csvConfig)(data));
-          fileWriter(fileName + ".csv", csvData);
-          setExportStatus(ExportStatus.FINISHED);
-        });
+        )
+          .then((data) => {
+            const csvData = asString(generateCsv(csvConfig)(data));
+            fileWriter(fileName + ".csv", csvData);
+            setExportStatus(ExportStatus.FINISHED);
+          })
+          .catch(() => setExportStatus(ExportStatus.CANCELLED));
       } else {
         if (statusToken.status !== ExportStatus.CANCELLED) {
           setTimeout(() => {
