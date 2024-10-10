@@ -18,11 +18,13 @@ interface ResultsPanelProps extends DataProps {
 
 function getDefaultFileNamePrefix(project: string, searchParameters: string) {
   // Create the default file name prefix based on the project and search parameters
-  // Use the underscore+alphanumeric characters of the search values, and limits prefix to 50 characters
+  // Uses filter/search values only, replaces commas and spaces with underscores,
+  // removes special characters, and truncates to 50 characters
   return [["", project]]
     .concat(Array.from(new URLSearchParams(searchParameters).entries()))
-    .map(([, value]) => value)
-    .map((value) => value.split(",").map((v) => v.replace(/[\W_]+/g, "")))
+    .map(([, value]) =>
+      value.split(/[ ,]+/).map((v) => v.replace(/[^a-zA-Z0-9_/-]/, ""))
+    )
     .flat()
     .join("_")
     .slice(0, 50);
