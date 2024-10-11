@@ -28,34 +28,52 @@ function useExportStatusToken() {
   const readyExport = () => (statusRef.current.status = ExportStatus.READY);
   return {
     statusToken: statusRef.current,
-    cancelExport,
     readyExport,
+    cancelExport,
   };
+}
+
+function isInvalidPrefix(prefix: string) {
+  return (
+    !/^[a-zA-Z0-9_/-]+$/.test(prefix.trim()) ||
+    prefix.trim().length < 5 ||
+    prefix.trim().length > 50
+  );
 }
 
 function ExportModal(props: ExportModalProps) {
   const [exportStatus, setExportStatus] = useState(ExportStatus.READY);
   const [exportProgress, setExportProgress] = useState(0);
-  const [fileNamePrefix, setFileNamePrefix] = useState(
-    props.defaultFileNamePrefix
-  );
+  const [fileNamePrefix, setFileNamePrefix] = useState("");
+  const [fileNameIsInvalid, setFileNameIsInvalid] = useState(false);
   const { statusToken, readyExport, cancelExport } = useExportStatusToken();
 
   const handleExportRunning = () => {
+    const prefix = fileNamePrefix
+      ? fileNamePrefix
+      : props.defaultFileNamePrefix;
+
+    if (isInvalidPrefix(prefix)) {
+      setFileNameIsInvalid(true);
+      return;
+    } else setFileNameIsInvalid(false);
+
     setExportProgress(0);
     readyExport();
     setExportStatus(ExportStatus.RUNNING);
-    props.handleExport(
-      fileNamePrefix.trim().replace(/\.csv$/, ""),
-      statusToken,
-      setExportProgress,
-      setExportStatus
-    );
+    props.handleExport(prefix, statusToken, setExportProgress, setExportStatus);
   };
 
   const handleExportCancel = () => {
     cancelExport();
     setExportStatus(ExportStatus.CANCELLED);
+  };
+
+  const handleFileNamePrefixChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFileNameIsInvalid(false);
+    setFileNamePrefix(e.target.value);
   };
 
   return (
@@ -79,13 +97,27 @@ function ExportModal(props: ExportModalProps) {
           <InputGroup className="mb-3">
             <InputGroup.Text>File Name</InputGroup.Text>
             <Form.Control
-              placeholder={`${props.defaultFileNamePrefix}`}
-              onChange={(e) => setFileNamePrefix(e.target.value)}
+              value={fileNamePrefix}
+              placeholder={props.defaultFileNamePrefix}
+              onChange={handleFileNamePrefixChange}
+              onKeyUp={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  props.defaultFileNamePrefix.startsWith(fileNamePrefix)
+                )
+                  setFileNamePrefix(props.defaultFileNamePrefix);
+              }}
+              isInvalid={fileNameIsInvalid}
             />
             <InputGroup.Text>{props.fileExtension}</InputGroup.Text>
+            <Form.Control.Feedback type="invalid">
+              Name must be 5 to 50 alphanumeric, underscore or dash characters.
+            </Form.Control.Feedback>
             <Form.Text muted>
-              <b>Warning:</b> If the file already exists, it will be
-              overwritten.
+              <span>
+                <b>Warning:</b> If the file already exists, it will be
+                overwritten.
+              </span>
             </Form.Text>
           </InputGroup>
         )}
@@ -111,6 +143,16 @@ function ExportModal(props: ExportModalProps) {
               Export Finished.
             </Form.Label>
             <ProgressBar now={exportProgress} />
+            <Form.Text className="d-flex justify-content-center">
+              <span>
+                File Name:{" "}
+                <b>
+                  {(fileNamePrefix
+                    ? fileNamePrefix
+                    : props.defaultFileNamePrefix) + props.fileExtension}
+                </b>
+              </span>
+            </Form.Text>
           </Form.Group>
         )}
       </Modal.Body>
