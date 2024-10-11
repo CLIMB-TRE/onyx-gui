@@ -100,7 +100,7 @@ function ExportModal(props: ExportModalProps) {
               value={fileNamePrefix}
               placeholder={props.defaultFileNamePrefix}
               onChange={handleFileNamePrefixChange}
-              onKeyUp={(event) => {
+              onKeyDown={(event) => {
                 if (
                   event.key === "Enter" &&
                   props.defaultFileNamePrefix.startsWith(fileNamePrefix)
