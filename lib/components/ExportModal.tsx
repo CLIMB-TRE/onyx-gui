@@ -4,7 +4,7 @@ import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import { DataProps } from "../interfaces";
+import { DataProps, ExportHandlerProps } from "../interfaces";
 import { ExportStatus } from "../types";
 
 interface ExportModalProps extends DataProps {
@@ -13,12 +13,7 @@ interface ExportModalProps extends DataProps {
   defaultFileNamePrefix: string;
   fileExtension: string;
   exportProgressMessage: string;
-  handleExport: (
-    fileName: string,
-    statusToken: { status: ExportStatus },
-    setExportProgress: (exportProgress: number) => void,
-    setExportStatus: (exportStatus: ExportStatus) => void
-  ) => void;
+  handleExport: (exportProps: ExportHandlerProps) => void;
 }
 
 function useExportStatusToken() {
@@ -61,7 +56,12 @@ function ExportModal(props: ExportModalProps) {
     setExportProgress(0);
     readyExport();
     setExportStatus(ExportStatus.RUNNING);
-    props.handleExport(prefix, statusToken, setExportProgress, setExportStatus);
+    props.handleExport({
+      fileName: prefix + props.fileExtension,
+      statusToken,
+      setExportProgress,
+      setExportStatus,
+    });
   };
 
   const handleExportCancel = () => {
@@ -111,7 +111,8 @@ function ExportModal(props: ExportModalProps) {
             />
             <InputGroup.Text>{props.fileExtension}</InputGroup.Text>
             <Form.Control.Feedback type="invalid">
-              Name must be 5 to 50 alphanumeric, underscore or dash characters.
+              Prefix must be 5 to 50 alphanumeric, underscore or dash
+              characters.
             </Form.Control.Feedback>
             <Form.Text muted>
               <span>

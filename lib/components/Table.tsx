@@ -20,7 +20,7 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import DropdownDivider from "react-bootstrap/DropdownDivider";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import { ResultData, ExportStatus } from "../types";
-import { DataProps } from "../interfaces";
+import { DataProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
@@ -239,10 +239,7 @@ function TableOptions(props: TableOptionsProps) {
     ) || []) as FormattedRowData;
   };
 
-  const getPaginatedData = async (
-    exportStatus: { status: ExportStatus },
-    setExportProgress: (exportProgress: number) => void
-  ) => {
+  const getPaginatedData = async (exportProps: ExportHandlerProps) => {
     const datas: FormattedRowData[] = [];
     let nRows = 0;
     let nextParams = new URLSearchParams(props.searchParameters);
@@ -254,7 +251,7 @@ function TableOptions(props: TableOptionsProps) {
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((result) => {
-          if (exportStatus.status === ExportStatus.CANCELLED) {
+          if (exportProps.statusToken.status === ExportStatus.CANCELLED) {
             throw new Error("Export cancelled");
           }
 
@@ -262,7 +259,9 @@ function TableOptions(props: TableOptionsProps) {
           datas.push(data);
           nextParams = result.next?.split("?", 2)[1] || "";
           nRows += data.length;
-          setExportProgress((nRows / props.rowDisplayParams.of) * 100);
+          exportProps.setExportProgress(
+            (nRows / props.rowDisplayParams.of) * 100
+          );
         });
     }
 
@@ -270,42 +269,30 @@ function TableOptions(props: TableOptionsProps) {
     return resultData;
   };
 
-  const getUnpaginatedData = async (
-    exportStatus: { status: ExportStatus },
-    setExportProgress: (exportProgress: number) => void
-  ) => {
-    exportStatus;
-    setExportProgress(100);
+  const getUnpaginatedData = async (exportProps: ExportHandlerProps) => {
+    exportProps.setExportProgress(100);
     return props.rowData;
   };
 
-  const handleCSVExport = (
-    fileName: string,
-    statusToken: { status: ExportStatus },
-    setExportProgress: (exportProgress: number) => void,
-    setExportStatus: (exportStatus: ExportStatus) => void
-  ) => {
+  const handleCSVExport = (exportProps: ExportHandlerProps) => {
     const csvConfig = mkConfig({
       useKeysAsHeaders: true,
     });
     const fileWriter = props.fileWriter;
 
     if (fileWriter) {
-      let getDataFunction: (
-        statusToken: { status: ExportStatus },
-        setExportProgress: (exportProgress: number) => void
-      ) => Promise<FormattedRowData>;
+      let getDataFunction: (e: ExportHandlerProps) => Promise<FormattedRowData>;
 
       if (props.isPaginated) getDataFunction = getPaginatedData;
       else getDataFunction = getUnpaginatedData;
 
-      getDataFunction(statusToken, setExportProgress)
+      getDataFunction(exportProps)
         .then((data) => {
           const csvData = asString(generateCsv(csvConfig)(data));
-          fileWriter(fileName + ".csv", csvData);
-          setExportStatus(ExportStatus.FINISHED);
+          fileWriter(exportProps.fileName, csvData);
+          exportProps.setExportStatus(ExportStatus.FINISHED);
         })
-        .catch(() => setExportStatus(ExportStatus.CANCELLED));
+        .catch(() => exportProps.setExportStatus(ExportStatus.CANCELLED));
     }
   };
 
@@ -317,11 +304,7 @@ function TableOptions(props: TableOptionsProps) {
         show={exportModalShow}
         handleExport={handleCSVExport}
         onHide={() => setExportModalShow(false)}
-        exportProgressMessage={
-          props.isPaginated
-            ? `Gathering ${props.rowDisplayParams.of} records...`
-            : `Gathering ${props.rowData.length} rows...`
-        }
+        exportProgressMessage={`Gathering ${props.rowDisplayParams.of} records...`}
       />
       <DropdownButton
         id="table-options"

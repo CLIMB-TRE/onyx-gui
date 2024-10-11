@@ -9,13 +9,13 @@ import Tabs from "react-bootstrap/Tabs";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
-import Toast from "react-bootstrap/Toast";
 import Container from "react-bootstrap/Container";
 import { useQuery } from "@tanstack/react-query";
 import Table from "./Table";
 import QueryHandler from "./QueryHandler";
-import { ResultData, ResultType } from "../types";
-import { DataProps } from "../interfaces";
+import { ResultData, ResultType, ExportStatus } from "../types";
+import { DataProps, ExportHandlerProps } from "../interfaces";
+import ExportModal from "./ExportModal";
 
 interface RecordModalProps extends DataProps {
   recordID: string;
@@ -47,7 +47,7 @@ function RecordDataField({
 }
 
 function RecordData(props: RecordModalProps) {
-  const [showExportToast, setShowExportToast] = useState(false);
+  const [exportModalShow, setExportModalShow] = useState(false);
 
   const DetailCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
     if (
@@ -89,15 +89,6 @@ function RecordData(props: RecordModalProps) {
     staleTime: 1 * 60 * 1000,
   });
 
-  const handleExportToJSON = () => {
-    const jsonData = JSON.stringify(recordData.data);
-
-    if (props.fileWriter) {
-      setShowExportToast(true);
-      props.fileWriter(props.recordID + ".json", jsonData);
-    }
-  };
-
   const formatTitle = (str: string) => {
     return str
       .split("_")
@@ -113,6 +104,17 @@ function RecordData(props: RecordModalProps) {
     .filter(([key]) => props.projectFields.get(key)?.type === "relation")
     .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1));
 
+  const handleJSONExport = (exportProps: ExportHandlerProps) => {
+    const fileWriter = props.fileWriter;
+
+    if (fileWriter) {
+      exportProps.setExportProgress(100);
+      const jsonData = JSON.stringify(recordData.data);
+      fileWriter(exportProps.fileName, jsonData);
+      exportProps.setExportStatus(ExportStatus.FINISHED);
+    }
+  };
+
   return (
     <QueryHandler
       isFetching={recordDataPending}
@@ -123,6 +125,15 @@ function RecordData(props: RecordModalProps) {
         id="record-data-tabs"
         defaultActiveKey="record-data-details"
       >
+        <ExportModal
+          {...props}
+          defaultFileNamePrefix={props.recordID}
+          fileExtension=".json"
+          show={exportModalShow}
+          handleExport={handleJSONExport}
+          onHide={() => setExportModalShow(false)}
+          exportProgressMessage={"Exporting record data to JSON..."}
+        />
         <Row style={{ height: "100%" }}>
           <Col xs={3} xl={2}>
             <Stack gap={1}>
@@ -162,23 +173,10 @@ function RecordData(props: RecordModalProps) {
                 size="sm"
                 disabled={!props.fileWriter}
                 variant="dark"
-                onClick={handleExportToJSON}
+                onClick={() => setExportModalShow(true)}
               >
                 Export Record to JSON
               </Button>
-              <Toast
-                onClose={() => setShowExportToast(false)}
-                show={showExportToast}
-                delay={3000}
-                autohide
-              >
-                <Toast.Header>
-                  <strong className="me-auto">Export Started</strong>
-                </Toast.Header>
-                <Toast.Body>
-                  File: <strong>{props.recordID}.json</strong>
-                </Toast.Body>
-              </Toast>
             </Stack>
           </Col>
           <Col xs={9} xl={10}>
