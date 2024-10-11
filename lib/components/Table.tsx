@@ -197,57 +197,6 @@ function TablePagination(props: BaseTableProps) {
   );
 }
 
-function formatExportResultData(resultData: ResultData) {
-  // For CSV export, we allow string, number and boolean values
-  // All other types are converted to strings
-  return (resultData.data?.map((row) =>
-    Object.fromEntries(
-      Object.entries(row).map(([key, value]) => [
-        key,
-        typeof value === "string" ||
-        typeof value === "number" ||
-        typeof value === "boolean"
-          ? value
-          : value === null
-          ? ""
-          : JSON.stringify(value),
-      ])
-    )
-  ) || []) as FormattedRowData;
-}
-
-async function getAllResultData(
-  project: string,
-  searchParams: string,
-  numPages: number,
-  httpPathHandler: (path: string) => Promise<Response>,
-  setExportProgress: (exportProgress: number) => void,
-  exportStatus: { status: ExportStatus }
-) {
-  const datas: FormattedRowData[] = [];
-  let nextParams = new URLSearchParams(searchParams);
-
-  while (nextParams) {
-    const search = new URLSearchParams(nextParams);
-
-    await httpPathHandler(`projects/${project}/?${search.toString()}`)
-      .then((response) => response.json())
-      .then((result) => {
-        if (exportStatus.status === ExportStatus.CANCELLED) {
-          throw new Error("Export cancelled");
-        }
-
-        const data = formatExportResultData(result);
-        datas.push(data);
-        nextParams = result.next?.split("?", 2)[1] || "";
-        setExportProgress(((datas.length * 1000) / (numPages * 50)) * 100);
-      });
-  }
-
-  const resultData = Array.prototype.concat.apply([], datas);
-  return resultData;
-}
-
 function TableOptions(props: TableOptionsProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
 
@@ -271,6 +220,65 @@ function TableOptions(props: TableOptionsProps) {
     [props.gridRef]
   );
 
+  const formatExportData = (resultData: ResultData) => {
+    // For CSV export, we allow string, number and boolean values
+    // All other types are converted to strings
+    return (resultData.data?.map((row) =>
+      Object.fromEntries(
+        Object.entries(row).map(([key, value]) => [
+          key,
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean"
+            ? value
+            : value === null
+            ? ""
+            : JSON.stringify(value),
+        ])
+      )
+    ) || []) as FormattedRowData;
+  };
+
+  const getPaginatedData = async (
+    exportStatus: { status: ExportStatus },
+    setExportProgress: (exportProgress: number) => void
+  ) => {
+    const datas: FormattedRowData[] = [];
+    let nRows = 0;
+    let nextParams = new URLSearchParams(props.searchParameters);
+
+    while (nextParams) {
+      const search = new URLSearchParams(nextParams);
+
+      await props
+        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
+        .then((response) => response.json())
+        .then((result) => {
+          if (exportStatus.status === ExportStatus.CANCELLED) {
+            throw new Error("Export cancelled");
+          }
+
+          const data = formatExportData(result);
+          datas.push(data);
+          nextParams = result.next?.split("?", 2)[1] || "";
+          nRows += data.length;
+          setExportProgress((nRows / props.rowDisplayParams.of) * 100);
+        });
+    }
+
+    const resultData = Array.prototype.concat.apply([], datas);
+    return resultData;
+  };
+
+  const getUnpaginatedData = async (
+    exportStatus: { status: ExportStatus },
+    setExportProgress: (exportProgress: number) => void
+  ) => {
+    exportStatus;
+    setExportProgress(100);
+    return props.rowData;
+  };
+
   const handleCSVExport = (
     fileName: string,
     statusToken: { status: ExportStatus },
@@ -283,31 +291,21 @@ function TableOptions(props: TableOptionsProps) {
     const fileWriter = props.fileWriter;
 
     if (fileWriter) {
-      if (props.isPaginated) {
-        getAllResultData(
-          props.project,
-          props.searchParameters,
-          props.paginationParams.numPages,
-          props.httpPathHandler,
-          setExportProgress,
-          statusToken
-        )
-          .then((data) => {
-            const csvData = asString(generateCsv(csvConfig)(data));
-            fileWriter(fileName + ".csv", csvData);
-            setExportStatus(ExportStatus.FINISHED);
-          })
-          .catch(() => setExportStatus(ExportStatus.CANCELLED));
-      } else {
-        if (statusToken.status !== ExportStatus.CANCELLED) {
-          setTimeout(() => {
-            const csvData = asString(generateCsv(csvConfig)(props.rowData));
-            fileWriter(fileName + ".csv", csvData);
-            setExportProgress(100);
-            setTimeout(() => setExportStatus(ExportStatus.FINISHED), 1000);
-          }, 100);
-        }
-      }
+      let getDataFunction: (
+        statusToken: { status: ExportStatus },
+        setExportProgress: (exportProgress: number) => void
+      ) => Promise<FormattedRowData>;
+
+      if (props.isPaginated) getDataFunction = getPaginatedData;
+      else getDataFunction = getUnpaginatedData;
+
+      getDataFunction(statusToken, setExportProgress)
+        .then((data) => {
+          const csvData = asString(generateCsv(csvConfig)(data));
+          fileWriter(fileName + ".csv", csvData);
+          setExportStatus(ExportStatus.FINISHED);
+        })
+        .catch(() => setExportStatus(ExportStatus.CANCELLED));
     }
   };
 
