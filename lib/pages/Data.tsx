@@ -39,7 +39,6 @@ function Data(props: DataProps) {
     setSearchParameters("");
     setRecordModalShow(false);
     setRecordModalID("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
   // Fetch data, depending on project and search parameters
