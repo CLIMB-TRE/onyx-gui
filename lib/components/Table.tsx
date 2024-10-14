@@ -217,7 +217,7 @@ function TableOptions(props: TableOptionsProps) {
   );
 
   const clearTableFilters = useCallback(
-    () => props.gridRef.current!.api.setFilterModel(null),
+    () => props.gridRef.current?.api.setFilterModel(null),
     [props.gridRef]
   );
 
@@ -332,6 +332,13 @@ function BaseTable(props: BaseTableProps) {
   const gridRef = useRef<AgGridReact<Record<string, string | number>>>(null);
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
+  const [displayedRowCount, setDisplayedRowCount] = useState(0);
+
+  const updateDisplayedRowCount = useCallback(() => {
+    if (!props.isPaginated) {
+      setDisplayedRowCount(gridRef.current?.api.getDisplayedRowCount() || 0);
+    }
+  }, [gridRef, props.isPaginated]);
 
   return (
     <Stack gap={2} style={containerStyle}>
@@ -350,6 +357,8 @@ function BaseTable(props: BaseTableProps) {
             },
           }}
           onGridReady={props.onGridReady}
+          onRowDataUpdated={updateDisplayedRowCount}
+          onFilterChanged={updateDisplayedRowCount}
           suppressMultiSort={true}
           suppressColumnVirtualisation={true}
           suppressCellFocus={true}
@@ -366,7 +375,11 @@ function BaseTable(props: BaseTableProps) {
                 <Pagination.Item>
                   {props.isCountLoading
                     ? "Loading..."
-                    : `${props.rowDisplayParams.from} to ${props.rowDisplayParams.to} of ${props.rowDisplayParams.of}`}
+                    : `${props.rowDisplayParams.from} to ${
+                        props.isPaginated
+                          ? props.rowDisplayParams.to
+                          : displayedRowCount
+                      } of ${props.rowDisplayParams.of}`}
                 </Pagination.Item>
               </Pagination>
               <TablePagination {...props} />
