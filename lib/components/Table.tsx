@@ -401,11 +401,13 @@ function Table(props: TableProps) {
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
 
   const defaultColDef = (key: string) => {
+    const prefix = props.headerTooltipPrefix || "";
+
     return {
       field: key,
       headerName: props.headerNames?.get(key) || key,
       minWidth: 200,
-      headerTooltip: props.headerTooltips?.get(props.headerTooltipPrefix + key),
+      headerTooltip: props.headerTooltips?.get(prefix + key),
     } as ColDef;
   };
 
@@ -565,11 +567,13 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   };
 
   const defaultColDef = (key: string) => {
+    const prefix = props.headerTooltipPrefix || "";
+
     return {
       field: key,
       headerName: props.headerNames?.get(key) || key,
       minWidth: 200,
-      headerTooltip: props.headerTooltips?.get(props.headerTooltipPrefix + key),
+      headerTooltip: props.headerTooltips?.get(prefix + key),
       comparator: () => 0,
     } as ColDef;
   };
