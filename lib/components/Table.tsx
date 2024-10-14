@@ -10,6 +10,7 @@ import {
   ModuleRegistry,
   ITooltipParams,
 } from "@ag-grid-community/core";
+import { CsvExportModule } from "@ag-grid-community/csv-export";
 import { useQuery } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
@@ -23,12 +24,12 @@ import { ResultData, ExportStatus } from "../types";
 import { DataProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
 
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
+ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
-type FormattedRowData = Record<string, string | number>[];
+type FormattedResultData = Record<string, string | number>[];
 
 interface BaseTableProps extends DataProps {
-  rowData: FormattedRowData;
+  rowData: FormattedResultData;
   columnDefs: ColDef[];
   searchParameters: string;
   defaultFileNamePrefix: string;
@@ -220,27 +221,12 @@ function TableOptions(props: TableOptionsProps) {
     [props.gridRef]
   );
 
-  const formatExportData = (resultData: ResultData) => {
-    // For CSV export, we allow string, number and boolean values
-    // All other types are converted to strings
-    return (resultData.data?.map((row) =>
-      Object.fromEntries(
-        Object.entries(row).map(([key, value]) => [
-          key,
-          typeof value === "string" ||
-          typeof value === "number" ||
-          typeof value === "boolean"
-            ? value
-            : value === null
-            ? ""
-            : JSON.stringify(value),
-        ])
-      )
-    ) || []) as FormattedRowData;
-  };
-
   const getPaginatedData = async (exportProps: ExportHandlerProps) => {
-    const datas: FormattedRowData[] = [];
+    const csvConfig = mkConfig({
+      useKeysAsHeaders: true,
+    });
+
+    const datas: FormattedResultData[] = [];
     let nRows = 0;
     let nextParams = new URLSearchParams(props.searchParameters);
 
@@ -255,7 +241,7 @@ function TableOptions(props: TableOptionsProps) {
             throw new Error("Export cancelled");
           }
 
-          const data = formatExportData(result);
+          const data = formatResultData(result);
           datas.push(data);
           nextParams = result.next?.split("?", 2)[1] || "";
           nRows += data.length;
@@ -266,30 +252,30 @@ function TableOptions(props: TableOptionsProps) {
     }
 
     const resultData = Array.prototype.concat.apply([], datas);
-    return resultData;
+
+    const csvData = asString(generateCsv(csvConfig)(resultData));
+
+    return csvData;
   };
 
   const getUnpaginatedData = async (exportProps: ExportHandlerProps) => {
     exportProps.setExportProgress(100);
-    return props.rowData;
+    const csvData = props.gridRef.current?.api.getDataAsCsv();
+    return csvData || "";
   };
 
   const handleCSVExport = (exportProps: ExportHandlerProps) => {
-    const csvConfig = mkConfig({
-      useKeysAsHeaders: true,
-    });
     const fileWriter = props.fileWriter;
 
     if (fileWriter) {
-      let getDataFunction: (e: ExportHandlerProps) => Promise<FormattedRowData>;
+      let getDataFunction: (e: ExportHandlerProps) => Promise<string>;
 
       if (props.isPaginated) getDataFunction = getPaginatedData;
       else getDataFunction = getUnpaginatedData;
 
       getDataFunction(exportProps)
         .then((data) => {
-          const csvData = asString(generateCsv(csvConfig)(data));
-          fileWriter(exportProps.fileName, csvData);
+          fileWriter(exportProps.fileName, data);
           exportProps.setExportStatus(ExportStatus.FINISHED);
         })
         .catch(() => exportProps.setExportStatus(ExportStatus.CANCELLED));
@@ -398,7 +384,7 @@ function BaseTable(props: BaseTableProps) {
 }
 
 function Table(props: TableProps) {
-  const [rowData, setRowData] = useState<FormattedRowData>([]);
+  const [rowData, setRowData] = useState<FormattedResultData>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
 
   const defaultColDef = (key: string) => {
@@ -447,8 +433,8 @@ function Table(props: TableProps) {
 }
 
 function ServerPaginatedTable(props: ServerPaginatedTableProps) {
-  const [resultData, setResultData] = useState<FormattedRowData>([]);
-  const [rowData, setRowData] = useState<FormattedRowData>([]);
+  const [resultData, setResultData] = useState<FormattedResultData>([]);
+  const [rowData, setRowData] = useState<FormattedResultData>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
   const [userPageNumber, setUserPageNumber] = useState(1);
   const [serverPageNumber, setServerPageNumber] = useState(1);
@@ -487,7 +473,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const prevPage = !!(prevParams || userPageNumber > 1);
   const nextPage = !!(nextParams || userPageNumber < countData.numPages);
 
-  const getRowData = (resultData: FormattedRowData, resultsPage: number) => {
+  const getRowData = (resultData: FormattedResultData, resultsPage: number) => {
     return resultData.slice(
       (resultsPage - 1) * userPageSize,
       resultsPage * userPageSize
@@ -503,7 +489,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     };
   };
 
-  const handleRowData = (rowData: FormattedRowData, userPage: number) => {
+  const handleRowData = (rowData: FormattedResultData, userPage: number) => {
     setRowData(rowData);
     setUserRowCounts({
       fromCount: (userPage - 1) * userPageSize + (rowData.length >= 1 ? 1 : 0),
