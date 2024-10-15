@@ -477,7 +477,9 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
         .then((data) => {
           return {
             count: data.data.count,
-            numPages: Math.ceil(data.data.count / userPageSize),
+            numPages: data.data.count
+              ? Math.ceil(data.data.count / userPageSize)
+              : 1,
           };
         });
     },
