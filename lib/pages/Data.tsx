@@ -1,4 +1,9 @@
-import React, { useState, useLayoutEffect, useCallback } from "react";
+import React, {
+  useState,
+  useLayoutEffect,
+  useCallback,
+  // useEffect,
+} from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -12,6 +17,19 @@ import RecordModal from "../components/RecordModal";
 import { FilterField } from "../types";
 import { DataProps } from "../interfaces";
 import generateKey from "../utils/generateKey";
+
+// const useDebouncedValue = (inputValue: string, delay: number) => {
+//   const [debouncedValue, setDebouncedValue] = useState(inputValue);
+//   useEffect(() => {
+//     const handler = setTimeout(() => {
+//       setDebouncedValue(inputValue);
+//     }, delay);
+//     return () => {
+//       clearTimeout(handler);
+//     };
+//   }, [inputValue, delay]);
+//   return debouncedValue;
+// };
 
 function Data(props: DataProps) {
   const defaultFilterList = () =>
@@ -40,6 +58,29 @@ function Data(props: DataProps) {
     setRecordModalShow(false);
     setRecordModalID("");
   }, [props.project]);
+
+  // const sParams = new URLSearchParams(
+  //   filterList
+  //     .filter((filter) => filter.field)
+  //     .map((filter) => {
+  //       if (filter.lookup) {
+  //         return [filter.field + "__" + filter.lookup, filter.value];
+  //       } else {
+  //         return [filter.field, filter.value];
+  //       }
+  //     })
+  //     .concat(
+  //       transformList
+  //         .filter((field) => field)
+  //         .map((field) => [transform.toLowerCase(), field])
+  //     )
+  //     .concat(
+  //       [searchInput]
+  //         .filter((search) => search)
+  //         .map((search) => ["search", search])
+  //     )
+  // ).toString();
+  // const searchParameters = useDebouncedValue(sParams, 1000);
 
   // Fetch data, depending on project and search parameters
   const {
@@ -149,7 +190,6 @@ function Data(props: DataProps) {
           resultError={resultError instanceof Error ? resultError : null}
           resultData={resultData}
           searchParameters={searchParameters}
-          setSearchParameters={setSearchParameters}
           handleRecordModalShow={handleRecordModalShow}
         />
       </Stack>

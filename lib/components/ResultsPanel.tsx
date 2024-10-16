@@ -12,7 +12,6 @@ interface ResultsPanelProps extends DataProps {
   resultError: Error | null;
   resultData: ResultData;
   searchParameters: string;
-  setSearchParameters: (params: string) => void;
   handleRecordModalShow: (climbID: string) => void;
 }
 
