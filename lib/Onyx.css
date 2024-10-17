@@ -51,12 +51,12 @@
 }
 
 .onyx-parameters-panel-body {
-  height: 15vh;
+  height: 33vh;
   overflow-y: scroll;
 }
 
 .onyx-results-panel-body {
-  height: 52.4vh;
+  height: 78vh;
 }
 
 .onyx-graphs-panel-body {
@@ -88,4 +88,21 @@
 
 .onyx-modal-tab-pane {
   height: 70vh;
+}
+
+.parent {
+  display: flex;
+  width: 100%;
+}
+
+.left-col {
+  resize: horizontal;
+  overflow: auto;
+  min-width: 300px;
+  width: 300px;
+}
+
+.right-col {
+  flex-grow: 1;
+  min-width: 50%;
 }

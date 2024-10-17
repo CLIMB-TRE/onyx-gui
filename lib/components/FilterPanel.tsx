@@ -1,7 +1,8 @@
-import React from "react";
+import { useState, useLayoutEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
 import Filter from "./Filter";
 import { FilterField } from "../types";
@@ -14,49 +15,69 @@ interface FilterPanelProps extends DataProps {
   filterFieldOptions: string[];
 }
 
+function formatLookup(lookup: string) {
+  switch (lookup) {
+    case "exact":
+      return "==";
+    case "ne":
+      return "!=";
+    case "lt":
+      return "<";
+    case "lte":
+      return "<=";
+    case "gt":
+      return ">";
+    case "gte":
+      return ">=";
+    default:
+      return lookup.toUpperCase();
+  }
+}
+
+function formatValue(value: string) {
+  let valueSet = value.split(",").map((v) => `"${v}"`);
+  if (valueSet.length > 10) {
+    valueSet = valueSet
+      .slice(0, 10)
+      .concat([`... [${(valueSet.length - 10).toString()} more]`]);
+  }
+  return valueSet.join(", ");
+}
+
+function formatFilter(filter: FilterField) {
+  if (!filter.field && !filter.lookup && !filter.value) {
+    return "Empty Filter";
+  }
+
+  if (!filter.field || !filter.lookup) {
+    return "Incomplete Filter";
+  }
+
+  return `${filter.field} ${formatLookup(filter.lookup)} ${formatValue(
+    filter.value
+  )}`;
+}
+
 function FilterPanel(props: FilterPanelProps) {
-  const handleFilterFieldChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    index: number
-  ) => {
-    const list = [...props.filterList];
-    const field = props.projectFields.get(e.target.value);
-    list[index].field = e.target.value;
-    list[index].lookup = props.typeLookups.get(field?.type || "")?.[0] || "";
+  const [editMode, setEditMode] = useState(false);
+  const [editFilter, setEditFilter] = useState({} as FilterField);
+  const [editIndex, setEditIndex] = useState(0);
 
-    if (list[index].lookup === "isnull") {
-      list[index].value = "true";
-    } else {
-      list[index].value = "";
-    }
-    props.setFilterList(list);
-  };
+  // Clear parameters when project changes
+  useLayoutEffect(() => {
+    setEditMode(false);
+    setEditFilter({} as FilterField);
+    setEditIndex(0);
+  }, [props.project]);
 
-  const handleFilterLookupChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    index: number
-  ) => {
-    const list = [...props.filterList];
-    list[index].lookup = e.target.value;
-
-    if (list[index].lookup === "isnull") {
-      list[index].value = "true";
-    } else {
-      list[index].value = "";
-    }
-    props.setFilterList(list);
-  };
-
-  const handleFilterValueChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-    index: number
-  ) => {
-    const list = [...props.filterList];
-    list[index].value = e.target.value;
-    props.setFilterList(list);
+  const handleEditMode = (filter: FilterField, index: number) => {
+    setEditMode(true);
+    setEditFilter(filter);
+    setEditIndex(index);
   };
 
   const handleFilterAdd = (index: number) => {
+    setEditMode(false);
     props.setFilterList([
       ...props.filterList.slice(0, index),
       {
@@ -76,13 +97,14 @@ function FilterPanel(props: FilterPanelProps) {
   };
 
   const handleFilterClear = () => {
+    setEditMode(false);
     props.setFilterList([]);
   };
 
   return (
     <Card>
       <Card.Header>
-        <span>Filter</span>
+        <span>Filters</span>
         <Stack direction="horizontal" gap={1} className="float-end">
           <Button
             size="sm"
@@ -97,21 +119,41 @@ function FilterPanel(props: FilterPanelProps) {
         </Stack>
       </Card.Header>
       <Container fluid className="onyx-parameters-panel-body p-2">
-        <Stack gap={1}>
-          {props.filterList.map((filter, index) => (
-            <Filter
-              {...props}
-              key={filter.key}
-              filter={filter}
-              fieldList={props.filterFieldOptions}
-              handleFieldChange={(e) => handleFilterFieldChange(e, index)}
-              handleLookupChange={(e) => handleFilterLookupChange(e, index)}
-              handleValueChange={(e) => handleFilterValueChange(e, index)}
-              handleFilterAdd={() => handleFilterAdd(index + 1)}
-              handleFilterRemove={() => handleFilterRemove(index)}
-            />
-          ))}
-        </Stack>
+        {editMode ? (
+          <Filter
+            {...props}
+            key={editFilter.key}
+            index={editIndex}
+            fieldList={props.filterFieldOptions}
+            setEditMode={setEditMode}
+          />
+        ) : (
+          <Stack gap={2}>
+            {props.filterList.map((filter, index) => (
+              <Container fluid className="g-0">
+                <ButtonGroup size="sm">
+                  <Button
+                    variant="dark"
+                    onClick={() => handleEditMode(filter, index)}
+                  >
+                    <span
+                      className="onyx-text-pink"
+                      style={{ fontFamily: "monospace" }}
+                    >
+                      {formatFilter(filter)}
+                    </span>
+                  </Button>
+                  <Button
+                    variant="dark"
+                    onClick={() => handleFilterRemove(index)}
+                  >
+                    X
+                  </Button>
+                </ButtonGroup>
+              </Container>
+            ))}
+          </Stack>
+        )}
       </Container>
     </Card>
   );
