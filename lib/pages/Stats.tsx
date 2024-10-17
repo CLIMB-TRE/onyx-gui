@@ -245,7 +245,6 @@ function Stats(props: StatsProps) {
   // Reset graphs when project changes
   useLayoutEffect(() => {
     setGraphConfigList(defaultGraphConfig());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
   const handleGraphConfigTypeChange = (
