@@ -135,7 +135,7 @@ function Data(props: DataProps) {
       <div className="parent h-100">
         <div className="left-col h-100">
           <Container fluid className="g-2 h-100">
-            <Stack gap={2} className="h-100">
+            <Stack gap={2} className="h-100 p-1">
               <SearchBar
                 {...props}
                 searchInput={searchInput}
