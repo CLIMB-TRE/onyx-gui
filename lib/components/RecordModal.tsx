@@ -134,7 +134,7 @@ function RecordData(props: RecordModalProps) {
           onHide={() => setExportModalShow(false)}
           exportProgressMessage={"Exporting record data to JSON..."}
         />
-        <Row style={{ height: "100%" }}>
+        <Row className="h-100">
           <Col xs={3} xl={2}>
             <Stack gap={1}>
               <hr />
@@ -180,11 +180,8 @@ function RecordData(props: RecordModalProps) {
             </Stack>
           </Col>
           <Col xs={9} xl={10}>
-            <Tab.Content style={{ height: "100%" }}>
-              <Tab.Pane
-                eventKey="record-data-details"
-                style={{ height: "100%" }}
-              >
+            <Tab.Content className="h-100">
+              <Tab.Pane eventKey="record-data-details" className="h-100">
                 <h5>Details</h5>
                 <Table
                   {...props}
@@ -202,7 +199,7 @@ function RecordData(props: RecordModalProps) {
                 />
               </Tab.Pane>
               {relationFields.map(([key, value]) => (
-                <Tab.Pane key={key} eventKey={key} style={{ height: "100%" }}>
+                <Tab.Pane key={key} eventKey={key} className="h-100">
                   <h5>{formatTitle(key)}</h5>
                   <Table
                     {...props}

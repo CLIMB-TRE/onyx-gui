@@ -102,7 +102,7 @@ function FilterPanel(props: FilterPanelProps) {
   };
 
   return (
-    <Card>
+    <Card className="h-50">
       <Card.Header>
         <span>Filters</span>
         <Stack direction="horizontal" gap={1} className="float-end">
@@ -118,7 +118,7 @@ function FilterPanel(props: FilterPanelProps) {
           </Button>
         </Stack>
       </Card.Header>
-      <Container fluid className="onyx-parameters-panel-body p-2">
+      <Container fluid className="overflow-y-scroll p-2 h-100">
         {editMode ? (
           <Filter
             {...props}

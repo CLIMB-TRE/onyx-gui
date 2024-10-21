@@ -36,9 +36,9 @@ function ResultsPanel(props: ResultsPanelProps) {
   );
 
   return (
-    <Card>
+    <Card className="h-100">
       <Card.Header>Results</Card.Header>
-      <Container fluid className="onyx-results-panel-body p-2 pb-0">
+      <Container fluid className="p-2 pb-0 h-100">
         <QueryHandler
           isFetching={props.resultPending}
           error={props.resultError}

@@ -50,20 +50,6 @@
   height: 50px;
 }
 
-.onyx-parameters-panel-body {
-  height: 33vh;
-  overflow-y: scroll;
-}
-
-.onyx-results-panel-body {
-  height: 78vh;
-}
-
-.onyx-graphs-panel-body {
-  height: 78vh;
-  overflow-y : scroll;
-}
-
 .onyx-text-pink {
   color: var(--bs-code-color);
 }

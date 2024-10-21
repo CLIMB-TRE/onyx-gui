@@ -150,7 +150,7 @@ function App(props: OnyxProps) {
   });
 
   return (
-    <Stack gap={2} className="Onyx">
+    <Stack gap={2} className="Onyx h-100">
       <Header
         {...props}
         projectName={projectInfoPending ? "Loading..." : projectName}
@@ -163,8 +163,8 @@ function App(props: OnyxProps) {
         handleThemeChange={() => setDarkMode(!darkMode)}
       />
       <Tab.Container activeKey={tabKey}>
-        <Tab.Content>
-          <Tab.Pane eventKey="data">
+        <Tab.Content className="h-100">
+          <Tab.Pane eventKey="data" className="h-100">
             <Data
               {...props}
               project={project}
@@ -174,7 +174,7 @@ function App(props: OnyxProps) {
               lookupDescriptions={lookupDescriptions}
             />
           </Tab.Pane>
-          <Tab.Pane eventKey="stats">
+          <Tab.Pane eventKey="stats" className="h-100">
             <Stats
               {...props}
               project={project}

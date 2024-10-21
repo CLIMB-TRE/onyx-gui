@@ -125,43 +125,45 @@ function Data(props: DataProps) {
   };
 
   return (
-    <Container fluid className="g-2">
+    <Container fluid className="g-2 h-100">
       <RecordModal
         {...props}
         recordID={recordModalID}
         show={recordModalShow}
         onHide={handleRecordModalHide}
       />
-      <div className="parent">
-        <div className="left-col">
-          <Container fluid className="g-2">
-            <Stack gap={2}>
+      <div className="parent h-100">
+        <div className="left-col h-100">
+          <Container fluid className="g-2 h-100">
+            <Stack gap={2} className="h-100">
               <SearchBar
                 {...props}
                 searchInput={searchInput}
                 setSearchInput={setSearchInput}
                 handleSearch={handleSearch}
               />
-              <FilterPanel
-                {...props}
-                filterList={filterList}
-                setFilterList={setFilterList}
-                filterFieldOptions={filterFieldOptions}
-              />
-              <TransformsPanel
-                {...props}
-                transform={transform}
-                setTransform={setTransform}
-                transformList={transformList}
-                setTransformList={setTransformList}
-                filterFieldOptions={filterFieldOptions}
-                listFieldOptions={listFieldOptions}
-              />
+              <Stack gap={2} className="h-100 overflow-y-hidden">
+                <FilterPanel
+                  {...props}
+                  filterList={filterList}
+                  setFilterList={setFilterList}
+                  filterFieldOptions={filterFieldOptions}
+                />
+                <TransformsPanel
+                  {...props}
+                  transform={transform}
+                  setTransform={setTransform}
+                  transformList={transformList}
+                  setTransformList={setTransformList}
+                  filterFieldOptions={filterFieldOptions}
+                  listFieldOptions={listFieldOptions}
+                />
+              </Stack>
             </Stack>
           </Container>
         </div>
-        <div className="right-col">
-          <Container fluid className="g-2">
+        <div className="right-col h-100">
+          <Container fluid className="g-2 h-100">
             {props.project && (
               <ResultsPanel
                 {...props}
