@@ -28,6 +28,13 @@ type ResultData = {
   messages?: ErrorType;
 };
 
+enum ExportStatus {
+  READY,
+  RUNNING,
+  FINISHED,
+  CANCELLED,
+}
+
 export type {
   ProjectField,
   FilterField,
@@ -36,3 +43,5 @@ export type {
   ErrorType,
   ResultData,
 };
+
+export { ExportStatus };
