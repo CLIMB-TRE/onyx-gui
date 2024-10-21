@@ -38,7 +38,9 @@ function flattenFields(fields: Record<string, ProjectField>) {
 }
 
 function App(props: OnyxProps) {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("onyx-theme") === "dark"
+  );
   const [project, setProject] = useState("");
   const [tabKey, setTabKey] = useState("data");
 
@@ -47,6 +49,12 @@ function App(props: OnyxProps) {
     const htmlElement = document.querySelector("html");
     htmlElement?.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
+
+  const handleThemeChange = () => {
+    const darkModeChange = !darkMode;
+    setDarkMode(darkModeChange);
+    localStorage.setItem("onyx-theme", darkModeChange ? "dark" : "light");
+  };
 
   // Fetch the project list
   const { data: projects = [] } = useQuery({
@@ -160,7 +168,7 @@ function App(props: OnyxProps) {
         tabKey={tabKey}
         setTabKey={setTabKey}
         darkMode={darkMode}
-        handleThemeChange={() => setDarkMode(!darkMode)}
+        handleThemeChange={handleThemeChange}
       />
       <Tab.Container activeKey={tabKey}>
         <Tab.Content className="h-100">
