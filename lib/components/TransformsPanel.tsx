@@ -27,7 +27,7 @@ function TransformsPanel(props: TransformsPanelProps) {
   };
 
   return (
-    <Card>
+    <Card className="h-50">
       <Card.Header>
         <NavDropdown title={props.transform}>
           {["Summarise", "Include", "Exclude"].map((action) => (
@@ -40,7 +40,7 @@ function TransformsPanel(props: TransformsPanelProps) {
           ))}
         </NavDropdown>
       </Card.Header>
-      <Container fluid className="onyx-parameters-panel-body p-2">
+      <Container fluid className="overflow-y-scroll p-2 h-100">
         <MultiDropdown
           options={
             props.transform === "Summarise"

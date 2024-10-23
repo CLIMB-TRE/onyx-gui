@@ -10,13 +10,13 @@
 }
 
 [data-bs-theme=dark] {
-  --onyx-dropdown-control-border-color: var(--bs-gray-700);
+  --onyx-dropdown-control-border-color: var(--bs-gray-800);
   --onyx-dropdown-control-background-color: var(--bs-body-bg);
   --onyx-dropdown-menu-background-color: var(--bs-black);
-  --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-700);
+  --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-800);
   --onyx-dropdown-label-color: var(--bs-white);
   --onyx-dropdown-option-background-color: var(--bs-black);
-  --onyx-dropdown-option-hover-background-color: var(--bs-gray-700);
+  --onyx-dropdown-option-hover-background-color: var(--bs-gray-800);
   --onyx-dropdown-option-description-color: var(--bs-gray-500);
 }
 
@@ -38,7 +38,7 @@
 }
 
 [data-bs-theme=dark] .btn-dark {
-  --bs-btn-bg:  var(--bs-gray-700);
+  --bs-btn-bg:  var(--bs-gray-800);
 }
 
 .card-header {
@@ -50,20 +50,6 @@
   height: 50px;
 }
 
-.onyx-parameters-panel-body {
-  height: 15vh;
-  overflow-y: scroll;
-}
-
-.onyx-results-panel-body {
-  height: 53vh;
-}
-
-.onyx-graphs-panel-body {
-  height: 78vh;
-  overflow-y : scroll;
-}
-
 .onyx-text-pink {
   color: var(--bs-code-color);
 }
@@ -71,8 +57,11 @@
 .ag-theme-quartz {
   --ag-background-color: var(--bs-body-bg);
   --ag-foreground-color: var(--bs-body-color);
-  --ag-checkbox-unchecked-color: var(--bs-green);
   --ag-font-family: monospace;
+}
+
+.onyx-modal {
+  font-size: var(--bs-body-font-size);
 }
 
 .onyx-modal-dialog {
@@ -85,4 +74,21 @@
 
 .onyx-modal-tab-pane {
   height: 70vh;
+}
+
+.parent {
+  display: flex;
+  width: 100%;
+}
+
+.left-col {
+  resize: horizontal;
+  overflow: auto;
+  min-width: 300px;
+  width: 300px;
+}
+
+.right-col {
+  flex-grow: 1;
+  min-width: 500px;
 }

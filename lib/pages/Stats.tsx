@@ -75,7 +75,9 @@ function GraphPanelGraph(props: GraphPanelProps) {
       g = <PieGraph {...props} field={props.field} />;
       break;
     default:
-      g = <BaseGraph {...props} data={[]} title="Empty Graph" uirevision={0} />;
+      g = (
+        <BaseGraph {...props} data={[]} title="Empty Graph" uirevision={""} />
+      );
   }
   return g;
 }
@@ -191,7 +193,7 @@ function GraphPanel(props: GraphPanelProps) {
                 </Button>
               </Stack>
             </Card.Header>
-            <Card.Body style={{ overflowY: "scroll" }}>
+            <Card.Body className="overflow-y-scroll">
               <GraphPanelOptions {...props} />
             </Card.Body>
           </Card>
@@ -243,7 +245,6 @@ function Stats(props: StatsProps) {
   // Reset graphs when project changes
   useLayoutEffect(() => {
     setGraphConfigList(defaultGraphConfig());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
   const handleGraphConfigTypeChange = (
@@ -316,8 +317,8 @@ function Stats(props: StatsProps) {
   };
 
   return (
-    <Container fluid className="g-2">
-      <Card>
+    <Container fluid className="g-2 h-100">
+      <Card className="h-100">
         <Card.Header>
           <span>Graphs</span>
           <Stack direction="horizontal" gap={1} className="float-end">
@@ -350,7 +351,7 @@ function Stats(props: StatsProps) {
             </DropdownButton>
           </Stack>
         </Card.Header>
-        <Container fluid className="onyx-graphs-panel-body p-2">
+        <Container fluid className="overflow-y-scroll p-2 h-100">
           <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
               <Col key={graphConfig.key} lg={viewMode === "wide" ? 12 : 6}>

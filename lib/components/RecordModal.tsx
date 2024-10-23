@@ -9,13 +9,13 @@ import Tabs from "react-bootstrap/Tabs";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
-import Toast from "react-bootstrap/Toast";
 import Container from "react-bootstrap/Container";
 import { useQuery } from "@tanstack/react-query";
 import Table from "./Table";
 import QueryHandler from "./QueryHandler";
-import { ResultData, ResultType } from "../types";
-import { DataProps } from "../interfaces";
+import { ResultData, ResultType, ExportStatus } from "../types";
+import { DataProps, ExportHandlerProps } from "../interfaces";
+import ExportModal from "./ExportModal";
 
 interface RecordModalProps extends DataProps {
   recordID: string;
@@ -47,7 +47,31 @@ function RecordDataField({
 }
 
 function RecordData(props: RecordModalProps) {
-  const [showExportToast, setShowExportToast] = useState(false);
+  const [exportModalShow, setExportModalShow] = useState(false);
+
+  const DetailCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
+    if (
+      props.s3PathHandler &&
+      typeof cellRendererProps.value === "string" &&
+      cellRendererProps.value.startsWith("s3://") &&
+      cellRendererProps.value.endsWith(".html")
+    ) {
+      return (
+        <Button
+          className="p-0"
+          size="sm"
+          variant="link"
+          onClick={() =>
+            props.s3PathHandler && props.s3PathHandler(cellRendererProps.value)
+          }
+        >
+          {cellRendererProps.value}
+        </Button>
+      );
+    } else {
+      return cellRendererProps.value;
+    }
+  };
 
   // Fetch record data, depending on project and record ID
   const {
@@ -65,15 +89,6 @@ function RecordData(props: RecordModalProps) {
     staleTime: 1 * 60 * 1000,
   });
 
-  const handleExportToJSON = () => {
-    const jsonData = JSON.stringify(recordData.data);
-
-    if (props.fileWriter) {
-      setShowExportToast(true);
-      props.fileWriter(props.recordID + ".json", jsonData);
-    }
-  };
-
   const formatTitle = (str: string) => {
     return str
       .split("_")
@@ -85,9 +100,20 @@ function RecordData(props: RecordModalProps) {
     ([key]) => props.projectFields.get(key)?.type !== "relation"
   );
 
-  const relationFields = Object.entries(recordData.data).filter(
-    ([key]) => props.projectFields.get(key)?.type === "relation"
-  );
+  const relationFields = Object.entries(recordData.data)
+    .filter(([key]) => props.projectFields.get(key)?.type === "relation")
+    .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1));
+
+  const handleJSONExport = (exportProps: ExportHandlerProps) => {
+    const fileWriter = props.fileWriter;
+
+    if (fileWriter) {
+      exportProps.setExportProgress(100);
+      const jsonData = JSON.stringify(recordData.data);
+      fileWriter(exportProps.fileName, jsonData);
+      exportProps.setExportStatus(ExportStatus.FINISHED);
+    }
+  };
 
   return (
     <QueryHandler
@@ -99,7 +125,16 @@ function RecordData(props: RecordModalProps) {
         id="record-data-tabs"
         defaultActiveKey="record-data-details"
       >
-        <Row style={{ height: "100%" }}>
+        <ExportModal
+          {...props}
+          defaultFileNamePrefix={props.recordID}
+          fileExtension=".json"
+          show={exportModalShow}
+          handleExport={handleJSONExport}
+          onHide={() => setExportModalShow(false)}
+          exportProgressMessage={"Exporting record data to JSON..."}
+        />
+        <Row className="h-100">
           <Col xs={3} xl={2}>
             <Stack gap={1}>
               <hr />
@@ -138,33 +173,18 @@ function RecordData(props: RecordModalProps) {
                 size="sm"
                 disabled={!props.fileWriter}
                 variant="dark"
-                onClick={handleExportToJSON}
+                onClick={() => setExportModalShow(true)}
               >
                 Export Record to JSON
               </Button>
-              <Toast
-                onClose={() => setShowExportToast(false)}
-                show={showExportToast}
-                delay={3000}
-                autohide
-              >
-                <Toast.Header>
-                  <strong className="me-auto">Export Started</strong>
-                </Toast.Header>
-                <Toast.Body>
-                  File: <strong>{props.recordID}.json</strong>
-                </Toast.Body>
-              </Toast>
             </Stack>
           </Col>
           <Col xs={9} xl={10}>
-            <Tab.Content style={{ height: "100%" }}>
-              <Tab.Pane
-                eventKey="record-data-details"
-                style={{ height: "100%" }}
-              >
+            <Tab.Content className="h-100">
+              <Tab.Pane eventKey="record-data-details" className="h-100">
                 <h5>Details</h5>
                 <Table
+                  {...props}
                   data={
                     {
                       data: detailFields.map(([key, value]) => ({
@@ -173,19 +193,20 @@ function RecordData(props: RecordModalProps) {
                       })),
                     } as unknown as ResultData
                   }
-                  flexColumns={["Field", "Value"]}
-                  s3PathHandler={props.s3PathHandler}
+                  defaultFileNamePrefix={`${props.recordID}_details`}
                   footer="Table showing the top-level fields for the record."
+                  cellRenderers={new Map([["Value", DetailCellRenderer]])}
                 />
               </Tab.Pane>
               {relationFields.map(([key, value]) => (
-                <Tab.Pane key={key} eventKey={key} style={{ height: "100%" }}>
+                <Tab.Pane key={key} eventKey={key} className="h-100">
                   <h5>{formatTitle(key)}</h5>
                   <Table
+                    {...props}
                     data={{ data: value } as ResultData}
-                    titles={props.fieldDescriptions}
-                    titlePrefix={key + "__"}
-                    s3PathHandler={props.s3PathHandler}
+                    defaultFileNamePrefix={`${props.recordID}_${key}`}
+                    headerTooltips={props.fieldDescriptions}
+                    headerTooltipPrefix={key + "__"}
                     footer={
                       props.fieldDescriptions.get(key) || "No Description."
                     }
@@ -198,6 +219,11 @@ function RecordData(props: RecordModalProps) {
       </Tab.Container>
     </QueryHandler>
   );
+}
+
+function TimestampCellRenderer(props: CustomCellRendererProps) {
+  const date = new Date(props.value.toString());
+  return <span>{date.toDateString()}</span>;
 }
 
 function ActionCellRenderer(props: CustomCellRendererProps) {
@@ -288,13 +314,25 @@ function RecordHistory(props: RecordModalProps) {
       <>
         <h5>History</h5>
         <Table
+          {...props}
           data={{ data: recordHistory.data?.history } as ResultData}
-          flexColumns={["changes"]}
-          formatTitles
+          defaultFileNamePrefix={`${props.recordID}_history`}
+          flexOnly={["changes"]}
+          tooltipFields={["timestamp"]}
+          headerNames={
+            new Map([
+              ["username", "User"],
+              ["timestamp", "Date"],
+              ["action", "Action"],
+              ["changes", "Changes"],
+            ])
+          }
           footer="Table showing the complete change history for the record."
           cellRenderers={
             new Map([
+              ["timestamp", TimestampCellRenderer],
               ["action", ActionCellRenderer],
+
               ["changes", ChangeCellRenderer],
             ])
           }
@@ -307,6 +345,7 @@ function RecordHistory(props: RecordModalProps) {
 function RecordModal(props: RecordModalProps) {
   return (
     <Modal
+      className="onyx-modal"
       dialogClassName="onyx-modal-dialog"
       contentClassName="onyx-modal-content"
       show={props.show}
