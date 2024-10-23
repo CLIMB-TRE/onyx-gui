@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import Stack from "react-bootstrap/Stack";
 import Tab from "react-bootstrap/Tab";
+import Container from "react-bootstrap/Container";
 import {
   QueryClient,
   QueryClientProvider,
@@ -158,7 +158,7 @@ function App(props: OnyxProps) {
   });
 
   return (
-    <Stack gap={2} className="Onyx h-100">
+    <div className="Onyx h-100">
       <Header
         {...props}
         projectName={projectInfoPending ? "Loading..." : projectName}
@@ -170,30 +170,33 @@ function App(props: OnyxProps) {
         darkMode={darkMode}
         handleThemeChange={handleThemeChange}
       />
-      <Tab.Container activeKey={tabKey}>
-        <Tab.Content className="h-100">
-          <Tab.Pane eventKey="data" className="h-100">
-            <Data
-              {...props}
-              project={project}
-              projectFields={projectFields}
-              typeLookups={typeLookups}
-              fieldDescriptions={fieldDescriptions}
-              lookupDescriptions={lookupDescriptions}
-            />
-          </Tab.Pane>
-          <Tab.Pane eventKey="stats" className="h-100">
-            <Stats
-              {...props}
-              project={project}
-              projectFields={projectFields}
-              darkMode={darkMode}
-            />
-          </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
-      <div></div>
-    </Stack>
+      <div className="h-100" style={{ paddingTop: "60px" }}>
+        <Container fluid className="h-100 px-0 py-1">
+          <Tab.Container activeKey={tabKey}>
+            <Tab.Content className="h-100">
+              <Tab.Pane eventKey="data" className="h-100">
+                <Data
+                  {...props}
+                  project={project}
+                  projectFields={projectFields}
+                  typeLookups={typeLookups}
+                  fieldDescriptions={fieldDescriptions}
+                  lookupDescriptions={lookupDescriptions}
+                />
+              </Tab.Pane>
+              <Tab.Pane eventKey="stats" className="h-100">
+                <Stats
+                  {...props}
+                  project={project}
+                  projectFields={projectFields}
+                  darkMode={darkMode}
+                />
+              </Tab.Pane>
+            </Tab.Content>
+          </Tab.Container>
+        </Container>
+      </div>
+    </div>
   );
 }
 

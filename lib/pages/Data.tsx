@@ -135,7 +135,7 @@ function Data(props: DataProps) {
       <div className="parent h-100">
         <div className="left-col h-100">
           <Container fluid className="g-2 h-100">
-            <Stack gap={2} className="h-100 p-1">
+            <Stack gap={2} className="h-100 pt-1">
               <SearchBar
                 {...props}
                 searchInput={searchInput}
@@ -164,16 +164,14 @@ function Data(props: DataProps) {
         </div>
         <div className="right-col h-100">
           <Container fluid className="g-2 h-100">
-            {props.project && (
-              <ResultsPanel
-                {...props}
-                resultPending={resultPending}
-                resultError={resultError instanceof Error ? resultError : null}
-                resultData={resultData}
-                searchParameters={searchParameters}
-                handleRecordModalShow={handleRecordModalShow}
-              />
-            )}
+            <ResultsPanel
+              {...props}
+              resultPending={resultPending}
+              resultError={resultError instanceof Error ? resultError : null}
+              resultData={resultData}
+              searchParameters={searchParameters}
+              handleRecordModalShow={handleRecordModalShow}
+            />
           </Container>
         </div>
       </div>
