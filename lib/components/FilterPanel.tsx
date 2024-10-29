@@ -130,7 +130,7 @@ function FilterPanel(props: FilterPanelProps) {
         ) : (
           <Stack gap={2}>
             {props.filterList.map((filter, index) => (
-              <Container fluid className="g-0">
+              <Container key={filter.key} fluid className="g-0">
                 <ButtonGroup size="sm">
                   <Button
                     variant="dark"
