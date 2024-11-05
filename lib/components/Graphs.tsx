@@ -191,7 +191,14 @@ function BaseGraph(props: BaseGraphProps) {
       }}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
-      config={{ modeBarButtonsToRemove: ["toImage", "sendDataToCloud"] }}
+      config={{
+        modeBarButtonsToRemove: [
+          "toImage",
+          "lasso2d",
+          "select2d",
+          "sendDataToCloud",
+        ],
+      }}
     />
   );
 }
