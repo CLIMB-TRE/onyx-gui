@@ -55,6 +55,7 @@ interface BaseTableProps extends DataProps {
     nextParams: string;
     userPageSize: number;
     handleUserPageChange: (params: string, userPage: number) => void;
+    order: string;
   };
 }
 
@@ -232,6 +233,9 @@ function TableOptions(props: TableOptionsProps) {
 
     while (nextParams) {
       const search = new URLSearchParams(nextParams);
+
+      if (props.paginationParams.order)
+        search.set("order", props.paginationParams.order);
 
       await props
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
@@ -442,6 +446,7 @@ function Table(props: TableProps) {
         nextParams: "",
         userPageSize: 0,
         handleUserPageChange: () => {},
+        order: "",
       }}
     />
   );
@@ -460,6 +465,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     fromCount: 0,
     toCount: 0,
   });
+  const [order, setOrder] = useState("");
 
   const resultsPageSize = 1000;
   const userPageSize = 50;
@@ -535,8 +541,10 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
 
       if (direction === "asc") {
         search.set("order", field);
+        setOrder(field);
       } else if (direction === "desc") {
         search.set("order", `-${field}`);
+        setOrder(`-${field}`);
       }
     }
 
@@ -617,6 +625,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
         nextParams,
         userPageSize,
         handleUserPageChange,
+        order,
       }}
     />
   );
