@@ -223,10 +223,6 @@ function TableOptions(props: TableOptionsProps) {
   );
 
   const getPaginatedData = async (exportProps: ExportHandlerProps) => {
-    const csvConfig = mkConfig({
-      useKeysAsHeaders: true,
-    });
-
     const datas: FormattedResultData[] = [];
     let nRows = 0;
     let nextParams = new URLSearchParams(props.searchParameters);
@@ -241,21 +237,37 @@ function TableOptions(props: TableOptionsProps) {
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((result) => {
-          if (exportProps.statusToken.status === ExportStatus.CANCELLED) {
+          if (exportProps.statusToken.status === ExportStatus.CANCELLED)
             throw new Error("Export cancelled");
-          }
 
           const data = formatResultData(result);
           datas.push(data);
           nextParams = result.next?.split("?", 2)[1] || "";
           nRows += data.length;
-          exportProps.setExportProgress(
-            (nRows / props.rowDisplayParams.of) * 100
-          );
+
+          if (props.rowDisplayParams.of === 0)
+            exportProps.setExportProgress(100);
+          else
+            exportProps.setExportProgress(
+              (nRows / props.rowDisplayParams.of) * 100
+            );
         });
     }
 
     const resultData = Array.prototype.concat.apply([], datas);
+
+    let showColumnHeaders = true;
+
+    // If there are no results, disable column headers and add an empty row to the CSV
+    if (resultData.length === 0) {
+      showColumnHeaders = false;
+      resultData.push({});
+    }
+
+    const csvConfig = mkConfig({
+      useKeysAsHeaders: true,
+      showColumnHeaders: showColumnHeaders,
+    });
 
     const csvData = asString(generateCsv(csvConfig)(resultData));
 
