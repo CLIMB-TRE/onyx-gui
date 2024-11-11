@@ -199,6 +199,26 @@ function TablePagination(props: BaseTableProps) {
   );
 }
 
+function sortData(data: FormattedResultData, field: string, direction: string) {
+  if (data.length > 0 && direction === "asc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (a[field] as number) - (b[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) > (b[field] as string) ? 1 : -1
+      );
+    }
+  } else if (data.length > 0 && direction === "desc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (b[field] as number) - (a[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) < (b[field] as string) ? 1 : -1
+      );
+    }
+  }
+}
+
 function TableOptions(props: TableOptionsProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
 
@@ -234,9 +254,6 @@ function TableOptions(props: TableOptionsProps) {
     while (nextParams) {
       const search = new URLSearchParams(nextParams);
 
-      if (props.paginationParams.order)
-        search.set("order", props.paginationParams.order);
-
       await props
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
@@ -260,6 +277,15 @@ function TableOptions(props: TableOptionsProps) {
     // If there are no results, return the empty string
     if (resultData.length === 0) return "";
     else {
+      // If an order is specified, sort the data
+      if (props.paginationParams.order) {
+        sortData(
+          resultData,
+          props.paginationParams.order.replace(/^-/, ""),
+          props.paginationParams.order.startsWith("-") ? "desc" : "asc"
+        );
+      }
+
       const csvData = asString(generateCsv(csvConfig)(resultData));
       return csvData;
     }
@@ -549,6 +575,8 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       } else if (direction === "desc") {
         search.set("order", `-${field}`);
         setOrder(`-${field}`);
+      } else {
+        setOrder("");
       }
     }
 
