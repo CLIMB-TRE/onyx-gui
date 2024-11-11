@@ -223,6 +223,10 @@ function TableOptions(props: TableOptionsProps) {
   );
 
   const getPaginatedData = async (exportProps: ExportHandlerProps) => {
+    const csvConfig = mkConfig({
+      useKeysAsHeaders: true,
+    });
+
     const datas: FormattedResultData[] = [];
     let nRows = 0;
     let nextParams = new URLSearchParams(props.searchParameters);
@@ -256,22 +260,12 @@ function TableOptions(props: TableOptionsProps) {
 
     const resultData = Array.prototype.concat.apply([], datas);
 
-    let showColumnHeaders = true;
-
-    // If there are no results, disable column headers and add an empty row to the CSV
-    if (resultData.length === 0) {
-      showColumnHeaders = false;
-      resultData.push({});
+    // If there are no results, return the empty string
+    if (resultData.length === 0) return "";
+    else {
+      const csvData = asString(generateCsv(csvConfig)(resultData));
+      return csvData;
     }
-
-    const csvConfig = mkConfig({
-      useKeysAsHeaders: true,
-      showColumnHeaders: showColumnHeaders,
-    });
-
-    const csvData = asString(generateCsv(csvConfig)(resultData));
-
-    return csvData;
   };
 
   const getUnpaginatedData = async (exportProps: ExportHandlerProps) => {
