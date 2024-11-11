@@ -249,12 +249,9 @@ function TableOptions(props: TableOptionsProps) {
           nextParams = result.next?.split("?", 2)[1] || "";
           nRows += data.length;
 
-          if (props.rowDisplayParams.of === 0)
-            exportProps.setExportProgress(100);
-          else
-            exportProps.setExportProgress(
-              (nRows / props.rowDisplayParams.of) * 100
-            );
+          exportProps.setExportProgress(
+            (nRows / props.rowDisplayParams.of) * 100
+          );
         });
     }
 
@@ -286,6 +283,7 @@ function TableOptions(props: TableOptionsProps) {
       getDataFunction(exportProps)
         .then((data) => {
           fileWriter(exportProps.fileName, data);
+          exportProps.setExportProgress(100);
           exportProps.setExportStatus(ExportStatus.FINISHED);
         })
         .catch(() => exportProps.setExportStatus(ExportStatus.CANCELLED));
