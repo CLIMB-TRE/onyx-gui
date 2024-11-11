@@ -39,6 +39,7 @@ function isInvalidPrefix(prefix: string) {
 function ExportModal(props: ExportModalProps) {
   const [exportStatus, setExportStatus] = useState(ExportStatus.READY);
   const [exportProgress, setExportProgress] = useState(0);
+  const [exportCancelMessage, setExportCancelMessage] = useState("");
   const [fileNamePrefix, setFileNamePrefix] = useState("");
   const [fileNameIsInvalid, setFileNameIsInvalid] = useState(false);
   const { statusToken, readyExport, cancelExport } = useExportStatusToken();
@@ -54,6 +55,7 @@ function ExportModal(props: ExportModalProps) {
     } else setFileNameIsInvalid(false);
 
     setExportProgress(0);
+    setExportCancelMessage("");
     readyExport();
     setExportStatus(ExportStatus.RUNNING);
     props.handleExport({
@@ -61,6 +63,7 @@ function ExportModal(props: ExportModalProps) {
       statusToken,
       setExportProgress,
       setExportStatus,
+      setExportCancelMessage: setExportCancelMessage,
     });
   };
 
@@ -137,6 +140,9 @@ function ExportModal(props: ExportModalProps) {
               Cancelled Operation.
             </Form.Label>
             <ProgressBar now={exportProgress} variant="danger" />
+            <Form.Text className="d-flex justify-content-center">
+              {exportCancelMessage}
+            </Form.Text>
           </Form.Group>
         )}
         {exportStatus === ExportStatus.FINISHED && (

@@ -26,6 +26,7 @@ interface ExportHandlerProps {
   statusToken: { status: ExportStatus };
   setExportProgress: (exportProgress: number) => void;
   setExportStatus: (exportStatus: ExportStatus) => void;
+  setExportCancelMessage: (cancelMessage: string) => void;
 }
 
 export type { OnyxProps, DataProps, StatsProps, ExportHandlerProps };

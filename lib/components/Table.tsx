@@ -231,6 +231,13 @@ function TableOptions(props: TableOptionsProps) {
     let nRows = 0;
     let nextParams = new URLSearchParams(props.searchParameters);
 
+    if (props.rowDisplayParams.of > 10000) {
+      exportProps.setExportCancelMessage(
+        "Can export a maximum of 10,000 paginated records ."
+      );
+      throw new Error("Exporting more than 10,000 records is not allowed.");
+    }
+
     while (nextParams) {
       const search = new URLSearchParams(nextParams);
 
