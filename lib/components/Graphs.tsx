@@ -23,6 +23,8 @@ interface BaseGraphProps {
 
 interface GraphProps extends StatsProps {
   field: string;
+  filterField: string;
+  filterValue: string;
 }
 
 interface GroupedGraphProps extends GraphProps {
@@ -32,10 +34,21 @@ interface GroupedGraphProps extends GraphProps {
 
 const useSummaryQuery = (props: GraphProps) => {
   return useQuery({
-    queryKey: ["results", props.project, props.field],
+    queryKey: [
+      "results",
+      props.project,
+      props.field,
+      props.filterField,
+      props.filterValue,
+    ],
     queryFn: async () => {
+      const search = new URLSearchParams(`summarise=${props.field}`);
+
+      if (props.filterField && props.filterValue)
+        search.set(props.filterField, props.filterValue);
+
       return props
-        .httpPathHandler(`projects/${props.project}/?summarise=${props.field}`)
+        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((data) => {
           const field_data = data.data.map((record: ResultType) => {
@@ -61,12 +74,24 @@ const useSummaryQuery = (props: GraphProps) => {
 
 const useGroupedSummaryQuery = (props: GroupedGraphProps) => {
   return useQuery({
-    queryKey: ["results", props.project, props.field, props.groupBy],
+    queryKey: [
+      "results",
+      props.project,
+      props.field,
+      props.groupBy,
+      props.filterField,
+      props.filterValue,
+    ],
     queryFn: async () => {
+      const search = new URLSearchParams(
+        `summarise=${props.field}&summarise=${props.groupBy}`
+      );
+
+      if (props.filterField && props.filterValue)
+        search.set(props.filterField, props.filterValue);
+
       return props
-        .httpPathHandler(
-          `projects/${props.project}/?summarise=${props.field}&summarise=${props.groupBy}`
-        )
+        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((data) => {
           const groupedData = new Map<
@@ -168,6 +193,9 @@ function BaseGraph(props: BaseGraphProps) {
           b: 50,
           t: 50,
           pad: 4,
+        },
+        font: {
+          size: 11,
         },
         height: 330,
         template: props.darkMode ? (graphStyles as Template) : undefined,

@@ -19,17 +19,23 @@ import {
 } from "../components/Graphs";
 import { StatsProps } from "../interfaces";
 import generateKey from "../utils/generateKey";
+import { Input } from "../components/Inputs";
 
 interface GraphPanelProps extends StatsProps {
   type: string;
   field: string;
   groupBy: string;
   groupMode: string;
+  filterField: string;
+  filterValue: string;
   graphFieldOptions: string[];
+  filterFieldOptions: string[];
   handleGraphConfigTypeChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigGroupByChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigGroupModeChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleGraphConfigFilterFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleGraphConfigFilterValueChange: React.ChangeEventHandler<HTMLInputElement>;
   handleGraphConfigAdd: () => void;
   handleGraphConfigRemove: () => void;
 }
@@ -40,6 +46,8 @@ type GraphConfig = {
   field: string;
   groupBy: string;
   groupMode: string;
+  filterField: string;
+  filterValue: string;
 };
 
 function GraphPanelGraph(props: GraphPanelProps) {
@@ -159,6 +167,29 @@ function GraphPanelOptions(props: GraphPanelProps) {
           />
         </Form.Group>
       )}
+      {props.type && (
+        <Form.Group className="mb-3">
+          <Form.Label>Filter</Form.Label>
+          <Row>
+            <Col>
+              <Dropdown
+                isClearable
+                options={props.filterFieldOptions}
+                value={props.filterField}
+                placeholder="Select field..."
+                onChange={props.handleGraphConfigFilterFieldChange}
+              />
+            </Col>
+            <Col>
+              <Input
+                value={props.filterValue}
+                placeholder="Select value..."
+                onChange={props.handleGraphConfigFilterValueChange}
+              />
+            </Col>
+          </Row>
+        </Form.Group>
+      )}
     </Form>
   );
 }
@@ -238,6 +269,9 @@ function Stats(props: StatsProps) {
 
   const [viewMode, setViewMode] = useState("wide");
   const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig());
+  const filterFieldOptions = Array.from(props.projectFields.entries())
+    .filter(([, projectField]) => projectField.actions.includes("filter"))
+    .map(([field]) => field);
   const listFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
@@ -292,6 +326,24 @@ function Stats(props: StatsProps) {
     setGraphConfigList(list);
   };
 
+  const handleGraphConfigFilterFieldChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    index: number
+  ) => {
+    const list = [...graphConfigList];
+    list[index].filterField = e.target.value;
+    setGraphConfigList(list);
+  };
+
+  const handleGraphConfigFilterValueChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const list = [...graphConfigList];
+    list[index].filterValue = e.target.value;
+    setGraphConfigList(list);
+  };
+
   const handleGraphConfigAdd = (index: number) => {
     setGraphConfigList([
       ...graphConfigList.slice(0, index),
@@ -301,6 +353,8 @@ function Stats(props: StatsProps) {
         field: "",
         groupBy: "",
         groupMode: "",
+        filterField: "",
+        filterValue: "",
       },
       ...graphConfigList.slice(index),
     ]);
@@ -361,7 +415,10 @@ function Stats(props: StatsProps) {
                   field={graphConfig.field}
                   groupBy={graphConfig.groupBy}
                   groupMode={graphConfig.groupMode}
+                  filterField={graphConfig.filterField}
+                  filterValue={graphConfig.filterValue}
                   graphFieldOptions={listFieldOptions}
+                  filterFieldOptions={filterFieldOptions}
                   handleGraphConfigTypeChange={(e) =>
                     handleGraphConfigTypeChange(e, index)
                   }
@@ -373,6 +430,12 @@ function Stats(props: StatsProps) {
                   }
                   handleGraphConfigGroupModeChange={(e) =>
                     handleGraphConfigGroupModeChange(e, index)
+                  }
+                  handleGraphConfigFilterFieldChange={(e) =>
+                    handleGraphConfigFilterFieldChange(e, index)
+                  }
+                  handleGraphConfigFilterValueChange={(e) =>
+                    handleGraphConfigFilterValueChange(e, index)
                   }
                   handleGraphConfigAdd={() => handleGraphConfigAdd(index + 1)}
                   handleGraphConfigRemove={() => handleGraphConfigRemove(index)}
