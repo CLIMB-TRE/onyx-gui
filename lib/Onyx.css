@@ -7,9 +7,12 @@
   --onyx-dropdown-option-background-color: var(--bs-white);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
   --onyx-dropdown-option-description-color: var(--bs-secondary);
+  --onyx-body-bg: var(--bs-white);
 }
 
 [data-bs-theme=dark] {
+  --bs-secondary-bg: var(--bs-gray-900) !important;
+  --bs-body-bg: #000 !important;
   --onyx-dropdown-control-border-color: var(--bs-gray-800);
   --onyx-dropdown-control-background-color: var(--bs-body-bg);
   --onyx-dropdown-menu-background-color: var(--bs-black);
@@ -18,6 +21,7 @@
   --onyx-dropdown-option-background-color: var(--bs-black);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-800);
   --onyx-dropdown-option-description-color: var(--bs-gray-500);
+  --onyx-body-bg: var(--bs-black);
 }
 
 [data-bs-theme=light] .btn-dark {
@@ -38,7 +42,7 @@
 }
 
 [data-bs-theme=dark] .btn-dark {
-  --bs-btn-bg:  var(--bs-gray-800);
+  --bs-btn-bg:  var(--bs-gray-900);
 }
 
 .card-header {
@@ -51,7 +55,7 @@
 }
 
 .onyx-text-pink {
-  color: var(--bs-code-color);
+  color: var(--bs-pink);
 }
 
 .ag-theme-quartz {
