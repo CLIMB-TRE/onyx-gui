@@ -3,7 +3,6 @@ import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Dropdown as BDropdown } from "react-bootstrap";
-import DropdownButton from "react-bootstrap/DropdownButton";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
@@ -20,6 +19,12 @@ import {
 import { StatsProps } from "../interfaces";
 import { GraphConfig } from "../types";
 import generateKey from "../utils/generateKey";
+import {
+  MdCreate,
+  MdClear,
+  MdGridView,
+  MdOutlineSplitscreen,
+} from "react-icons/md";
 
 interface GraphPanelProps extends StatsProps {
   graphConfig: GraphConfig;
@@ -174,16 +179,18 @@ function GraphPanel(props: GraphPanelProps) {
                 <Button
                   size="sm"
                   variant="dark"
+                  title="Add Graph"
                   onClick={props.handleGraphConfigAdd}
                 >
-                  +
+                  <MdCreate />
                 </Button>
                 <Button
                   size="sm"
                   variant="dark"
+                  title="Remove Graph"
                   onClick={props.handleGraphConfigRemove}
                 >
-                  -
+                  <MdClear />
                 </Button>
               </Stack>
             </Card.Header>
@@ -320,10 +327,6 @@ function Stats(props: StatsProps) {
     setGraphConfigList(list);
   };
 
-  const handleGraphConfigClear = () => {
-    setGraphConfigList([]);
-  };
-
   return (
     <Container fluid className="g-2 h-100">
       <Card className="h-100">
@@ -333,30 +336,31 @@ function Stats(props: StatsProps) {
             <Button
               size="sm"
               variant="dark"
+              title="Add Graph"
               onClick={() => handleGraphConfigAdd(graphConfigList.length)}
             >
-              Add Graph
+              <MdCreate />
             </Button>
-            <Button size="sm" variant="dark" onClick={handleGraphConfigClear}>
-              Clear Graphs
-            </Button>
-            <DropdownButton
-              title={`View Mode: ${
-                viewMode.charAt(0).toUpperCase() + viewMode.slice(1)
-              }`}
-              size="sm"
-              variant="dark"
-            >
-              <BDropdown.Item key="wide" onClick={() => setViewMode("wide")}>
-                Wide
-              </BDropdown.Item>
-              <BDropdown.Item
-                key="compact"
-                onClick={() => setViewMode("compact")}
-              >
-                Compact
-              </BDropdown.Item>
-            </DropdownButton>
+            <BDropdown title="Change View Mode">
+              <BDropdown.Toggle size="sm" variant="dark">
+                {viewMode === "compact" ? (
+                  <MdGridView />
+                ) : (
+                  <MdOutlineSplitscreen />
+                )}
+              </BDropdown.Toggle>
+              <BDropdown.Menu>
+                <BDropdown.Item key="wide" onClick={() => setViewMode("wide")}>
+                  Wide
+                </BDropdown.Item>
+                <BDropdown.Item
+                  key="compact"
+                  onClick={() => setViewMode("compact")}
+                >
+                  Compact
+                </BDropdown.Item>
+              </BDropdown.Menu>
+            </BDropdown>
           </Stack>
         </Card.Header>
         <Container fluid className="overflow-y-scroll p-2 h-100">

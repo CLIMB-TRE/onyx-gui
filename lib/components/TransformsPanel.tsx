@@ -37,10 +37,6 @@ function TransformsPanel(props: TransformsPanelProps) {
     props.setTransformList(list);
   };
 
-  const handleTransformsClear = () => {
-    props.setTransformList([]);
-  };
-
   return (
     <Card className="h-50">
       <Card.Header>
@@ -62,14 +58,6 @@ function TransformsPanel(props: TransformsPanelProps) {
             onClick={() => setEditMode(true)}
           >
             <MdCreate />
-          </Button>
-          <Button
-            size="sm"
-            variant="dark"
-            title="Clear Fields"
-            onClick={handleTransformsClear}
-          >
-            <MdClear />
           </Button>
         </Stack>
       </Card.Header>
@@ -100,6 +88,7 @@ function TransformsPanel(props: TransformsPanelProps) {
                   </Button>
                   <Button
                     variant="dark"
+                    title="Remove Field"
                     onClick={() => handleTransformRemove(index)}
                   >
                     <MdClear />

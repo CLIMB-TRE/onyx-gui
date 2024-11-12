@@ -97,11 +97,6 @@ function FilterPanel(props: FilterPanelProps) {
     props.setFilterList(list);
   };
 
-  const handleFilterClear = () => {
-    setEditMode(false);
-    props.setFilterList([]);
-  };
-
   return (
     <Card className="h-50">
       <Card.Header>
@@ -114,14 +109,6 @@ function FilterPanel(props: FilterPanelProps) {
             onClick={() => handleFilterAdd(props.filterList.length)}
           >
             <MdCreate />
-          </Button>
-          <Button
-            size="sm"
-            variant="dark"
-            title="Clear Filters"
-            onClick={handleFilterClear}
-          >
-            <MdClear />
           </Button>
         </Stack>
       </Card.Header>
@@ -152,6 +139,7 @@ function FilterPanel(props: FilterPanelProps) {
                   </Button>
                   <Button
                     variant="dark"
+                    title="Remove Filter"
                     onClick={() => handleFilterRemove(index)}
                   >
                     <MdClear />
