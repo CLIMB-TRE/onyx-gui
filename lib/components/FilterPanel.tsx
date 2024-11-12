@@ -101,16 +101,15 @@ function FilterPanel(props: FilterPanelProps) {
     <Card className="h-50">
       <Card.Header>
         <span>Filters</span>
-        <Stack direction="horizontal" gap={1} className="float-end">
-          <Button
-            size="sm"
-            variant="dark"
-            title="Add Filter"
-            onClick={() => handleFilterAdd(props.filterList.length)}
-          >
-            <MdCreate />
-          </Button>
-        </Stack>
+        <Button
+          className="float-end"
+          size="sm"
+          variant="dark"
+          title="Add Filter"
+          onClick={() => handleFilterAdd(props.filterList.length)}
+        >
+          <MdCreate />
+        </Button>
       </Card.Header>
       <Container fluid className="overflow-y-scroll p-2 h-100">
         {editMode ? (

@@ -166,15 +166,15 @@ function Filter(props: FilterProps) {
       </Stack>
       <Stack direction="horizontal" gap={1}>
         <div className="me-auto"></div>
-        <Button size="sm" variant="dark" onClick={handleApply}>
-          Apply
-        </Button>
         <Button
           size="sm"
           variant="dark"
           onClick={() => props.setEditMode(false)}
         >
           Cancel
+        </Button>
+        <Button size="sm" onClick={handleApply}>
+          Apply
         </Button>
       </Stack>
     </Stack>
