@@ -24,8 +24,7 @@ interface HeaderProps {
 function HeaderText({ label, value }: { label: string; value: string }) {
   return (
     <Navbar.Text>
-      {label}:{" "}
-      <span style={{ color: "var(--bs-pink)" }}>{value || "None"}</span>
+      {label}: <span className="text-light">{value || "None"}</span>
     </Navbar.Text>
   );
 }
@@ -43,7 +42,7 @@ function HeaderVersion({
       {version ? (
         <code style={{ color: "var(--bs-pink)" }}>{`v${version}`}</code>
       ) : (
-        "None"
+        <span className="text-light">None</span>
       )}
     </Navbar.Text>
   );
@@ -75,8 +74,8 @@ function Header(props: HeaderProps) {
       fixed="top"
     >
       <Container fluid>
-        <Navbar.Brand style={{ color: "var(--bs-pink)" }}>
-          <MdWebhook /> Onyx
+        <Navbar.Brand>
+          <MdWebhook color="var(--bs-pink)" /> Onyx
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" />
         <Navbar.Collapse id="navbarScroll">
