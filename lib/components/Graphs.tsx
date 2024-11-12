@@ -176,8 +176,7 @@ function BaseGraph(props: BaseGraphProps) {
         template: props.darkMode ? (graphStyles as Template) : undefined,
         xaxis: { title: props.xTitle },
         yaxis: {
-          title:
-            props.yAxisType === "log" ? `log(${props.yTitle})` : props.yTitle,
+          title: props.yTitle,
           type: (props.yAxisType ? props.yAxisType : "linear") as AxisType,
         },
         legend: { title: { text: props.legendTitle } },
