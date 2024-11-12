@@ -6,6 +6,7 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { useQuery } from "@tanstack/react-query";
+import { MdLightMode, MdDarkMode, MdWebhook } from "react-icons/md";
 
 interface HeaderProps {
   httpPathHandler: (path: string) => Promise<Response>;
@@ -74,7 +75,9 @@ function Header(props: HeaderProps) {
       fixed="top"
     >
       <Container fluid>
-        <Navbar.Brand style={{ color: "var(--bs-pink)" }}>⬗ Onyx</Navbar.Brand>
+        <Navbar.Brand style={{ color: "var(--bs-pink)" }}>
+          <MdWebhook /> Onyx
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" />
         <Navbar.Collapse id="navbarScroll">
           <Nav className="me-auto">
@@ -131,7 +134,7 @@ function Header(props: HeaderProps) {
                   id="theme-switch"
                   label={
                     <span className="text-light">
-                      {props.darkMode ? "☾" : "☼"}{" "}
+                      {props.darkMode ? <MdDarkMode /> : <MdLightMode />}{" "}
                     </span>
                   }
                   title={`Switch to ${

@@ -88,7 +88,7 @@
 .left-col {
   resize: horizontal;
   overflow: auto;
-  min-width: 300px;
+  min-width: 220px;
   width: 300px;
 }
 

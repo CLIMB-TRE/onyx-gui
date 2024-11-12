@@ -8,6 +8,7 @@ import Filter from "./Filter";
 import { FilterField } from "../types";
 import { DataProps } from "../interfaces";
 import generateKey from "../utils/generateKey";
+import { MdCreate, MdClear } from "react-icons/md";
 
 interface FilterPanelProps extends DataProps {
   filterList: FilterField[];
@@ -109,12 +110,18 @@ function FilterPanel(props: FilterPanelProps) {
           <Button
             size="sm"
             variant="dark"
+            title="Add Filter"
             onClick={() => handleFilterAdd(props.filterList.length)}
           >
-            Add Filter
+            <MdCreate />
           </Button>
-          <Button size="sm" variant="dark" onClick={handleFilterClear}>
-            Clear Filters
+          <Button
+            size="sm"
+            variant="dark"
+            title="Clear Filters"
+            onClick={handleFilterClear}
+          >
+            <MdClear />
           </Button>
         </Stack>
       </Card.Header>
@@ -147,7 +154,7 @@ function FilterPanel(props: FilterPanelProps) {
                     variant="dark"
                     onClick={() => handleFilterRemove(index)}
                   >
-                    X
+                    <MdClear />
                   </Button>
                 </ButtonGroup>
               </Container>

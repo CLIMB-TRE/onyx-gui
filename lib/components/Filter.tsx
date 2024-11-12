@@ -131,7 +131,7 @@ function Filter(props: FilterProps) {
     f = <Input value={filter.value} onChange={handleValueChange} />;
   }
   return (
-    <Stack gap={1} className="p-1">
+    <Stack gap={3} className="p-1">
       <Row>
         <Col>
           <h5>Edit Filter</h5>
@@ -143,33 +143,37 @@ function Filter(props: FilterProps) {
           />
         </Col>
       </Row>
-      <hr />
-      <Dropdown
-        options={props.fieldList}
-        titles={props.fieldDescriptions}
-        value={filter.field}
-        placeholder="Select field..."
-        onChange={handleFieldChange}
-      />
-      <Dropdown
-        options={
-          props.typeLookups.get(
-            props.projectFields.get(filter.field)?.type || ""
-          ) || []
-        }
-        titles={props.lookupDescriptions}
-        value={filter.lookup}
-        placeholder="Select lookup..."
-        onChange={handleLookupChange}
-      />
-      {f}
-      <hr />
+      <Stack gap={1}>
+        <Dropdown
+          options={props.fieldList}
+          titles={props.fieldDescriptions}
+          value={filter.field}
+          placeholder="Select field..."
+          onChange={handleFieldChange}
+        />
+        <Dropdown
+          options={
+            props.typeLookups.get(
+              props.projectFields.get(filter.field)?.type || ""
+            ) || []
+          }
+          titles={props.lookupDescriptions}
+          value={filter.lookup}
+          placeholder="Select lookup..."
+          onChange={handleLookupChange}
+        />
+        {f}
+      </Stack>
       <Stack direction="horizontal" gap={1}>
         <div className="me-auto"></div>
-        <Button variant="dark" onClick={handleApply}>
+        <Button size="sm" variant="dark" onClick={handleApply}>
           Apply
         </Button>
-        <Button variant="dark" onClick={() => props.setEditMode(false)}>
+        <Button
+          size="sm"
+          variant="dark"
+          onClick={() => props.setEditMode(false)}
+        >
           Cancel
         </Button>
       </Stack>
