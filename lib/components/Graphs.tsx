@@ -12,7 +12,7 @@ const Plot = createPlotlyComponent(Plotly);
 
 interface BaseGraphProps {
   data: Plotly.Data[];
-  title: string;
+  title?: string;
   xTitle?: string;
   yTitle?: string;
   yAxisType?: string;
@@ -116,31 +116,30 @@ const useGroupedSummaryQuery = (props: GraphProps) => {
   });
 };
 
-function getTitle(
+function getNullCount(
   projectFields: Map<string, ProjectField>,
   field: string,
   data: { field_data: string[]; count_data: number[] }
 ) {
-  let title = `Records by ${field}`;
+  let title = "";
 
   if (projectFields.get(field)?.type === "date") {
     const nullCount = data.count_data[data.field_data.indexOf("")] || 0;
 
     if (nullCount) {
-      title += `<br>(Excluding ${nullCount} records with no ${field})`;
+      title += `Excluding ${nullCount} records with no ${field}.`;
     }
   }
 
   return title;
 }
 
-function getGroupedTitle(
+function getGroupedNullCount(
   projectFields: Map<string, ProjectField>,
   field: string,
-  groupBy: string,
   data: Map<string, { field_data: string[]; count_data: number[] }>
 ) {
-  let title = `Records by ${field}, grouped by ${groupBy}`;
+  let title = "";
 
   if (projectFields.get(field)?.type === "date") {
     let nullCount = 0;
@@ -150,7 +149,7 @@ function getGroupedTitle(
     });
 
     if (nullCount) {
-      title += `<br>(Excluding ${nullCount} records with no ${field})`;
+      title += `Excluding ${nullCount} records with no ${field}.`;
     }
   }
 
@@ -165,6 +164,8 @@ function BaseGraph(props: BaseGraphProps) {
         ...props.layout,
         autosize: true,
         title: props.title,
+        titlefont: { size: 14, color: "grey" },
+
         margin: {
           l: 50,
           r: 50,
@@ -172,7 +173,6 @@ function BaseGraph(props: BaseGraphProps) {
           t: 50,
           pad: 4,
         },
-        height: 330,
         template: props.darkMode ? (graphStyles as Template) : undefined,
         xaxis: { title: props.xTitle },
         yaxis: {
@@ -228,7 +228,7 @@ function ScatterGraph(props: GraphProps) {
           mode: "lines+markers",
         },
       ]}
-      title={getTitle(props.projectFields, props.graphConfig.field, data)}
+      title={getNullCount(props.projectFields, props.graphConfig.field, data)}
       xTitle={props.graphConfig.field}
       yTitle="count"
       yAxisType={props.graphConfig.yAxisType}
@@ -267,7 +267,7 @@ function BarGraph(props: GraphProps) {
           type: "bar",
         },
       ]}
-      title={getTitle(props.projectFields, props.graphConfig.field, data)}
+      title={getNullCount(props.projectFields, props.graphConfig.field, data)}
       xTitle={props.graphConfig.field}
       yTitle={yTitle}
       yAxisType={props.graphConfig.yAxisType}
@@ -296,7 +296,7 @@ function PieGraph(props: GraphProps) {
           marker: { color: "#198754" },
         },
       ]}
-      title={getTitle(props.projectFields, props.graphConfig.field, data)}
+      title={getNullCount(props.projectFields, props.graphConfig.field, data)}
       legendTitle={props.graphConfig.field}
       uirevision={props.graphConfig.field}
     />
@@ -324,10 +324,9 @@ function GroupedScatterGraph(props: GraphProps) {
     <BaseGraph
       {...props}
       data={graphData}
-      title={getGroupedTitle(
+      title={getGroupedNullCount(
         props.projectFields,
         props.graphConfig.field,
-        props.graphConfig.groupBy,
         data
       )}
       xTitle={props.graphConfig.field}
@@ -371,10 +370,9 @@ function GroupedBarGraph(props: GraphProps) {
     <BaseGraph
       {...props}
       data={graphData}
-      title={getGroupedTitle(
+      title={getGroupedNullCount(
         props.projectFields,
         props.graphConfig.field,
-        props.graphConfig.groupBy,
         data
       )}
       xTitle={props.graphConfig.field}

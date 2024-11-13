@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from "react";
+import { useState, useLayoutEffect, useMemo } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -24,6 +24,10 @@ import {
   MdClear,
   MdGridView,
   MdOutlineSplitscreen,
+  MdArrowBack,
+  MdArrowForward,
+  MdArrowUpward,
+  MdArrowDownward,
 } from "react-icons/md";
 
 interface GraphPanelProps extends StatsProps {
@@ -35,7 +39,12 @@ interface GraphPanelProps extends StatsProps {
   handleGraphConfigGroupModeChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigYAxisTypeChange: React.ChangeEventHandler<HTMLInputElement>;
   handleGraphConfigAdd: () => void;
+  handleGraphConfigSwapLeft: () => void;
+  handleGraphConfigSwapRight: () => void;
   handleGraphConfigRemove: () => void;
+  viewMode: string;
+  firstGraph: boolean;
+  lastGraph: boolean;
 }
 
 function GraphPanelGraph(props: GraphPanelProps) {
@@ -62,9 +71,7 @@ function GraphPanelGraph(props: GraphPanelProps) {
       g = <PieGraph {...props} />;
       break;
     default:
-      g = (
-        <BaseGraph {...props} data={[]} title="Empty Graph" uirevision={""} />
-      );
+      g = <BaseGraph {...props} data={[]} uirevision={""} />;
   }
   return g;
 }
@@ -163,44 +170,78 @@ function GraphPanelOptions(props: GraphPanelProps) {
 }
 
 function GraphPanel(props: GraphPanelProps) {
+  const graphTitle = useMemo(() => {
+    let title = "Empty Graph";
+
+    if (props.graphConfig.field) {
+      title = `Records by ${props.graphConfig.field}`;
+
+      if (props.graphConfig.groupBy) {
+        title += `, grouped by ${props.graphConfig.groupBy}`;
+      }
+    }
+
+    return title;
+  }, [props.graphConfig.field, props.graphConfig.groupBy]);
+
   return (
-    <Container fluid className="g-0">
-      <Row className="g-2">
-        <Col xl={12} xxl={9}>
-          <Card body style={{ height: "365px" }}>
-            <GraphPanelGraph {...props} />
-          </Card>
-        </Col>
-        <Col xl={12} xxl={3}>
-          <Card style={{ height: "365px" }}>
-            <Card.Header>
-              <span>Options</span>
-              <Stack direction="horizontal" gap={1} className="float-end">
-                <Button
-                  size="sm"
-                  variant="dark"
-                  title="Add Graph"
-                  onClick={props.handleGraphConfigAdd}
-                >
-                  <MdCreate />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="dark"
-                  title="Remove Graph"
-                  onClick={props.handleGraphConfigRemove}
-                >
-                  <MdClear />
-                </Button>
-              </Stack>
-            </Card.Header>
-            <Card.Body className="overflow-y-scroll">
+    <Card>
+      <Card.Header>
+        <span>{graphTitle}</span>
+        <Stack direction="horizontal" gap={1} className="float-end">
+          <Button
+            size="sm"
+            variant="dark"
+            disabled={props.firstGraph}
+            title={
+              props.viewMode === "wide" ? "Move Graph Up" : "Move Graph Left"
+            }
+            onClick={props.handleGraphConfigSwapLeft}
+          >
+            {props.viewMode === "wide" ? <MdArrowUpward /> : <MdArrowBack />}
+          </Button>
+          <Button
+            size="sm"
+            variant="dark"
+            disabled={props.lastGraph}
+            title={
+              props.viewMode === "wide" ? "Move Graph Down" : "Move Graph Right"
+            }
+            onClick={props.handleGraphConfigSwapRight}
+          >
+            {props.viewMode === "wide" ? (
+              <MdArrowDownward />
+            ) : (
+              <MdArrowForward />
+            )}
+          </Button>
+          <Button
+            size="sm"
+            variant="dark"
+            title="Remove Graph"
+            onClick={props.handleGraphConfigRemove}
+          >
+            <MdClear />
+          </Button>
+        </Stack>
+      </Card.Header>
+      <Card.Body className="p-2">
+        <Row className="g-2">
+          <Col xl={12} xxl={props.viewMode === "wide" ? 3 : 4}>
+            <Card
+              body
+              className="overflow-y-scroll"
+              style={{ height: "315px" }}
+            >
               <GraphPanelOptions {...props} />
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+            </Card>
+          </Col>
+          <Col xl={12} xxl={props.viewMode === "wide" ? 9 : 8}>
+            <GraphPanelGraph {...props} />
+          </Col>
+        </Row>
+      </Card.Body>
+    </Card>
   );
 }
 
@@ -321,6 +362,22 @@ function Stats(props: StatsProps) {
     ]);
   };
 
+  const handleGraphConfigSwapLeft = (index: number) => {
+    if (index > 0) {
+      const list = [...graphConfigList];
+      [list[index], list[index - 1]] = [list[index - 1], list[index]];
+      setGraphConfigList(list);
+    }
+  };
+
+  const handleGraphConfigSwapRight = (index: number) => {
+    if (index < graphConfigList.length - 1) {
+      const list = [...graphConfigList];
+      [list[index], list[index + 1]] = [list[index + 1], list[index]];
+      setGraphConfigList(list);
+    }
+  };
+
   const handleGraphConfigRemove = (index: number) => {
     const list = [...graphConfigList];
     list.splice(index, 1);
@@ -387,7 +444,16 @@ function Stats(props: StatsProps) {
                     handleGraphConfigYAxisTypeChange(e, index)
                   }
                   handleGraphConfigAdd={() => handleGraphConfigAdd(index + 1)}
+                  handleGraphConfigSwapLeft={() =>
+                    handleGraphConfigSwapLeft(index)
+                  }
+                  handleGraphConfigSwapRight={() =>
+                    handleGraphConfigSwapRight(index)
+                  }
                   handleGraphConfigRemove={() => handleGraphConfigRemove(index)}
+                  viewMode={viewMode}
+                  firstGraph={index === 0}
+                  lastGraph={index === graphConfigList.length - 1}
                 />
               </Col>
             ))}
