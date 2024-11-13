@@ -167,10 +167,10 @@ function BaseGraph(props: BaseGraphProps) {
         titlefont: { size: 14, color: "grey" },
 
         margin: {
-          l: 50,
-          r: 50,
-          b: 50,
-          t: 50,
+          l: 60,
+          r: 60,
+          b: 60,
+          t: 60,
           pad: 4,
         },
         template: props.darkMode ? (graphStyles as Template) : undefined,

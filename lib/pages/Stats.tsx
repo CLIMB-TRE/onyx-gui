@@ -125,6 +125,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
           <Dropdown
             isClearable
             options={fieldOptions}
+            titles={props.fieldDescriptions}
             value={props.graphConfig.field}
             placeholder="Select field..."
             onChange={props.handleGraphConfigFieldChange}
@@ -138,6 +139,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
           <Dropdown
             isClearable
             options={groupByOptions}
+            titles={props.fieldDescriptions}
             value={props.graphConfig.groupBy}
             placeholder="Select field..."
             onChange={props.handleGraphConfigGroupByChange}
@@ -228,16 +230,14 @@ function GraphPanel(props: GraphPanelProps) {
       <Card.Body className="p-2">
         <Row className="g-2">
           <Col xl={12} xxl={props.viewMode === "wide" ? 3 : 4}>
-            <Card
-              body
-              className="overflow-y-scroll"
-              style={{ height: "315px" }}
-            >
+            <Card body style={{ height: "440px" }}>
               <GraphPanelOptions {...props} />
             </Card>
           </Col>
           <Col xl={12} xxl={props.viewMode === "wide" ? 9 : 8}>
-            <GraphPanelGraph {...props} />
+            <div style={{ height: "440px" }}>
+              <GraphPanelGraph {...props} />
+            </div>
           </Col>
         </Row>
       </Card.Body>

@@ -18,6 +18,7 @@ interface DataProps extends OnyxProps {
 interface StatsProps extends OnyxProps {
   project: string;
   projectFields: Map<string, ProjectField>;
+  fieldDescriptions: Map<string, string>;
   darkMode: boolean;
 }
 

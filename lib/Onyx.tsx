@@ -189,6 +189,7 @@ function App(props: OnyxProps) {
                   {...props}
                   project={project}
                   projectFields={projectFields}
+                  fieldDescriptions={fieldDescriptions}
                   darkMode={darkMode}
                 />
               </Tab.Pane>
