@@ -196,22 +196,22 @@ function GraphPanel(props: GraphPanelProps) {
             variant="dark"
             disabled={props.firstGraph}
             title={
-              props.viewMode === "wide" ? "Move Graph Up" : "Move Graph Left"
+              props.viewMode === "list" ? "Move Graph Up" : "Move Graph Left"
             }
             onClick={props.handleGraphConfigSwapLeft}
           >
-            {props.viewMode === "wide" ? <MdArrowUpward /> : <MdArrowBack />}
+            {props.viewMode === "list" ? <MdArrowUpward /> : <MdArrowBack />}
           </Button>
           <Button
             size="sm"
             variant="dark"
             disabled={props.lastGraph}
             title={
-              props.viewMode === "wide" ? "Move Graph Down" : "Move Graph Right"
+              props.viewMode === "list" ? "Move Graph Down" : "Move Graph Right"
             }
             onClick={props.handleGraphConfigSwapRight}
           >
-            {props.viewMode === "wide" ? (
+            {props.viewMode === "list" ? (
               <MdArrowDownward />
             ) : (
               <MdArrowForward />
@@ -229,12 +229,12 @@ function GraphPanel(props: GraphPanelProps) {
       </Card.Header>
       <Card.Body className="p-2">
         <Row className="g-2">
-          <Col xl={12} xxl={props.viewMode === "wide" ? 3 : 4}>
+          <Col xl={12} xxl={props.viewMode === "list" ? 3 : 4}>
             <Card body style={{ height: "440px" }}>
               <GraphPanelOptions {...props} />
             </Card>
           </Col>
-          <Col xl={12} xxl={props.viewMode === "wide" ? 9 : 8}>
+          <Col xl={12} xxl={props.viewMode === "list" ? 9 : 8}>
             <div style={{ height: "440px" }}>
               <GraphPanelGraph {...props} />
             </div>
@@ -282,7 +282,7 @@ function Stats(props: StatsProps) {
       },
     ] as GraphConfig[];
 
-  const [viewMode, setViewMode] = useState("wide");
+  const [viewMode, setViewMode] = useState("list");
   const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig());
   const listFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("list"))
@@ -400,21 +400,18 @@ function Stats(props: StatsProps) {
             </Button>
             <BDropdown title="Change View Mode">
               <BDropdown.Toggle size="sm" variant="dark">
-                {viewMode === "compact" ? (
+                {viewMode === "grid" ? (
                   <MdGridView />
                 ) : (
                   <MdOutlineSplitscreen />
                 )}
               </BDropdown.Toggle>
               <BDropdown.Menu>
-                <BDropdown.Item key="wide" onClick={() => setViewMode("wide")}>
-                  Wide
+                <BDropdown.Item key="list" onClick={() => setViewMode("list")}>
+                  List View
                 </BDropdown.Item>
-                <BDropdown.Item
-                  key="compact"
-                  onClick={() => setViewMode("compact")}
-                >
-                  Compact
+                <BDropdown.Item key="grid" onClick={() => setViewMode("grid")}>
+                  Grid View
                 </BDropdown.Item>
               </BDropdown.Menu>
             </BDropdown>
@@ -423,7 +420,7 @@ function Stats(props: StatsProps) {
         <Container fluid className="overflow-y-scroll p-2 h-100">
           <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
-              <Col key={graphConfig.key} lg={viewMode === "wide" ? 12 : 6}>
+              <Col key={graphConfig.key} lg={viewMode === "list" ? 12 : 6}>
                 <GraphPanel
                   {...props}
                   graphConfig={graphConfig}
