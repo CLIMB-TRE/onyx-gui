@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import Stack from "react-bootstrap/Stack";
 import Tab from "react-bootstrap/Tab";
+import Container from "react-bootstrap/Container";
 import {
   QueryClient,
   QueryClientProvider,
@@ -38,7 +38,9 @@ function flattenFields(fields: Record<string, ProjectField>) {
 }
 
 function App(props: OnyxProps) {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("onyx-theme") === "dark"
+  );
   const [project, setProject] = useState("");
   const [tabKey, setTabKey] = useState("data");
 
@@ -47,6 +49,12 @@ function App(props: OnyxProps) {
     const htmlElement = document.querySelector("html");
     htmlElement?.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
+
+  const handleThemeChange = () => {
+    const darkModeChange = !darkMode;
+    setDarkMode(darkModeChange);
+    localStorage.setItem("onyx-theme", darkModeChange ? "dark" : "light");
+  };
 
   // Fetch the project list
   const { data: projects = [] } = useQuery({
@@ -67,7 +75,7 @@ function App(props: OnyxProps) {
 
   // Set the first project as the default
   useEffect(() => {
-    if (!project && projects) {
+    if (!project && projects.length > 0) {
       setProject(projects[0]);
     }
   }, [project, projects]);
@@ -150,7 +158,7 @@ function App(props: OnyxProps) {
   });
 
   return (
-    <Stack gap={2} className="Onyx">
+    <div className="Onyx h-100">
       <Header
         {...props}
         projectName={projectInfoPending ? "Loading..." : projectName}
@@ -160,32 +168,36 @@ function App(props: OnyxProps) {
         tabKey={tabKey}
         setTabKey={setTabKey}
         darkMode={darkMode}
-        handleThemeChange={() => setDarkMode(!darkMode)}
+        handleThemeChange={handleThemeChange}
       />
-      <Tab.Container activeKey={tabKey}>
-        <Tab.Content>
-          <Tab.Pane eventKey="data">
-            <Data
-              {...props}
-              project={project}
-              projectFields={projectFields}
-              typeLookups={typeLookups}
-              fieldDescriptions={fieldDescriptions}
-              lookupDescriptions={lookupDescriptions}
-            />
-          </Tab.Pane>
-          <Tab.Pane eventKey="stats">
-            <Stats
-              {...props}
-              project={project}
-              projectFields={projectFields}
-              darkMode={darkMode}
-            />
-          </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
-      <div></div>
-    </Stack>
+      <div className="h-100" style={{ paddingTop: "60px" }}>
+        <Container fluid className="h-100 px-0 py-1">
+          <Tab.Container activeKey={tabKey}>
+            <Tab.Content className="h-100">
+              <Tab.Pane eventKey="data" className="h-100">
+                <Data
+                  {...props}
+                  project={project}
+                  projectFields={projectFields}
+                  typeLookups={typeLookups}
+                  fieldDescriptions={fieldDescriptions}
+                  lookupDescriptions={lookupDescriptions}
+                />
+              </Tab.Pane>
+              <Tab.Pane eventKey="stats" className="h-100">
+                <Stats
+                  {...props}
+                  project={project}
+                  projectFields={projectFields}
+                  fieldDescriptions={fieldDescriptions}
+                  darkMode={darkMode}
+                />
+              </Tab.Pane>
+            </Tab.Content>
+          </Tab.Container>
+        </Container>
+      </div>
+    </div>
   );
 }
 

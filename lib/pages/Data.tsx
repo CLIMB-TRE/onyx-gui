@@ -1,8 +1,13 @@
-import React, { useState, useLayoutEffect, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+  useEffect,
+} from "react";
 import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
+import Button from "react-bootstrap/Button";
 import { useQuery } from "@tanstack/react-query";
 import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
@@ -11,19 +16,33 @@ import ResultsPanel from "../components/ResultsPanel";
 import RecordModal from "../components/RecordModal";
 import { FilterField } from "../types";
 import { DataProps } from "../interfaces";
-import generateKey from "../utils/generateKey";
+import {
+  MdKeyboardDoubleArrowLeft,
+  MdKeyboardDoubleArrowRight,
+} from "react-icons/md";
+
+const useDebouncedValue = (inputValue: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(inputValue);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(inputValue);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [inputValue, delay]);
+  return debouncedValue;
+};
 
 function Data(props: DataProps) {
-  const defaultFilterList = () =>
-    [{ key: generateKey(), field: "", lookup: "", value: "" }] as FilterField[];
   const [searchInput, setSearchInput] = useState("");
-  const [filterList, setFilterList] = useState(defaultFilterList());
+  const [filterList, setFilterList] = useState([] as FilterField[]);
   const [transform, setTransform] = useState("Summarise");
   const [transformList, setTransformList] = useState(new Array<string>());
   const [searchParameters, setSearchParameters] = useState("");
-  const [pageNumber, setPageNumber] = useState(1);
   const [recordModalShow, setRecordModalShow] = React.useState(false);
   const [recordModalID, setRecordModalID] = React.useState("");
+  const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("filter"))
     .map(([field]) => field);
@@ -34,14 +53,12 @@ function Data(props: DataProps) {
   // Clear parameters when project changes
   useLayoutEffect(() => {
     setSearchInput("");
-    setFilterList(defaultFilterList());
+    setFilterList([]);
     setTransform("Summarise");
     setTransformList([]);
     setSearchParameters("");
-    setPageNumber(1);
     setRecordModalShow(false);
     setRecordModalID("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.project]);
 
   // Fetch data, depending on project and search parameters
@@ -61,41 +78,43 @@ function Data(props: DataProps) {
     cacheTime: 0.5 * 60 * 1000,
   });
 
-  const handleSearch = () => {
-    const search = new URLSearchParams(
-      filterList
-        .filter((filter) => filter.field)
-        .map((filter) => {
-          if (filter.lookup) {
-            return [filter.field + "__" + filter.lookup, filter.value];
-          } else {
-            return [filter.field, filter.value];
-          }
-        })
-        .concat(
-          transformList
-            .filter((field) => field)
-            .map((field) => [transform.toLowerCase(), field])
-        )
-        .concat(
-          [searchInput]
-            .filter((search) => search)
-            .map((search) => ["search", search])
-        )
-    ).toString();
+  const searchParams = useMemo(
+    () =>
+      new URLSearchParams(
+        filterList
+          .filter((filter) => filter.field)
+          .map((filter) => {
+            if (filter.lookup) {
+              return [filter.field + "__" + filter.lookup, filter.value];
+            } else {
+              return [filter.field, filter.value];
+            }
+          })
+          .concat(
+            transformList
+              .filter((field) => field)
+              .map((field) => [transform.toLowerCase(), field])
+          )
+          .concat(
+            [searchInput]
+              .filter((search) => search)
+              .map((search) => ["search", search])
+          )
+      ).toString(),
+    [filterList, transform, transformList, searchInput]
+  );
 
-    if (searchParameters === search) {
-      if (!resultPending) {
-        // If search parameters have not changed and nothing is pending
-        // Then trigger a refetch
-        refetchResults();
-      }
-    } else {
-      // Otherwise, set the new search parameters
-      // This will trigger a new fetch
-      setSearchParameters(search);
-    }
-    setPageNumber(1);
+  const debouncedSearchParams = useDebouncedValue(searchParams, 1000);
+
+  useEffect(
+    () => setSearchParameters(debouncedSearchParams),
+    [debouncedSearchParams]
+  );
+
+  // If search parameters have not changed and nothing is pending
+  // Then trigger a refetch
+  const handleSearch = () => {
+    if (!resultPending) refetchResults();
   };
 
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
@@ -112,53 +131,70 @@ function Data(props: DataProps) {
   };
 
   return (
-    <Container fluid className="g-2">
-      <Stack gap={2}>
-        <RecordModal
-          {...props}
-          recordID={recordModalID}
-          show={recordModalShow}
-          onHide={handleRecordModalHide}
-        />
-        <SearchBar
-          {...props}
-          searchInput={searchInput}
-          setSearchInput={setSearchInput}
-          handleSearch={handleSearch}
-        />
-        <Row className="g-2">
-          <Col md={8}>
-            <FilterPanel
+    <Container fluid className="g-2 h-100">
+      <RecordModal
+        {...props}
+        recordID={recordModalID}
+        show={recordModalShow}
+        onHide={handleRecordModalHide}
+      />
+      <div className="parent h-100">
+        {!sideBarCollapsed && (
+          <div className="left-col h-100">
+            <Container fluid className="g-2 h-100">
+              <Stack gap={2} className="h-100 pt-1">
+                <SearchBar
+                  {...props}
+                  searchInput={searchInput}
+                  setSearchInput={setSearchInput}
+                  handleSearch={handleSearch}
+                />
+                <Stack gap={2} className="h-100 overflow-y-hidden">
+                  <FilterPanel
+                    {...props}
+                    filterList={filterList}
+                    setFilterList={setFilterList}
+                    filterFieldOptions={filterFieldOptions}
+                  />
+                  <TransformsPanel
+                    {...props}
+                    transform={transform}
+                    setTransform={setTransform}
+                    transformList={transformList}
+                    setTransformList={setTransformList}
+                    filterFieldOptions={filterFieldOptions}
+                    listFieldOptions={listFieldOptions}
+                  />
+                </Stack>
+              </Stack>
+            </Container>
+          </div>
+        )}
+        <Button
+          size="sm"
+          variant="dark"
+          title={sideBarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          onClick={() => setSideBarCollapsed(!sideBarCollapsed)}
+        >
+          {sideBarCollapsed ? (
+            <MdKeyboardDoubleArrowRight />
+          ) : (
+            <MdKeyboardDoubleArrowLeft />
+          )}
+        </Button>
+        <div className="right-col h-100">
+          <Container fluid className="g-2 h-100">
+            <ResultsPanel
               {...props}
-              filterList={filterList}
-              setFilterList={setFilterList}
-              filterFieldOptions={filterFieldOptions}
+              resultPending={resultPending}
+              resultError={resultError instanceof Error ? resultError : null}
+              resultData={resultData}
+              searchParameters={searchParameters}
+              handleRecordModalShow={handleRecordModalShow}
             />
-          </Col>
-          <Col md={4}>
-            <TransformsPanel
-              {...props}
-              transform={transform}
-              setTransform={setTransform}
-              transformList={transformList}
-              setTransformList={setTransformList}
-              filterFieldOptions={filterFieldOptions}
-              listFieldOptions={listFieldOptions}
-            />
-          </Col>
-        </Row>
-        <ResultsPanel
-          {...props}
-          resultPending={resultPending}
-          resultError={resultError instanceof Error ? resultError : null}
-          resultData={resultData}
-          searchParameters={searchParameters}
-          setSearchParameters={setSearchParameters}
-          pageNumber={pageNumber}
-          setPageNumber={setPageNumber}
-          handleRecordModalShow={handleRecordModalShow}
-        />
-      </Stack>
+          </Container>
+        </div>
+      </div>
     </Container>
   );
 }

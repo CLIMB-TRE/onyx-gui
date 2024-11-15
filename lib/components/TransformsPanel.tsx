@@ -1,9 +1,13 @@
-import React from "react";
+import { useState, useLayoutEffect } from "react";
 import Container from "react-bootstrap/Container";
+import Stack from "react-bootstrap/Stack";
+import Button from "react-bootstrap/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
+import Transforms from "./Transforms";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { MultiDropdown } from "./Dropdowns";
 import { DataProps } from "../interfaces";
+import { MdCreate, MdClear } from "react-icons/md";
 
 interface TransformsPanelProps extends DataProps {
   transform: string;
@@ -15,43 +19,85 @@ interface TransformsPanelProps extends DataProps {
 }
 
 function TransformsPanel(props: TransformsPanelProps) {
-  const handleTransformChange = (action: string) => {
+  const [editMode, setEditMode] = useState(false);
+
+  // Clear parameters when project changes
+  useLayoutEffect(() => {
+    setEditMode(false);
+  }, [props.project]);
+
+  const handleTransformsChange = (action: string) => {
     props.setTransform(action);
     props.setTransformList([]);
   };
 
-  const handleTransformListChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    props.setTransformList(e.target.value ? e.target.value.split(",") : []);
+  const handleTransformRemove = (index: number) => {
+    const list = [...props.transformList];
+    list.splice(index, 1);
+    props.setTransformList(list);
   };
 
   return (
-    <Card>
+    <Card className="h-50">
       <Card.Header>
-        <NavDropdown title={props.transform}>
-          {["Summarise", "Include", "Exclude"].map((action) => (
-            <NavDropdown.Item
-              key={action}
-              onClick={() => handleTransformChange(action)}
-            >
-              {action}
-            </NavDropdown.Item>
-          ))}
-        </NavDropdown>
+        <Stack direction="horizontal" gap={1}>
+          <NavDropdown className="me-auto" title={props.transform}>
+            {["Summarise", "Include", "Exclude"].map((action) => (
+              <NavDropdown.Item
+                key={action}
+                onClick={() => handleTransformsChange(action)}
+              >
+                {action}
+              </NavDropdown.Item>
+            ))}
+          </NavDropdown>
+          <Button
+            size="sm"
+            variant="dark"
+            title="Edit Fields"
+            onClick={() => setEditMode(true)}
+          >
+            <MdCreate />
+          </Button>
+        </Stack>
       </Card.Header>
-      <Container fluid className="onyx-parameters-panel-body p-2">
-        <MultiDropdown
-          options={
-            props.transform === "Summarise"
-              ? props.filterFieldOptions
-              : props.listFieldOptions
-          }
-          titles={props.fieldDescriptions}
-          value={props.transformList}
-          placeholder={`${props.transform} fields...`}
-          onChange={handleTransformListChange}
-        />
+      <Container fluid className="overflow-y-scroll p-2 h-100">
+        {editMode ? (
+          <Transforms
+            {...props}
+            transform={props.transform}
+            transformList={props.transformList}
+            setTransformList={props.setTransformList}
+            filterFieldOptions={props.filterFieldOptions}
+            listFieldOptions={props.listFieldOptions}
+            setEditMode={setEditMode}
+          />
+        ) : (
+          <Stack gap={2}>
+            {props.transformList.map((transform, index) => (
+              // TODO: Use transform key
+              <Container key={index} fluid className="g-0">
+                <ButtonGroup size="sm">
+                  <Button variant="dark" onClick={() => setEditMode(true)}>
+                    <span
+                      className="onyx-text-pink"
+                      style={{ fontFamily: "monospace" }}
+                    >
+                      {transform}
+                    </span>
+                  </Button>
+                  <Button
+                    variant="dark"
+                    title="Remove Field"
+                    onClick={() => handleTransformRemove(index)}
+                  >
+                    <MdClear />
+                  </Button>
+                </ButtonGroup>
+              </Container>
+            ))}
+          </Stack>
+        )}
       </Container>
     </Card>
   );

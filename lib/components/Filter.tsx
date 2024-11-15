@@ -1,128 +1,182 @@
-import React from "react";
-import Container from "react-bootstrap/Container";
+import React, { useState } from "react";
+import Stack from "react-bootstrap/Stack";
+import CloseButton from "react-bootstrap/CloseButton";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput } from "./Inputs";
+import { FilterField } from "../types";
 import { DataProps } from "../interfaces";
 
 interface FilterProps extends DataProps {
-  filter: { field: string; lookup: string; value: string };
+  index: number;
+  filterList: FilterField[];
+  setFilterList: (value: FilterField[]) => void;
   fieldList: string[];
-  handleFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
-  handleLookupChange: React.ChangeEventHandler<HTMLSelectElement>;
-  handleValueChange: React.ChangeEventHandler<
-    HTMLInputElement | HTMLSelectElement
-  >;
-  handleFilterAdd: () => void;
-  handleFilterRemove: () => void;
+  setEditMode: (value: boolean) => void;
 }
 
 function Filter(props: FilterProps) {
+  const [filter, setFilter] = useState(props.filterList[props.index]);
+
+  const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const updatedFilter = { ...filter };
+    updatedFilter.field = e.target.value;
+    updatedFilter.lookup =
+      props.typeLookups.get(
+        props.projectFields.get(e.target.value)?.type || ""
+      )?.[0] || "";
+
+    if (updatedFilter.lookup === "isnull") {
+      updatedFilter.value = "true";
+    } else {
+      updatedFilter.value = "";
+    }
+    setFilter(updatedFilter);
+  };
+
+  const handleLookupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const updatedFilter = { ...filter };
+    updatedFilter.lookup = e.target.value;
+
+    if (updatedFilter.lookup === "isnull") {
+      updatedFilter.value = "true";
+    } else {
+      updatedFilter.value = "";
+    }
+    setFilter(updatedFilter);
+  };
+
+  const handleValueChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const updatedFilter = { ...filter };
+    updatedFilter.value = e.target.value;
+    setFilter(updatedFilter);
+  };
+
+  const handleApply = () => {
+    props.setFilterList([
+      ...props.filterList.slice(0, props.index),
+      filter,
+      ...props.filterList.slice(props.index + 1),
+    ]);
+    props.setEditMode(false);
+  };
+
   let f: JSX.Element;
   const getValueList = (v: string) => {
     return v ? v.split(",") : [];
   };
 
-  if (props.filter.lookup === "isnull") {
+  if (filter.lookup === "isnull") {
     f = (
       <Dropdown
         options={["true", "false"]}
-        value={props.filter.value}
-        onChange={props.handleValueChange}
+        value={filter.value}
+        onChange={handleValueChange}
       />
     );
-  } else if (props.projectFields.get(props.filter.field)?.type === "choice") {
-    if (props.filter.lookup.endsWith("in")) {
+  } else if (props.projectFields.get(filter.field)?.type === "choice") {
+    if (filter.lookup.endsWith("in")) {
       f = (
         <MultiChoice
           project={props.project}
-          field={props.filter.field}
+          field={filter.field}
           httpPathHandler={props.httpPathHandler}
-          options={props.projectFields.get(props.filter.field)?.values || []}
-          value={getValueList(props.filter.value)}
-          onChange={props.handleValueChange}
+          options={props.projectFields.get(filter.field)?.values || []}
+          value={getValueList(filter.value)}
+          onChange={handleValueChange}
         />
       );
     } else {
       f = (
         <Choice
           project={props.project}
-          field={props.filter.field}
+          field={filter.field}
           httpPathHandler={props.httpPathHandler}
           isClearable
-          options={props.projectFields.get(props.filter.field)?.values || []}
-          value={props.filter.value}
-          onChange={props.handleValueChange}
+          options={props.projectFields.get(filter.field)?.values || []}
+          value={filter.value}
+          onChange={handleValueChange}
         />
       );
     }
-  } else if (props.filter.lookup.endsWith("in")) {
+  } else if (filter.lookup.endsWith("in")) {
     f = (
       <MultiInput
-        value={getValueList(props.filter.value)}
-        onChange={props.handleValueChange}
+        value={getValueList(filter.value)}
+        onChange={handleValueChange}
       />
     );
-  } else if (props.filter.lookup.endsWith("range")) {
+  } else if (filter.lookup.endsWith("range")) {
     f = (
       <MultiInput
-        value={getValueList(props.filter.value)}
+        value={getValueList(filter.value)}
         limit={2}
-        onChange={props.handleValueChange}
+        onChange={handleValueChange}
       />
     );
-  } else if (props.projectFields.get(props.filter.field)?.type === "bool") {
+  } else if (props.projectFields.get(filter.field)?.type === "bool") {
     f = (
       <Dropdown
         isClearable
         options={["true", "false"]}
-        value={props.filter.value}
-        onChange={props.handleValueChange}
+        value={filter.value}
+        onChange={handleValueChange}
       />
     );
   } else {
-    f = <Input value={props.filter.value} onChange={props.handleValueChange} />;
+    f = <Input value={filter.value} onChange={handleValueChange} />;
   }
   return (
-    <Stack direction="horizontal" gap={1}>
-      <Container fluid className="g-0">
-        <Row className="g-1">
-          <Col sm={6} lg={4}>
-            <Dropdown
-              options={props.fieldList}
-              titles={props.fieldDescriptions}
-              value={props.filter.field}
-              placeholder="Select field..."
-              onChange={props.handleFieldChange}
-            />
-          </Col>
-          <Col sm={6} lg={4}>
-            <Dropdown
-              options={
-                props.typeLookups.get(
-                  props.projectFields.get(props.filter.field)?.type || ""
-                ) || []
-              }
-              titles={props.lookupDescriptions}
-              value={props.filter.lookup}
-              placeholder="Select lookup..."
-              onChange={props.handleLookupChange}
-            />
-          </Col>
-          <Col sm={12} lg={4}>
-            {f}
-          </Col>
-        </Row>
-      </Container>
-      <Button variant="dark" onClick={props.handleFilterAdd}>
-        +
-      </Button>
-      <Button variant="dark" onClick={props.handleFilterRemove}>
-        -
-      </Button>
+    <Stack gap={3} className="p-1">
+      <Row>
+        <Col>
+          <h5>Edit Filter</h5>
+        </Col>
+        <Col>
+          <CloseButton
+            className="float-end"
+            onClick={() => props.setEditMode(false)}
+          />
+        </Col>
+      </Row>
+      <Stack gap={1}>
+        <Dropdown
+          options={props.fieldList}
+          titles={props.fieldDescriptions}
+          value={filter.field}
+          placeholder="Select field..."
+          onChange={handleFieldChange}
+        />
+        <Dropdown
+          options={
+            props.typeLookups.get(
+              props.projectFields.get(filter.field)?.type || ""
+            ) || []
+          }
+          titles={props.lookupDescriptions}
+          value={filter.lookup}
+          placeholder="Select lookup..."
+          onChange={handleLookupChange}
+        />
+        {f}
+      </Stack>
+      <Stack direction="horizontal" gap={1}>
+        <div className="me-auto"></div>
+        <Button
+          size="sm"
+          variant="dark"
+          onClick={() => props.setEditMode(false)}
+        >
+          Cancel
+        </Button>
+        <Button size="sm" onClick={handleApply}>
+          Apply
+        </Button>
+      </Stack>
     </Stack>
   );
 }

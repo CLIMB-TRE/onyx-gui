@@ -28,6 +28,22 @@ type ResultData = {
   messages?: ErrorType;
 };
 
+enum ExportStatus {
+  READY,
+  RUNNING,
+  FINISHED,
+  CANCELLED,
+}
+
+type GraphConfig = {
+  key: string;
+  type: string;
+  field: string;
+  groupBy: string;
+  groupMode: string;
+  yAxisType: string;
+};
+
 export type {
   ProjectField,
   FilterField,
@@ -35,4 +51,7 @@ export type {
   ResultType,
   ErrorType,
   ResultData,
+  GraphConfig,
 };
+
+export { ExportStatus };

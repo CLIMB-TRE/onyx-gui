@@ -1,4 +1,4 @@
-import { ProjectField } from "./types";
+import { ProjectField, ExportStatus } from "./types";
 
 interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
@@ -18,7 +18,15 @@ interface DataProps extends OnyxProps {
 interface StatsProps extends OnyxProps {
   project: string;
   projectFields: Map<string, ProjectField>;
+  fieldDescriptions: Map<string, string>;
   darkMode: boolean;
 }
 
-export type { OnyxProps, DataProps, StatsProps };
+interface ExportHandlerProps {
+  fileName: string;
+  statusToken: { status: ExportStatus };
+  setExportProgress: (exportProgress: number) => void;
+  setExportStatus: (exportStatus: ExportStatus) => void;
+}
+
+export type { OnyxProps, DataProps, StatsProps, ExportHandlerProps };

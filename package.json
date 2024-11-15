@@ -1,6 +1,6 @@
 {
   "name": "climb-onyx-gui",
-  "version": "0.12.4",
+  "version": "0.12.12",
   "type": "module",
   "main": "dist/climb-onyx-gui.js",
   "types": "dist/main.d.ts",
@@ -18,14 +18,16 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "^32.1.0",
-    "@ag-grid-community/core": "^32.1.0",
-    "@ag-grid-community/react": "^32.1.0",
-    "@ag-grid-community/styles": "^32.1.0",
+    "@ag-grid-community/client-side-row-model": "^32.2.0",
+    "@ag-grid-community/core": "^32.2.0",
+    "@ag-grid-community/csv-export": "^32.2.0",
+    "@ag-grid-community/react": "^32.2.0",
+    "@ag-grid-community/styles": "^32.2.0",
     "@tanstack/react-query": "^4.36.1",
     "export-to-csv": "^1.3.0",
     "plotly.js-basic-dist": "^2.33.0",
     "react-bootstrap": "^2.10.2",
+    "react-icons": "^5.3.0",
     "react-plotly.js": "^2.6.0",
     "react-select": "^5.8.0"
   },
@@ -36,8 +38,8 @@
   "devDependencies": {
     "@types/node": "^20.12.12",
     "@types/plotly.js-basic-dist": "^1.54.4",
-    "@types/react": "^18.2.66",
-    "@types/react-dom": "^18.2.22",
+    "@types/react": "^17.0.83",
+    "@types/react-dom": "^17.0.25",
     "@types/react-plotly.js": "^2.6.3",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
@@ -45,8 +47,8 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
     "vite-plugin-dts": "^3.9.1"
