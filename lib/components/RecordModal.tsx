@@ -108,10 +108,14 @@ function RecordData(props: RecordModalProps) {
     const fileWriter = props.fileWriter;
 
     if (fileWriter) {
-      exportProps.setExportProgress(100);
       const jsonData = JSON.stringify(recordData.data);
-      fileWriter(exportProps.fileName, jsonData);
-      exportProps.setExportStatus(ExportStatus.FINISHED);
+      exportProps.setExportStatus(ExportStatus.WRITING);
+      fileWriter(exportProps.fileName, jsonData)
+        .then(() => exportProps.setExportStatus(ExportStatus.FINISHED))
+        .catch((error: Error) => {
+          exportProps.setExportError(error);
+          exportProps.setExportStatus(ExportStatus.ERROR);
+        });
     }
   };
 

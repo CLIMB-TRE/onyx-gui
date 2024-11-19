@@ -243,6 +243,8 @@ function TableOptions(props: TableOptionsProps) {
   );
 
   const getPaginatedData = async (exportProps: ExportHandlerProps) => {
+    exportProps.setExportStatus(ExportStatus.RUNNING);
+
     const csvConfig = mkConfig({
       useKeysAsHeaders: true,
     });
@@ -259,7 +261,7 @@ function TableOptions(props: TableOptionsProps) {
         .then((response) => response.json())
         .then((result) => {
           if (exportProps.statusToken.status === ExportStatus.CANCELLED)
-            throw new Error("Export cancelled");
+            throw new Error("export_cancelled");
 
           const data = formatResultData(result);
           datas.push(data);
@@ -291,8 +293,7 @@ function TableOptions(props: TableOptionsProps) {
     }
   };
 
-  const getUnpaginatedData = async (exportProps: ExportHandlerProps) => {
-    exportProps.setExportProgress(100);
+  const getUnpaginatedData = async () => {
     const csvData = props.gridRef.current?.api.getDataAsCsv();
     return csvData || "";
   };
@@ -301,18 +302,27 @@ function TableOptions(props: TableOptionsProps) {
     const fileWriter = props.fileWriter;
 
     if (fileWriter) {
-      let getDataFunction: (e: ExportHandlerProps) => Promise<string>;
+      let getDataFunction: () => Promise<string>;
 
-      if (props.isPaginated) getDataFunction = getPaginatedData;
+      if (props.isPaginated)
+        getDataFunction = () => getPaginatedData(exportProps);
       else getDataFunction = getUnpaginatedData;
 
-      getDataFunction(exportProps)
+      getDataFunction()
         .then((data) => {
-          fileWriter(exportProps.fileName, data);
-          exportProps.setExportProgress(100);
-          exportProps.setExportStatus(ExportStatus.FINISHED);
+          exportProps.setExportStatus(ExportStatus.WRITING);
+          fileWriter(exportProps.fileName, data).then(() =>
+            exportProps.setExportStatus(ExportStatus.FINISHED)
+          );
         })
-        .catch(() => exportProps.setExportStatus(ExportStatus.CANCELLED));
+        .catch((error: Error) => {
+          if (error.message === "export_cancelled")
+            exportProps.setExportStatus(ExportStatus.CANCELLED);
+          else {
+            exportProps.setExportError(error);
+            exportProps.setExportStatus(ExportStatus.ERROR);
+          }
+        });
     }
   };
 
