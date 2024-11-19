@@ -48,23 +48,14 @@
   --bs-btn-disabled-border-color: var(--bs-gray-900);
 }
 
-.card-header {
-  font-size: large;
-  min-height: 50px;
-}
-
-.card-footer {
-  height: 50px;
+.ag-theme-quartz {
+  --ag-background-color: var(--bs-body-bg);
+  --ag-foreground-color: var(--bs-body-color);
+  --ag-font-family: var(--bs-font-monospace);
 }
 
 .onyx-text-pink {
   color: var(--bs-pink);
-}
-
-.ag-theme-quartz {
-  --ag-background-color: var(--bs-body-bg);
-  --ag-foreground-color: var(--bs-body-color);
-  --ag-font-family: monospace;
 }
 
 .onyx-modal {

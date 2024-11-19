@@ -129,10 +129,7 @@ function FilterPanel(props: FilterPanelProps) {
                     variant="dark"
                     onClick={() => handleEditMode(filter, index)}
                   >
-                    <span
-                      className="onyx-text-pink"
-                      style={{ fontFamily: "monospace" }}
-                    >
+                    <span className="onyx-text-pink font-monospace">
                       {formatFilter(filter)}
                     </span>
                   </Button>
