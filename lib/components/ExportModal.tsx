@@ -6,11 +6,11 @@ import Form from "react-bootstrap/Form";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import Stack from "react-bootstrap/Stack";
 import Spinner from "react-bootstrap/Spinner";
-import Accordion from "react-bootstrap/Accordion";
-import { DataProps, ExportHandlerProps } from "../interfaces";
+import { ExportHandlerProps } from "../interfaces";
 import { ExportStatus } from "../types";
+import { ErrorModalContents } from "./ErrorModal";
 
-interface ExportModalProps extends DataProps {
+interface ExportModalProps {
   show: boolean;
   onHide: () => void;
   defaultFileNamePrefix: string;
@@ -42,7 +42,7 @@ function isInvalidPrefix(prefix: string) {
 function ExportModal(props: ExportModalProps) {
   const [exportStatus, setExportStatus] = useState(ExportStatus.READY);
   const [exportProgress, setExportProgress] = useState(0);
-  const [exportError, setExportError] = useState(new Error());
+  const [exportError, setExportError] = useState<Error | null>(null);
   const [fileNamePrefix, setFileNamePrefix] = useState("");
   const [fileNameIsInvalid, setFileNameIsInvalid] = useState(false);
   const { statusToken, readyExport, cancelExport } = useExportStatusToken();
@@ -58,7 +58,7 @@ function ExportModal(props: ExportModalProps) {
     } else setFileNameIsInvalid(false);
 
     setExportProgress(0);
-    setExportError(new Error());
+    setExportError(null);
     readyExport();
     props.handleExport({
       fileName: prefix + props.fileExtension,
@@ -145,26 +145,7 @@ function ExportModal(props: ExportModalProps) {
           </Form.Group>
         )}
         {exportStatus === ExportStatus.ERROR && (
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label className="d-flex justify-content-center">
-                Error Occurred.
-              </Form.Label>
-              <Form.Text className="d-flex justify-content-center">
-                Please try again or contact support if the problem persists.
-              </Form.Text>
-            </Form.Group>
-            <Accordion>
-              <Accordion.Item eventKey="0">
-                <Accordion.Header>View Error Message</Accordion.Header>
-                <Accordion.Body>
-                  <small className="onyx-text-pink font-monospace">
-                    {exportError.name}: {exportError.message}
-                  </small>
-                </Accordion.Body>
-              </Accordion.Item>
-            </Accordion>
-          </Form>
+          <ErrorModalContents error={exportError} />
         )}
         {exportStatus === ExportStatus.WRITING && (
           <Form.Group className="mb-3">
