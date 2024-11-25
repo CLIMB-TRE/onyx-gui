@@ -100,7 +100,7 @@ function FilterPanel(props: FilterPanelProps) {
   return (
     <Card className="h-50">
       <Card.Header>
-        <span>Filters</span>
+        <span>Filter</span>
         <Button
           className="float-end"
           size="sm"
