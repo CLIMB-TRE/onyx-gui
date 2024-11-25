@@ -43,10 +43,7 @@ function ResultsPanel(props: ResultsPanelProps) {
         className="p-0"
         size="sm"
         variant="link"
-        onClick={() =>
-          props.handleRecordModalShow &&
-          props.handleRecordModalShow(cellRendererProps.value)
-        }
+        onClick={() => props.handleRecordModalShow(cellRendererProps.value)}
       >
         {cellRendererProps.value}
       </Button>
@@ -59,9 +56,7 @@ function ResultsPanel(props: ResultsPanelProps) {
         className="p-0"
         size="sm"
         variant="link"
-        onClick={() =>
-          props.s3PathHandler && props.s3PathHandler(cellRendererProps.value)
-        }
+        onClick={() => props.s3PathHandler(cellRendererProps.value)}
       >
         {cellRendererProps.value}
       </Button>

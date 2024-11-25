@@ -51,7 +51,6 @@ function RecordData(props: RecordModalProps) {
 
   const DetailCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
     if (
-      props.s3PathHandler &&
       typeof cellRendererProps.value === "string" &&
       cellRendererProps.value.startsWith("s3://") &&
       cellRendererProps.value.endsWith(".html")
@@ -61,9 +60,7 @@ function RecordData(props: RecordModalProps) {
           className="p-0"
           size="sm"
           variant="link"
-          onClick={() =>
-            props.s3PathHandler && props.s3PathHandler(cellRendererProps.value)
-          }
+          onClick={() => props.s3PathHandler(cellRendererProps.value)}
         >
           {cellRendererProps.value}
         </Button>
@@ -105,18 +102,15 @@ function RecordData(props: RecordModalProps) {
     .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1));
 
   const handleJSONExport = (exportProps: ExportHandlerProps) => {
-    const fileWriter = props.fileWriter;
-
-    if (fileWriter) {
-      const jsonData = JSON.stringify(recordData.data);
-      exportProps.setExportStatus(ExportStatus.WRITING);
-      fileWriter(exportProps.fileName, jsonData)
-        .then(() => exportProps.setExportStatus(ExportStatus.FINISHED))
-        .catch((error: Error) => {
-          exportProps.setExportError(error);
-          exportProps.setExportStatus(ExportStatus.ERROR);
-        });
-    }
+    const jsonData = JSON.stringify(recordData.data);
+    exportProps.setExportStatus(ExportStatus.WRITING);
+    props
+      .fileWriter(exportProps.fileName, jsonData)
+      .then(() => exportProps.setExportStatus(ExportStatus.FINISHED))
+      .catch((error: Error) => {
+        exportProps.setExportError(error);
+        exportProps.setExportStatus(ExportStatus.ERROR);
+      });
   };
 
   return (
@@ -175,7 +169,6 @@ function RecordData(props: RecordModalProps) {
               <hr />
               <Button
                 size="sm"
-                disabled={!props.fileWriter}
                 variant="dark"
                 onClick={() => setExportModalShow(true)}
               >

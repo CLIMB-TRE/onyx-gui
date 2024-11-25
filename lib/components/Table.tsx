@@ -72,7 +72,6 @@ interface TableProps extends DataProps {
   flexOnly?: string[];
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
-  handleRecordModalShow?: (climbID: string) => void;
 }
 
 interface ServerPaginatedTableProps extends TableProps {
@@ -287,31 +286,27 @@ function TableOptions(props: TableOptionsProps) {
   };
 
   const handleCSVExport = (exportProps: ExportHandlerProps) => {
-    const fileWriter = props.fileWriter;
+    let getDataFunction: () => Promise<string>;
 
-    if (fileWriter) {
-      let getDataFunction: () => Promise<string>;
+    if (props.isPaginated)
+      getDataFunction = () => getPaginatedData(exportProps);
+    else getDataFunction = getUnpaginatedData;
 
-      if (props.isPaginated)
-        getDataFunction = () => getPaginatedData(exportProps);
-      else getDataFunction = getUnpaginatedData;
-
-      getDataFunction()
-        .then((data) => {
-          exportProps.setExportStatus(ExportStatus.WRITING);
-          fileWriter(exportProps.fileName, data).then(() =>
-            exportProps.setExportStatus(ExportStatus.FINISHED)
-          );
-        })
-        .catch((error: Error) => {
-          if (error.message === "export_cancelled")
-            exportProps.setExportStatus(ExportStatus.CANCELLED);
-          else {
-            exportProps.setExportError(error);
-            exportProps.setExportStatus(ExportStatus.ERROR);
-          }
-        });
-    }
+    getDataFunction()
+      .then((data) => {
+        exportProps.setExportStatus(ExportStatus.WRITING);
+        props
+          .fileWriter(exportProps.fileName, data)
+          .then(() => exportProps.setExportStatus(ExportStatus.FINISHED));
+      })
+      .catch((error: Error) => {
+        if (error.message === "export_cancelled")
+          exportProps.setExportStatus(ExportStatus.CANCELLED);
+        else {
+          exportProps.setExportError(error);
+          exportProps.setExportStatus(ExportStatus.ERROR);
+        }
+      });
   };
 
   return (
@@ -350,7 +345,6 @@ function TableOptions(props: TableOptionsProps) {
         <Dropdown.Header>Export Data</Dropdown.Header>
         <Dropdown.Item
           key="exportToCSV"
-          disabled={!props.fileWriter}
           onClick={() => setExportModalShow(true)}
         >
           Export to CSV

@@ -2,8 +2,8 @@ import { ProjectField, ExportStatus } from "./types";
 
 interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
-  s3PathHandler?: (path: string) => Promise<void>;
-  fileWriter?: (path: string, content: string) => Promise<void>;
+  s3PathHandler: (path: string) => Promise<void>;
+  fileWriter: (path: string, content: string) => Promise<void>;
   extVersion?: string;
 }
 
