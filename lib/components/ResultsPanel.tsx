@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Table from "./Table";
+import ErrorModal from "./ErrorModal";
 import { ServerPaginatedTable } from "./Table";
 import QueryHandler from "./QueryHandler";
 import { ResultData } from "../types";
@@ -32,10 +33,18 @@ function getDefaultFileNamePrefix(project: string, searchParameters: string) {
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
+  const [errorModalShow, setErrorModalShow] = useState(false);
+  const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
+
   const defaultFileNamePrefix = useMemo(
     () => getDefaultFileNamePrefix(props.project, props.searchParameters),
     [props.project, props.searchParameters]
   );
+
+  const handleErrorModalShow = (error: Error) => {
+    setS3ReportError(error);
+    setErrorModalShow(true);
+  };
 
   const ClimbIDCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
     return (
@@ -56,7 +65,11 @@ function ResultsPanel(props: ResultsPanelProps) {
         className="p-0"
         size="sm"
         variant="link"
-        onClick={() => props.s3PathHandler(cellRendererProps.value)}
+        onClick={() =>
+          props
+            .s3PathHandler(cellRendererProps.value)
+            .catch((error: Error) => handleErrorModalShow(error))
+        }
       >
         {cellRendererProps.value}
       </Button>
@@ -72,6 +85,12 @@ function ResultsPanel(props: ResultsPanelProps) {
     <Card className="h-100">
       <Card.Header>Results</Card.Header>
       <Container fluid className="p-2 pb-0 h-100">
+        <ErrorModal
+          title="S3 Reports"
+          error={s3ReportError}
+          show={errorModalShow}
+          onHide={() => setErrorModalShow(false)}
+        />
         <QueryHandler
           isFetching={props.resultPending}
           error={props.resultError}
