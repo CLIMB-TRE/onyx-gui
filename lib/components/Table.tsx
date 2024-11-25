@@ -12,7 +12,6 @@ import {
 } from "@ag-grid-community/core";
 import { CsvExportModule } from "@ag-grid-community/csv-export";
 import { useQuery } from "@tanstack/react-query";
-import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Pagination from "react-bootstrap/Pagination";
 import Stack from "react-bootstrap/Stack";
@@ -104,44 +103,33 @@ function getColDefs(props: TableProps, defaultColDef: (key: string) => ColDef) {
 
   if (props.data.data && props.data.data.length > 0) {
     colDefs = Object.keys(props.data.data[0]).map((key) => {
-      if (key === "climb_id") {
-        return {
-          ...defaultColDef(key),
-          pinned: "left",
-          cellRenderer: (params: CustomCellRendererProps) => {
-            return (
-              <Button
-                className="p-0"
-                size="sm"
-                variant="link"
-                onClick={() =>
-                  props.handleRecordModalShow &&
-                  props.handleRecordModalShow(params.value)
-                }
-              >
-                {params.value}
-              </Button>
-            );
-          },
-        };
-      } else {
-        const colDef = defaultColDef(key);
+      const colDef = defaultColDef(key);
 
-        if (props.cellRenderers?.get(key)) {
-          colDef.cellRenderer = props.cellRenderers.get(key);
-          colDef.autoHeight = true;
-          colDef.wrapText = true;
-        }
-
-        if (props.tooltipFields?.includes(key)) {
-          colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
-        }
-
-        if (!props.flexOnly || props.flexOnly.includes(key)) {
-          colDef.flex = 1;
-        }
-        return colDef;
+      // Apply custom cell renderers
+      if (props.cellRenderers?.get(key)) {
+        colDef.cellRenderer = props.cellRenderers.get(key);
       }
+
+      if (key === "climb_id") {
+        // 'climb_id' field is a special case
+        // where we want it pinned to the left
+        colDef.pinned = "left";
+      } else if (key === "changes") {
+        // History 'changes' field is a special case
+        // where we want variable height and wrapped text
+        colDef.autoHeight = true;
+        colDef.wrapText = true;
+      }
+
+      // Apply tooltip value getter for fields that should display tooltips
+      if (props.tooltipFields?.includes(key)) {
+        colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
+      }
+
+      if (!props.flexOnly || props.flexOnly.includes(key)) {
+        colDef.flex = 1;
+      }
+      return colDef;
     });
   } else {
     colDefs = [];

@@ -1,6 +1,8 @@
 import { useMemo } from "react";
+import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
+import Button from "react-bootstrap/Button";
 import Table from "./Table";
 import { ServerPaginatedTable } from "./Table";
 import QueryHandler from "./QueryHandler";
@@ -35,6 +37,42 @@ function ResultsPanel(props: ResultsPanelProps) {
     [props.project, props.searchParameters]
   );
 
+  const ClimbIDCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
+    return (
+      <Button
+        className="p-0"
+        size="sm"
+        variant="link"
+        onClick={() =>
+          props.handleRecordModalShow &&
+          props.handleRecordModalShow(cellRendererProps.value)
+        }
+      >
+        {cellRendererProps.value}
+      </Button>
+    );
+  };
+
+  const S3ReportCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
+    return (
+      <Button
+        className="p-0"
+        size="sm"
+        variant="link"
+        onClick={() =>
+          props.s3PathHandler && props.s3PathHandler(cellRendererProps.value)
+        }
+      >
+        {cellRendererProps.value}
+      </Button>
+    );
+  };
+
+  const cellRenderers = new Map([
+    ["climb_id", ClimbIDCellRenderer],
+    ["ingest_report", S3ReportCellRenderer],
+  ]);
+
   return (
     <Card className="h-100">
       <Card.Header>Results</Card.Header>
@@ -50,7 +88,7 @@ function ResultsPanel(props: ResultsPanelProps) {
               data={props.resultData || {}}
               defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={props.fieldDescriptions}
-              handleRecordModalShow={props.handleRecordModalShow}
+              cellRenderers={cellRenderers}
             />
           ) : (
             <ServerPaginatedTable
@@ -59,7 +97,7 @@ function ResultsPanel(props: ResultsPanelProps) {
               defaultFileNamePrefix={defaultFileNamePrefix}
               data={props.resultData || {}}
               headerTooltips={props.fieldDescriptions}
-              handleRecordModalShow={props.handleRecordModalShow}
+              cellRenderers={cellRenderers}
             />
           )}
         </QueryHandler>
