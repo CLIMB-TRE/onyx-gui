@@ -297,12 +297,19 @@ function TableOptions(props: TableOptionsProps) {
         exportProps.setExportStatus(ExportStatus.WRITING);
         props
           .fileWriter(exportProps.fileName, data)
-          .then(() => exportProps.setExportStatus(ExportStatus.FINISHED));
+          .then(() => exportProps.setExportStatus(ExportStatus.FINISHED))
+          .catch((error: Error) => {
+            // Display file write errors
+            exportProps.setExportError(error);
+            exportProps.setExportStatus(ExportStatus.ERROR);
+          });
       })
       .catch((error: Error) => {
         if (error.message === "export_cancelled")
+          // Display cancel message
           exportProps.setExportStatus(ExportStatus.CANCELLED);
         else {
+          // Display errors during data retrieval
           exportProps.setExportError(error);
           exportProps.setExportStatus(ExportStatus.ERROR);
         }
