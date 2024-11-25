@@ -17,6 +17,7 @@ import QueryHandler from "./QueryHandler";
 import { ResultData, ResultType, ExportStatus } from "../types";
 import { DataProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
+import { s3BucketsMessage } from "../utils/errorMessages";
 
 interface RecordModalProps extends DataProps {
   recordID: string;
@@ -145,6 +146,7 @@ function RecordData(props: RecordModalProps) {
       >
         <ErrorModal
           title="S3 Reports"
+          message={s3BucketsMessage}
           error={s3ReportError}
           show={errorModalShow}
           onHide={() => setErrorModalShow(false)}

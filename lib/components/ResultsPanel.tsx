@@ -9,6 +9,7 @@ import { ServerPaginatedTable } from "./Table";
 import QueryHandler from "./QueryHandler";
 import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
+import { s3BucketsMessage } from "../utils/errorMessages";
 
 interface ResultsPanelProps extends DataProps {
   resultPending: boolean;
@@ -87,6 +88,7 @@ function ResultsPanel(props: ResultsPanelProps) {
       <Container fluid className="p-2 pb-0 h-100">
         <ErrorModal
           title="S3 Reports"
+          message={s3BucketsMessage}
           error={s3ReportError}
           show={errorModalShow}
           onHide={() => setErrorModalShow(false)}

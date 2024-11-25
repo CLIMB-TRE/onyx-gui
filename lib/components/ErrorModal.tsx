@@ -5,6 +5,7 @@ import Button from "react-bootstrap/Button";
 
 interface ErrorModalContentsProps {
   error: Error | null;
+  message?: string;
 }
 
 interface ErrorModalProps extends ErrorModalContentsProps {
@@ -20,6 +21,11 @@ function ErrorModalContents(props: ErrorModalContentsProps) {
         <Form.Label className="d-flex justify-content-center">
           Error Occurred.
         </Form.Label>
+        {props.message && (
+          <Form.Text className="d-flex justify-content-center">
+            <b className="onyx-text-pink">{props.message}</b>
+          </Form.Text>
+        )}
         <Form.Text className="d-flex justify-content-center">
           Please try again or contact CLIMB-TRE support if the problem persists.
         </Form.Text>
@@ -52,7 +58,7 @@ function ErrorModal(props: ErrorModalProps) {
         <Modal.Title>{props.title}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <ErrorModalContents error={props.error} />
+        <ErrorModalContents {...props} />
       </Modal.Body>
       <Modal.Footer>
         <Button variant="dark" onClick={props.onHide}>
