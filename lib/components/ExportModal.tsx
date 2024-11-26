@@ -4,10 +4,13 @@ import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import { DataProps, ExportHandlerProps } from "../interfaces";
+import Stack from "react-bootstrap/Stack";
+import Spinner from "react-bootstrap/Spinner";
+import { ExportHandlerProps } from "../interfaces";
 import { ExportStatus } from "../types";
+import { ErrorModalContents } from "./ErrorModal";
 
-interface ExportModalProps extends DataProps {
+interface ExportModalProps {
   show: boolean;
   onHide: () => void;
   defaultFileNamePrefix: string;
@@ -39,6 +42,7 @@ function isInvalidPrefix(prefix: string) {
 function ExportModal(props: ExportModalProps) {
   const [exportStatus, setExportStatus] = useState(ExportStatus.READY);
   const [exportProgress, setExportProgress] = useState(0);
+  const [exportError, setExportError] = useState<Error | null>(null);
   const [fileNamePrefix, setFileNamePrefix] = useState("");
   const [fileNameIsInvalid, setFileNameIsInvalid] = useState(false);
   const { statusToken, readyExport, cancelExport } = useExportStatusToken();
@@ -54,13 +58,14 @@ function ExportModal(props: ExportModalProps) {
     } else setFileNameIsInvalid(false);
 
     setExportProgress(0);
+    setExportError(null);
     readyExport();
-    setExportStatus(ExportStatus.RUNNING);
     props.handleExport({
       fileName: prefix + props.fileExtension,
       statusToken,
-      setExportProgress,
       setExportStatus,
+      setExportProgress,
+      setExportError,
     });
   };
 
@@ -139,12 +144,24 @@ function ExportModal(props: ExportModalProps) {
             <ProgressBar now={exportProgress} variant="danger" />
           </Form.Group>
         )}
+        {exportStatus === ExportStatus.ERROR && (
+          <ErrorModalContents error={exportError} />
+        )}
+        {exportStatus === ExportStatus.WRITING && (
+          <Form.Group className="mb-3">
+            <Form.Label className="d-flex justify-content-center">
+              <Stack direction="horizontal" gap={2}>
+                <Spinner />
+                <span>Writing File...</span>
+              </Stack>
+            </Form.Label>
+          </Form.Group>
+        )}
         {exportStatus === ExportStatus.FINISHED && (
           <Form.Group className="mb-3">
             <Form.Label className="d-flex justify-content-center">
               Export Finished.
             </Form.Label>
-            <ProgressBar now={exportProgress} />
             <Form.Text className="d-flex justify-content-center">
               <span>
                 File Name:{" "}
@@ -172,7 +189,8 @@ function ExportModal(props: ExportModalProps) {
             Cancel
           </Button>
         )}
-        {exportStatus === ExportStatus.CANCELLED && (
+        {(exportStatus === ExportStatus.CANCELLED ||
+          exportStatus === ExportStatus.ERROR) && (
           <Button
             variant="primary"
             onClick={() => setExportStatus(ExportStatus.READY)}
@@ -180,7 +198,8 @@ function ExportModal(props: ExportModalProps) {
             Retry
           </Button>
         )}
-        {exportStatus === ExportStatus.FINISHED && (
+        {(exportStatus === ExportStatus.WRITING ||
+          exportStatus === ExportStatus.FINISHED) && (
           <Button variant="primary" onClick={props.onHide}>
             Done
           </Button>

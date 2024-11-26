@@ -59,7 +59,7 @@ function QueryHandler({
     <LoadingSpinner />
   ) : error ? (
     <Alert variant="danger">Error: {error.message}</Alert>
-  ) : data.messages ? (
+  ) : data?.messages ? (
     <ErrorMessages messages={data.messages} />
   ) : (
     children

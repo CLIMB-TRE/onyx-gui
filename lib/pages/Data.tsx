@@ -125,18 +125,13 @@ function Data(props: DataProps) {
     setRecordModalShow(true);
   }, []);
 
-  const handleRecordModalHide = () => {
-    setRecordModalID("");
-    setRecordModalShow(false);
-  };
-
   return (
     <Container fluid className="g-2 h-100">
       <RecordModal
         {...props}
         recordID={recordModalID}
         show={recordModalShow}
-        onHide={handleRecordModalHide}
+        onHide={() => setRecordModalShow(false)}
       />
       <div className="parent h-100">
         {!sideBarCollapsed && (

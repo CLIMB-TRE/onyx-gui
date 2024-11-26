@@ -6,7 +6,7 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { useQuery } from "@tanstack/react-query";
-import { MdLightMode, MdDarkMode, MdWebhook } from "react-icons/md";
+import { MdLightMode, MdDarkMode, MdJoinInner } from "react-icons/md";
 
 interface HeaderProps {
   httpPathHandler: (path: string) => Promise<Response>;
@@ -75,7 +75,7 @@ function Header(props: HeaderProps) {
     >
       <Container fluid>
         <Navbar.Brand>
-          <MdWebhook color="var(--bs-pink)" /> Onyx
+          <MdJoinInner color="var(--bs-pink)" /> Onyx
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" />
         <Navbar.Collapse id="navbarScroll">

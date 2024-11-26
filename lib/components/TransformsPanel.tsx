@@ -79,10 +79,7 @@ function TransformsPanel(props: TransformsPanelProps) {
               <Container key={index} fluid className="g-0">
                 <ButtonGroup size="sm">
                   <Button variant="dark" onClick={() => setEditMode(true)}>
-                    <span
-                      className="onyx-text-pink"
-                      style={{ fontFamily: "monospace" }}
-                    >
+                    <span className="onyx-text-pink font-monospace">
                       {transform}
                     </span>
                   </Button>
