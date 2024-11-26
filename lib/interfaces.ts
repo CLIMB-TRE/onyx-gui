@@ -2,8 +2,8 @@ import { ProjectField, ExportStatus } from "./types";
 
 interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
-  s3PathHandler?: (path: string) => void;
-  fileWriter?: (path: string, content: string) => void;
+  s3PathHandler: (path: string) => Promise<void>;
+  fileWriter: (path: string, content: string) => Promise<void>;
   extVersion?: string;
 }
 
@@ -25,8 +25,9 @@ interface StatsProps extends OnyxProps {
 interface ExportHandlerProps {
   fileName: string;
   statusToken: { status: ExportStatus };
-  setExportProgress: (exportProgress: number) => void;
   setExportStatus: (exportStatus: ExportStatus) => void;
+  setExportProgress: (exportProgress: number) => void;
+  setExportError: (error: Error) => void;
 }
 
 export type { OnyxProps, DataProps, StatsProps, ExportHandlerProps };

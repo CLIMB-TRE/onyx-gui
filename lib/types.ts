@@ -31,8 +31,10 @@ type ResultData = {
 enum ExportStatus {
   READY,
   RUNNING,
+  WRITING,
   FINISHED,
   CANCELLED,
+  ERROR,
 }
 
 type GraphConfig = {
