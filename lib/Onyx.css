@@ -7,9 +7,12 @@
   --onyx-dropdown-option-background-color: var(--bs-white);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
   --onyx-dropdown-option-description-color: var(--bs-secondary);
+  --onyx-body-bg: var(--bs-white);
 }
 
 [data-bs-theme=dark] {
+  --bs-secondary-bg: var(--bs-gray-900) !important;
+  --bs-body-bg: #000 !important;
   --onyx-dropdown-control-border-color: var(--bs-gray-800);
   --onyx-dropdown-control-background-color: var(--bs-body-bg);
   --onyx-dropdown-menu-background-color: var(--bs-black);
@@ -18,46 +21,41 @@
   --onyx-dropdown-option-background-color: var(--bs-black);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-800);
   --onyx-dropdown-option-description-color: var(--bs-gray-500);
+  --onyx-body-bg: var(--bs-black);
 }
 
 [data-bs-theme=light] .btn-dark {
-  --bs-btn-color: #000;
+  --bs-btn-color: var(--bs-black);
   --bs-btn-bg: var(--bs-gray-300);
-  --bs-btn-border-color: #f8f9fa;
-  --bs-btn-hover-color: #000;
+  --bs-btn-border-color: var(--bs-gray-300);
+  --bs-btn-hover-color: var(--bs-black);
   --bs-btn-hover-bg: #d3d4d5;
   --bs-btn-hover-border-color: #c6c7c8;
   --bs-btn-focus-shadow-rgb: 211, 212, 213;
-  --bs-btn-active-color: #000;
+  --bs-btn-active-color: var(--bs-black);
   --bs-btn-active-bg: #c6c7c8;
   --bs-btn-active-border-color: #babbbc;
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  --bs-btn-disabled-color: #000;
-  --bs-btn-disabled-bg: #f8f9fa;
-  --bs-btn-disabled-border-color: #f8f9fa;
+  --bs-btn-disabled-color: var(--bs-black);
+  --bs-btn-disabled-bg: var(--bs-gray-300);
+  --bs-btn-disabled-border-color: var(--bs-gray-300);
 }
 
 [data-bs-theme=dark] .btn-dark {
-  --bs-btn-bg:  var(--bs-gray-800);
-}
-
-.card-header {
-  font-size: large;
-  min-height: 50px;
-}
-
-.card-footer {
-  height: 50px;
-}
-
-.onyx-text-pink {
-  color: var(--bs-code-color);
+  --bs-btn-bg:  var(--bs-gray-900);
+  --bs-btn-border-color: var(--bs-gray-900);
+  --bs-btn-disabled-bg: var(--bs-gray-900);
+  --bs-btn-disabled-border-color: var(--bs-gray-900);
 }
 
 .ag-theme-quartz {
   --ag-background-color: var(--bs-body-bg);
   --ag-foreground-color: var(--bs-body-color);
-  --ag-font-family: monospace;
+  --ag-font-family: var(--bs-font-monospace);
+}
+
+.onyx-text-pink {
+  color: var(--bs-pink);
 }
 
 .onyx-modal {
@@ -84,7 +82,7 @@
 .left-col {
   resize: horizontal;
   overflow: auto;
-  min-width: 300px;
+  min-width: 220px;
   width: 300px;
 }
 

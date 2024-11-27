@@ -31,9 +31,20 @@ type ResultData = {
 enum ExportStatus {
   READY,
   RUNNING,
+  WRITING,
   FINISHED,
   CANCELLED,
+  ERROR,
 }
+
+type GraphConfig = {
+  key: string;
+  type: string;
+  field: string;
+  groupBy: string;
+  groupMode: string;
+  yAxisType: string;
+};
 
 export type {
   ProjectField,
@@ -42,6 +53,7 @@ export type {
   ResultType,
   ErrorType,
   ResultData,
+  GraphConfig,
 };
 
 export { ExportStatus };

@@ -16,7 +16,7 @@ import { OnyxProps } from "./interfaces";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.12.4";
+const VERSION = "0.13.0";
 
 function flattenFields(fields: Record<string, ProjectField>) {
   const flatFields: Record<string, ProjectField> = {};
@@ -190,6 +190,7 @@ function App(props: OnyxProps) {
                   {...props}
                   project={project}
                   projectFields={projectFields}
+                  fieldDescriptions={fieldDescriptions}
                   darkMode={darkMode}
                 />
               </Tab.Pane>

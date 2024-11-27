@@ -8,6 +8,7 @@ import Filter from "./Filter";
 import { FilterField } from "../types";
 import { DataProps } from "../interfaces";
 import generateKey from "../utils/generateKey";
+import { MdCreate, MdClear } from "react-icons/md";
 
 interface FilterPanelProps extends DataProps {
   filterList: FilterField[];
@@ -96,27 +97,19 @@ function FilterPanel(props: FilterPanelProps) {
     props.setFilterList(list);
   };
 
-  const handleFilterClear = () => {
-    setEditMode(false);
-    props.setFilterList([]);
-  };
-
   return (
     <Card className="h-50">
       <Card.Header>
-        <span>Filters</span>
-        <Stack direction="horizontal" gap={1} className="float-end">
-          <Button
-            size="sm"
-            variant="dark"
-            onClick={() => handleFilterAdd(props.filterList.length)}
-          >
-            Add Filter
-          </Button>
-          <Button size="sm" variant="dark" onClick={handleFilterClear}>
-            Clear Filters
-          </Button>
-        </Stack>
+        <span>Filter</span>
+        <Button
+          className="float-end"
+          size="sm"
+          variant="dark"
+          title="Add Filter"
+          onClick={() => handleFilterAdd(props.filterList.length)}
+        >
+          <MdCreate />
+        </Button>
       </Card.Header>
       <Container fluid className="overflow-y-scroll p-2 h-100">
         {editMode ? (
@@ -136,18 +129,16 @@ function FilterPanel(props: FilterPanelProps) {
                     variant="dark"
                     onClick={() => handleEditMode(filter, index)}
                   >
-                    <span
-                      className="onyx-text-pink"
-                      style={{ fontFamily: "monospace" }}
-                    >
+                    <span className="onyx-text-pink font-monospace">
                       {formatFilter(filter)}
                     </span>
                   </Button>
                   <Button
                     variant="dark"
+                    title="Remove Filter"
                     onClick={() => handleFilterRemove(index)}
                   >
-                    X
+                    <MdClear />
                   </Button>
                 </ButtonGroup>
               </Container>

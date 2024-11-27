@@ -12,7 +12,6 @@ import {
 } from "@ag-grid-community/core";
 import { CsvExportModule } from "@ag-grid-community/csv-export";
 import { useQuery } from "@tanstack/react-query";
-import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Pagination from "react-bootstrap/Pagination";
 import Stack from "react-bootstrap/Stack";
@@ -73,7 +72,6 @@ interface TableProps extends DataProps {
   flexOnly?: string[];
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
-  handleRecordModalShow?: (climbID: string) => void;
 }
 
 interface ServerPaginatedTableProps extends TableProps {
@@ -104,44 +102,33 @@ function getColDefs(props: TableProps, defaultColDef: (key: string) => ColDef) {
 
   if (props.data.data && props.data.data.length > 0) {
     colDefs = Object.keys(props.data.data[0]).map((key) => {
-      if (key === "climb_id") {
-        return {
-          ...defaultColDef(key),
-          pinned: "left",
-          cellRenderer: (params: CustomCellRendererProps) => {
-            return (
-              <Button
-                className="p-0"
-                size="sm"
-                variant="link"
-                onClick={() =>
-                  props.handleRecordModalShow &&
-                  props.handleRecordModalShow(params.value)
-                }
-              >
-                {params.value}
-              </Button>
-            );
-          },
-        };
-      } else {
-        const colDef = defaultColDef(key);
+      const colDef = defaultColDef(key);
 
-        if (props.cellRenderers?.get(key)) {
-          colDef.cellRenderer = props.cellRenderers.get(key);
-          colDef.autoHeight = true;
-          colDef.wrapText = true;
-        }
-
-        if (props.tooltipFields?.includes(key)) {
-          colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
-        }
-
-        if (!props.flexOnly || props.flexOnly.includes(key)) {
-          colDef.flex = 1;
-        }
-        return colDef;
+      // Apply custom cell renderers
+      if (props.cellRenderers?.get(key)) {
+        colDef.cellRenderer = props.cellRenderers.get(key);
       }
+
+      if (key === "climb_id") {
+        // 'climb_id' field is a special case
+        // where we want it pinned to the left
+        colDef.pinned = "left";
+      } else if (key === "changes") {
+        // History 'changes' field is a special case
+        // where we want variable height and wrapped text
+        colDef.autoHeight = true;
+        colDef.wrapText = true;
+      }
+
+      // Apply tooltip value getter for fields that should display tooltips
+      if (props.tooltipFields?.includes(key)) {
+        colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
+      }
+
+      if (!props.flexOnly || props.flexOnly.includes(key)) {
+        colDef.flex = 1;
+      }
+      return colDef;
     });
   } else {
     colDefs = [];
@@ -199,6 +186,26 @@ function TablePagination(props: BaseTableProps) {
   );
 }
 
+function sortData(data: FormattedResultData, field: string, direction: string) {
+  if (data.length > 0 && direction === "asc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (a[field] as number) - (b[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) > (b[field] as string) ? 1 : -1
+      );
+    }
+  } else if (data.length > 0 && direction === "desc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (b[field] as number) - (a[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) < (b[field] as string) ? 1 : -1
+      );
+    }
+  }
+}
+
 function TableOptions(props: TableOptionsProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
 
@@ -223,6 +230,8 @@ function TableOptions(props: TableOptionsProps) {
   );
 
   const getPaginatedData = async (exportProps: ExportHandlerProps) => {
+    exportProps.setExportStatus(ExportStatus.RUNNING);
+
     const csvConfig = mkConfig({
       useKeysAsHeaders: true,
     });
@@ -234,21 +243,18 @@ function TableOptions(props: TableOptionsProps) {
     while (nextParams) {
       const search = new URLSearchParams(nextParams);
 
-      if (props.paginationParams.order)
-        search.set("order", props.paginationParams.order);
-
       await props
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
         .then((result) => {
-          if (exportProps.statusToken.status === ExportStatus.CANCELLED) {
-            throw new Error("Export cancelled");
-          }
+          if (exportProps.statusToken.status === ExportStatus.CANCELLED)
+            throw new Error("export_cancelled");
 
           const data = formatResultData(result);
           datas.push(data);
           nextParams = result.next?.split("?", 2)[1] || "";
           nRows += data.length;
+
           exportProps.setExportProgress(
             (nRows / props.rowDisplayParams.of) * 100
           );
@@ -257,33 +263,57 @@ function TableOptions(props: TableOptionsProps) {
 
     const resultData = Array.prototype.concat.apply([], datas);
 
-    const csvData = asString(generateCsv(csvConfig)(resultData));
+    // If there are no results, return the empty string
+    if (resultData.length === 0) return "";
+    else {
+      // If an order is specified, sort the data
+      if (props.paginationParams.order) {
+        sortData(
+          resultData,
+          props.paginationParams.order.replace(/^-/, ""),
+          props.paginationParams.order.startsWith("-") ? "desc" : "asc"
+        );
+      }
 
-    return csvData;
+      const csvData = asString(generateCsv(csvConfig)(resultData));
+      return csvData;
+    }
   };
 
-  const getUnpaginatedData = async (exportProps: ExportHandlerProps) => {
-    exportProps.setExportProgress(100);
+  const getUnpaginatedData = async () => {
     const csvData = props.gridRef.current?.api.getDataAsCsv();
     return csvData || "";
   };
 
   const handleCSVExport = (exportProps: ExportHandlerProps) => {
-    const fileWriter = props.fileWriter;
+    let getDataFunction: () => Promise<string>;
 
-    if (fileWriter) {
-      let getDataFunction: (e: ExportHandlerProps) => Promise<string>;
+    if (props.isPaginated)
+      getDataFunction = () => getPaginatedData(exportProps);
+    else getDataFunction = getUnpaginatedData;
 
-      if (props.isPaginated) getDataFunction = getPaginatedData;
-      else getDataFunction = getUnpaginatedData;
-
-      getDataFunction(exportProps)
-        .then((data) => {
-          fileWriter(exportProps.fileName, data);
-          exportProps.setExportStatus(ExportStatus.FINISHED);
-        })
-        .catch(() => exportProps.setExportStatus(ExportStatus.CANCELLED));
-    }
+    getDataFunction()
+      .then((data) => {
+        exportProps.setExportStatus(ExportStatus.WRITING);
+        props
+          .fileWriter(exportProps.fileName, data)
+          .then(() => exportProps.setExportStatus(ExportStatus.FINISHED))
+          .catch((error: Error) => {
+            // Display file write errors
+            exportProps.setExportError(error);
+            exportProps.setExportStatus(ExportStatus.ERROR);
+          });
+      })
+      .catch((error: Error) => {
+        if (error.message === "export_cancelled")
+          // Display cancel message
+          exportProps.setExportStatus(ExportStatus.CANCELLED);
+        else {
+          // Display errors during data retrieval
+          exportProps.setExportError(error);
+          exportProps.setExportStatus(ExportStatus.ERROR);
+        }
+      });
   };
 
   return (
@@ -322,7 +352,6 @@ function TableOptions(props: TableOptionsProps) {
         <Dropdown.Header>Export Data</Dropdown.Header>
         <Dropdown.Item
           key="exportToCSV"
-          disabled={!props.fileWriter}
           onClick={() => setExportModalShow(true)}
         >
           Export to CSV
@@ -545,6 +574,8 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       } else if (direction === "desc") {
         search.set("order", `-${field}`);
         setOrder(`-${field}`);
+      } else {
+        setOrder("");
       }
     }
 

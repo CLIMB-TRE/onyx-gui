@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
+import Button from "react-bootstrap/Button";
 import { useQuery } from "@tanstack/react-query";
 import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
@@ -15,6 +16,10 @@ import ResultsPanel from "../components/ResultsPanel";
 import RecordModal from "../components/RecordModal";
 import { FilterField } from "../types";
 import { DataProps } from "../interfaces";
+import {
+  MdKeyboardDoubleArrowLeft,
+  MdKeyboardDoubleArrowRight,
+} from "react-icons/md";
 
 const useDebouncedValue = (inputValue: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(inputValue);
@@ -37,6 +42,7 @@ function Data(props: DataProps) {
   const [searchParameters, setSearchParameters] = useState("");
   const [recordModalShow, setRecordModalShow] = React.useState(false);
   const [recordModalID, setRecordModalID] = React.useState("");
+  const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("filter"))
     .map(([field]) => field);
@@ -119,49 +125,58 @@ function Data(props: DataProps) {
     setRecordModalShow(true);
   }, []);
 
-  const handleRecordModalHide = () => {
-    setRecordModalID("");
-    setRecordModalShow(false);
-  };
-
   return (
     <Container fluid className="g-2 h-100">
       <RecordModal
         {...props}
         recordID={recordModalID}
         show={recordModalShow}
-        onHide={handleRecordModalHide}
+        onHide={() => setRecordModalShow(false)}
       />
       <div className="parent h-100">
-        <div className="left-col h-100">
-          <Container fluid className="g-2 h-100">
-            <Stack gap={2} className="h-100 pt-1">
-              <SearchBar
-                {...props}
-                searchInput={searchInput}
-                setSearchInput={setSearchInput}
-                handleSearch={handleSearch}
-              />
-              <Stack gap={2} className="h-100 overflow-y-hidden">
-                <FilterPanel
+        {!sideBarCollapsed && (
+          <div className="left-col h-100">
+            <Container fluid className="g-2 h-100">
+              <Stack gap={2} className="h-100 pt-1">
+                <SearchBar
                   {...props}
-                  filterList={filterList}
-                  setFilterList={setFilterList}
-                  filterFieldOptions={filterFieldOptions}
+                  searchInput={searchInput}
+                  setSearchInput={setSearchInput}
+                  handleSearch={handleSearch}
                 />
-                <TransformsPanel
-                  {...props}
-                  transform={transform}
-                  setTransform={setTransform}
-                  transformList={transformList}
-                  setTransformList={setTransformList}
-                  filterFieldOptions={filterFieldOptions}
-                  listFieldOptions={listFieldOptions}
-                />
+                <Stack gap={2} className="h-100 overflow-y-hidden">
+                  <FilterPanel
+                    {...props}
+                    filterList={filterList}
+                    setFilterList={setFilterList}
+                    filterFieldOptions={filterFieldOptions}
+                  />
+                  <TransformsPanel
+                    {...props}
+                    transform={transform}
+                    setTransform={setTransform}
+                    transformList={transformList}
+                    setTransformList={setTransformList}
+                    filterFieldOptions={filterFieldOptions}
+                    listFieldOptions={listFieldOptions}
+                  />
+                </Stack>
               </Stack>
-            </Stack>
-          </Container>
-        </div>
+            </Container>
+          </div>
+        )}
+        <Button
+          size="sm"
+          variant="dark"
+          title={sideBarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          onClick={() => setSideBarCollapsed(!sideBarCollapsed)}
+        >
+          {sideBarCollapsed ? (
+            <MdKeyboardDoubleArrowRight />
+          ) : (
+            <MdKeyboardDoubleArrowLeft />
+          )}
+        </Button>
         <div className="right-col h-100">
           <Container fluid className="g-2 h-100">
             <ResultsPanel

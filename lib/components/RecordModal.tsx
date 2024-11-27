@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Badge from "react-bootstrap/Badge";
 import Stack from "react-bootstrap/Stack";
@@ -12,10 +12,12 @@ import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import { useQuery } from "@tanstack/react-query";
 import Table from "./Table";
+import ErrorModal from "./ErrorModal";
 import QueryHandler from "./QueryHandler";
 import { ResultData, ResultType, ExportStatus } from "../types";
 import { DataProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
+import { s3BucketsMessage } from "../utils/errorMessages";
 
 interface RecordModalProps extends DataProps {
   recordID: string;
@@ -48,10 +50,16 @@ function RecordDataField({
 
 function RecordData(props: RecordModalProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
+  const [errorModalShow, setErrorModalShow] = useState(false);
+  const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
+
+  const handleErrorModalShow = (error: Error) => {
+    setS3ReportError(error);
+    setErrorModalShow(true);
+  };
 
   const DetailCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
     if (
-      props.s3PathHandler &&
       typeof cellRendererProps.value === "string" &&
       cellRendererProps.value.startsWith("s3://") &&
       cellRendererProps.value.endsWith(".html")
@@ -62,7 +70,9 @@ function RecordData(props: RecordModalProps) {
           size="sm"
           variant="link"
           onClick={() =>
-            props.s3PathHandler && props.s3PathHandler(cellRendererProps.value)
+            props
+              .s3PathHandler(cellRendererProps.value)
+              .catch((error: Error) => handleErrorModalShow(error))
           }
         >
           {cellRendererProps.value}
@@ -96,23 +106,32 @@ function RecordData(props: RecordModalProps) {
       .join(" ");
   };
 
-  const detailFields = Object.entries(recordData.data).filter(
-    ([key]) => props.projectFields.get(key)?.type !== "relation"
+  const detailFields = useMemo(
+    () =>
+      Object.entries(recordData?.data || {}).filter(
+        ([key]) => props.projectFields.get(key)?.type !== "relation"
+      ),
+    [recordData, props.projectFields]
   );
 
-  const relationFields = Object.entries(recordData.data)
-    .filter(([key]) => props.projectFields.get(key)?.type === "relation")
-    .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1));
+  const relationFields = useMemo(
+    () =>
+      Object.entries(recordData?.data || {})
+        .filter(([key]) => props.projectFields.get(key)?.type === "relation")
+        .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1)),
+    [recordData, props.projectFields]
+  );
 
   const handleJSONExport = (exportProps: ExportHandlerProps) => {
-    const fileWriter = props.fileWriter;
-
-    if (fileWriter) {
-      exportProps.setExportProgress(100);
-      const jsonData = JSON.stringify(recordData.data);
-      fileWriter(exportProps.fileName, jsonData);
-      exportProps.setExportStatus(ExportStatus.FINISHED);
-    }
+    const jsonData = JSON.stringify(recordData.data);
+    exportProps.setExportStatus(ExportStatus.WRITING);
+    props
+      .fileWriter(exportProps.fileName, jsonData)
+      .then(() => exportProps.setExportStatus(ExportStatus.FINISHED))
+      .catch((error: Error) => {
+        exportProps.setExportError(error);
+        exportProps.setExportStatus(ExportStatus.ERROR);
+      });
   };
 
   return (
@@ -125,6 +144,13 @@ function RecordData(props: RecordModalProps) {
         id="record-data-tabs"
         defaultActiveKey="record-data-details"
       >
+        <ErrorModal
+          title="S3 Reports"
+          message={s3BucketsMessage}
+          error={s3ReportError}
+          show={errorModalShow}
+          onHide={() => setErrorModalShow(false)}
+        />
         <ExportModal
           {...props}
           defaultFileNamePrefix={props.recordID}
@@ -140,18 +166,18 @@ function RecordData(props: RecordModalProps) {
               <hr />
               <Container>
                 <RecordDataField
-                  record={recordData.data}
+                  record={recordData?.data}
                   field="published_date"
                   name="Date"
                 />
                 <RecordDataField
-                  record={recordData.data}
+                  record={recordData?.data}
                   field="site"
                   name="Site"
                 />
-                {recordData.data["platform"] && (
+                {recordData?.data?.platform && (
                   <RecordDataField
-                    record={recordData.data}
+                    record={recordData?.data}
                     field="platform"
                     name="Platform"
                   />
@@ -171,7 +197,6 @@ function RecordData(props: RecordModalProps) {
               <hr />
               <Button
                 size="sm"
-                disabled={!props.fileWriter}
                 variant="dark"
                 onClick={() => setExportModalShow(true)}
               >
