@@ -98,7 +98,7 @@ function FilterPanel(props: FilterPanelProps) {
   };
 
   return (
-    <Card className="h-50">
+    <Card className="h-100">
       <Card.Header>
         <span>Filter</span>
         <Button

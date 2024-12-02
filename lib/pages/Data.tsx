@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useMemo,
-  useCallback,
-  useLayoutEffect,
-  useEffect,
-} from "react";
+import { useState, useMemo, useLayoutEffect, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
@@ -13,7 +7,6 @@ import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
 import TransformsPanel from "../components/TransformsPanel";
 import ResultsPanel from "../components/ResultsPanel";
-import RecordModal from "../components/RecordModal";
 import { FilterField } from "../types";
 import { DataProps } from "../interfaces";
 import {
@@ -40,8 +33,6 @@ function Data(props: DataProps) {
   const [transform, setTransform] = useState("Summarise");
   const [transformList, setTransformList] = useState(new Array<string>());
   const [searchParameters, setSearchParameters] = useState("");
-  const [recordModalShow, setRecordModalShow] = React.useState(false);
-  const [recordModalID, setRecordModalID] = React.useState("");
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("filter"))
@@ -57,8 +48,6 @@ function Data(props: DataProps) {
     setTransform("Summarise");
     setTransformList([]);
     setSearchParameters("");
-    setRecordModalShow(false);
-    setRecordModalID("");
   }, [props.project]);
 
   // Fetch data, depending on project and search parameters
@@ -117,22 +106,8 @@ function Data(props: DataProps) {
     if (!resultPending) refetchResults();
   };
 
-  // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
-  // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
-  // This noticeably improves responsiveness for large datasets
-  const handleRecordModalShow = useCallback((climbID: string) => {
-    setRecordModalID(climbID);
-    setRecordModalShow(true);
-  }, []);
-
   return (
     <Container fluid className="g-2 h-100">
-      <RecordModal
-        {...props}
-        recordID={recordModalID}
-        show={recordModalShow}
-        onHide={() => setRecordModalShow(false)}
-      />
       <div className="parent h-100">
         {!sideBarCollapsed && (
           <div className="left-col h-100">
@@ -140,26 +115,31 @@ function Data(props: DataProps) {
               <Stack gap={2} className="h-100 pt-1">
                 <SearchBar
                   {...props}
+                  placeholder="Search records..."
                   searchInput={searchInput}
                   setSearchInput={setSearchInput}
                   handleSearch={handleSearch}
                 />
                 <Stack gap={2} className="h-100 overflow-y-hidden">
-                  <FilterPanel
-                    {...props}
-                    filterList={filterList}
-                    setFilterList={setFilterList}
-                    filterFieldOptions={filterFieldOptions}
-                  />
-                  <TransformsPanel
-                    {...props}
-                    transform={transform}
-                    setTransform={setTransform}
-                    transformList={transformList}
-                    setTransformList={setTransformList}
-                    filterFieldOptions={filterFieldOptions}
-                    listFieldOptions={listFieldOptions}
-                  />
+                  <div className="h-50">
+                    <FilterPanel
+                      {...props}
+                      filterList={filterList}
+                      setFilterList={setFilterList}
+                      filterFieldOptions={filterFieldOptions}
+                    />
+                  </div>
+                  <div className="h-50">
+                    <TransformsPanel
+                      {...props}
+                      transform={transform}
+                      setTransform={setTransform}
+                      transformList={transformList}
+                      setTransformList={setTransformList}
+                      filterFieldOptions={filterFieldOptions}
+                      listFieldOptions={listFieldOptions}
+                    />
+                  </div>
                 </Stack>
               </Stack>
             </Container>
@@ -185,7 +165,6 @@ function Data(props: DataProps) {
               resultError={resultError instanceof Error ? resultError : null}
               resultData={resultData}
               searchParameters={searchParameters}
-              handleRecordModalShow={handleRecordModalShow}
             />
           </Container>
         </div>

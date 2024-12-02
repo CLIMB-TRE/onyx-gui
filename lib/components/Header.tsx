@@ -126,6 +126,9 @@ function Header(props: HeaderProps) {
                   <Nav.Link eventKey="data">Data</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
+                  <Nav.Link eventKey="analyses">Analyses</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
                   <Nav.Link eventKey="stats">Statistics</Nav.Link>
                 </Nav.Item>
                 <Form.Check

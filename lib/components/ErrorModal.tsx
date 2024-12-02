@@ -51,6 +51,7 @@ function ErrorModal(props: ErrorModalProps) {
     <Modal
       className="onyx-modal"
       centered
+      animation={false}
       show={props.show}
       onHide={props.onHide}
     >

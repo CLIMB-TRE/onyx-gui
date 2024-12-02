@@ -13,6 +13,8 @@ interface DataProps extends OnyxProps {
   typeLookups: Map<string, string[]>;
   fieldDescriptions: Map<string, string>;
   lookupDescriptions: Map<string, string>;
+  handleRecordModalShow: (recordID: string) => void;
+  handleAnalysisModalShow: (analysisID: string) => void;
 }
 
 interface StatsProps extends OnyxProps {

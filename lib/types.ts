@@ -15,9 +15,10 @@ type FilterField = {
 
 type OptionType = { label: string; value: string };
 
-type ResultType = Record<string, string | number | boolean | object | null>;
-
+// TODO: Need separate return types for list, detail, errors etc.
 type ErrorType = Record<string, string | string[]>;
+
+type ResultType = Record<string, string | number | boolean | object | null>;
 
 type ResultData = {
   status: string;
@@ -25,6 +26,30 @@ type ResultData = {
   next?: string;
   previous?: string;
   data?: ResultType[];
+  messages?: ErrorType;
+};
+
+type AnalysisType = {
+  analysis_id: string;
+  published_date: string;
+  analysis_date: string;
+  name: string;
+  command_details: string;
+  pipeline_details: string;
+  experiment_details: object;
+  result: string;
+  report: string;
+  outputs: string;
+  upstream_analyses: string[];
+  downstream_analyses: string[];
+  identifiers: string[];
+  records: string[];
+};
+
+type AnalysisData = {
+  status: string;
+  code: number;
+  data?: AnalysisType[];
   messages?: ErrorType;
 };
 
@@ -50,9 +75,11 @@ export type {
   ProjectField,
   FilterField,
   OptionType,
-  ResultType,
   ErrorType,
+  ResultType,
   ResultData,
+  AnalysisType,
+  AnalysisData,
   GraphConfig,
 };
 

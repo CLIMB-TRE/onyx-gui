@@ -38,7 +38,7 @@ function TransformsPanel(props: TransformsPanelProps) {
   };
 
   return (
-    <Card className="h-50">
+    <Card className="h-100">
       <Card.Header>
         <Stack direction="horizontal" gap={1}>
           <NavDropdown className="me-auto" title={props.transform}>

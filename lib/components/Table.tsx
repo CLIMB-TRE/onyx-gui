@@ -20,14 +20,15 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import DropdownDivider from "react-bootstrap/DropdownDivider";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import { ResultData, ExportStatus } from "../types";
-import { DataProps, ExportHandlerProps } from "../interfaces";
+import { OnyxProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
 type FormattedResultData = Record<string, string | number>[];
 
-interface BaseTableProps extends DataProps {
+interface BaseTableProps extends OnyxProps {
+  project: string;
   rowData: FormattedResultData;
   columnDefs: ColDef[];
   searchParameters: string;
@@ -62,7 +63,8 @@ interface TableOptionsProps extends BaseTableProps {
   gridRef: React.RefObject<AgGridReact<Record<string, string | number>>>;
 }
 
-interface TableProps extends DataProps {
+interface TableProps extends OnyxProps {
+  project: string;
   data: ResultData;
   defaultFileNamePrefix: string;
   headerNames?: Map<string, string>;
@@ -97,12 +99,23 @@ function formatResultData(resultData: ResultData) {
   );
 }
 
-function getColDefs(props: TableProps, defaultColDef: (key: string) => ColDef) {
+function getColDefs(props: TableProps, isServerPaginated: boolean) {
   let colDefs: ColDef[];
 
   if (props.data.data && props.data.data.length > 0) {
     colDefs = Object.keys(props.data.data[0]).map((key) => {
-      const colDef = defaultColDef(key);
+      // TODO: Remove flex calculation and replace with min width and calculated ideal width
+      const colDef: ColDef = {
+        field: key,
+        headerName: props.headerNames?.get(key) || key,
+        minWidth: 100,
+        width: 100 + 20 * Math.round(Math.log(key.length)),
+        headerTooltip: props.headerTooltips?.get(
+          (props.headerTooltipPrefix || "") + key
+        ),
+      };
+
+      if (isServerPaginated) colDef.comparator = () => 0;
 
       // Apply custom cell renderers
       if (props.cellRenderers?.get(key)) {
@@ -125,7 +138,10 @@ function getColDefs(props: TableProps, defaultColDef: (key: string) => ColDef) {
         colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
       }
 
-      if (!props.flexOnly || props.flexOnly.includes(key)) {
+      if (
+        !isServerPaginated &&
+        (!props.flexOnly || props.flexOnly.includes(key))
+      ) {
         colDef.flex = 1;
       }
       return colDef;
@@ -433,20 +449,9 @@ function Table(props: TableProps) {
   const [rowData, setRowData] = useState<FormattedResultData>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
 
-  const defaultColDef = (key: string) => {
-    const prefix = props.headerTooltipPrefix || "";
-
-    return {
-      field: key,
-      headerName: props.headerNames?.get(key) || key,
-      minWidth: 200,
-      headerTooltip: props.headerTooltips?.get(prefix + key),
-    } as ColDef;
-  };
-
   const onGridReady = useCallback(() => {
     setRowData(formatResultData(props.data));
-    setColumnDefs(getColDefs(props, defaultColDef));
+    setColumnDefs(getColDefs(props, false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -607,21 +612,9 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     }
   };
 
-  const defaultColDef = (key: string) => {
-    const prefix = props.headerTooltipPrefix || "";
-
-    return {
-      field: key,
-      headerName: props.headerNames?.get(key) || key,
-      minWidth: 200,
-      headerTooltip: props.headerTooltips?.get(prefix + key),
-      comparator: () => 0,
-    } as ColDef;
-  };
-
   const onGridReady = useCallback(() => {
     handleResultData(props.data, 1, 1);
-    setColumnDefs(getColDefs(props, defaultColDef));
+    setColumnDefs(getColDefs(props, true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

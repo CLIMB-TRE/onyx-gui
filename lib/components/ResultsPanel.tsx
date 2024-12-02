@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
-import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
 import Table from "./Table";
 import ErrorModal from "./ErrorModal";
 import { ServerPaginatedTable } from "./Table";
@@ -10,13 +8,16 @@ import QueryHandler from "./QueryHandler";
 import { ResultData } from "../types";
 import { DataProps } from "../interfaces";
 import { s3BucketsMessage } from "../utils/errorMessages";
+import {
+  ClimbIDCellRendererFactory,
+  S3ReportCellRendererFactory,
+} from "./CellRenderers";
 
 interface ResultsPanelProps extends DataProps {
   resultPending: boolean;
   resultError: Error | null;
   resultData: ResultData;
   searchParameters: string;
-  handleRecordModalShow: (climbID: string) => void;
 }
 
 function getDefaultFileNamePrefix(project: string, searchParameters: string) {
@@ -47,39 +48,12 @@ function ResultsPanel(props: ResultsPanelProps) {
     setErrorModalShow(true);
   };
 
-  const ClimbIDCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
-    return (
-      <Button
-        className="p-0"
-        size="sm"
-        variant="link"
-        onClick={() => props.handleRecordModalShow(cellRendererProps.value)}
-      >
-        {cellRendererProps.value}
-      </Button>
-    );
-  };
-
-  const S3ReportCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
-    return (
-      <Button
-        className="p-0"
-        size="sm"
-        variant="link"
-        onClick={() =>
-          props
-            .s3PathHandler(cellRendererProps.value)
-            .catch((error: Error) => handleErrorModalShow(error))
-        }
-      >
-        {cellRendererProps.value}
-      </Button>
-    );
-  };
-
   const cellRenderers = new Map([
-    ["climb_id", ClimbIDCellRenderer],
-    ["ingest_report", S3ReportCellRenderer],
+    ["climb_id", ClimbIDCellRendererFactory(props)],
+    [
+      "ingest_report",
+      S3ReportCellRendererFactory({ ...props, handleErrorModalShow }),
+    ],
   ]);
 
   return (

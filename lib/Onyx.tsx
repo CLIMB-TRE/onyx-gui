@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import Tab from "react-bootstrap/Tab";
 import Container from "react-bootstrap/Container";
 import {
@@ -10,6 +10,8 @@ import Header from "./components/Header";
 import Data from "./pages/Data";
 import Stats from "./pages/Stats";
 import Analysis from "./pages/Analysis";
+import RecordModal from "./components/RecordModal";
+import AnalysisModal from "./components/AnalysisModal";
 import { ProjectField } from "./types";
 import { OnyxProps } from "./interfaces";
 
@@ -44,12 +46,25 @@ function App(props: OnyxProps) {
   );
   const [project, setProject] = useState("");
   const [tabKey, setTabKey] = useState("data");
+  const [modalState, setModalState] = useState<
+    "record-modal" | "analysis-modal" | "closed"
+  >("closed");
+
+  const [recordModalID, setRecordModalID] = useState("");
+  const [analysisModalID, setAnalysisModalID] = useState("");
 
   // Set the theme based on darkMode state
   useEffect(() => {
     const htmlElement = document.querySelector("html");
     htmlElement?.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
+
+  // Clear parameters when project changes
+  useLayoutEffect(() => {
+    setModalState("closed");
+    setRecordModalID("");
+    setAnalysisModalID("");
+  }, [project]);
 
   const handleThemeChange = () => {
     const darkModeChange = !darkMode;
@@ -158,6 +173,22 @@ function App(props: OnyxProps) {
     staleTime: 1 * 60 * 1000,
   });
 
+  // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
+  // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
+  // This noticeably improves responsiveness for large datasets
+  const handleRecordModalShow = useCallback((climbID: string) => {
+    setModalState("record-modal");
+    setRecordModalID(climbID);
+  }, []);
+
+  // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
+  // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
+  // This noticeably improves responsiveness for large datasets
+  const handleAnalysisModalShow = useCallback((analysisID: string) => {
+    setModalState("analysis-modal");
+    setAnalysisModalID(analysisID);
+  }, []);
+
   return (
     <div className="Onyx h-100">
       <Header
@@ -171,6 +202,32 @@ function App(props: OnyxProps) {
         darkMode={darkMode}
         handleThemeChange={handleThemeChange}
       />
+      <RecordModal
+        {...props}
+        project={project}
+        projectFields={projectFields}
+        typeLookups={typeLookups}
+        fieldDescriptions={fieldDescriptions}
+        lookupDescriptions={lookupDescriptions}
+        handleRecordModalShow={handleRecordModalShow}
+        handleAnalysisModalShow={handleAnalysisModalShow}
+        recordID={recordModalID}
+        show={modalState === "record-modal"}
+        onHide={() => setModalState("closed")}
+      />
+      <AnalysisModal
+        {...props}
+        project={project}
+        projectFields={projectFields}
+        typeLookups={typeLookups}
+        fieldDescriptions={fieldDescriptions}
+        lookupDescriptions={lookupDescriptions}
+        handleRecordModalShow={handleRecordModalShow}
+        handleAnalysisModalShow={handleAnalysisModalShow}
+        analysisID={analysisModalID}
+        show={modalState === "analysis-modal"}
+        onHide={() => setModalState("closed")}
+      />
       <div className="h-100" style={{ paddingTop: "60px" }}>
         <Container fluid className="h-100 px-0 py-1">
           <Tab.Container activeKey={tabKey}>
@@ -183,6 +240,20 @@ function App(props: OnyxProps) {
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
                   lookupDescriptions={lookupDescriptions}
+                  handleRecordModalShow={handleRecordModalShow}
+                  handleAnalysisModalShow={handleAnalysisModalShow}
+                />
+              </Tab.Pane>
+              <Tab.Pane eventKey="analyses" className="h-100">
+                <Analysis
+                  {...props}
+                  project={project}
+                  projectFields={projectFields}
+                  typeLookups={typeLookups}
+                  fieldDescriptions={fieldDescriptions}
+                  lookupDescriptions={lookupDescriptions}
+                  handleRecordModalShow={handleRecordModalShow}
+                  handleAnalysisModalShow={handleAnalysisModalShow}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="stats" className="h-100">
@@ -192,16 +263,6 @@ function App(props: OnyxProps) {
                   projectFields={projectFields}
                   fieldDescriptions={fieldDescriptions}
                   darkMode={darkMode}
-                />
-              </Tab.Pane>
-              <Tab.Pane eventKey="analysis" className="h-100">
-                <Analysis
-                  {...props}
-                  project={project}
-                  projectFields={projectFields}
-                  typeLookups={typeLookups}
-                  fieldDescriptions={fieldDescriptions}
-                  lookupDescriptions={lookupDescriptions}
                 />
               </Tab.Pane>
             </Tab.Content>

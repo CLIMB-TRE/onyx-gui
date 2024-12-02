@@ -1,6 +1,4 @@
 import { useState, useMemo } from "react";
-import { CustomCellRendererProps } from "@ag-grid-community/react";
-import Badge from "react-bootstrap/Badge";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -17,6 +15,13 @@ import QueryHandler from "./QueryHandler";
 import { ResultData, ResultType, ExportStatus } from "../types";
 import { DataProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
+import {
+  DetailCellRendererFactory,
+  AnalysisIDCellRendererFactory,
+  TimestampCellRenderer,
+  ActionCellRenderer,
+  ChangeCellRenderer,
+} from "./CellRenderers";
 import { s3BucketsMessage } from "../utils/errorMessages";
 
 interface RecordModalProps extends DataProps {
@@ -56,31 +61,6 @@ function RecordData(props: RecordModalProps) {
   const handleErrorModalShow = (error: Error) => {
     setS3ReportError(error);
     setErrorModalShow(true);
-  };
-
-  const DetailCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
-    if (
-      typeof cellRendererProps.value === "string" &&
-      cellRendererProps.value.startsWith("s3://") &&
-      cellRendererProps.value.endsWith(".html")
-    ) {
-      return (
-        <Button
-          className="p-0"
-          size="sm"
-          variant="link"
-          onClick={() =>
-            props
-              .s3PathHandler(cellRendererProps.value)
-              .catch((error: Error) => handleErrorModalShow(error))
-          }
-        >
-          {cellRendererProps.value}
-        </Button>
-      );
-    } else {
-      return cellRendererProps.value;
-    }
   };
 
   // Fetch record data, depending on project and record ID
@@ -220,7 +200,17 @@ function RecordData(props: RecordModalProps) {
                   }
                   defaultFileNamePrefix={`${props.recordID}_details`}
                   footer="Table showing the top-level fields for the record."
-                  cellRenderers={new Map([["Value", DetailCellRenderer]])}
+                  cellRenderers={
+                    new Map([
+                      [
+                        "Value",
+                        DetailCellRendererFactory({
+                          ...props,
+                          handleErrorModalShow,
+                        }),
+                      ],
+                    ])
+                  }
                 />
               </Tab.Pane>
               {relationFields.map(([key, value]) => (
@@ -243,73 +233,6 @@ function RecordData(props: RecordModalProps) {
         </Row>
       </Tab.Container>
     </QueryHandler>
-  );
-}
-
-function TimestampCellRenderer(props: CustomCellRendererProps) {
-  const date = new Date(props.value.toString());
-  return <span>{date.toDateString()}</span>;
-}
-
-function ActionCellRenderer(props: CustomCellRendererProps) {
-  const action = props.value.toString().toLowerCase();
-
-  // Change text colour based on action type
-  if (action === "add") {
-    return <Badge bg="dark">{action}</Badge>;
-  } else if (action === "change") {
-    return (
-      <Badge bg="info" className="text-dark">
-        {action}
-      </Badge>
-    );
-  } else if (action === "delete") {
-    return <Badge bg="danger">{action}</Badge>;
-  } else {
-    return <Badge bg="secondary">{action}</Badge>;
-  }
-}
-
-function ChangeCellRenderer(props: CustomCellRendererProps) {
-  const changes = JSON.parse(props.value);
-
-  return (
-    <ul>
-      {changes.map((change: ResultType, index: number) => {
-        if (change.type === "relation") {
-          let verb: string;
-          if (change.action === "add") {
-            verb = "Added";
-          } else if (change.action === "change") {
-            verb = "Changed";
-          } else if (change.action === "delete") {
-            verb = "Deleted";
-          } else {
-            verb = "Modified";
-          }
-          return (
-            <li key={index}>
-              <strong>{change.field?.toString()}</strong>: {verb}{" "}
-              <span className="onyx-text-pink">{change.count?.toString()}</span>{" "}
-              record{change.count === 1 ? "" : "s"}.
-            </li>
-          );
-        } else {
-          return (
-            <li key={index}>
-              <strong>{change.field?.toString()}</strong>:{" "}
-              <span className="onyx-text-pink">
-                {JSON.stringify(change.from)}
-              </span>{" "}
-              &rarr;{" "}
-              <span className="onyx-text-pink">
-                {JSON.stringify(change.to)}
-              </span>
-            </li>
-          );
-        }
-      })}
-    </ul>
   );
 }
 
@@ -357,9 +280,47 @@ function RecordHistory(props: RecordModalProps) {
             new Map([
               ["timestamp", TimestampCellRenderer],
               ["action", ActionCellRenderer],
-
               ["changes", ChangeCellRenderer],
             ])
+          }
+        />
+      </>
+    </QueryHandler>
+  );
+}
+
+function RecordAnalyses(props: RecordModalProps) {
+  // Fetch record analyses, depending on project
+  const {
+    isFetching: resultPending,
+    error: resultError,
+    data: resultData = {},
+  } = useQuery({
+    queryKey: ["analyses", props.project],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/analysis/`)
+        .then((response) => response.json());
+    },
+    enabled: !!props.project,
+    cacheTime: 0.5 * 60 * 1000,
+  });
+
+  return (
+    <QueryHandler
+      isFetching={resultPending}
+      error={resultError as Error}
+      data={resultData}
+    >
+      <>
+        <h5>Analyses</h5>
+        <Table
+          {...props}
+          data={resultData}
+          defaultFileNamePrefix={`${props.recordID}_analyses`}
+          footer="Table showing all analysis results for the record."
+          cellRenderers={
+            new Map([["analysis_id", AnalysisIDCellRendererFactory(props)]])
           }
         />
       </>
@@ -378,6 +339,7 @@ function RecordModal(props: RecordModalProps) {
       aria-labelledby="record-modal-title"
       scrollable
       centered
+      animation={false}
     >
       <Modal.Header closeButton>
         <Modal.Title id="record-modal-title">
@@ -405,6 +367,14 @@ function RecordModal(props: RecordModalProps) {
             mountOnEnter
           >
             <RecordHistory {...props} />
+          </Tab>
+          <Tab
+            eventKey="record-analysis"
+            title="Analyses"
+            className="onyx-modal-tab-pane"
+            mountOnEnter
+          >
+            <RecordAnalyses {...props} />
           </Tab>
         </Tabs>
       </Modal.Body>

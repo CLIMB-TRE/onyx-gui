@@ -28,6 +28,8 @@ import {
   MdArrowForward,
   MdArrowUpward,
   MdArrowDownward,
+  MdSettings,
+  MdOutlineSettings,
 } from "react-icons/md";
 
 interface GraphPanelProps extends StatsProps {
@@ -38,7 +40,6 @@ interface GraphPanelProps extends StatsProps {
   handleGraphConfigGroupByChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigGroupModeChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigYAxisTypeChange: React.ChangeEventHandler<HTMLInputElement>;
-  handleGraphConfigAdd: () => void;
   handleGraphConfigSwapLeft: () => void;
   handleGraphConfigSwapRight: () => void;
   handleGraphConfigRemove: () => void;
@@ -172,6 +173,8 @@ function GraphPanelOptions(props: GraphPanelProps) {
 }
 
 function GraphPanel(props: GraphPanelProps) {
+  const [showGraphOptions, setShowGraphOptions] = useState(true);
+
   const graphTitle = useMemo(() => {
     let title = "Empty Graph";
 
@@ -191,6 +194,14 @@ function GraphPanel(props: GraphPanelProps) {
       <Card.Header>
         <span>{graphTitle}</span>
         <Stack direction="horizontal" gap={1} className="float-end">
+          <Button
+            size="sm"
+            variant="dark"
+            title={`${showGraphOptions ? "Hide" : "Show"} Graph Options`}
+            onClick={() => setShowGraphOptions(!showGraphOptions)}
+          >
+            {showGraphOptions ? <MdSettings /> : <MdOutlineSettings />}
+          </Button>
           <Button
             size="sm"
             variant="dark"
@@ -229,12 +240,17 @@ function GraphPanel(props: GraphPanelProps) {
       </Card.Header>
       <Card.Body className="p-2">
         <Row className="g-2">
-          <Col xl={12} xxl={props.viewMode === "list" ? 3 : 4}>
-            <Card body style={{ height: "440px" }}>
-              <GraphPanelOptions {...props} />
-            </Card>
-          </Col>
-          <Col xl={12} xxl={props.viewMode === "list" ? 9 : 8}>
+          {showGraphOptions && (
+            <Col xl={12} xxl={props.viewMode === "list" ? 3 : 4}>
+              <Card body style={{ height: "440px" }}>
+                <GraphPanelOptions {...props} />
+              </Card>
+            </Col>
+          )}
+          <Col
+            xl={12}
+            xxl={showGraphOptions ? (props.viewMode === "list" ? 9 : 8) : 12}
+          >
             <div style={{ height: "440px" }}>
               <GraphPanelGraph {...props} />
             </div>
@@ -394,7 +410,7 @@ function Stats(props: StatsProps) {
               size="sm"
               variant="dark"
               title="Add Graph"
-              onClick={() => handleGraphConfigAdd(graphConfigList.length)}
+              onClick={() => handleGraphConfigAdd(0)}
             >
               <MdCreate />
             </Button>
@@ -440,7 +456,6 @@ function Stats(props: StatsProps) {
                   handleGraphConfigYAxisTypeChange={(e) =>
                     handleGraphConfigYAxisTypeChange(e, index)
                   }
-                  handleGraphConfigAdd={() => handleGraphConfigAdd(index + 1)}
                   handleGraphConfigSwapLeft={() =>
                     handleGraphConfigSwapLeft(index)
                   }
