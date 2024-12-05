@@ -1,64 +1,81 @@
 import { useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
-import Table from "./Table";
 import ErrorModal from "./ErrorModal";
-import { ServerPaginatedTable } from "./Table";
+import Table, { ServerPaginatedTable } from "./Table";
 import QueryHandler from "./QueryHandler";
-import { ResultData } from "../types";
+import { RecordType, RecordListResponse, ErrorResponse } from "../types";
 import { DataProps } from "../interfaces";
-import { s3BucketsMessage } from "../utils/errorMessages";
 import {
   ClimbIDCellRendererFactory,
+  AnalysisIDCellRendererFactory,
   S3ReportCellRendererFactory,
 } from "./CellRenderers";
+import { s3BucketsMessage } from "../utils/messages";
+import { getDefaultFileNamePrefix } from "../utils/functions";
 
 interface ResultsPanelProps extends DataProps {
-  resultPending: boolean;
-  resultError: Error | null;
-  resultData: ResultData;
+  title: string;
+  resultsListPending: boolean;
+  resultsListError: Error | null;
+  resultsListResponse: RecordListResponse | ErrorResponse;
   searchParameters: string;
 }
 
-function getDefaultFileNamePrefix(project: string, searchParameters: string) {
-  // Create the default file name prefix based on the project and search parameters
-  // Uses filter/search values only, replaces commas and spaces with underscores,
-  // removes special characters, and truncates to 50 characters
-  return [["", project]]
-    .concat(Array.from(new URLSearchParams(searchParameters).entries()))
-    .map(([, value]) =>
-      value.split(/[ ,]+/).map((v) => v.replace(/[^a-zA-Z0-9_/-]/, ""))
-    )
-    .flat()
-    .join("_")
-    .slice(0, 50);
+interface ResultsPanelContentProps extends ResultsPanelProps {
+  handleErrorModalShow: (error: Error) => void;
+}
+
+function ResultsPanelContent(props: ResultsPanelContentProps) {
+  const defaultFileNamePrefix = useMemo(
+    () => getDefaultFileNamePrefix(props.project, props.searchParameters),
+    [props.project, props.searchParameters]
+  );
+
+  const resultsListResponse = useMemo(() => {
+    if (props.resultsListResponse.status !== "success")
+      return { data: [] as RecordType[] } as RecordListResponse;
+    return props.resultsListResponse;
+  }, [props.resultsListResponse]);
+
+  const cellRenderers = new Map([
+    ["climb_id", ClimbIDCellRendererFactory(props)],
+    ["analysis_id", AnalysisIDCellRendererFactory(props)],
+    ["ingest_report", S3ReportCellRendererFactory(props)],
+  ]);
+
+  return props.searchParameters.includes("summarise=") ? (
+    <Table
+      {...props}
+      data={resultsListResponse.data}
+      defaultFileNamePrefix={defaultFileNamePrefix}
+      headerTooltips={props.fieldDescriptions}
+      cellRenderers={cellRenderers}
+    />
+  ) : (
+    <ServerPaginatedTable
+      {...props}
+      paginatedData={resultsListResponse}
+      searchParameters={props.searchParameters}
+      defaultFileNamePrefix={defaultFileNamePrefix}
+      headerTooltips={props.fieldDescriptions}
+      cellRenderers={cellRenderers}
+    />
+  );
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
   const [errorModalShow, setErrorModalShow] = useState(false);
   const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
 
-  const defaultFileNamePrefix = useMemo(
-    () => getDefaultFileNamePrefix(props.project, props.searchParameters),
-    [props.project, props.searchParameters]
-  );
-
   const handleErrorModalShow = (error: Error) => {
     setS3ReportError(error);
     setErrorModalShow(true);
   };
 
-  const cellRenderers = new Map([
-    ["climb_id", ClimbIDCellRendererFactory(props)],
-    [
-      "ingest_report",
-      S3ReportCellRendererFactory({ ...props, handleErrorModalShow }),
-    ],
-  ]);
-
   return (
     <Card className="h-100">
-      <Card.Header>Results</Card.Header>
+      <Card.Header>{props.title}</Card.Header>
       <Container fluid className="p-2 pb-0 h-100">
         <ErrorModal
           title="S3 Reports"
@@ -68,28 +85,14 @@ function ResultsPanel(props: ResultsPanelProps) {
           onHide={() => setErrorModalShow(false)}
         />
         <QueryHandler
-          isFetching={props.resultPending}
-          error={props.resultError}
-          data={props.resultData}
+          isFetching={props.resultsListPending}
+          error={props.resultsListError}
+          data={props.resultsListResponse}
         >
-          {props.searchParameters.includes("summarise=") ? (
-            <Table
-              {...props}
-              data={props.resultData || {}}
-              defaultFileNamePrefix={defaultFileNamePrefix}
-              headerTooltips={props.fieldDescriptions}
-              cellRenderers={cellRenderers}
-            />
-          ) : (
-            <ServerPaginatedTable
-              {...props}
-              searchParameters={props.searchParameters}
-              defaultFileNamePrefix={defaultFileNamePrefix}
-              data={props.resultData || {}}
-              headerTooltips={props.fieldDescriptions}
-              cellRenderers={cellRenderers}
-            />
-          )}
+          <ResultsPanelContent
+            {...props}
+            handleErrorModalShow={handleErrorModalShow}
+          />
         </QueryHandler>
       </Container>
     </Card>

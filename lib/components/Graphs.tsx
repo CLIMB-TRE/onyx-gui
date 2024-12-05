@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Plotly from "plotly.js-basic-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
 import { Template, AxisType } from "plotly.js-basic-dist";
-import { ProjectField, ResultType, GraphConfig } from "../types";
+import { ProjectField, RecordType, GraphConfig } from "../types";
 import { StatsProps } from "../interfaces";
 import graphStyles from "../utils/graphStyles";
 
@@ -36,7 +36,7 @@ const useSummaryQuery = (props: GraphProps) => {
         )
         .then((response) => response.json())
         .then((data) => {
-          const field_data = data.data.map((record: ResultType) => {
+          const field_data = data.data.map((record: RecordType) => {
             // Convert null field value to empty string
             let field_value = record[props.graphConfig.field];
             if (field_value === null) {
@@ -77,7 +77,7 @@ const useGroupedSummaryQuery = (props: GraphProps) => {
             { field_data: string[]; count_data: number[] }
           >();
 
-          data.data.forEach((record: ResultType) => {
+          data.data.forEach((record: RecordType) => {
             // Convert null field value to empty string
             let field_value = record[props.graphConfig.field];
             if (field_value === null) {

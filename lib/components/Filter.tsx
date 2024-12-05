@@ -6,13 +6,13 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput } from "./Inputs";
-import { FilterField } from "../types";
+import { FilterConfig } from "../types";
 import { DataProps } from "../interfaces";
 
 interface FilterProps extends DataProps {
   index: number;
-  filterList: FilterField[];
-  setFilterList: (value: FilterField[]) => void;
+  filterList: FilterConfig[];
+  setFilterList: (value: FilterConfig[]) => void;
   fieldList: string[];
   setEditMode: (value: boolean) => void;
 }

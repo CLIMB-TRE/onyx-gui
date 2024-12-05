@@ -18,7 +18,7 @@ import {
 } from "../components/Graphs";
 import { StatsProps } from "../interfaces";
 import { GraphConfig } from "../types";
-import generateKey from "../utils/generateKey";
+import { generateKey } from "../utils/functions";
 import {
   MdCreate,
   MdClear,

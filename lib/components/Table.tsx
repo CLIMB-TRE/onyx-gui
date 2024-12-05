@@ -19,13 +19,15 @@ import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import DropdownDivider from "react-bootstrap/DropdownDivider";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
-import { ResultData, ExportStatus } from "../types";
+import { RecordType, RecordListResponse, ExportStatus } from "../types";
 import { OnyxProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
 type FormattedResultData = Record<string, string | number>[];
+
+type TableData = Record<string, string | number | boolean | object | null>[];
 
 interface BaseTableProps extends OnyxProps {
   project: string;
@@ -65,7 +67,6 @@ interface TableOptionsProps extends BaseTableProps {
 
 interface TableProps extends OnyxProps {
   project: string;
-  data: ResultData;
   defaultFileNamePrefix: string;
   headerNames?: Map<string, string>;
   headerTooltips?: Map<string, string>;
@@ -76,15 +77,20 @@ interface TableProps extends OnyxProps {
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
 }
 
+interface ClientTableProps extends TableProps {
+  data: TableData;
+}
+
 interface ServerPaginatedTableProps extends TableProps {
+  paginatedData: RecordListResponse;
   searchParameters: string;
 }
 
-function formatResultData(resultData: ResultData) {
+function formatResultData(resultData: TableData) {
   // For table display, we allow string and number values
   // All other types are converted to strings
   return (
-    resultData.data?.map((row) =>
+    resultData.map((row) =>
       Object.fromEntries(
         Object.entries(row).map(([key, value]) => [
           key,
@@ -99,11 +105,15 @@ function formatResultData(resultData: ResultData) {
   );
 }
 
-function getColDefs(props: TableProps, isServerPaginated: boolean) {
+function getColDefs(
+  props: TableProps,
+  data: RecordType[],
+  isServerPaginated: boolean
+) {
   let colDefs: ColDef[];
 
-  if (props.data.data && props.data.data.length > 0) {
-    colDefs = Object.keys(props.data.data[0]).map((key) => {
+  if (data && data.length > 0) {
+    colDefs = Object.keys(data[0]).map((key) => {
       // TODO: Remove flex calculation and replace with min width and calculated ideal width
       const colDef: ColDef = {
         field: key,
@@ -445,13 +455,13 @@ function BaseTable(props: BaseTableProps) {
   );
 }
 
-function Table(props: TableProps) {
+function Table(props: ClientTableProps) {
   const [rowData, setRowData] = useState<FormattedResultData>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
 
   const onGridReady = useCallback(() => {
     setRowData(formatResultData(props.data));
-    setColumnDefs(getColDefs(props, false));
+    setColumnDefs(getColDefs(props, props.data, false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -555,11 +565,11 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   };
 
   const handleResultData = (
-    resultData: ResultData,
+    resultData: RecordListResponse,
     resultsPage: number,
     userPage: number
   ) => {
-    const formattedResultData = formatResultData(resultData);
+    const formattedResultData = formatResultData(resultData.data || []);
     setResultData(formattedResultData);
     handleRowData(getRowData(formattedResultData, resultsPage), userPage);
     setPrevParams(resultData.previous?.split("?", 2)[1] || "");
@@ -613,8 +623,8 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   };
 
   const onGridReady = useCallback(() => {
-    handleResultData(props.data, 1, 1);
-    setColumnDefs(getColDefs(props, true));
+    handleResultData(props.paginatedData, 1, 1);
+    setColumnDefs(getColDefs(props, props.paginatedData.data || [], true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

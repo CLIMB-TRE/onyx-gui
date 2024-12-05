@@ -2,7 +2,7 @@ import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Button from "react-bootstrap/Button";
 import Badge from "react-bootstrap/Badge";
 import { OnyxProps } from "../interfaces";
-import { ResultType } from "../types";
+import { RecordType } from "../types";
 
 interface ErrorModalProps extends OnyxProps {
   handleErrorModalShow: (error: Error) => void;
@@ -118,7 +118,7 @@ function ChangeCellRenderer(props: CustomCellRendererProps) {
 
   return (
     <ul>
-      {changes.map((change: ResultType, index: number) => {
+      {changes.map((change: RecordType, index: number) => {
         if (change.type === "relation") {
           let verb: string;
           if (change.action === "add") {

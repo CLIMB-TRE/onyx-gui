@@ -6,28 +6,39 @@ type ProjectField = {
   fields?: Record<string, ProjectField>;
 };
 
-type FilterField = {
+type FilterConfig = {
   key: string;
   field: string;
   lookup: string;
   value: string;
 };
 
+type GraphConfig = {
+  key: string;
+  type: string;
+  field: string;
+  groupBy: string;
+  groupMode: string;
+  yAxisType: string;
+};
+
+enum ExportStatus {
+  READY,
+  RUNNING,
+  WRITING,
+  FINISHED,
+  CANCELLED,
+  ERROR,
+}
+
 type OptionType = { label: string; value: string };
 
-// TODO: Need separate return types for list, detail, errors etc.
 type ErrorType = Record<string, string | string[]>;
 
-type ResultType = Record<string, string | number | boolean | object | null>;
-
-type ResultData = {
-  status: string;
-  code: number;
-  next?: string;
-  previous?: string;
-  data?: ResultType[];
-  messages?: ErrorType;
-};
+type RecordType = Record<
+  string,
+  string | number | boolean | object | null | RecordType[]
+>;
 
 type AnalysisType = {
   analysis_id: string;
@@ -46,41 +57,49 @@ type AnalysisType = {
   records: string[];
 };
 
-type AnalysisData = {
-  status: string;
+type ErrorResponse = {
+  status: "fail" | "error";
   code: number;
-  data?: AnalysisType[];
-  messages?: ErrorType;
+  messages: ErrorType;
 };
 
-enum ExportStatus {
-  READY,
-  RUNNING,
-  WRITING,
-  FINISHED,
-  CANCELLED,
-  ERROR,
-}
+type SuccessResponse = {
+  status: "success";
+  code: number;
+};
 
-type GraphConfig = {
-  key: string;
-  type: string;
-  field: string;
-  groupBy: string;
-  groupMode: string;
-  yAxisType: string;
+type RecordListResponse = SuccessResponse & {
+  data: RecordType[];
+  next: string | null;
+  previous: string | null;
+};
+
+type RecordDetailResponse = SuccessResponse & {
+  data: RecordType;
+};
+
+type AnalysisListResponse = SuccessResponse & {
+  data: AnalysisType[];
+};
+
+type AnalysisDetailResponse = SuccessResponse & {
+  data: AnalysisType;
 };
 
 export type {
   ProjectField,
-  FilterField,
+  FilterConfig,
+  GraphConfig,
   OptionType,
   ErrorType,
-  ResultType,
-  ResultData,
+  RecordType,
   AnalysisType,
-  AnalysisData,
-  GraphConfig,
+  ErrorResponse,
+  SuccessResponse,
+  RecordListResponse,
+  RecordDetailResponse,
+  AnalysisListResponse,
+  AnalysisDetailResponse,
 };
 
 export { ExportStatus };

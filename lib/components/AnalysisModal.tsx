@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
@@ -8,12 +8,17 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import { useQuery } from "@tanstack/react-query";
-import { DataProps, ExportHandlerProps } from "../interfaces";
+import { DataProps } from "../interfaces";
 import QueryHandler from "./QueryHandler";
 import Table from "./Table";
 import ExportModal from "./ExportModal";
-import { AnalysisData, AnalysisType, ExportStatus } from "../types";
+import {
+  AnalysisDetailResponse,
+  RecordListResponse,
+  ErrorResponse,
+} from "../types";
 import { ClimbIDCellRendererFactory } from "./CellRenderers";
+import { handleJSONExport } from "../utils/functions";
 
 interface AnalysisModalProps extends DataProps {
   analysisID: string;
@@ -21,139 +26,112 @@ interface AnalysisModalProps extends DataProps {
   onHide: () => void;
 }
 
-interface AnalysisDataProps extends AnalysisModalProps {
-  analysisDataPending: boolean;
-  analysisDataError: Error | null;
-  analysisData: AnalysisData;
+interface AnalysisDetailResponseProps extends AnalysisModalProps {
+  response: AnalysisDetailResponse | ErrorResponse;
 }
 
-function AnalysisDetails(props: AnalysisDataProps) {
+interface RecordListResponseProps extends AnalysisModalProps {
+  response: RecordListResponse | ErrorResponse;
+}
+
+function AnalysisDataContent(props: AnalysisDetailResponseProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
 
-  const handleJSONExport = (exportProps: ExportHandlerProps) => {
-    const jsonData = JSON.stringify(props.analysisData.data);
-    exportProps.setExportStatus(ExportStatus.WRITING);
-    props
-      .fileWriter(exportProps.fileName, jsonData)
-      .then(() => exportProps.setExportStatus(ExportStatus.FINISHED))
-      .catch((error: Error) => {
-        exportProps.setExportError(error);
-        exportProps.setExportStatus(ExportStatus.ERROR);
-      });
-  };
+  const analysisDetailsData = useMemo(() => {
+    if (props.response.status !== "success") return [];
+    return Object.entries(props.response.data)
+      .filter(
+        ([key]) =>
+          key !== "upstream_analyses" &&
+          key !== "downstream_analyses" &&
+          key !== "identifiers" &&
+          key !== "records"
+      )
+      .map(([key, value]) => ({
+        Field: key,
+        Value: value,
+      }));
+  }, [props.response]);
 
   return (
-    <QueryHandler
-      isFetching={props.analysisDataPending}
-      error={props.analysisDataError as Error}
-      data={props.analysisData}
+    <Tab.Container
+      id="analysis-data-tabs"
+      defaultActiveKey="analysis-data-details"
     >
-      <Tab.Container
-        id="analysis-data-tabs"
-        defaultActiveKey="analysis-data-details"
-      >
-        <ExportModal
-          {...props}
-          defaultFileNamePrefix={props.analysisID}
-          fileExtension=".json"
-          show={exportModalShow}
-          handleExport={handleJSONExport}
-          onHide={() => setExportModalShow(false)}
-          exportProgressMessage={"Exporting record data to JSON..."}
-        />
-
-        <Row className="h-100">
-          <Col xs={3} xl={2}>
-            <Stack gap={1}>
-              <Nav variant="pills" className="flex-column">
-                <Nav.Item>
-                  <Nav.Link eventKey="analysis-data-details">Details</Nav.Link>
-                </Nav.Item>
-              </Nav>
-              <hr />
-              <Button
-                size="sm"
-                variant="dark"
-                onClick={() => setExportModalShow(true)}
-              >
-                Export Analysis to JSON
-              </Button>
-            </Stack>
-          </Col>
-          <Col xs={9} xl={10}>
-            <Tab.Content className="h-100">
-              <Tab.Pane eventKey="analysis-data-details" className="h-100">
-                <h5>Details</h5>
-                <Table
-                  {...props}
-                  data={
-                    {
-                      data: Object.entries(props.analysisData?.data || {})
-                        .filter(
-                          ([key]) =>
-                            key !== "upstream_analyses" &&
-                            key !== "downstream_analyses" &&
-                            key !== "identifiers" &&
-                            key !== "records"
-                        )
-                        .map(([key, value]) => ({
-                          Field: key,
-                          Value: value,
-                        })),
-                    } as unknown as AnalysisData
-                  }
-                  defaultFileNamePrefix={`${props.analysisID}_details`}
-                  footer="Table showing the top-level fields for the analysis."
-                />
-              </Tab.Pane>
-            </Tab.Content>
-          </Col>
-        </Row>
-      </Tab.Container>
-    </QueryHandler>
+      <ExportModal
+        show={exportModalShow}
+        onHide={() => setExportModalShow(false)}
+        defaultFileNamePrefix={props.analysisID}
+        fileExtension=".json"
+        exportProgressMessage={"Exporting record data to JSON..."}
+        handleExport={handleJSONExport(props)}
+      />
+      <Row className="h-100">
+        <Col xs={3} xl={2}>
+          <Stack gap={1}>
+            <Nav variant="pills" className="flex-column">
+              <Nav.Item>
+                <Nav.Link eventKey="analysis-data-details">Details</Nav.Link>
+              </Nav.Item>
+            </Nav>
+            <hr />
+            <Button
+              size="sm"
+              variant="dark"
+              onClick={() => setExportModalShow(true)}
+            >
+              Export Analysis to JSON
+            </Button>
+          </Stack>
+        </Col>
+        <Col xs={9} xl={10}>
+          <Tab.Content className="h-100">
+            <Tab.Pane eventKey="analysis-data-details" className="h-100">
+              <h5>Details</h5>
+              <Table
+                {...props}
+                data={analysisDetailsData}
+                defaultFileNamePrefix={`${props.analysisID}_details`}
+                footer="Table showing the top-level fields for the analysis."
+              />
+            </Tab.Pane>
+          </Tab.Content>
+        </Col>
+      </Row>
+    </Tab.Container>
   );
 }
 
-function AnalysisRecords(props: AnalysisDataProps) {
+function AnalysisRecordsContent(props: RecordListResponseProps) {
+  const analysisRecordsData = useMemo(() => {
+    if (props.response.status !== "success") return [];
+    return props.response.data;
+  }, [props.response]);
+
   return (
     <>
       <h5>Records</h5>
-      <QueryHandler
-        isFetching={props.analysisDataPending}
-        error={props.analysisDataError as Error}
-        data={props.analysisData}
-      >
-        <Table
-          {...props}
-          data={
-            {
-              // TODO: Sort out response types because this is a mess
-              data: (
-                props.analysisData?.data as unknown as AnalysisType
-              ).records.map((climb_id: string) => ({
-                climb_id: climb_id,
-              })),
-            } as unknown as AnalysisData
-          }
-          defaultFileNamePrefix={`${props.analysisID}_records`}
-          footer="Table showing all records involved in the analysis."
-          cellRenderers={
-            new Map([["climb_id", ClimbIDCellRendererFactory(props)]])
-          }
-        />
-      </QueryHandler>
+      <Table
+        {...props}
+        data={analysisRecordsData}
+        defaultFileNamePrefix={`${props.analysisID}_records`}
+        footer="Table showing all records involved in the analysis."
+        cellRenderers={
+          new Map([["climb_id", ClimbIDCellRendererFactory(props)]])
+        }
+      />
     </>
   );
 }
 
-function AnalysisModal(props: AnalysisModalProps) {
+function AnalysisData(props: AnalysisModalProps) {
   // Fetch analysis data, depending on project and analysis ID
   const {
-    isFetching: analysisDataPending,
-    error: analysisDataError,
-    data: analysisData = { data: {} },
+    isFetching: analysisDetailPending,
+    error: analysisDetailError,
+    data: analysisDetailResponse,
   } = useQuery({
-    queryKey: ["analysis-data", props.project, props.analysisID],
+    queryKey: ["analysis-detail", props.project, props.analysisID],
     queryFn: async () => {
       return props
         .httpPathHandler(
@@ -163,57 +141,90 @@ function AnalysisModal(props: AnalysisModalProps) {
     },
     enabled: !!(props.project && props.analysisID),
     staleTime: 1 * 60 * 1000,
+    placeholderData: { data: {} },
   });
 
+  return (
+    <QueryHandler
+      isFetching={analysisDetailPending}
+      error={analysisDetailError as Error}
+      data={analysisDetailResponse}
+    >
+      <AnalysisDataContent {...props} response={analysisDetailResponse} />
+    </QueryHandler>
+  );
+}
+
+function AnalysisRecords(props: AnalysisModalProps) {
+  // Fetch analysis records, depending on project and analysis ID
+  const {
+    isFetching: analysisRecordsPending,
+    error: analysisRecordsError,
+    data: analysisRecordsResponse,
+  } = useQuery({
+    queryKey: ["analysis-records", props.project, props.analysisID],
+    queryFn: async () => {
+      // TODO: Proper endpoint doesn't actually exist
+      return props
+        .httpPathHandler(`projects/${props.project}/`)
+        .then((response) => response.json());
+    },
+    enabled: !!(props.project && props.analysisID),
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: [] },
+  });
+
+  return (
+    <QueryHandler
+      isFetching={analysisRecordsPending}
+      error={analysisRecordsError as Error}
+      data={analysisRecordsResponse}
+    >
+      <AnalysisRecordsContent {...props} response={analysisRecordsResponse} />
+    </QueryHandler>
+  );
+}
+
+function AnalysisModal(props: AnalysisModalProps) {
   return (
     <Modal
       className="onyx-modal"
       dialogClassName="onyx-modal-dialog"
       contentClassName="onyx-modal-content"
+      aria-labelledby="analysis-modal-title"
       show={props.show}
       onHide={props.onHide}
-      aria-labelledby="record-modal-title"
       scrollable
       centered
       animation={false}
     >
       <Modal.Header closeButton>
-        <Modal.Title id="record-modal-title">
+        <Modal.Title id="analysis-modal-title">
           Analysis ID:{" "}
           <span className="onyx-text-pink">{props.analysisID}</span>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Tabs
-          defaultActiveKey="analysis-data"
           id="analysis-modal-tabs"
+          defaultActiveKey="analysis-data-tab"
           className="mb-3"
+          mountOnEnter
         >
           <Tab
-            eventKey="analysis-data"
+            eventKey="analysis-data-tab"
             title="Data"
             className="onyx-modal-tab-pane"
-            mountOnEnter
           >
-            <AnalysisDetails
-              {...props}
-              analysisDataPending={analysisDataPending}
-              analysisDataError={analysisDataError as Error}
-              analysisData={analysisData}
-            />
+            <AnalysisData {...props} />
           </Tab>
           <Tab
-            eventKey="analysis-records"
+            eventKey="analysis-records-tab"
             title="Records"
             className="onyx-modal-tab-pane"
             mountOnEnter
           >
-            <AnalysisRecords
-              {...props}
-              analysisDataPending={analysisDataPending}
-              analysisDataError={analysisDataError as Error}
-              analysisData={analysisData}
-            />
+            <AnalysisRecords {...props} />
           </Tab>
         </Tabs>
       </Modal.Body>

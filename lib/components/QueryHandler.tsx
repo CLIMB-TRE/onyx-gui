@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Stack from "react-bootstrap/Stack";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
-import { ResultData, ErrorType } from "../types";
+import { SuccessResponse, ErrorResponse } from "../types";
 
 function LoadingSpinner() {
   const [showAlert, setShowAlert] = useState(false);
@@ -24,10 +24,14 @@ function LoadingSpinner() {
   );
 }
 
-function ErrorMessages(props: { messages: ErrorType }) {
+interface ErrorMessagesProps {
+  error: ErrorResponse;
+}
+
+function ErrorMessages(props: ErrorMessagesProps) {
   return (
     <>
-      {Object.entries(props.messages).map(([key, value]) =>
+      {Object.entries(props.error.messages).map(([key, value]) =>
         Array.isArray(value) ? (
           value.map((v: string) => (
             <Alert key={key} variant="danger">
@@ -52,17 +56,17 @@ function QueryHandler({
 }: {
   isFetching: boolean;
   error: Error | null;
-  data: ResultData;
-  children: JSX.Element;
+  data: SuccessResponse | ErrorResponse;
+  children: React.ReactNode;
 }) {
   return isFetching ? (
     <LoadingSpinner />
   ) : error ? (
     <Alert variant="danger">Error: {error.message}</Alert>
-  ) : data?.messages ? (
-    <ErrorMessages messages={data.messages} />
+  ) : data.status === "error" || data.status === "fail" ? (
+    <ErrorMessages error={data} />
   ) : (
-    children
+    (children as JSX.Element)
   );
 }
 

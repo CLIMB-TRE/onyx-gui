@@ -5,14 +5,14 @@ import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
 import Filter from "./Filter";
-import { FilterField } from "../types";
+import { FilterConfig } from "../types";
 import { DataProps } from "../interfaces";
-import generateKey from "../utils/generateKey";
+import { generateKey } from "../utils/functions";
 import { MdCreate, MdClear } from "react-icons/md";
 
 interface FilterPanelProps extends DataProps {
-  filterList: FilterField[];
-  setFilterList: (value: FilterField[]) => void;
+  filterList: FilterConfig[];
+  setFilterList: (value: FilterConfig[]) => void;
   filterFieldOptions: string[];
 }
 
@@ -45,7 +45,7 @@ function formatValue(value: string) {
   return valueSet.join(", ");
 }
 
-function formatFilter(filter: FilterField) {
+function formatFilter(filter: FilterConfig) {
   if (!filter.field && !filter.lookup && !filter.value) {
     return "Empty Filter";
   }
@@ -61,17 +61,17 @@ function formatFilter(filter: FilterField) {
 
 function FilterPanel(props: FilterPanelProps) {
   const [editMode, setEditMode] = useState(false);
-  const [editFilter, setEditFilter] = useState({} as FilterField);
+  const [editFilter, setEditFilter] = useState({} as FilterConfig);
   const [editIndex, setEditIndex] = useState(0);
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
     setEditMode(false);
-    setEditFilter({} as FilterField);
+    setEditFilter({} as FilterConfig);
     setEditIndex(0);
   }, [props.project]);
 
-  const handleEditMode = (filter: FilterField, index: number) => {
+  const handleEditMode = (filter: FilterConfig, index: number) => {
     setEditMode(true);
     setEditFilter(filter);
     setEditIndex(index);
