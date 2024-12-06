@@ -12,7 +12,12 @@ function getDefaultFileNamePrefix(project: string, searchParameters: string) {
   return [["", project]]
     .concat(Array.from(new URLSearchParams(searchParameters).entries()))
     .map(([, value]) =>
-      value.split(/[ ,]+/).map((v) => v.replace(/[^a-zA-Z0-9_/-]/, ""))
+      value
+        // Split on all groups of spaces and commas
+        .split(/[ ,]+/)
+        // Remove all groups of characters that are not letters, numbers, underscores, or hyphens
+        .map((v) => v.replace(/[^a-zA-Z0-9_-]+/g, ""))
+        .filter((v) => v)
     )
     .flat()
     .join("_")

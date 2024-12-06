@@ -33,7 +33,9 @@ function useExportStatusToken() {
 
 function isInvalidPrefix(prefix: string) {
   return (
-    !/^[a-zA-Z0-9_/-]+$/.test(prefix.trim()) ||
+    // Prefix must begin and end with alphanumeric, underscore or dash characters
+    !/^[a-zA-Z0-9_-]+$/.test(prefix.trim()) ||
+    // Prefix must be 5 to 50 characters long
     prefix.trim().length < 5 ||
     prefix.trim().length > 50
   );
