@@ -376,12 +376,12 @@ function RecordModal(props: RecordModalProps) {
           id="record-modal-tabs"
           defaultActiveKey="record-data-tab"
           className="mb-3"
+          mountOnEnter
         >
           <Tab
             eventKey="record-data-tab"
             title="Data"
             className="onyx-modal-tab-pane"
-            mountOnEnter
           >
             <RecordData {...props} />
           </Tab>
@@ -389,7 +389,6 @@ function RecordModal(props: RecordModalProps) {
             eventKey="record-history-tab"
             title="History"
             className="onyx-modal-tab-pane"
-            mountOnEnter
           >
             <RecordHistory {...props} />
           </Tab>
@@ -397,7 +396,6 @@ function RecordModal(props: RecordModalProps) {
             eventKey="record-analyses-tab"
             title="Analyses"
             className="onyx-modal-tab-pane"
-            mountOnEnter
           >
             <RecordAnalyses {...props} />
           </Tab>

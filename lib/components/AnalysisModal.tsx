@@ -222,7 +222,6 @@ function AnalysisModal(props: AnalysisModalProps) {
             eventKey="analysis-records-tab"
             title="Records"
             className="onyx-modal-tab-pane"
-            mountOnEnter
           >
             <AnalysisRecords {...props} />
           </Tab>

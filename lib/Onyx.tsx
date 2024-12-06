@@ -230,7 +230,7 @@ function App(props: OnyxProps) {
       />
       <div className="h-100" style={{ paddingTop: "60px" }}>
         <Container fluid className="h-100 px-0 py-1">
-          <Tab.Container activeKey={tabKey}>
+          <Tab.Container activeKey={tabKey} mountOnEnter>
             <Tab.Content className="h-100">
               <Tab.Pane eventKey="data" className="h-100">
                 <Data
