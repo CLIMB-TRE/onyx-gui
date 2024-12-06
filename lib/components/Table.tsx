@@ -514,6 +514,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const resultsPageSize = 1000;
   const userPageSize = 50;
 
+  // TODO: Generalise this to allow different sources of data
   const {
     isFetching: isCountLoading,
     data: countData = { count: 0, numPages: 0 },

@@ -80,6 +80,8 @@ type RecordDetailResponse = SuccessResponse & {
 
 type AnalysisListResponse = SuccessResponse & {
   data: AnalysisType[];
+  next?: string;
+  previous?: string;
 };
 
 type AnalysisDetailResponse = SuccessResponse & {

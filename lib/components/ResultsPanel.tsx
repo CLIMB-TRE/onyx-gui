@@ -20,6 +20,7 @@ interface ResultsPanelProps extends DataProps {
   resultsListError: Error | null;
   resultsListResponse: RecordListResponse | ErrorResponse;
   searchParameters: string;
+  serverPaginated: boolean;
 }
 
 interface ResultsPanelContentProps extends ResultsPanelProps {
@@ -44,19 +45,19 @@ function ResultsPanelContent(props: ResultsPanelContentProps) {
     ["ingest_report", S3ReportCellRendererFactory(props)],
   ]);
 
-  return props.searchParameters.includes("summarise=") ? (
-    <Table
+  return props.serverPaginated ? (
+    <ServerPaginatedTable
       {...props}
-      data={resultsListResponse.data}
+      paginatedData={resultsListResponse}
+      searchParameters={props.searchParameters}
       defaultFileNamePrefix={defaultFileNamePrefix}
       headerTooltips={props.fieldDescriptions}
       cellRenderers={cellRenderers}
     />
   ) : (
-    <ServerPaginatedTable
+    <Table
       {...props}
-      paginatedData={resultsListResponse}
-      searchParameters={props.searchParameters}
+      data={resultsListResponse.data}
       defaultFileNamePrefix={defaultFileNamePrefix}
       headerTooltips={props.fieldDescriptions}
       cellRenderers={cellRenderers}

@@ -114,6 +114,9 @@ function Analysis(props: DataProps) {
               resultsListError={analysisListError as Error}
               resultsListResponse={analysisListResponse}
               searchParameters={searchParameters}
+              serverPaginated={
+                !!analysisListResponse.next || !!analysisListResponse.previous
+              }
             />
           </Container>
         </div>

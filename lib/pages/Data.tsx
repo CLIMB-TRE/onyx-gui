@@ -143,6 +143,11 @@ function Data(props: DataProps) {
               resultsListError={recordListError as Error}
               resultsListResponse={recordListResponse}
               searchParameters={searchParameters}
+              serverPaginated={
+                !!recordListResponse.next ||
+                !!recordListResponse.previous ||
+                !searchParameters.includes("summarise=")
+              }
             />
           </Container>
         </div>
