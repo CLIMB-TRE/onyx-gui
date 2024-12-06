@@ -132,9 +132,9 @@ function getColDefs(
         colDef.cellRenderer = props.cellRenderers.get(key);
       }
 
-      if (key === "climb_id") {
-        // 'climb_id' field is a special case
-        // where we want it pinned to the left
+      if (key === "climb_id" || key === "analysis_id") {
+        // 'climb_id' and 'analysis_id' fields are a special case
+        // where we want them pinned to the left
         colDef.pinned = "left";
       } else if (key === "changes") {
         // History 'changes' field is a special case
