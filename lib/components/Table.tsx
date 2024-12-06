@@ -264,22 +264,24 @@ function TableOptions(props: TableOptionsProps) {
 
     const datas: FormattedResultData[] = [];
     let nRows = 0;
-    let nextParams = new URLSearchParams(props.searchParameters);
+    let search: URLSearchParams | null = new URLSearchParams(
+      props.searchParameters
+    );
 
-    while (nextParams) {
-      const search = new URLSearchParams(nextParams);
-
+    while (search instanceof URLSearchParams) {
       await props
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
-        .then((result) => {
+        .then((result: RecordListResponse) => {
           if (exportProps.statusToken.status === ExportStatus.CANCELLED)
             throw new Error("export_cancelled");
 
-          const data = formatResultData(result);
+          const data = formatResultData(result.data);
           datas.push(data);
-          nextParams = result.next?.split("?", 2)[1] || "";
           nRows += data.length;
+          search = result.next
+            ? new URLSearchParams(result.next.split("?", 2)[1])
+            : null;
 
           exportProps.setExportProgress(
             (nRows / props.rowDisplayParams.of) * 100
@@ -570,7 +572,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     resultsPage: number,
     userPage: number
   ) => {
-    const formattedResultData = formatResultData(resultData.data || []);
+    const formattedResultData = formatResultData(resultData.data);
     setResultData(formattedResultData);
     handleRowData(getRowData(formattedResultData, resultsPage), userPage);
     setPrevParams(resultData.previous?.split("?", 2)[1] || "");
