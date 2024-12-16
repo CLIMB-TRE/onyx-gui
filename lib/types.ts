@@ -88,6 +88,15 @@ type AnalysisDetailResponse = SuccessResponse & {
   data: AnalysisType;
 };
 
+// TODO: Use a generic response type
+// type Response<T> =
+//   | ErrorResponse
+//   | {
+//       status: "success";
+//       code: number;
+//       data: T;
+//     };
+
 export type {
   ProjectField,
   FilterConfig,
