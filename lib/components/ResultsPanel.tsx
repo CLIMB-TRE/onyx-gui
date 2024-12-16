@@ -4,7 +4,12 @@ import Card from "react-bootstrap/Card";
 import ErrorModal from "./ErrorModal";
 import Table, { ServerPaginatedTable } from "./Table";
 import QueryHandler from "./QueryHandler";
-import { RecordType, RecordListResponse, ErrorResponse } from "../types";
+import {
+  RecordType,
+  RecordListResponse,
+  AnalysisListResponse,
+  ErrorResponse,
+} from "../types";
 import { DataProps } from "../interfaces";
 import {
   ClimbIDCellRendererFactory,
@@ -18,7 +23,10 @@ interface ResultsPanelProps extends DataProps {
   title: string;
   resultsListPending: boolean;
   resultsListError: Error | null;
-  resultsListResponse: RecordListResponse | ErrorResponse;
+  resultsListResponse:
+    | RecordListResponse
+    | AnalysisListResponse
+    | ErrorResponse;
   searchParameters: string;
   serverPaginated: boolean;
 }
@@ -48,7 +56,7 @@ function ResultsPanelContent(props: ResultsPanelContentProps) {
   return props.serverPaginated ? (
     <ServerPaginatedTable
       {...props}
-      paginatedData={resultsListResponse}
+      response={resultsListResponse}
       searchParameters={props.searchParameters}
       defaultFileNamePrefix={defaultFileNamePrefix}
       headerTooltips={props.fieldDescriptions}

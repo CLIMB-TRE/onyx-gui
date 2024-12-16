@@ -19,19 +19,23 @@ import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import DropdownDivider from "react-bootstrap/DropdownDivider";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
-import { RecordType, RecordListResponse, ExportStatus } from "../types";
+import {
+  RecordListResponse,
+  AnalysisListResponse,
+  ExportStatus,
+} from "../types";
 import { OnyxProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
-type FormattedResultData = Record<string, string | number>[];
-
-type TableData = Record<string, string | number | boolean | object | null>[];
+type InputData = Record<string, string | number | boolean | object | null>[];
+type TableRow = Record<string, string | number>;
+type TableData = TableRow[];
 
 interface BaseTableProps extends OnyxProps {
   project: string;
-  rowData: FormattedResultData;
+  rowData: TableData;
   columnDefs: ColDef[];
   searchParameters: string;
   defaultFileNamePrefix: string;
@@ -62,7 +66,7 @@ interface BaseTableProps extends OnyxProps {
 }
 
 interface TableOptionsProps extends BaseTableProps {
-  gridRef: React.RefObject<AgGridReact<Record<string, string | number>>>;
+  gridRef: React.RefObject<AgGridReact<TableRow>>;
 }
 
 interface TableProps extends OnyxProps {
@@ -78,38 +82,57 @@ interface TableProps extends OnyxProps {
 }
 
 interface ClientTableProps extends TableProps {
-  data: TableData;
+  data: InputData;
 }
 
 interface ServerPaginatedTableProps extends TableProps {
-  paginatedData: RecordListResponse;
+  response: RecordListResponse | AnalysisListResponse;
   searchParameters: string;
 }
 
-function formatResultData(resultData: TableData) {
-  // For table display, we allow string and number values
-  // All other types are converted to strings
-  return (
-    resultData.map((row) =>
-      Object.fromEntries(
-        Object.entries(row).map(([key, value]) => [
-          key,
-          typeof value === "string" || typeof value === "number"
-            ? value
-            : typeof value === "boolean" || value === null
-            ? value?.toString() || ""
-            : JSON.stringify(value),
-        ])
-      )
-    ) || []
+/** Converts InputData to TableData. All non-string/number values are converted to strings. */
+function formatData(data: InputData): TableData {
+  return data.map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [
+        key,
+        typeof value === "string" || typeof value === "number"
+          ? value
+          : typeof value === "boolean" || value === null
+          ? value?.toString() || ""
+          : JSON.stringify(value),
+      ])
+    )
   );
 }
 
+/** Sorts TableData in-place, on the specified field and direction. */
+function sortData(data: TableData, field: string, direction: string): void {
+  if (data.length > 0 && direction === "asc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (a[field] as number) - (b[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) > (b[field] as string) ? 1 : -1
+      );
+    }
+  } else if (data.length > 0 && direction === "desc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (b[field] as number) - (a[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) < (b[field] as string) ? 1 : -1
+      );
+    }
+  }
+}
+
+/** Generates column definitions for the table. */
 function getColDefs(
   props: TableProps,
-  data: RecordType[],
+  data: InputData,
   isServerPaginated: boolean
-) {
+): ColDef[] {
   let colDefs: ColDef[];
 
   if (data && data.length > 0) {
@@ -125,12 +148,12 @@ function getColDefs(
         ),
       };
 
+      // Disable AGGrid sorting for server paginated tables
       if (isServerPaginated) colDef.comparator = () => 0;
 
       // Apply custom cell renderers
-      if (props.cellRenderers?.get(key)) {
+      if (props.cellRenderers?.get(key))
         colDef.cellRenderer = props.cellRenderers.get(key);
-      }
 
       if (key === "climb_id" || key === "analysis_id") {
         // 'climb_id' and 'analysis_id' fields are a special case
@@ -144,21 +167,20 @@ function getColDefs(
       }
 
       // Apply tooltip value getter for fields that should display tooltips
-      if (props.tooltipFields?.includes(key)) {
+      if (props.tooltipFields?.includes(key))
         colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
-      }
 
+      // Apply flex to all fields unless the table is server paginated
+      // or there is a list of flex-only fields
       if (
         !isServerPaginated &&
         (!props.flexOnly || props.flexOnly.includes(key))
-      ) {
+      )
         colDef.flex = 1;
-      }
+
       return colDef;
     });
-  } else {
-    colDefs = [];
-  }
+  } else colDefs = [];
 
   return colDefs;
 }
@@ -212,26 +234,6 @@ function TablePagination(props: BaseTableProps) {
   );
 }
 
-function sortData(data: FormattedResultData, field: string, direction: string) {
-  if (data.length > 0 && direction === "asc") {
-    if (typeof data[0][field] === "number") {
-      data.sort((a, b) => (a[field] as number) - (b[field] as number));
-    } else {
-      data.sort((a, b) =>
-        (a[field] as string) > (b[field] as string) ? 1 : -1
-      );
-    }
-  } else if (data.length > 0 && direction === "desc") {
-    if (typeof data[0][field] === "number") {
-      data.sort((a, b) => (b[field] as number) - (a[field] as number));
-    } else {
-      data.sort((a, b) =>
-        (a[field] as string) < (b[field] as string) ? 1 : -1
-      );
-    }
-  }
-}
-
 function TableOptions(props: TableOptionsProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
 
@@ -261,26 +263,26 @@ function TableOptions(props: TableOptionsProps) {
     const csvConfig = mkConfig({
       useKeysAsHeaders: true,
     });
-
-    const datas: FormattedResultData[] = [];
+    const pages: TableData[] = [];
     let nRows = 0;
     let search: URLSearchParams | null = new URLSearchParams(
       props.searchParameters
     );
 
+    // Fetch pages of data until the 'next' field is not present
     while (search instanceof URLSearchParams) {
       await props
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
-        .then((result: RecordListResponse) => {
+        .then((response: RecordListResponse | AnalysisListResponse) => {
           if (exportProps.statusToken.status === ExportStatus.CANCELLED)
             throw new Error("export_cancelled");
 
-          const data = formatResultData(result.data);
-          datas.push(data);
-          nRows += data.length;
-          search = result.next
-            ? new URLSearchParams(result.next.split("?", 2)[1])
+          const page = formatData(response.data);
+          pages.push(page);
+          nRows += page.length;
+          search = response.next
+            ? new URLSearchParams(response.next.split("?", 2)[1])
             : null;
 
           exportProps.setExportProgress(
@@ -289,21 +291,23 @@ function TableOptions(props: TableOptionsProps) {
         });
     }
 
-    const resultData = Array.prototype.concat.apply([], datas);
+    // Concatenate all pages into a single array
+    const data: TableData = Array.prototype.concat.apply([], pages);
 
-    // If there are no results, return the empty string
-    if (resultData.length === 0) return "";
+    // If there is no data, return the empty string
+    if (data.length === 0) return "";
     else {
       // If an order is specified, sort the data
       if (props.paginationParams.order) {
         sortData(
-          resultData,
+          data,
           props.paginationParams.order.replace(/^-/, ""),
           props.paginationParams.order.startsWith("-") ? "desc" : "asc"
         );
       }
 
-      const csvData = asString(generateCsv(csvConfig)(resultData));
+      // Convert the data to a CSV string
+      const csvData = asString(generateCsv(csvConfig)(data));
       return csvData;
     }
   };
@@ -390,15 +394,14 @@ function TableOptions(props: TableOptionsProps) {
 }
 
 function BaseTable(props: BaseTableProps) {
-  const gridRef = useRef<AgGridReact<Record<string, string | number>>>(null);
+  const gridRef = useRef<AgGridReact<TableRow>>(null);
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
   const [displayedRowCount, setDisplayedRowCount] = useState(0);
 
   const updateDisplayedRowCount = useCallback(() => {
-    if (!props.isPaginated) {
+    if (!props.isPaginated)
       setDisplayedRowCount(gridRef.current?.api.getDisplayedRowCount() || 0);
-    }
   }, [gridRef, props.isPaginated]);
 
   return (
@@ -458,11 +461,11 @@ function BaseTable(props: BaseTableProps) {
 }
 
 function Table(props: ClientTableProps) {
-  const [rowData, setRowData] = useState<FormattedResultData>([]);
+  const [rowData, setRowData] = useState<TableData>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
 
   const onGridReady = useCallback(() => {
-    setRowData(formatResultData(props.data));
+    setRowData(formatData(props.data));
     setColumnDefs(getColDefs(props, props.data, false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -499,8 +502,8 @@ function Table(props: ClientTableProps) {
 }
 
 function ServerPaginatedTable(props: ServerPaginatedTableProps) {
-  const [resultData, setResultData] = useState<FormattedResultData>([]);
-  const [rowData, setRowData] = useState<FormattedResultData>([]);
+  const [resultData, setResultData] = useState<TableData>([]);
+  const [rowData, setRowData] = useState<TableData>([]);
   const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
   const [userPageNumber, setUserPageNumber] = useState(1);
   const [serverPageNumber, setServerPageNumber] = useState(1);
@@ -543,7 +546,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const prevPage = !!(prevParams || userPageNumber > 1);
   const nextPage = !!(nextParams || userPageNumber < countData.numPages);
 
-  const getRowData = (resultData: FormattedResultData, resultsPage: number) => {
+  const getRowData = (resultData: TableData, resultsPage: number) => {
     return resultData.slice(
       (resultsPage - 1) * userPageSize,
       resultsPage * userPageSize
@@ -559,7 +562,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     };
   };
 
-  const handleRowData = (rowData: FormattedResultData, userPage: number) => {
+  const handleRowData = (rowData: TableData, userPage: number) => {
     setRowData(rowData);
     setUserRowCounts({
       fromCount: (userPage - 1) * userPageSize + (rowData.length >= 1 ? 1 : 0),
@@ -567,16 +570,16 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
     });
   };
 
-  const handleResultData = (
-    resultData: RecordListResponse,
+  const handleResponse = (
+    response: RecordListResponse | AnalysisListResponse,
     resultsPage: number,
     userPage: number
   ) => {
-    const formattedResultData = formatResultData(resultData.data);
+    const formattedResultData = formatData(response.data);
     setResultData(formattedResultData);
     handleRowData(getRowData(formattedResultData, resultsPage), userPage);
-    setPrevParams(resultData.previous?.split("?", 2)[1] || "");
-    setNextParams(resultData.next?.split("?", 2)[1] || "");
+    setPrevParams(response.previous?.split("?", 2)[1] || "");
+    setNextParams(response.next?.split("?", 2)[1] || "");
   };
 
   const handleSortColumn = (event: SortChangedEvent) => {
@@ -618,7 +621,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       props
         .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json())
-        .then((response) => handleResultData(response, resultsPage, userPage))
+        .then((response) => handleResponse(response, resultsPage, userPage))
         .finally(() => setLoading(false));
     } else {
       handleRowData(getRowData(resultData, resultsPage), userPage);
@@ -626,8 +629,8 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   };
 
   const onGridReady = useCallback(() => {
-    handleResultData(props.paginatedData, 1, 1);
-    setColumnDefs(getColDefs(props, props.paginatedData.data || [], true));
+    handleResponse(props.response, 1, 1);
+    setColumnDefs(getColDefs(props, props.response.data, true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
