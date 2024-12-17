@@ -2,7 +2,6 @@ import { useState, useLayoutEffect, useMemo } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { Dropdown as BDropdown } from "react-bootstrap";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
@@ -28,8 +27,8 @@ import {
   MdArrowForward,
   MdArrowUpward,
   MdArrowDownward,
-  MdSettings,
-  MdOutlineSettings,
+  MdVisibility,
+  MdVisibilityOff,
 } from "react-icons/md";
 
 interface GraphPanelProps extends StatsProps {
@@ -44,6 +43,7 @@ interface GraphPanelProps extends StatsProps {
   handleGraphConfigSwapRight: () => void;
   handleGraphConfigRemove: () => void;
   viewMode: string;
+  showOptions: boolean;
   firstGraph: boolean;
   lastGraph: boolean;
 }
@@ -173,8 +173,6 @@ function GraphPanelOptions(props: GraphPanelProps) {
 }
 
 function GraphPanel(props: GraphPanelProps) {
-  const [showGraphOptions, setShowGraphOptions] = useState(true);
-
   const graphTitle = useMemo(() => {
     let title = "Empty Graph";
 
@@ -194,14 +192,6 @@ function GraphPanel(props: GraphPanelProps) {
       <Card.Header>
         <span>{graphTitle}</span>
         <Stack direction="horizontal" gap={1} className="float-end">
-          <Button
-            size="sm"
-            variant="dark"
-            title={`${showGraphOptions ? "Hide" : "Show"} Graph Options`}
-            onClick={() => setShowGraphOptions(!showGraphOptions)}
-          >
-            {showGraphOptions ? <MdSettings /> : <MdOutlineSettings />}
-          </Button>
           <Button
             size="sm"
             variant="dark"
@@ -240,7 +230,7 @@ function GraphPanel(props: GraphPanelProps) {
       </Card.Header>
       <Card.Body className="p-2">
         <Row className="g-2">
-          {showGraphOptions && (
+          {props.showOptions && (
             <Col xl={12} xxl={props.viewMode === "list" ? 3 : 4}>
               <Card body style={{ height: "440px" }}>
                 <GraphPanelOptions {...props} />
@@ -249,7 +239,7 @@ function GraphPanel(props: GraphPanelProps) {
           )}
           <Col
             xl={12}
-            xxl={showGraphOptions ? (props.viewMode === "list" ? 9 : 8) : 12}
+            xxl={props.showOptions ? (props.viewMode === "list" ? 9 : 8) : 12}
           >
             <div style={{ height: "440px" }}>
               <GraphPanelGraph {...props} />
@@ -298,11 +288,12 @@ function Stats(props: StatsProps) {
       },
     ] as GraphConfig[];
 
-  const [viewMode, setViewMode] = useState("list");
   const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig());
   const listFieldOptions = Array.from(props.projectFields.entries())
     .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [showOptions, setShowOptions] = useState(true);
 
   // Reset graphs when project changes
   useLayoutEffect(() => {
@@ -414,23 +405,24 @@ function Stats(props: StatsProps) {
             >
               <MdCreate />
             </Button>
-            <BDropdown title="Change View Mode">
-              <BDropdown.Toggle size="sm" variant="dark">
-                {viewMode === "grid" ? (
-                  <MdGridView />
-                ) : (
-                  <MdOutlineSplitscreen />
-                )}
-              </BDropdown.Toggle>
-              <BDropdown.Menu>
-                <BDropdown.Item key="list" onClick={() => setViewMode("list")}>
-                  List View
-                </BDropdown.Item>
-                <BDropdown.Item key="grid" onClick={() => setViewMode("grid")}>
-                  Grid View
-                </BDropdown.Item>
-              </BDropdown.Menu>
-            </BDropdown>
+            <Button
+              size="sm"
+              variant="dark"
+              title={`Switch to ${viewMode === "grid" ? "List" : "Grid"} View`}
+              onClick={() =>
+                viewMode === "grid" ? setViewMode("list") : setViewMode("grid")
+              }
+            >
+              {viewMode === "grid" ? <MdGridView /> : <MdOutlineSplitscreen />}
+            </Button>
+            <Button
+              size="sm"
+              variant="dark"
+              title={`${showOptions ? "Hide" : "Show"} Graph Options`}
+              onClick={() => setShowOptions(!showOptions)}
+            >
+              {showOptions ? <MdVisibility /> : <MdVisibilityOff />}
+            </Button>
           </Stack>
         </Card.Header>
         <Container fluid className="overflow-y-scroll p-2 h-100">
@@ -464,6 +456,7 @@ function Stats(props: StatsProps) {
                   }
                   handleGraphConfigRemove={() => handleGraphConfigRemove(index)}
                   viewMode={viewMode}
+                  showOptions={showOptions}
                   firstGraph={index === 0}
                   lastGraph={index === graphConfigList.length - 1}
                 />
