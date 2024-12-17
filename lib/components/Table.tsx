@@ -207,7 +207,7 @@ function TablePagination(props: BaseTableProps) {
         }
       />
       <Pagination.Item
-        disabled={!props.isPaginated}
+        as="span"
         style={{ minWidth: "125px", textAlign: "center" }}
       >
         {props.paginationParams.pageCountMessage}
@@ -436,7 +436,7 @@ function BaseTable(props: BaseTableProps) {
           <Container>
             <Stack direction="horizontal" gap={2}>
               <Pagination size="sm">
-                <Pagination.Item>
+                <Pagination.Item as="span">
                   {props.isCountLoading
                     ? "Loading..."
                     : `${props.rowDisplayParams.from} to ${
