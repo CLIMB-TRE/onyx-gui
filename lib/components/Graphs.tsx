@@ -28,7 +28,7 @@ interface GraphProps extends StatsProps {
 
 const useSummaryQuery = (props: GraphProps) => {
   return useQuery({
-    queryKey: ["results", props.project, props.graphConfig.field],
+    queryKey: ["summary", props.project, props.graphConfig.field],
     queryFn: async () => {
       return props
         .httpPathHandler(
@@ -60,7 +60,7 @@ const useSummaryQuery = (props: GraphProps) => {
 const useGroupedSummaryQuery = (props: GraphProps) => {
   return useQuery({
     queryKey: [
-      "results",
+      "summary",
       props.project,
       props.graphConfig.field,
       props.graphConfig.groupBy,
