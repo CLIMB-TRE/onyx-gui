@@ -1,5 +1,20 @@
+type FieldType =
+  | "text"
+  | "choice"
+  | "integer"
+  | "decimal"
+  | "date"
+  | "datetime"
+  | "bool"
+  | "relation"
+  | "array"
+  | "structure"
+  | "";
+
+type GraphType = "line" | "bar" | "pie" | "";
+
 type ProjectField = {
-  type: string;
+  type: FieldType;
   description: string;
   actions: string[];
   values?: string[];
@@ -8,6 +23,7 @@ type ProjectField = {
 
 type FilterConfig = {
   key: string;
+  type: FieldType;
   field: string;
   lookup: string;
   value: string;
@@ -15,7 +31,7 @@ type FilterConfig = {
 
 type GraphConfig = {
   key: string;
-  type: string;
+  type: GraphType;
   field: string;
   groupBy: string;
   groupMode: string;
@@ -98,6 +114,8 @@ type AnalysisDetailResponse = SuccessResponse & {
 //     };
 
 export type {
+  FieldType,
+  GraphType,
   ProjectField,
   FilterConfig,
   GraphConfig,

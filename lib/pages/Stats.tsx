@@ -16,7 +16,7 @@ import {
   GroupedBarGraph,
 } from "../components/Graphs";
 import { StatsProps } from "../interfaces";
-import { GraphConfig } from "../types";
+import { GraphType, GraphConfig } from "../types";
 import { generateKey } from "../utils/functions";
 import {
   MdCreate,
@@ -314,7 +314,8 @@ function Stats(props: StatsProps) {
         list[index].groupMode = "";
       }
     }
-    list[index].type = e.target.value;
+
+    list[index].type = e.target.value as GraphType;
     setGraphConfigList(list);
   };
 

@@ -17,22 +17,22 @@ interface FilterProps extends DataProps {
   setEditMode: (value: boolean) => void;
 }
 
+function getValueList(v: string) {
+  return v ? v.split(",") : [];
+}
+
 function Filter(props: FilterProps) {
   const [filter, setFilter] = useState(props.filterList[props.index]);
 
   const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const updatedFilter = { ...filter };
+    updatedFilter.type = props.projectFields.get(e.target.value)?.type || "";
     updatedFilter.field = e.target.value;
-    updatedFilter.lookup =
-      props.typeLookups.get(
-        props.projectFields.get(e.target.value)?.type || ""
-      )?.[0] || "";
+    updatedFilter.lookup = props.typeLookups.get(updatedFilter.type)?.[0] || "";
 
-    if (updatedFilter.lookup === "isnull") {
-      updatedFilter.value = "true";
-    } else {
-      updatedFilter.value = "";
-    }
+    if (updatedFilter.lookup === "isnull") updatedFilter.value = "true";
+    else updatedFilter.value = "";
+
     setFilter(updatedFilter);
   };
 
@@ -40,11 +40,14 @@ function Filter(props: FilterProps) {
     const updatedFilter = { ...filter };
     updatedFilter.lookup = e.target.value;
 
-    if (updatedFilter.lookup === "isnull") {
-      updatedFilter.value = "true";
-    } else {
-      updatedFilter.value = "";
-    }
+    if (updatedFilter.lookup === "isnull") updatedFilter.value = "true";
+    else if (updatedFilter.lookup.endsWith("range"))
+      updatedFilter.value = getValueList(updatedFilter.value)
+        .slice(0, 2)
+        .join(",");
+    else if (!updatedFilter.lookup.endsWith("in"))
+      updatedFilter.value = getValueList(updatedFilter.value)[0];
+
     setFilter(updatedFilter);
   };
 
@@ -66,10 +69,6 @@ function Filter(props: FilterProps) {
   };
 
   let f: JSX.Element;
-  const getValueList = (v: string) => {
-    return v ? v.split(",") : [];
-  };
-  const filterType = props.projectFields.get(filter.field)?.type || "";
 
   switch (true) {
     case filter.lookup === "isnull":
@@ -81,7 +80,7 @@ function Filter(props: FilterProps) {
         />
       );
       break;
-    case filterType === "choice" && filter.lookup.endsWith("in"):
+    case filter.type === "choice" && filter.lookup.endsWith("in"):
       f = (
         <MultiChoice
           project={props.project}
@@ -93,7 +92,7 @@ function Filter(props: FilterProps) {
         />
       );
       break;
-    case filterType === "choice":
+    case filter.type === "choice":
       f = (
         <Choice
           project={props.project}
@@ -106,7 +105,7 @@ function Filter(props: FilterProps) {
         />
       );
       break;
-    case filterType === "array" && !filter.lookup.includes("length"):
+    case filter.type === "array" && !filter.lookup.includes("length"):
       f = (
         <MultiInput
           value={getValueList(filter.value)}
@@ -131,7 +130,7 @@ function Filter(props: FilterProps) {
         />
       );
       break;
-    case filterType === "bool":
+    case filter.type === "bool":
       f = (
         <Dropdown
           isClearable
@@ -167,11 +166,7 @@ function Filter(props: FilterProps) {
           onChange={handleFieldChange}
         />
         <Dropdown
-          options={
-            props.typeLookups.get(
-              props.projectFields.get(filter.field)?.type || ""
-            ) || []
-          }
+          options={props.typeLookups.get(filter.type) || []}
           titles={props.lookupDescriptions}
           value={filter.lookup}
           placeholder="Select lookup..."

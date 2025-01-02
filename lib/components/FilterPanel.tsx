@@ -83,6 +83,7 @@ function FilterPanel(props: FilterPanelProps) {
       ...props.filterList.slice(0, index),
       {
         key: generateKey(),
+        type: "",
         field: "",
         lookup: "",
         value: "",
