@@ -69,17 +69,19 @@ function Filter(props: FilterProps) {
   const getValueList = (v: string) => {
     return v ? v.split(",") : [];
   };
+  const filterType = props.projectFields.get(filter.field)?.type || "";
 
-  if (filter.lookup === "isnull") {
-    f = (
-      <Dropdown
-        options={["true", "false"]}
-        value={filter.value}
-        onChange={handleValueChange}
-      />
-    );
-  } else if (props.projectFields.get(filter.field)?.type === "choice") {
-    if (filter.lookup.endsWith("in")) {
+  switch (true) {
+    case filter.lookup === "isnull":
+      f = (
+        <Dropdown
+          options={["true", "false"]}
+          value={filter.value}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    case filterType === "choice" && filter.lookup.endsWith("in"):
       f = (
         <MultiChoice
           project={props.project}
@@ -90,7 +92,8 @@ function Filter(props: FilterProps) {
           onChange={handleValueChange}
         />
       );
-    } else {
+      break;
+    case filterType === "choice":
       f = (
         <Choice
           project={props.project}
@@ -102,34 +105,46 @@ function Filter(props: FilterProps) {
           onChange={handleValueChange}
         />
       );
-    }
-  } else if (filter.lookup.endsWith("in")) {
-    f = (
-      <MultiInput
-        value={getValueList(filter.value)}
-        onChange={handleValueChange}
-      />
-    );
-  } else if (filter.lookup.endsWith("range")) {
-    f = (
-      <MultiInput
-        value={getValueList(filter.value)}
-        limit={2}
-        onChange={handleValueChange}
-      />
-    );
-  } else if (props.projectFields.get(filter.field)?.type === "bool") {
-    f = (
-      <Dropdown
-        isClearable
-        options={["true", "false"]}
-        value={filter.value}
-        onChange={handleValueChange}
-      />
-    );
-  } else {
-    f = <Input value={filter.value} onChange={handleValueChange} />;
+      break;
+    case filterType === "array" && !filter.lookup.includes("length"):
+      f = (
+        <MultiInput
+          value={getValueList(filter.value)}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    case filter.lookup.endsWith("in"):
+      f = (
+        <MultiInput
+          value={getValueList(filter.value)}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    case filter.lookup.endsWith("range"):
+      f = (
+        <MultiInput
+          value={getValueList(filter.value)}
+          limit={2}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    case filterType === "bool":
+      f = (
+        <Dropdown
+          isClearable
+          options={["true", "false"]}
+          value={filter.value}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    default:
+      f = <Input value={filter.value} onChange={handleValueChange} />;
   }
+
   return (
     <Stack gap={3} className="p-1">
       <Row>
