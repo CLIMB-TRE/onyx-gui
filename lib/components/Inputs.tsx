@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Creatable from "react-select/creatable";
 import selectStyles from "../utils/selectStyles";
 import { OptionType } from "../types";
@@ -58,4 +60,58 @@ function MultiInput({
   );
 }
 
-export { Input, MultiInput };
+function RangeInput({
+  from,
+  to,
+  placeholder,
+  onChange,
+}: {
+  from: string;
+  to: string;
+  placeholder?: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+}) {
+  const [fromValue, setFromValue] = useState(from);
+  const [toValue, setToValue] = useState(to);
+
+  const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFromValue(e.target.value);
+    onChange({
+      target: {
+        value: [e.target.value, toValue].join(","),
+      },
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
+
+  const handleToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setToValue(e.target.value);
+    onChange({
+      target: {
+        value: [fromValue, e.target.value].join(","),
+      },
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
+
+  return (
+    <Row>
+      <Form.Group className="mb-2" as={Col}>
+        <Form.Label>From</Form.Label>
+        <Form.Control
+          value={from}
+          placeholder={placeholder || "Enter value..."}
+          onChange={handleFromChange}
+        />
+      </Form.Group>
+      <Form.Group className="mb-2" as={Col}>
+        <Form.Label>To</Form.Label>
+        <Form.Control
+          value={to}
+          placeholder={placeholder || "Enter value..."}
+          onChange={handleToChange}
+        />
+      </Form.Group>
+    </Row>
+  );
+}
+
+export { Input, MultiInput, RangeInput };

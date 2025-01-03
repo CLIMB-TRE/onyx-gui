@@ -4,8 +4,9 @@ import CloseButton from "react-bootstrap/CloseButton";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
 import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
-import { Input, MultiInput } from "./Inputs";
+import { Input, MultiInput, RangeInput } from "./Inputs";
 import { FilterConfig } from "../types";
 import { DataProps } from "../interfaces";
 
@@ -69,6 +70,7 @@ function Filter(props: FilterProps) {
   };
 
   let f: JSX.Element;
+  let valueTitle = "Value";
 
   switch (true) {
     case filter.lookup === "isnull":
@@ -120,12 +122,13 @@ function Filter(props: FilterProps) {
           onChange={handleValueChange}
         />
       );
+      valueTitle = "Values";
       break;
     case filter.lookup.endsWith("range"):
       f = (
-        <MultiInput
-          value={getValueList(filter.value)}
-          limit={2}
+        <RangeInput
+          from={getValueList(filter.value)[0]}
+          to={getValueList(filter.value)[1]}
           onChange={handleValueChange}
         />
       );
@@ -157,23 +160,36 @@ function Filter(props: FilterProps) {
           />
         </Col>
       </Row>
-      <Stack gap={1}>
-        <Dropdown
-          options={props.fieldList}
-          titles={props.fieldDescriptions}
-          value={filter.field}
-          placeholder="Select field..."
-          onChange={handleFieldChange}
-        />
-        <Dropdown
-          options={props.typeLookups.get(filter.type) || []}
-          titles={props.lookupDescriptions}
-          value={filter.lookup}
-          placeholder="Select lookup..."
-          onChange={handleLookupChange}
-        />
-        {f}
-      </Stack>
+      <Form>
+        <Form.Group className="mb-2">
+          <Form.Label>Field</Form.Label>
+          <Dropdown
+            options={props.fieldList}
+            titles={props.fieldDescriptions}
+            value={filter.field}
+            placeholder="Select field..."
+            onChange={handleFieldChange}
+          />
+        </Form.Group>
+        <Form.Group className="mb-2">
+          <Form.Label>Lookup</Form.Label>
+          <Dropdown
+            options={props.typeLookups.get(filter.type) || []}
+            titles={props.lookupDescriptions}
+            value={filter.lookup}
+            placeholder="Select lookup..."
+            onChange={handleLookupChange}
+          />
+        </Form.Group>
+        {filter.lookup.endsWith("range") ? (
+          f
+        ) : (
+          <Form.Group className="mb-2">
+            <Form.Label>{valueTitle}</Form.Label>
+            {f}
+          </Form.Group>
+        )}
+      </Form>
       <Stack direction="horizontal" gap={1}>
         <div className="me-auto"></div>
         <Button

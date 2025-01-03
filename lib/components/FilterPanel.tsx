@@ -54,9 +54,14 @@ function formatFilter(filter: FilterConfig) {
     return "Incomplete Filter";
   }
 
-  return `${filter.field} ${formatLookup(filter.lookup)} ${formatValue(
-    filter.value
-  )}`;
+  if (filter.lookup.endsWith("in") || filter.lookup.endsWith("range"))
+    return `${filter.field} ${formatLookup(filter.lookup)} [${formatValue(
+      filter.value
+    )}]`;
+  else
+    return `${filter.field} ${formatLookup(filter.lookup)} ${formatValue(
+      filter.value
+    )}`;
 }
 
 function FilterPanel(props: FilterPanelProps) {
