@@ -74,52 +74,53 @@ function Header(props: HeaderProps) {
       fixed="top"
     >
       <Container fluid>
-        <Navbar.Brand>
-          <MdJoinInner color="var(--bs-pink)" /> Onyx
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="navbarScroll" />
-        <Navbar.Collapse id="navbarScroll">
-          <Nav className="me-auto">
-            <Nav style={{ maxHeight: "200px" }} navbarScroll>
-              <Stack direction="horizontal" gap={2}>
-                <NavDropdown
-                  title={
-                    <HeaderText label="Project" value={props.projectName} />
-                  }
-                  id="navbarScrollingDropdown"
-                  style={{ color: "white" }}
-                >
-                  {props.projectList.map((p) => (
-                    <NavDropdown.Item
-                      key={p}
-                      onClick={() => props.handleProjectChange(p)}
-                    >
-                      {p}
-                    </NavDropdown.Item>
-                  ))}
-                </NavDropdown>
-                <div></div>
-              </Stack>
+        <Tab.Container
+          activeKey={props.tabKey}
+          onSelect={(k) => props.setTabKey(k || "data")}
+        >
+          <Navbar.Brand>
+            <MdJoinInner color="var(--bs-pink)" /> Onyx
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="navbarScroll" />
+          <Navbar.Collapse id="navbarScroll">
+            <Nav className="me-auto">
+              <NavDropdown
+                title={<HeaderText label="Project" value={props.projectName} />}
+                id="navbarScrollingDropdown"
+                style={{ color: "white" }}
+              >
+                {props.projectList.map((p) => (
+                  <NavDropdown.Item
+                    key={p}
+                    onClick={() => props.handleProjectChange(p)}
+                  >
+                    {p}
+                  </NavDropdown.Item>
+                ))}
+              </NavDropdown>
+              <Nav variant="underline">
+                <Stack direction="horizontal" gap={3}>
+                  <Nav.Item>
+                    <Nav.Link eventKey="user">
+                      <HeaderText
+                        label="User"
+                        value={profilePending ? "Loading..." : username}
+                      />
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="site">
+                      <HeaderText
+                        label="Site"
+                        value={profilePending ? "Loading..." : site}
+                      />
+                    </Nav.Link>
+                  </Nav.Item>
+                  <HeaderVersion label="GUI" version={props.guiVersion} />
+                  <HeaderVersion label="Extension" version={props.extVersion} />
+                </Stack>
+              </Nav>
             </Nav>
-            <Nav>
-              <Stack direction="horizontal" gap={3}>
-                <HeaderText
-                  label="User"
-                  value={profilePending ? "Loading..." : username}
-                />
-                <HeaderText
-                  label="Site"
-                  value={profilePending ? "Loading..." : site}
-                />
-                <HeaderVersion label="GUI" version={props.guiVersion} />
-                <HeaderVersion label="Extension" version={props.extVersion} />
-              </Stack>
-            </Nav>
-          </Nav>
-          <Tab.Container
-            activeKey={props.tabKey}
-            onSelect={(k) => props.setTabKey(k || "data")}
-          >
             <Nav variant="underline">
               <Stack direction="horizontal" gap={3}>
                 <Nav.Item>
@@ -147,8 +148,8 @@ function Header(props: HeaderProps) {
                 />
               </Stack>
             </Nav>
-          </Tab.Container>
-        </Navbar.Collapse>
+          </Navbar.Collapse>
+        </Tab.Container>
       </Container>
     </Navbar>
   );
