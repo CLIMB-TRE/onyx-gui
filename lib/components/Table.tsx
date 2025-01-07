@@ -13,6 +13,8 @@ import {
 import { CsvExportModule } from "@ag-grid-community/csv-export";
 import { useQuery } from "@tanstack/react-query";
 import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Pagination from "react-bootstrap/Pagination";
 import Stack from "react-bootstrap/Stack";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -439,25 +441,31 @@ function BaseTable(props: BaseTableProps) {
         <i className="text-secondary">{props.footer || ""}</i>
         <div style={{ float: "right" }}>
           <Container>
-            <Stack direction="horizontal" gap={2}>
-              <Pagination size="sm">
-                <Pagination.Item as="span">
-                  {props.isCountLoading
-                    ? "Loading..."
-                    : `${props.rowDisplayParams.from} to ${
-                        props.isPaginated
-                          ? props.rowDisplayParams.to
-                          : displayedRowCount
-                      } of ${props.rowDisplayParams.of}`}
-                </Pagination.Item>
-              </Pagination>
-              <TablePagination {...props} />
-              <TableOptions
-                {...props}
-                gridRef={gridRef}
-                isFilterable={props.isFilterable}
-              />
-            </Stack>
+            <Row className="g-2">
+              <Col style={{ whiteSpace: "nowrap" }}>
+                <Pagination size="sm">
+                  <Pagination.Item>
+                    {props.isCountLoading
+                      ? "Loading..."
+                      : `${props.rowDisplayParams.from} to ${
+                          props.isPaginated
+                            ? props.rowDisplayParams.to
+                            : displayedRowCount
+                        } of ${props.rowDisplayParams.of}`}
+                  </Pagination.Item>
+                </Pagination>
+              </Col>
+              <Col>
+                <TablePagination {...props} />
+              </Col>
+              <Col>
+                <TableOptions
+                  {...props}
+                  gridRef={gridRef}
+                  isFilterable={props.isFilterable}
+                />
+              </Col>
+            </Row>
           </Container>
         </div>
       </div>
