@@ -73,6 +73,12 @@ type AnalysisType = {
   records: string[];
 };
 
+type ProjectPermissionType = {
+  project: string;
+  scope: string;
+  actions: string[];
+};
+
 type ErrorResponse = {
   status: "fail" | "error";
   code: number;
@@ -104,6 +110,10 @@ type AnalysisDetailResponse = SuccessResponse & {
   data: AnalysisType;
 };
 
+type ProjectPermissionListResponse = SuccessResponse & {
+  data: ProjectPermissionType[];
+};
+
 // TODO: Use a generic response type
 // type Response<T> =
 //   | ErrorResponse
@@ -123,12 +133,14 @@ export type {
   ErrorType,
   RecordType,
   AnalysisType,
+  ProjectPermissionType,
   ErrorResponse,
   SuccessResponse,
   RecordListResponse,
   RecordDetailResponse,
   AnalysisListResponse,
   AnalysisDetailResponse,
+  ProjectPermissionListResponse,
 };
 
 export { ExportStatus };
