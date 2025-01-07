@@ -77,6 +77,7 @@ interface TableProps extends OnyxProps {
   headerTooltipPrefix?: string;
   tooltipFields?: string[];
   flexOnly?: string[];
+  includeOnly?: string[];
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
 }
@@ -136,7 +137,11 @@ function getColDefs(
   let colDefs: ColDef[];
 
   if (data && data.length > 0) {
-    colDefs = Object.keys(data[0]).map((key) => {
+    let keys: string[];
+    if (props.includeOnly) keys = props.includeOnly;
+    else keys = Object.keys(data[0]);
+
+    colDefs = keys.map((key) => {
       // TODO: Remove flex calculation and replace with min width and calculated ideal width
       const colDef: ColDef = {
         field: key,
@@ -159,7 +164,7 @@ function getColDefs(
         // 'climb_id' and 'analysis_id' fields are a special case
         // where we want them pinned to the left
         colDef.pinned = "left";
-      } else if (key === "changes") {
+      } else if (key === "changes" || key === "error_messages") {
         // History 'changes' field is a special case
         // where we want variable height and wrapped text
         colDef.autoHeight = true;

@@ -7,6 +7,8 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import Header from "./components/Header";
+import User from "./pages/User";
+import Site from "./pages/Site";
 import Data from "./pages/Data";
 import Stats from "./pages/Stats";
 import Analysis from "./pages/Analysis";
@@ -232,6 +234,12 @@ function App(props: OnyxProps) {
         <Container fluid className="h-100 px-0 py-1">
           <Tab.Container activeKey={tabKey} mountOnEnter>
             <Tab.Content className="h-100">
+              <Tab.Pane eventKey="user" className="h-100">
+                <User {...props} project={project} />
+              </Tab.Pane>
+              <Tab.Pane eventKey="site" className="h-100">
+                <Site {...props} />
+              </Tab.Pane>
               <Tab.Pane eventKey="data" className="h-100">
                 <Data
                   {...props}

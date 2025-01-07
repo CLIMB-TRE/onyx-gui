@@ -1,6 +1,7 @@
 import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Button from "react-bootstrap/Button";
 import Badge from "react-bootstrap/Badge";
+import { getReasonPhrase } from "http-status-codes";
 import { OnyxProps } from "../interfaces";
 import { RecordType } from "../types";
 
@@ -158,26 +159,27 @@ function ChangeCellRenderer(props: CustomCellRendererProps) {
 
 function HTTPStatusCellRenderer(props: CustomCellRendererProps) {
   const status = Number(props.value.toString());
+  const statusString = `${status} (${getReasonPhrase(status)})`;
 
   switch (true) {
     case status >= 200 && status < 300:
-      return <Badge bg="success">{status}</Badge>;
+      return <Badge bg="success">{statusString}</Badge>;
     case status >= 300 && status < 400:
       return (
         <Badge bg="info" text="dark">
-          {status}
+          {statusString}
         </Badge>
       );
     case status >= 400 && status < 500:
       return (
         <Badge bg="warning" text="dark">
-          {status}
+          {statusString}
         </Badge>
       );
     case status >= 500:
-      return <Badge bg="danger">{status}</Badge>;
+      return <Badge bg="danger">{statusString}</Badge>;
     default:
-      return <Badge bg="secondary">{status}</Badge>;
+      return <Badge bg="secondary">{statusString}</Badge>;
   }
 }
 
@@ -208,6 +210,17 @@ function HTTPMethodCellRenderer(props: CustomCellRendererProps) {
   }
 }
 
+function JSONCellRenderer(props: CustomCellRendererProps) {
+  if (props.value) {
+    const value = props.value.slice(2, -1);
+    return (
+      <pre className="onyx-text-pink" style={{ lineHeight: "150%" }}>
+        {JSON.stringify(JSON.parse(value), null, 2)}
+      </pre>
+    );
+  } else return <></>;
+}
+
 export {
   DetailCellRendererFactory,
   ClimbIDCellRendererFactory,
@@ -218,4 +231,5 @@ export {
   ChangeCellRenderer,
   HTTPStatusCellRenderer,
   HTTPMethodCellRenderer,
+  JSONCellRenderer,
 };
