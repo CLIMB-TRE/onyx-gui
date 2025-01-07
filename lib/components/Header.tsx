@@ -81,12 +81,11 @@ function Header(props: HeaderProps) {
           <Navbar.Brand>
             <MdJoinInner color="var(--bs-pink)" /> Onyx
           </Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbarScroll" />
-          <Navbar.Collapse id="navbarScroll">
+          <Navbar.Toggle aria-controls="header" />
+          <Navbar.Collapse id="header">
             <Nav className="me-auto">
               <NavDropdown
                 title={<HeaderText label="Project" value={props.projectName} />}
-                id="navbarScrollingDropdown"
                 style={{ color: "white" }}
               >
                 {props.projectList.map((p) => (
