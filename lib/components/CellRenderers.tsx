@@ -91,7 +91,7 @@ function S3ReportCellRendererFactory(props: ErrorModalProps) {
 
 function TimestampCellRenderer(props: CustomCellRendererProps) {
   const date = new Date(props.value.toString());
-  return <span>{date.toDateString()}</span>;
+  return <span>{date.toUTCString()}</span>;
 }
 
 function ActionCellRenderer(props: CustomCellRendererProps) {
@@ -102,7 +102,7 @@ function ActionCellRenderer(props: CustomCellRendererProps) {
     return <Badge bg="dark">{action}</Badge>;
   } else if (action === "change") {
     return (
-      <Badge bg="info" className="text-dark">
+      <Badge bg="info" text="dark">
         {action}
       </Badge>
     );
@@ -156,6 +156,58 @@ function ChangeCellRenderer(props: CustomCellRendererProps) {
   );
 }
 
+function HTTPStatusCellRenderer(props: CustomCellRendererProps) {
+  const status = Number(props.value.toString());
+
+  switch (true) {
+    case status >= 200 && status < 300:
+      return <Badge bg="success">{status}</Badge>;
+    case status >= 300 && status < 400:
+      return (
+        <Badge bg="info" text="dark">
+          {status}
+        </Badge>
+      );
+    case status >= 400 && status < 500:
+      return (
+        <Badge bg="warning" text="dark">
+          {status}
+        </Badge>
+      );
+    case status >= 500:
+      return <Badge bg="danger">{status}</Badge>;
+    default:
+      return <Badge bg="secondary">{status}</Badge>;
+  }
+}
+
+function HTTPMethodCellRenderer(props: CustomCellRendererProps) {
+  const method = props.value.toString().toUpperCase();
+
+  switch (method) {
+    case "GET":
+      return (
+        <Badge bg="info" text="dark">
+          {method}
+        </Badge>
+      );
+    case "POST":
+      return <Badge bg="success">{method}</Badge>;
+    case "PUT":
+      return <Badge bg="primary">{method}</Badge>;
+    case "PATCH":
+      return (
+        <Badge bg="warning" text="dark">
+          {method}
+        </Badge>
+      );
+    case "DELETE":
+      return <Badge bg="danger">{method}</Badge>;
+    default:
+      return <Badge bg="secondary">{method}</Badge>;
+  }
+}
+
 export {
   DetailCellRendererFactory,
   ClimbIDCellRendererFactory,
@@ -164,4 +216,6 @@ export {
   TimestampCellRenderer,
   ActionCellRenderer,
   ChangeCellRenderer,
+  HTTPStatusCellRenderer,
+  HTTPMethodCellRenderer,
 };
