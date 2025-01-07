@@ -7,6 +7,10 @@ interface OnyxProps {
   extVersion?: string;
 }
 
+interface UserProps extends OnyxProps {
+  project: string;
+}
+
 interface DataProps extends OnyxProps {
   project: string;
   projectFields: Map<string, ProjectField>;
@@ -32,4 +36,4 @@ interface ExportHandlerProps {
   setExportError: (error: Error) => void;
 }
 
-export type { OnyxProps, DataProps, StatsProps, ExportHandlerProps };
+export type { OnyxProps, UserProps, DataProps, StatsProps, ExportHandlerProps };
