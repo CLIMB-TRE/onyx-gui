@@ -67,6 +67,7 @@ function UserProfileContent(props: DetailResponseProps) {
         <Container>
           <UserDataField name="Username" value={userProfileData.username} />
           <UserDataField name="Site" value={userProfileData.site} />
+          <UserDataField name="Email" value={userProfileData.email} />
         </Container>
       </Card.Body>
     </Card>
@@ -86,16 +87,16 @@ function UserProjectPermissionsContent(
       <Card.Header>Project Permissions</Card.Header>
       <Container fluid className="overflow-y-scroll p-2 h-100">
         <Stack gap={2}>
-          {userProjectPermissionsData.map((project) => (
-            <Card body>
+          {userProjectPermissionsData.map((project, index) => (
+            <Card body key={index}>
               <UserDataField name="Project" value={project.project} />
               <UserDataField name="Scope" value={project.scope} />
               <UserDataField
                 name="Actions"
                 value={
                   <ul>
-                    {project.actions?.map((action, index) => (
-                      <li key={index}>{action}</li>
+                    {project.actions?.map((action, i) => (
+                      <li key={i}>{action}</li>
                     ))}
                   </ul>
                 }
