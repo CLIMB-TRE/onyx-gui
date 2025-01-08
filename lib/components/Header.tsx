@@ -7,9 +7,9 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { useProfileQuery } from "../api";
 import { MdLightMode, MdDarkMode, MdJoinInner } from "react-icons/md";
-import { OnyxProps } from "../interfaces";
+import { PageProps } from "../interfaces";
 
-interface HeaderProps extends OnyxProps {
+interface HeaderProps extends PageProps {
   projectName: string;
   projectList: string[];
   handleProjectChange: (p: string) => void;

@@ -195,6 +195,7 @@ function App(props: OnyxProps) {
     <div className="Onyx h-100">
       <Header
         {...props}
+        project={project}
         projectName={projectInfoPending ? "Loading..." : projectName}
         projectList={projects}
         handleProjectChange={setProject}

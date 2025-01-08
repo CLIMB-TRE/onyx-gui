@@ -1,7 +1,7 @@
 import { useState, useMemo, useLayoutEffect, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import { useQuery } from "@tanstack/react-query";
+import { useAnalysesQuery } from "../api";
 import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
 import ResultsPanel from "../components/ResultsPanel";
@@ -23,24 +23,14 @@ function Analysis(props: DataProps) {
     setSearchParameters("");
   }, [props.project]);
 
-  // Fetch analyses, depending on project and search parameters
   const {
-    isFetching: analysisListPending,
-    error: analysisListError,
-    data: analysisListResponse,
-    refetch: refetchAnalysisList,
-  } = useQuery({
-    queryKey: ["analysis-list", props.project, searchParameters],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(
-          `projects/${props.project}/analysis/?${searchParameters}`
-        )
-        .then((response) => response.json());
-    },
-    enabled: !!props.project,
-    cacheTime: 0.5 * 60 * 1000,
-    placeholderData: { data: [] },
+    isFetching: analysesPending,
+    error: analysesError,
+    data: analysesResponse,
+    refetch: refetchAnalyses,
+  } = useAnalysesQuery({
+    props,
+    searchParameters,
   });
 
   const searchParams = useMemo(
@@ -74,7 +64,7 @@ function Analysis(props: DataProps) {
   // If search parameters have not changed and nothing is pending
   // Then trigger a refetch
   const handleSearch = () => {
-    if (!analysisListPending) refetchAnalysisList();
+    if (!analysesPending) refetchAnalyses();
   };
 
   return (
@@ -110,12 +100,12 @@ function Analysis(props: DataProps) {
             <ResultsPanel
               {...props}
               title="Analyses"
-              resultsListPending={analysisListPending}
-              resultsListError={analysisListError as Error}
-              resultsListResponse={analysisListResponse}
+              resultsListPending={analysesPending}
+              resultsListError={analysesError as Error}
+              resultsListResponse={analysesResponse}
               searchParameters={searchParameters}
               serverPaginated={
-                !!analysisListResponse.next || !!analysisListResponse.previous
+                !!analysesResponse?.next || !!analysesResponse?.previous
               }
             />
           </Container>

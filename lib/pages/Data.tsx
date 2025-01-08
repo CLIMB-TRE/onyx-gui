@@ -1,7 +1,7 @@
 import { useState, useMemo, useLayoutEffect, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import { useQuery } from "@tanstack/react-query";
+import { useRecordsQuery } from "../api";
 import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
 import TransformsPanel from "../components/TransformsPanel";
@@ -34,22 +34,14 @@ function Data(props: DataProps) {
     setSearchParameters("");
   }, [props.project]);
 
-  // Fetch data, depending on project and search parameters
   const {
-    isFetching: recordListPending,
-    error: recordListError,
-    data: recordListResponse,
-    refetch: refetchRecordList,
-  } = useQuery({
-    queryKey: ["record-list", props.project, searchParameters],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/?${searchParameters}`)
-        .then((response) => response.json());
-    },
-    enabled: !!props.project,
-    cacheTime: 0.5 * 60 * 1000,
-    placeholderData: { data: [] },
+    isFetching: recordsPending,
+    error: recordsError,
+    data: recordsResponse,
+    refetch: refetchRecords,
+  } = useRecordsQuery({
+    props,
+    searchParameters,
   });
 
   const searchParams = useMemo(
@@ -88,7 +80,7 @@ function Data(props: DataProps) {
   // If search parameters have not changed and nothing is pending
   // Then trigger a refetch
   const handleSearch = () => {
-    if (!recordListPending) refetchRecordList();
+    if (!recordsPending) refetchRecords();
   };
 
   return (
@@ -139,13 +131,13 @@ function Data(props: DataProps) {
             <ResultsPanel
               {...props}
               title="Data"
-              resultsListPending={recordListPending}
-              resultsListError={recordListError as Error}
-              resultsListResponse={recordListResponse}
+              resultsListPending={recordsPending}
+              resultsListError={recordsError as Error}
+              resultsListResponse={recordsResponse}
               searchParameters={searchParameters}
               serverPaginated={
-                !!recordListResponse.next ||
-                !!recordListResponse.previous ||
+                !!recordsResponse?.next ||
+                !!recordsResponse?.previous ||
                 !searchParameters.includes("summarise=")
               }
             />

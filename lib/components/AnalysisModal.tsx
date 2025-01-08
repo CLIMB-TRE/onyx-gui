@@ -7,9 +7,9 @@ import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
-import { useQuery } from "@tanstack/react-query";
 import { DataProps } from "../interfaces";
 import QueryHandler from "./QueryHandler";
+import { useAnalysisQuery, useAnalysisRecordsQuery } from "../api";
 import Table from "./Table";
 import ExportModal from "./ExportModal";
 import {
@@ -37,7 +37,7 @@ interface RecordListResponseProps extends AnalysisModalProps {
 function AnalysisDataContent(props: AnalysisDetailResponseProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
 
-  const analysisDetailsData = useMemo(() => {
+  const analysisData = useMemo(() => {
     if (props.response.status !== "success") return [];
     return Object.entries(props.response.data)
       .filter(
@@ -90,7 +90,7 @@ function AnalysisDataContent(props: AnalysisDetailResponseProps) {
               <h5>Details</h5>
               <Table
                 {...props}
-                data={analysisDetailsData}
+                data={analysisData}
                 defaultFileNamePrefix={`${props.analysisID}_details`}
                 footer="Table showing the top-level fields for the analysis."
               />
@@ -99,6 +99,27 @@ function AnalysisDataContent(props: AnalysisDetailResponseProps) {
         </Col>
       </Row>
     </Tab.Container>
+  );
+}
+
+function AnalysisData(props: AnalysisModalProps) {
+  const {
+    isFetching: analysisPending,
+    error: analysisError,
+    data: analysisResponse,
+  } = useAnalysisQuery({
+    props,
+    analysisID: props.analysisID,
+  });
+
+  return (
+    <QueryHandler
+      isFetching={analysisPending}
+      error={analysisError as Error}
+      data={analysisResponse}
+    >
+      <AnalysisDataContent {...props} response={analysisResponse} />
+    </QueryHandler>
   );
 }
 
@@ -124,54 +145,15 @@ function AnalysisRecordsContent(props: RecordListResponseProps) {
   );
 }
 
-function AnalysisData(props: AnalysisModalProps) {
-  // Fetch analysis data, depending on project and analysis ID
-  const {
-    isFetching: analysisDetailPending,
-    error: analysisDetailError,
-    data: analysisDetailResponse,
-  } = useQuery({
-    queryKey: ["analysis-detail", props.project, props.analysisID],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(
-          `projects/${props.project}/analysis/${props.analysisID}/`
-        )
-        .then((response) => response.json());
-    },
-    enabled: !!(props.project && props.analysisID),
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: {} },
-  });
-
-  return (
-    <QueryHandler
-      isFetching={analysisDetailPending}
-      error={analysisDetailError as Error}
-      data={analysisDetailResponse}
-    >
-      <AnalysisDataContent {...props} response={analysisDetailResponse} />
-    </QueryHandler>
-  );
-}
-
 function AnalysisRecords(props: AnalysisModalProps) {
   // Fetch analysis records, depending on project and analysis ID
   const {
     isFetching: analysisRecordsPending,
     error: analysisRecordsError,
     data: analysisRecordsResponse,
-  } = useQuery({
-    queryKey: ["analysis-records", props.project, props.analysisID],
-    queryFn: async () => {
-      // TODO: Proper endpoint doesn't actually exist
-      return props
-        .httpPathHandler(`projects/${props.project}/`)
-        .then((response) => response.json());
-    },
-    enabled: !!(props.project && props.analysisID),
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: [] },
+  } = useAnalysisRecordsQuery({
+    props,
+    analysisID: props.analysisID,
   });
 
   return (

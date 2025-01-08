@@ -24,7 +24,7 @@ function SiteUsersContent(props: ListResponseProps) {
       defaultFileNamePrefix="site-users"
       headerNames={
         new Map([
-          ["username", "Username"],
+          ["username", "User"],
           ["site", "Site"],
           ["email", "Email"],
         ])

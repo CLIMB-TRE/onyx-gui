@@ -8,10 +8,14 @@ import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
-import { useQuery } from "@tanstack/react-query";
 import Table from "./Table";
 import ErrorModal from "./ErrorModal";
 import QueryHandler from "./QueryHandler";
+import {
+  useRecordQuery,
+  useRecordHistoryQuery,
+  useRecordAnalysesQuery,
+} from "../api";
 import {
   RecordDetailResponse,
   AnalysisListResponse,
@@ -82,7 +86,7 @@ function RecordDataContent(props: RecordDetailResponseProps) {
       .join(" ");
   };
 
-  const recordDetailsData = useMemo(() => {
+  const recordData = useMemo(() => {
     if (props.response.status !== "success") return [];
     return Object.entries(props.response.data)
       .filter(([key]) => props.projectFields.get(key)?.type !== "relation")
@@ -171,7 +175,7 @@ function RecordDataContent(props: RecordDetailResponseProps) {
               <h5>Details</h5>
               <Table
                 {...props}
-                data={recordDetailsData}
+                data={recordData}
                 defaultFileNamePrefix={`${props.recordID}_details`}
                 footer="Table showing the top-level fields for the record."
                 cellRenderers={
@@ -204,6 +208,27 @@ function RecordDataContent(props: RecordDetailResponseProps) {
         </Col>
       </Row>
     </Tab.Container>
+  );
+}
+
+function RecordData(props: RecordModalProps) {
+  const {
+    isFetching: recordPending,
+    error: recordError,
+    data: recordResponse,
+  } = useRecordQuery({
+    props,
+    recordID: props.recordID,
+  });
+
+  return (
+    <QueryHandler
+      isFetching={recordPending}
+      error={recordError as Error}
+      data={recordResponse}
+    >
+      <RecordDataContent {...props} response={recordResponse} />
+    </QueryHandler>
   );
 }
 
@@ -243,6 +268,27 @@ function RecordHistoryContent(props: RecordDetailResponseProps) {
   );
 }
 
+function RecordHistory(props: RecordModalProps) {
+  const {
+    isFetching: recordHistoryPending,
+    error: recordHistoryError,
+    data: recordHistoryResponse,
+  } = useRecordHistoryQuery({
+    props,
+    recordID: props.recordID,
+  });
+
+  return (
+    <QueryHandler
+      isFetching={recordHistoryPending}
+      error={recordHistoryError as Error}
+      data={recordHistoryResponse}
+    >
+      <RecordHistoryContent {...props} response={recordHistoryResponse} />
+    </QueryHandler>
+  );
+}
+
 function RecordAnalysesContent(props: AnalysisListResponseProps) {
   const recordAnalysesData = useMemo(() => {
     if (props.response.status !== "success") return [];
@@ -265,81 +311,14 @@ function RecordAnalysesContent(props: AnalysisListResponseProps) {
   );
 }
 
-function RecordData(props: RecordModalProps) {
-  // Fetch record data, depending on project and record ID
-  const {
-    isFetching: recordDetailPending,
-    error: recordDetailError,
-    data: recordDetailResponse,
-  } = useQuery({
-    queryKey: ["record-detail", props.project, props.recordID],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/${props.recordID}/`)
-        .then((response) => response.json());
-    },
-    enabled: !!(props.project && props.recordID),
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: {} },
-  });
-
-  return (
-    <QueryHandler
-      isFetching={recordDetailPending}
-      error={recordDetailError as Error}
-      data={recordDetailResponse}
-    >
-      <RecordDataContent {...props} response={recordDetailResponse} />
-    </QueryHandler>
-  );
-}
-
-function RecordHistory(props: RecordModalProps) {
-  // Fetch record history, depending on project and record ID
-  const {
-    isFetching: recordHistoryPending,
-    error: recordHistoryError,
-    data: recordHistoryResponse,
-  } = useQuery({
-    queryKey: ["record-history", props.project, props.recordID],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/history/${props.recordID}/`)
-        .then((response) => response.json());
-    },
-    enabled: !!(props.project && props.recordID),
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: {} },
-  });
-
-  return (
-    <QueryHandler
-      isFetching={recordHistoryPending}
-      error={recordHistoryError as Error}
-      data={recordHistoryResponse}
-    >
-      <RecordHistoryContent {...props} response={recordHistoryResponse} />
-    </QueryHandler>
-  );
-}
-
 function RecordAnalyses(props: RecordModalProps) {
-  // Fetch record analyses, depending on project and record ID
   const {
     isFetching: recordAnalysesPending,
     error: recordAnalysesError,
     data: recordAnalysesResponse,
-  } = useQuery({
-    queryKey: ["record-analyses", props.project, props.recordID],
-    queryFn: async () => {
-      // TODO: Proper endpoint doesn't actually exist
-      return props
-        .httpPathHandler(`projects/${props.project}/analysis/`)
-        .then((response) => response.json());
-    },
-    enabled: !!props.project,
-    cacheTime: 0.5 * 60 * 1000,
-    placeholderData: { data: [] },
+  } = useRecordAnalysesQuery({
+    props,
+    recordID: props.recordID,
   });
 
   return (
