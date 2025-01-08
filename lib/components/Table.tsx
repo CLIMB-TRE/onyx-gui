@@ -444,7 +444,7 @@ function BaseTable(props: BaseTableProps) {
             <Row className="g-2">
               <Col style={{ whiteSpace: "nowrap" }}>
                 <Pagination size="sm">
-                  <Pagination.Item>
+                  <Pagination.Item as="span">
                     {props.isCountLoading
                       ? "Loading..."
                       : `${props.rowDisplayParams.from} to ${
