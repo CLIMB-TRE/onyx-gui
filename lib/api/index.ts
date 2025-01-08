@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { PageProps } from "../interfaces";
+import { OnyxProps, PageProps } from "../interfaces";
 
 /** Fetch user profile */
-const useProfileQuery = ({ props }: { props: PageProps }) => {
+const useProfileQuery = ({ props }: { props: OnyxProps }) => {
   return useQuery({
     queryKey: ["profile-detail"],
     queryFn: async () => {
@@ -16,7 +16,7 @@ const useProfileQuery = ({ props }: { props: PageProps }) => {
 };
 
 /** Fetch user project permissions */
-const useProjectPermissionsQuery = ({ props }: { props: PageProps }) => {
+const useProjectPermissionsQuery = ({ props }: { props: OnyxProps }) => {
   return useQuery({
     queryKey: ["project-permission-list"],
     queryFn: async () => {
@@ -30,7 +30,7 @@ const useProjectPermissionsQuery = ({ props }: { props: PageProps }) => {
 };
 
 /** Fetch user activity */
-const useActivityQuery = ({ props }: { props: PageProps }) => {
+const useActivityQuery = ({ props }: { props: OnyxProps }) => {
   return useQuery({
     queryKey: ["activity-list"],
     queryFn: async () => {
@@ -44,7 +44,7 @@ const useActivityQuery = ({ props }: { props: PageProps }) => {
 };
 
 /** Fetch site users */
-const useSiteUsersQuery = ({ props }: { props: PageProps }) => {
+const useSiteUsersQuery = ({ props }: { props: OnyxProps }) => {
   return useQuery({
     queryKey: ["site-user-list"],
     queryFn: async () => {

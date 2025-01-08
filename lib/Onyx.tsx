@@ -1,4 +1,10 @@
-import { useState, useEffect, useLayoutEffect, useCallback } from "react";
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+} from "react";
 import Tab from "react-bootstrap/Tab";
 import Container from "react-bootstrap/Container";
 import {
@@ -6,6 +12,7 @@ import {
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
+import { useProjectPermissionsQuery } from "./api";
 import Header from "./components/Header";
 import User from "./pages/User";
 import Site from "./pages/Site";
@@ -14,7 +21,7 @@ import Stats from "./pages/Stats";
 import Analysis from "./pages/Analysis";
 import RecordModal from "./components/RecordModal";
 import AnalysisModal from "./components/AnalysisModal";
-import { ProjectField } from "./types";
+import { ProjectField, ProjectPermissionType } from "./types";
 import { OnyxProps } from "./interfaces";
 
 import "./Onyx.css";
@@ -74,22 +81,17 @@ function App(props: OnyxProps) {
     localStorage.setItem("onyx-theme", darkModeChange ? "dark" : "light");
   };
 
-  // Fetch the project list
-  const { data: projects = [] } = useQuery({
-    queryKey: ["projects"],
-    queryFn: async () => {
-      return props
-        .httpPathHandler("projects/")
-        .then((response) => response.json())
-        .then((data) => {
-          return [
-            ...new Set(
-              data.data.map((project: { project: string }) => project.project)
-            ),
-          ] as string[];
-        });
-    },
+  const { data: userProjectPermissionsResponse } = useProjectPermissionsQuery({
+    props,
   });
+
+  // Fetch the list of projects
+  const projects = useMemo(() => {
+    if (userProjectPermissionsResponse?.status !== "success") return [];
+    return userProjectPermissionsResponse.data.map(
+      (projectPermission: ProjectPermissionType) => projectPermission.project
+    );
+  }, [userProjectPermissionsResponse]);
 
   // Set the first project as the default
   useEffect(() => {
