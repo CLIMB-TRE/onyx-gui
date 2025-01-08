@@ -7,12 +7,11 @@ interface OnyxProps {
   extVersion?: string;
 }
 
-interface UserProps extends OnyxProps {
+interface PageProps extends OnyxProps {
   project: string;
 }
 
-interface DataProps extends OnyxProps {
-  project: string;
+interface DataProps extends PageProps {
   projectFields: Map<string, ProjectField>;
   typeLookups: Map<string, string[]>;
   fieldDescriptions: Map<string, string>;
@@ -21,8 +20,7 @@ interface DataProps extends OnyxProps {
   handleAnalysisModalShow: (analysisID: string) => void;
 }
 
-interface StatsProps extends OnyxProps {
-  project: string;
+interface StatsProps extends PageProps {
   projectFields: Map<string, ProjectField>;
   fieldDescriptions: Map<string, string>;
   darkMode: boolean;
@@ -36,4 +34,4 @@ interface ExportHandlerProps {
   setExportError: (error: Error) => void;
 }
 
-export type { OnyxProps, UserProps, DataProps, StatsProps, ExportHandlerProps };
+export type { OnyxProps, PageProps, DataProps, StatsProps, ExportHandlerProps };

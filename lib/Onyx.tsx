@@ -238,7 +238,7 @@ function App(props: OnyxProps) {
                 <User {...props} project={project} />
               </Tab.Pane>
               <Tab.Pane eventKey="site" className="h-100">
-                <Site {...props} />
+                <Site {...props} project={project} />
               </Tab.Pane>
               <Tab.Pane eventKey="data" className="h-100">
                 <Data

@@ -5,11 +5,11 @@ import Tab from "react-bootstrap/Tab";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { useQuery } from "@tanstack/react-query";
+import { useProfileQuery } from "../api";
 import { MdLightMode, MdDarkMode, MdJoinInner } from "react-icons/md";
+import { OnyxProps } from "../interfaces";
 
-interface HeaderProps {
-  httpPathHandler: (path: string) => Promise<Response>;
+interface HeaderProps extends OnyxProps {
   projectName: string;
   projectList: string[];
   handleProjectChange: (p: string) => void;
@@ -49,21 +49,11 @@ function HeaderVersion({
 }
 
 function Header(props: HeaderProps) {
-  // Fetch user profile
   const {
-    isFetching: profilePending,
-    data: { username, site } = { username: "", site: "" },
-  } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      return props
-        .httpPathHandler("accounts/profile/")
-        .then((response) => response.json())
-        .then((data) => {
-          return { username: data.data.username, site: data.data.site };
-        });
-    },
-  });
+    isFetching: userProfilePending,
+    error: userProfileError,
+    data: userProfileResponse,
+  } = useProfileQuery({ props });
 
   return (
     <Navbar
@@ -103,7 +93,13 @@ function Header(props: HeaderProps) {
                     <Nav.Link eventKey="user">
                       <HeaderText
                         label="User"
-                        value={profilePending ? "Loading..." : username}
+                        value={
+                          userProfilePending
+                            ? "Loading..."
+                            : userProfileError
+                            ? "Failed to load"
+                            : userProfileResponse.data.username
+                        }
                       />
                     </Nav.Link>
                   </Nav.Item>
@@ -111,7 +107,13 @@ function Header(props: HeaderProps) {
                     <Nav.Link eventKey="site">
                       <HeaderText
                         label="Site"
-                        value={profilePending ? "Loading..." : site}
+                        value={
+                          userProfilePending
+                            ? "Loading..."
+                            : userProfileError
+                            ? "Failed to load"
+                            : userProfileResponse.data.site
+                        }
                       />
                     </Nav.Link>
                   </Nav.Item>

@@ -4,8 +4,12 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import Card from "react-bootstrap/Card";
-import { useQuery } from "@tanstack/react-query";
 import QueryHandler from "../components/QueryHandler";
+import {
+  useActivityQuery,
+  useProfileQuery,
+  useProjectPermissionsQuery,
+} from "../api";
 import Table from "../components/Table";
 import {
   TimestampCellRenderer,
@@ -13,7 +17,7 @@ import {
   HTTPMethodCellRenderer,
   JSONCellRenderer,
 } from "../components/CellRenderers";
-import { UserProps } from "../interfaces";
+import { PageProps } from "../interfaces";
 import {
   RecordDetailResponse,
   RecordListResponse,
@@ -23,15 +27,15 @@ import {
 } from "../types";
 import { recentActivityMessage } from "../utils/messages";
 
-interface DetailResponseProps extends UserProps {
+interface DetailResponseProps extends PageProps {
   response: RecordDetailResponse | ErrorResponse;
 }
 
-interface ListResponseProps extends UserProps {
+interface ListResponseProps extends PageProps {
   response: RecordListResponse | ErrorResponse;
 }
 
-interface ProjectPermissionListResponseProps extends UserProps {
+interface ProjectPermissionListResponseProps extends PageProps {
   response: ProjectPermissionListResponse | ErrorResponse;
 }
 
@@ -61,14 +65,32 @@ function UserProfileContent(props: DetailResponseProps) {
   }, [props.response]);
 
   return (
+    <Container>
+      <UserDataField name="Username" value={userProfileData.username} />
+      <UserDataField name="Site" value={userProfileData.site} />
+      <UserDataField name="Email" value={userProfileData.email} />
+    </Container>
+  );
+}
+
+function UserProfile(props: PageProps) {
+  const {
+    isFetching: userProfilePending,
+    error: userProfileError,
+    data: userProfileResponse,
+  } = useProfileQuery({ props });
+
+  return (
     <Card className="h-100">
       <Card.Header>Details</Card.Header>
       <Card.Body className="overflow-y-scroll">
-        <Container>
-          <UserDataField name="Username" value={userProfileData.username} />
-          <UserDataField name="Site" value={userProfileData.site} />
-          <UserDataField name="Email" value={userProfileData.email} />
-        </Container>
+        <QueryHandler
+          isFetching={userProfilePending}
+          error={userProfileError as Error}
+          data={userProfileResponse}
+        >
+          <UserProfileContent {...props} response={userProfileResponse} />
+        </QueryHandler>
       </Card.Body>
     </Card>
   );
@@ -83,28 +105,49 @@ function UserProjectPermissionsContent(
   }, [props.response]);
 
   return (
+    <Stack gap={2}>
+      {userProjectPermissionsData.map((project, index) => (
+        <Card body key={index}>
+          <UserDataField name="Project" value={project.project} />
+          <UserDataField name="Scope" value={project.scope} />
+          <UserDataField
+            name="Actions"
+            value={
+              <ul>
+                {project.actions?.map((action, i) => (
+                  <li key={i}>{action}</li>
+                ))}
+              </ul>
+            }
+          />
+        </Card>
+      ))}
+    </Stack>
+  );
+}
+
+function UserProjectPermissions(props: PageProps) {
+  const {
+    isFetching: userProjectPermissionsPending,
+    error: userProjectPermissionsError,
+    data: userProjectPermissionsResponse,
+  } = useProjectPermissionsQuery({ props });
+
+  return (
     <Card className="h-100">
       <Card.Header>Project Permissions</Card.Header>
-      <Container fluid className="overflow-y-scroll p-2 h-100">
-        <Stack gap={2}>
-          {userProjectPermissionsData.map((project, index) => (
-            <Card body key={index}>
-              <UserDataField name="Project" value={project.project} />
-              <UserDataField name="Scope" value={project.scope} />
-              <UserDataField
-                name="Actions"
-                value={
-                  <ul>
-                    {project.actions?.map((action, i) => (
-                      <li key={i}>{action}</li>
-                    ))}
-                  </ul>
-                }
-              />
-            </Card>
-          ))}
-        </Stack>
-      </Container>
+      <Card.Body className="overflow-y-scroll p-2 h-100">
+        <QueryHandler
+          isFetching={userProjectPermissionsPending}
+          error={userProjectPermissionsError as Error}
+          data={userProjectPermissionsResponse}
+        >
+          <UserProjectPermissionsContent
+            {...props}
+            response={userProjectPermissionsResponse}
+          />
+        </QueryHandler>
+      </Card.Body>
     </Card>
   );
 }
@@ -116,141 +159,68 @@ function UserActivityContent(props: ListResponseProps) {
   }, [props.response]);
 
   return (
+    <Stack className="h-100">
+      <Card.Text>{recentActivityMessage}</Card.Text>
+      <Table
+        {...props}
+        data={userActivityData}
+        defaultFileNamePrefix="activity"
+        tooltipFields={["date"]}
+        headerNames={
+          new Map([
+            ["date", "Date"],
+            ["endpoint", "Endpoint"],
+            ["method", "Method"],
+            ["status", "Status Code"],
+            ["exec_time", "Execution Time (ms)"],
+            ["error_messages", "Errors"],
+          ])
+        }
+        cellRenderers={
+          new Map([
+            ["date", TimestampCellRenderer],
+            ["method", HTTPMethodCellRenderer],
+            ["status", HTTPStatusCellRenderer],
+            ["error_messages", JSONCellRenderer],
+          ])
+        }
+        includeOnly={[
+          "date",
+          "endpoint",
+          "method",
+          "status",
+          "exec_time",
+          "error_messages",
+        ]}
+      />
+    </Stack>
+  );
+}
+
+function UserActivity(props: PageProps) {
+  const {
+    isFetching: userActivityPending,
+    error: userActivityError,
+    data: userActivityResponse,
+  } = useActivityQuery({ props });
+
+  return (
     <Card className="h-100">
       <Card.Header>Recent Activity</Card.Header>
       <Card.Body className="h-100">
-        <Container fluid className="p-2 pb-0 h-100">
-          <Stack className="h-100">
-            <Card.Text>{recentActivityMessage}</Card.Text>
-            <Table
-              {...props}
-              data={userActivityData}
-              defaultFileNamePrefix="activity"
-              tooltipFields={["date"]}
-              headerNames={
-                new Map([
-                  ["date", "Date"],
-                  ["endpoint", "Endpoint"],
-                  ["method", "Method"],
-                  ["status", "Status Code"],
-                  ["exec_time", "Execution Time (ms)"],
-                  ["error_messages", "Errors"],
-                ])
-              }
-              cellRenderers={
-                new Map([
-                  ["date", TimestampCellRenderer],
-                  ["method", HTTPMethodCellRenderer],
-                  ["status", HTTPStatusCellRenderer],
-                  ["error_messages", JSONCellRenderer],
-                ])
-              }
-              includeOnly={[
-                "date",
-                "endpoint",
-                "method",
-                "status",
-                "exec_time",
-                "error_messages",
-              ]}
-            />
-          </Stack>
-        </Container>
+        <QueryHandler
+          isFetching={userActivityPending}
+          error={userActivityError as Error}
+          data={userActivityResponse}
+        >
+          <UserActivityContent {...props} response={userActivityResponse} />
+        </QueryHandler>
       </Card.Body>
     </Card>
   );
 }
 
-function UserProfile(props: UserProps) {
-  // Fetch user profile
-  const {
-    isFetching: userProfilePending,
-    error: userProfileError,
-    data: userProfileResponse,
-  } = useQuery({
-    queryKey: ["profile-detail"],
-    queryFn: async () => {
-      return props
-        .httpPathHandler("accounts/profile/")
-        .then((response) => response.json());
-    },
-    enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: {} },
-  });
-
-  return (
-    <QueryHandler
-      isFetching={userProfilePending}
-      error={userProfileError as Error}
-      data={userProfileResponse}
-    >
-      <UserProfileContent {...props} response={userProfileResponse} />
-    </QueryHandler>
-  );
-}
-
-function UserProjectPermissions(props: UserProps) {
-  // Fetch project list
-  const {
-    isFetching: userProjectPermissionsPending,
-    error: userProjectPermissionsError,
-    data: userProjectPermissionsResponse,
-  } = useQuery({
-    queryKey: ["projects-list"],
-    queryFn: async () => {
-      return props
-        .httpPathHandler("projects/")
-        .then((response) => response.json());
-    },
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: [] },
-  });
-
-  return (
-    <QueryHandler
-      isFetching={userProjectPermissionsPending}
-      error={userProjectPermissionsError as Error}
-      data={userProjectPermissionsResponse}
-    >
-      <UserProjectPermissionsContent
-        {...props}
-        response={userProjectPermissionsResponse}
-      />
-    </QueryHandler>
-  );
-}
-
-function UserActivity(props: UserProps) {
-  // Fetch user activity
-  const {
-    isFetching: userActivityPending,
-    error: userActivityError,
-    data: userActivityResponse,
-  } = useQuery({
-    queryKey: ["activity"],
-    queryFn: async () => {
-      return props
-        .httpPathHandler("accounts/activity/")
-        .then((response) => response.json());
-    },
-    enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: [] },
-  });
-
-  return (
-    <QueryHandler
-      isFetching={userActivityPending}
-      error={userActivityError as Error}
-      data={userActivityResponse}
-    >
-      <UserActivityContent {...props} response={userActivityResponse} />
-    </QueryHandler>
-  );
-}
-
-function User(props: UserProps) {
+function User(props: PageProps) {
   return (
     <Container fluid className="h-100">
       <Row className="g-2 h-100">
