@@ -147,12 +147,13 @@ const useRecordAnalysesQuery = (props: RecordIDProps) => {
   return useQuery({
     queryKey: ["record-analysis-list", props.project, props.recordID],
     queryFn: async () => {
-      // TODO: Proper endpoint doesn't actually exist
       return props
-        .httpPathHandler(`projects/${props.project}/analysis/`)
+        .httpPathHandler(
+          `projects/${props.project}/analyses/${props.recordID}/`
+        )
         .then((response) => response.json());
     },
-    enabled: !!props.project,
+    enabled: !!(props.project && props.recordID),
     cacheTime: 0.5 * 60 * 1000,
     placeholderData: { data: [] },
   });
@@ -195,9 +196,10 @@ const useAnalysisRecordsQuery = (props: AnalysisIDProps) => {
   return useQuery({
     queryKey: ["analysis-record-list", props.project, props.analysisID],
     queryFn: async () => {
-      // TODO: Proper endpoint doesn't actually exist
       return props
-        .httpPathHandler(`projects/${props.project}/`)
+        .httpPathHandler(
+          `projects/${props.project}/analysis/records/${props.analysisID}/`
+        )
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.analysisID),
