@@ -1,8 +1,36 @@
 import { useQuery } from "@tanstack/react-query";
 import { OnyxProps, PageProps } from "../interfaces";
 
+/** Fetch types */
+const useTypesQuery = (props: OnyxProps) => {
+  return useQuery({
+    queryKey: ["type-list"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects/types/")
+        .then((response) => response.json());
+    },
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: [] },
+  });
+};
+
+/** Fetch lookups */
+const useLookupsQuery = (props: OnyxProps) => {
+  return useQuery({
+    queryKey: ["lookup-list"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler("projects/lookups/")
+        .then((response) => response.json());
+    },
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: [] },
+  });
+};
+
 /** Fetch user profile */
-const useProfileQuery = ({ props }: { props: OnyxProps }) => {
+const useProfileQuery = (props: OnyxProps) => {
   return useQuery({
     queryKey: ["profile-detail"],
     queryFn: async () => {
@@ -16,7 +44,7 @@ const useProfileQuery = ({ props }: { props: OnyxProps }) => {
 };
 
 /** Fetch user project permissions */
-const useProjectPermissionsQuery = ({ props }: { props: OnyxProps }) => {
+const useProjectPermissionsQuery = (props: OnyxProps) => {
   return useQuery({
     queryKey: ["project-permission-list"],
     queryFn: async () => {
@@ -29,8 +57,23 @@ const useProjectPermissionsQuery = ({ props }: { props: OnyxProps }) => {
   });
 };
 
+/** Fetch project fields */
+const useProjectFieldsQuery = (props: PageProps) => {
+  return useQuery({
+    queryKey: ["project-fields-detail", props.project],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/fields/`)
+        .then((response) => response.json());
+    },
+    enabled: !!props.project,
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: {} },
+  });
+};
+
 /** Fetch user activity */
-const useActivityQuery = ({ props }: { props: OnyxProps }) => {
+const useActivityQuery = (props: OnyxProps) => {
   return useQuery({
     queryKey: ["activity-list"],
     queryFn: async () => {
@@ -44,7 +87,7 @@ const useActivityQuery = ({ props }: { props: OnyxProps }) => {
 };
 
 /** Fetch site users */
-const useSiteUsersQuery = ({ props }: { props: OnyxProps }) => {
+const useSiteUsersQuery = (props: OnyxProps) => {
   return useQuery({
     queryKey: ["site-user-list"],
     queryFn: async () => {
@@ -209,8 +252,11 @@ const useAnalysesQuery = ({
 };
 
 export {
+  useTypesQuery,
+  useLookupsQuery,
   useProfileQuery,
   useProjectPermissionsQuery,
+  useProjectFieldsQuery,
   useActivityQuery,
   useSiteUsersQuery,
   useRecordQuery,

@@ -78,7 +78,7 @@ function UserProfile(props: PageProps) {
     isFetching: userProfilePending,
     error: userProfileError,
     data: userProfileResponse,
-  } = useProfileQuery({ props });
+  } = useProfileQuery(props);
 
   return (
     <Card className="h-100">
@@ -131,7 +131,7 @@ function UserProjectPermissions(props: PageProps) {
     isFetching: userProjectPermissionsPending,
     error: userProjectPermissionsError,
     data: userProjectPermissionsResponse,
-  } = useProjectPermissionsQuery({ props });
+  } = useProjectPermissionsQuery(props);
 
   return (
     <Card className="h-100">
@@ -202,7 +202,7 @@ function UserActivity(props: PageProps) {
     isFetching: userActivityPending,
     error: userActivityError,
     data: userActivityResponse,
-  } = useActivityQuery({ props });
+  } = useActivityQuery(props);
 
   return (
     <Card className="h-100">

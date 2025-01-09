@@ -12,7 +12,12 @@ import {
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
-import { useProjectPermissionsQuery } from "./api";
+import {
+  useTypesQuery,
+  useLookupsQuery,
+  useProjectPermissionsQuery,
+  useProjectFieldsQuery,
+} from "./api";
 import Header from "./components/Header";
 import User from "./pages/User";
 import Site from "./pages/Site";
@@ -58,7 +63,6 @@ function App(props: OnyxProps) {
   const [modalState, setModalState] = useState<
     "record-modal" | "analysis-modal" | "closed"
   >("closed");
-
   const [recordModalID, setRecordModalID] = useState("");
   const [analysisModalID, setAnalysisModalID] = useState("");
 
@@ -81,11 +85,45 @@ function App(props: OnyxProps) {
     localStorage.setItem("onyx-theme", darkModeChange ? "dark" : "light");
   };
 
-  const { data: userProjectPermissionsResponse } = useProjectPermissionsQuery({
-    props,
+  // Query for types, lookups and project permissions
+  const { data: typesResponse } = useTypesQuery(props);
+  const { data: lookupsResponse } = useLookupsQuery(props);
+  const { data: userProjectPermissionsResponse } =
+    useProjectPermissionsQuery(props);
+  const {
+    isFetching: projectFieldsPending,
+    error: projectFieldsError,
+    data: projectFieldsResponse,
+  } = useProjectFieldsQuery({
+    ...props,
+    project,
   });
 
-  // Fetch the list of projects
+  // Get a map of types to their lookups
+  const typeLookups = useMemo(() => {
+    if (typesResponse?.status !== "success") return new Map<string, string[]>();
+    return new Map<string, string[]>(
+      typesResponse.data.map((type: { type: string; lookups: string[] }) => [
+        type.type,
+        type.lookups,
+      ])
+    );
+  }, [typesResponse]);
+
+  // Get a map of lookups to their descriptions
+  const lookupDescriptions = useMemo(() => {
+    if (lookupsResponse?.status !== "success") return new Map<string, string>();
+    return new Map<string, string>(
+      lookupsResponse.data.map(
+        (lookup: { lookup: string; description: string }) => [
+          lookup.lookup,
+          lookup.description,
+        ]
+      )
+    );
+  }, [lookupsResponse]);
+
+  // Get the list of projects
   const projects = useMemo(() => {
     if (userProjectPermissionsResponse?.status !== "success") return [];
     return userProjectPermissionsResponse.data.map(
@@ -100,47 +138,9 @@ function App(props: OnyxProps) {
     }
   }, [project, projects]);
 
-  // Fetch types and their lookups
-  const { data: typeLookups = new Map<string, string[]>() } = useQuery({
-    queryKey: ["types"],
-    queryFn: async () => {
-      return props
-        .httpPathHandler("projects/types/")
-        .then((response) => response.json())
-        .then((data) => {
-          return new Map(
-            data.data.map((type: { type: string; lookups: string[] }) => [
-              type.type,
-              type.lookups,
-            ])
-          ) as Map<string, string[]>;
-        });
-    },
-  });
-
-  // Fetch lookup descriptions
-  const { data: lookupDescriptions = new Map<string, string>() } = useQuery({
-    queryKey: ["lookups"],
-    queryFn: async () => {
-      return props
-        .httpPathHandler("projects/lookups/")
-        .then((response) => response.json())
-        .then((data) => {
-          return new Map(
-            data.data.map((lookup: { lookup: string; description: string }) => [
-              lookup.lookup,
-              lookup.description,
-            ])
-          ) as Map<string, string>;
-        });
-    },
-  });
-
   // Fetch project information
   const {
-    isFetching: projectInfoPending,
-    data: { projectName, projectFields, fieldDescriptions } = {
-      projectName: "",
+    data: { projectFields, fieldDescriptions } = {
       projectFields: new Map<string, ProjectField>(),
       fieldDescriptions: new Map<string, string>(),
     },
@@ -152,7 +152,6 @@ function App(props: OnyxProps) {
         .then((response) => response.json())
         .then((data) => {
           const fields = flattenFields(data.data.fields);
-          const projectName = data.data.name;
           const projectFields = new Map(
             Object.keys(fields).map((field) => [
               field,
@@ -170,7 +169,7 @@ function App(props: OnyxProps) {
               options.description,
             ])
           );
-          return { projectName, projectFields, fieldDescriptions };
+          return { projectFields, fieldDescriptions };
         });
     },
     enabled: !!project,
@@ -198,7 +197,13 @@ function App(props: OnyxProps) {
       <Header
         {...props}
         project={project}
-        projectName={projectInfoPending ? "Loading..." : projectName}
+        projectName={
+          projectFieldsPending
+            ? "Loading..."
+            : projectFieldsError
+            ? "Failed to load"
+            : projectFieldsResponse.data.name
+        }
         projectList={projects}
         handleProjectChange={setProject}
         guiVersion={VERSION}

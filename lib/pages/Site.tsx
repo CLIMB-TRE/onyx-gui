@@ -39,7 +39,7 @@ function SiteUsers(props: PageProps) {
     isFetching: siteUsersPending,
     error: siteUsersError,
     data: siteUsersResponse,
-  } = useSiteUsersQuery({ props });
+  } = useSiteUsersQuery(props);
 
   return (
     <Card className="h-100">
