@@ -107,10 +107,7 @@ function AnalysisData(props: AnalysisModalProps) {
     isFetching: analysisPending,
     error: analysisError,
     data: analysisResponse,
-  } = useAnalysisQuery({
-    props,
-    analysisID: props.analysisID,
-  });
+  } = useAnalysisQuery(props);
 
   return (
     <QueryHandler
@@ -151,10 +148,7 @@ function AnalysisRecords(props: AnalysisModalProps) {
     isFetching: analysisRecordsPending,
     error: analysisRecordsError,
     data: analysisRecordsResponse,
-  } = useAnalysisRecordsQuery({
-    props,
-    analysisID: props.analysisID,
-  });
+  } = useAnalysisRecordsQuery(props);
 
   return (
     <QueryHandler

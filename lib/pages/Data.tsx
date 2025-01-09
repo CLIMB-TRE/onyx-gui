@@ -34,15 +34,20 @@ function Data(props: DataProps) {
     setSearchParameters("");
   }, [props.project]);
 
+  const queryProps = useMemo(
+    () => ({
+      ...props,
+      searchParameters,
+    }),
+    [props, searchParameters]
+  );
+
   const {
     isFetching: recordsPending,
     error: recordsError,
     data: recordsResponse,
     refetch: refetchRecords,
-  } = useRecordsQuery({
-    props,
-    searchParameters,
-  });
+  } = useRecordsQuery(queryProps);
 
   const searchParams = useMemo(
     () =>

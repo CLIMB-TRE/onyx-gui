@@ -106,6 +106,14 @@ function RecordDataContent(props: RecordDetailResponseProps) {
     ][];
   }, [props.response, props.projectFields]);
 
+  const errorModalProps = useMemo(
+    () => ({
+      ...props,
+      handleErrorModalShow,
+    }),
+    [props, handleErrorModalShow]
+  );
+
   return (
     <Tab.Container id="record-data-tabs" defaultActiveKey="record-data-details">
       <ErrorModal
@@ -180,13 +188,7 @@ function RecordDataContent(props: RecordDetailResponseProps) {
                 footer="Table showing the top-level fields for the record."
                 cellRenderers={
                   new Map([
-                    [
-                      "Value",
-                      DetailCellRendererFactory({
-                        ...props,
-                        handleErrorModalShow,
-                      }),
-                    ],
+                    ["Value", DetailCellRendererFactory(errorModalProps)],
                   ])
                 }
               />
@@ -216,10 +218,7 @@ function RecordData(props: RecordModalProps) {
     isFetching: recordPending,
     error: recordError,
     data: recordResponse,
-  } = useRecordQuery({
-    props,
-    recordID: props.recordID,
-  });
+  } = useRecordQuery(props);
 
   return (
     <QueryHandler
@@ -273,10 +272,7 @@ function RecordHistory(props: RecordModalProps) {
     isFetching: recordHistoryPending,
     error: recordHistoryError,
     data: recordHistoryResponse,
-  } = useRecordHistoryQuery({
-    props,
-    recordID: props.recordID,
-  });
+  } = useRecordHistoryQuery(props);
 
   return (
     <QueryHandler
@@ -316,10 +312,7 @@ function RecordAnalyses(props: RecordModalProps) {
     isFetching: recordAnalysesPending,
     error: recordAnalysesError,
     data: recordAnalysesResponse,
-  } = useRecordAnalysesQuery({
-    props,
-    recordID: props.recordID,
-  });
+  } = useRecordAnalysesQuery(props);
 
   return (
     <QueryHandler

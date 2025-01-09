@@ -1,6 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { OnyxProps, PageProps } from "../interfaces";
 
+interface RecordIDProps extends PageProps {
+  recordID: string;
+}
+
+interface AnalysisIDProps extends PageProps {
+  analysisID: string;
+}
+
+interface QueryProps extends PageProps {
+  searchParameters: string;
+}
+
 /** Fetch types */
 const useTypesQuery = (props: OnyxProps) => {
   return useQuery({
@@ -101,57 +113,39 @@ const useSiteUsersQuery = (props: OnyxProps) => {
 };
 
 /** Fetch record from record ID */
-const useRecordQuery = ({
-  props,
-  recordID,
-}: {
-  props: PageProps;
-  recordID: string;
-}) => {
+const useRecordQuery = (props: RecordIDProps) => {
   return useQuery({
-    queryKey: ["record-detail", props.project, recordID],
+    queryKey: ["record-detail", props.project, props.recordID],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/${recordID}/`)
+        .httpPathHandler(`projects/${props.project}/${props.recordID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && recordID),
+    enabled: !!(props.project && props.recordID),
     staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
 
 /** Fetch record history from record ID */
-const useRecordHistoryQuery = ({
-  props,
-  recordID,
-}: {
-  props: PageProps;
-  recordID: string;
-}) => {
+const useRecordHistoryQuery = (props: RecordIDProps) => {
   return useQuery({
-    queryKey: ["record-history-detail", props.project, recordID],
+    queryKey: ["record-history-detail", props.project, props.recordID],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/history/${recordID}/`)
+        .httpPathHandler(`projects/${props.project}/history/${props.recordID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && recordID),
+    enabled: !!(props.project && props.recordID),
     staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
 
 /** Fetch record analyses from record ID */
-const useRecordAnalysesQuery = ({
-  props,
-  recordID,
-}: {
-  props: PageProps;
-  recordID: string;
-}) => {
+const useRecordAnalysesQuery = (props: RecordIDProps) => {
   return useQuery({
-    queryKey: ["record-analysis-list", props.project, recordID],
+    queryKey: ["record-analysis-list", props.project, props.recordID],
     queryFn: async () => {
       // TODO: Proper endpoint doesn't actually exist
       return props
@@ -165,18 +159,12 @@ const useRecordAnalysesQuery = ({
 };
 
 /** Fetch records from search parameters */
-const useRecordsQuery = ({
-  props,
-  searchParameters,
-}: {
-  props: PageProps;
-  searchParameters: string;
-}) => {
+const useRecordsQuery = (props: QueryProps) => {
   return useQuery({
-    queryKey: ["record-list", props.project, searchParameters],
+    queryKey: ["record-list", props.project, props.searchParameters],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/?${searchParameters}`)
+        .httpPathHandler(`projects/${props.project}/?${props.searchParameters}`)
         .then((response) => response.json());
     },
     enabled: !!props.project,
@@ -186,62 +174,46 @@ const useRecordsQuery = ({
 };
 
 /** Fetch analysis from analysis ID */
-const useAnalysisQuery = ({
-  props,
-  analysisID,
-}: {
-  props: PageProps;
-  analysisID: string;
-}) => {
+const useAnalysisQuery = (props: AnalysisIDProps) => {
   return useQuery({
-    queryKey: ["analysis-detail", props.project, analysisID],
+    queryKey: ["analysis-detail", props.project, props.analysisID],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/analysis/${analysisID}/`)
+        .httpPathHandler(
+          `projects/${props.project}/analysis/${props.analysisID}/`
+        )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && analysisID),
+    enabled: !!(props.project && props.analysisID),
     staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
 
 /** Fetch analysis records from analysis ID */
-const useAnalysisRecordsQuery = ({
-  props,
-  analysisID,
-}: {
-  props: PageProps;
-  analysisID: string;
-}) => {
+const useAnalysisRecordsQuery = (props: AnalysisIDProps) => {
   return useQuery({
-    queryKey: ["analysis-record-list", props.project, analysisID],
+    queryKey: ["analysis-record-list", props.project, props.analysisID],
     queryFn: async () => {
       // TODO: Proper endpoint doesn't actually exist
       return props
         .httpPathHandler(`projects/${props.project}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && analysisID),
+    enabled: !!(props.project && props.analysisID),
     staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
 
 /** Fetch analyses from search parameters */
-const useAnalysesQuery = ({
-  props,
-  searchParameters,
-}: {
-  props: PageProps;
-  searchParameters: string;
-}) => {
+const useAnalysesQuery = (props: QueryProps) => {
   return useQuery({
-    queryKey: ["analysis-list", props.project, searchParameters],
+    queryKey: ["analysis-list", props.project, props.searchParameters],
     queryFn: async () => {
       return props
         .httpPathHandler(
-          `projects/${props.project}/analysis/?${searchParameters}`
+          `projects/${props.project}/analysis/?${props.searchParameters}`
         )
         .then((response) => response.json());
     },

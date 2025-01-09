@@ -7,11 +7,7 @@ import {
 } from "react";
 import Tab from "react-bootstrap/Tab";
 import Container from "react-bootstrap/Container";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   useTypesQuery,
   useLookupsQuery,
@@ -85,6 +81,14 @@ function App(props: OnyxProps) {
     localStorage.setItem("onyx-theme", darkModeChange ? "dark" : "light");
   };
 
+  const pageProps = useMemo(
+    () => ({
+      ...props,
+      project,
+    }),
+    [props, project]
+  );
+
   // Query for types, lookups and project permissions
   const { data: typesResponse } = useTypesQuery(props);
   const { data: lookupsResponse } = useLookupsQuery(props);
@@ -94,10 +98,7 @@ function App(props: OnyxProps) {
     isFetching: projectFieldsPending,
     error: projectFieldsError,
     data: projectFieldsResponse,
-  } = useProjectFieldsQuery({
-    ...props,
-    project,
-  });
+  } = useProjectFieldsQuery(pageProps);
 
   // Get a map of types to their lookups
   const typeLookups = useMemo(() => {
@@ -138,43 +139,27 @@ function App(props: OnyxProps) {
     }
   }, [project, projects]);
 
-  // Fetch project information
-  const {
-    data: { projectFields, fieldDescriptions } = {
-      projectFields: new Map<string, ProjectField>(),
-      fieldDescriptions: new Map<string, string>(),
-    },
-  } = useQuery({
-    queryKey: ["fields", project],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${project}/fields/`)
-        .then((response) => response.json())
-        .then((data) => {
-          const fields = flattenFields(data.data.fields);
-          const projectFields = new Map(
-            Object.keys(fields).map((field) => [
-              field,
-              {
-                type: fields[field].type,
-                description: fields[field].description,
-                actions: fields[field].actions,
-                values: fields[field].values,
-              },
-            ])
-          );
-          const fieldDescriptions = new Map(
-            Array.from(projectFields.entries()).map(([field, options]) => [
-              field,
-              options.description,
-            ])
-          );
-          return { projectFields, fieldDescriptions };
-        });
-    },
-    enabled: !!project,
-    staleTime: 1 * 60 * 1000,
-  });
+  // Get project information:
+  // projectFields: A map of field names to their type, description, actions, values and nested fields
+  // fieldDescriptions: A map of field names to their descriptions
+  const { projectFields, fieldDescriptions } = useMemo(() => {
+    if (projectFieldsResponse?.status !== "success") {
+      return {
+        projectFields: new Map<string, ProjectField>(),
+        fieldDescriptions: new Map<string, string>(),
+      };
+    }
+    const projectFields = new Map(
+      Object.entries(flattenFields(projectFieldsResponse.data.fields))
+    );
+    const fieldDescriptions = new Map(
+      Array.from(projectFields, ([field, options]) => [
+        field,
+        options.description,
+      ])
+    );
+    return { projectFields, fieldDescriptions };
+  }, [projectFieldsResponse]);
 
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel

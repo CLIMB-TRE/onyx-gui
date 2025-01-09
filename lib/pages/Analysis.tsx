@@ -23,15 +23,20 @@ function Analysis(props: DataProps) {
     setSearchParameters("");
   }, [props.project]);
 
+  const queryProps = useMemo(
+    () => ({
+      ...props,
+      searchParameters,
+    }),
+    [props, searchParameters]
+  );
+
   const {
     isFetching: analysesPending,
     error: analysesError,
     data: analysesResponse,
     refetch: refetchAnalyses,
-  } = useAnalysesQuery({
-    props,
-    searchParameters,
-  });
+  } = useAnalysesQuery(queryProps);
 
   const searchParams = useMemo(
     () =>
