@@ -9,6 +9,7 @@ import {
   SortChangedEvent,
   ModuleRegistry,
   ITooltipParams,
+  SortDirection,
 } from "@ag-grid-community/core";
 import { CsvExportModule } from "@ag-grid-community/csv-export";
 import { useQuery } from "@tanstack/react-query";
@@ -80,6 +81,7 @@ interface TableProps extends OnyxProps {
   tooltipFields?: string[];
   flexOnly?: string[];
   includeOnly?: string[];
+  defaultSort?: Map<string, SortDirection>;
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
 }
@@ -172,6 +174,11 @@ function getColDefs(
         colDef.autoHeight = true;
         colDef.wrapText = true;
       }
+
+      // Apply default sorts
+      // TODO: Implement default sorts for server paginated tables
+      if (!isServerPaginated && props.defaultSort?.has(key))
+        colDef.sort = props.defaultSort.get(key);
 
       // Apply tooltip value getter for fields that should display tooltips
       if (props.tooltipFields?.includes(key))

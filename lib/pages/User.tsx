@@ -192,6 +192,7 @@ function UserActivityContent(props: ListResponseProps) {
           "exec_time",
           "error_messages",
         ]}
+        defaultSort={new Map([["date", "desc"]])}
       />
     </Stack>
   );
