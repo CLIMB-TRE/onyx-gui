@@ -53,7 +53,7 @@ function Header(props: HeaderProps) {
     isFetching: userProfilePending,
     error: userProfileError,
     data: userProfileResponse,
-  } = useProfileQuery({ props });
+  } = useProfileQuery(props);
 
   return (
     <Navbar
@@ -90,7 +90,7 @@ function Header(props: HeaderProps) {
               <Nav variant="underline">
                 <Stack direction="horizontal" gap={3}>
                   <Nav.Item>
-                    <Nav.Link eventKey="user">
+                    <Nav.Link eventKey="user" className="fw-normal">
                       <HeaderText
                         label="User"
                         value={
@@ -104,7 +104,7 @@ function Header(props: HeaderProps) {
                     </Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
-                    <Nav.Link eventKey="site">
+                    <Nav.Link eventKey="site" className="fw-normal">
                       <HeaderText
                         label="Site"
                         value={
@@ -125,13 +125,19 @@ function Header(props: HeaderProps) {
             <Nav variant="underline">
               <Stack direction="horizontal" gap={3}>
                 <Nav.Item>
-                  <Nav.Link eventKey="data">Data</Nav.Link>
+                  <Nav.Link eventKey="data" className="fw-normal">
+                    Data
+                  </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="analyses">Analyses</Nav.Link>
+                  <Nav.Link eventKey="analyses" className="fw-normal">
+                    Analyses
+                  </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="stats">Statistics</Nav.Link>
+                  <Nav.Link eventKey="stats" className="fw-normal">
+                    Statistics
+                  </Nav.Link>
                 </Nav.Item>
                 <Form.Check
                   type="switch"
