@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -74,10 +74,10 @@ function RecordDataContent(props: RecordDetailResponseProps) {
   const [errorModalShow, setErrorModalShow] = useState(false);
   const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
 
-  const handleErrorModalShow = (error: Error) => {
+  const handleErrorModalShow = useCallback((error: Error) => {
     setS3ReportError(error);
     setErrorModalShow(true);
-  };
+  }, []);
 
   const formatTitle = (str: string) => {
     return str
