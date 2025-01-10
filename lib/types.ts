@@ -47,6 +47,16 @@ enum ExportStatus {
   ERROR,
 }
 
+type TypeObject = {
+  type: FieldType;
+  lookups: string[];
+};
+
+type LookupObject = {
+  lookup: string;
+  description: string;
+};
+
 type OptionType = { label: string; value: string };
 
 type ErrorType = Record<string, string | string[]>;
@@ -129,6 +139,8 @@ export type {
   ProjectField,
   FilterConfig,
   GraphConfig,
+  TypeObject,
+  LookupObject,
   OptionType,
   ErrorType,
   RecordType,

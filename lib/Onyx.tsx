@@ -22,7 +22,12 @@ import Stats from "./pages/Stats";
 import Analysis from "./pages/Analysis";
 import RecordModal from "./components/RecordModal";
 import AnalysisModal from "./components/AnalysisModal";
-import { ProjectField, ProjectPermissionType } from "./types";
+import {
+  ProjectField,
+  TypeObject,
+  LookupObject,
+  ProjectPermissionType,
+} from "./types";
 import { OnyxProps } from "./interfaces";
 
 import "./Onyx.css";
@@ -104,10 +109,7 @@ function App(props: OnyxProps) {
   const typeLookups = useMemo(() => {
     if (typesResponse?.status !== "success") return new Map<string, string[]>();
     return new Map<string, string[]>(
-      typesResponse.data.map((type: { type: string; lookups: string[] }) => [
-        type.type,
-        type.lookups,
-      ])
+      typesResponse.data.map((type: TypeObject) => [type.type, type.lookups])
     );
   }, [typesResponse]);
 
@@ -115,12 +117,10 @@ function App(props: OnyxProps) {
   const lookupDescriptions = useMemo(() => {
     if (lookupsResponse?.status !== "success") return new Map<string, string>();
     return new Map<string, string>(
-      lookupsResponse.data.map(
-        (lookup: { lookup: string; description: string }) => [
-          lookup.lookup,
-          lookup.description,
-        ]
-      )
+      lookupsResponse.data.map((lookup: LookupObject) => [
+        lookup.lookup,
+        lookup.description,
+      ])
     );
   }, [lookupsResponse]);
 
