@@ -213,9 +213,18 @@ function HTTPMethodCellRenderer(props: CustomCellRendererProps) {
 function JSONCellRenderer(props: CustomCellRendererProps) {
   if (props.value) {
     const value = props.value.slice(2, -1);
+
+    let jsonString: string;
+    try {
+      jsonString = JSON.stringify(JSON.parse(value), null, 2);
+    } catch (error) {
+      // TODO: Cannot parse JSON containing single quotes
+      jsonString = value;
+    }
+
     return (
       <pre className="onyx-text-pink" style={{ lineHeight: "150%" }}>
-        {JSON.stringify(JSON.parse(value), null, 2)}
+        {jsonString}
       </pre>
     );
   } else return <></>;
