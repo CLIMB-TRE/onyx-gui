@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Select, { components, OptionProps } from "react-select";
-import { useQuery } from "@tanstack/react-query";
+import { useChoicesQuery } from "../api";
 import selectStyles from "../utils/selectStyles";
-import { OptionType } from "../types";
+import { PageProps } from "../interfaces";
+import { ChoiceDescription, OptionType } from "../types";
 
 interface GenericDropdownProps {
   options: string[];
@@ -21,10 +22,8 @@ interface MultiDropdownProps extends GenericDropdownProps {
   value: string[];
 }
 
-interface GenericChoiceProps {
-  project: string;
+interface GenericChoiceProps extends PageProps {
   field: string;
-  httpPathHandler: (path: string) => Promise<Response>;
 }
 
 interface ChoiceProps extends DropdownProps, GenericChoiceProps {}
@@ -122,35 +121,36 @@ function MultiDropdown(props: MultiDropdownProps) {
   );
 }
 
-const useChoiceQuery = (props: GenericChoiceProps) => {
-  // Fetch choices and their descriptions
-  return useQuery({
-    queryKey: ["choices", props.project, props.field],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/choices/${props.field}/`)
-        .then((response) => response.json())
-        .then((data) => {
-          const choices = new Map(
-            Object.entries(data.data).map(([choice, choiceInfo]) => [
-              choice,
-              (choiceInfo as { description: string }).description,
-            ])
-          );
-          return choices;
-        });
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-};
-
 function Choice(props: ChoiceProps) {
-  const { data: choiceDescriptions } = useChoiceQuery(props);
+  const { data: choicesResponse } = useChoicesQuery(props);
+
+  // Get a map of choices to their descriptions
+  const choiceDescriptions = useMemo(() => {
+    if (choicesResponse?.status !== "success") return new Map<string, string>();
+    return new Map(
+      Object.entries(choicesResponse.data).map(([choice, description]) => [
+        choice,
+        (description as ChoiceDescription).description,
+      ])
+    );
+  }, [choicesResponse]);
+
   return <Dropdown {...props} titles={choiceDescriptions} />;
 }
 
 function MultiChoice(props: MultiChoiceProps) {
-  const { data: choiceDescriptions } = useChoiceQuery(props);
+  const { data: choicesResponse } = useChoicesQuery(props);
+
+  const choiceDescriptions = useMemo(() => {
+    if (choicesResponse?.status !== "success") return new Map<string, string>();
+    return new Map(
+      Object.entries(choicesResponse.data).map(([choice, description]) => [
+        choice,
+        (description as ChoiceDescription).description,
+      ])
+    );
+  }, [choicesResponse]);
+
   return <MultiDropdown {...props} titles={choiceDescriptions} />;
 }
 

@@ -57,6 +57,11 @@ type LookupObject = {
   description: string;
 };
 
+type ChoiceDescription = {
+  description: string;
+  is_active: boolean;
+};
+
 type OptionType = { label: string; value: string };
 
 type ErrorType = Record<string, string | string[]>;
@@ -141,6 +146,7 @@ export type {
   GraphConfig,
   TypeObject,
   LookupObject,
+  ChoiceDescription,
   OptionType,
   ErrorType,
   RecordType,

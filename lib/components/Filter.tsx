@@ -85,9 +85,8 @@ function Filter(props: FilterProps) {
     case filter.type === "choice" && filter.lookup.endsWith("in"):
       f = (
         <MultiChoice
-          project={props.project}
+          {...props}
           field={filter.field}
-          httpPathHandler={props.httpPathHandler}
           options={props.projectFields.get(filter.field)?.values || []}
           value={getValueList(filter.value)}
           onChange={handleValueChange}
@@ -97,10 +96,9 @@ function Filter(props: FilterProps) {
     case filter.type === "choice":
       f = (
         <Choice
-          project={props.project}
-          field={filter.field}
-          httpPathHandler={props.httpPathHandler}
+          {...props}
           isClearable
+          field={filter.field}
           options={props.projectFields.get(filter.field)?.values || []}
           value={filter.value}
           onChange={handleValueChange}

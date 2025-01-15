@@ -90,6 +90,7 @@ interface ClientTableProps extends TableProps {
 }
 
 interface ServerPaginatedTableProps extends TableProps {
+  project: string;
   response: RecordListResponse | AnalysisListResponse;
   searchPath: string;
   searchParameters: string;

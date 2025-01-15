@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { OnyxProps, PageProps } from "../interfaces";
 
+interface ChoiceProps extends PageProps {
+  field: string;
+}
+
 interface RecordIDProps extends PageProps {
   recordID: string;
 }
@@ -13,7 +17,7 @@ interface QueryProps extends PageProps {
   searchParameters: string;
 }
 
-interface GenericQueryProps extends OnyxProps {
+interface GenericQueryProps extends PageProps {
   searchPath: string;
   searchParameters: string;
 }
@@ -85,6 +89,21 @@ const useProjectFieldsQuery = (props: PageProps) => {
     },
     enabled: !!props.project,
     staleTime: 1 * 60 * 1000,
+    placeholderData: { data: {} },
+  });
+};
+
+/** Fetch choices for a field */
+const useChoicesQuery = (props: ChoiceProps) => {
+  return useQuery({
+    queryKey: ["choices-detail", props.project, props.field],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/choices/${props.field}/`)
+        .then((response) => response.json());
+    },
+    enabled: !!(props.project && props.field),
+    staleTime: 5 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
@@ -239,7 +258,7 @@ const useCountQuery = (props: GenericQueryProps) => {
         .httpPathHandler(`${props.searchPath}/count/?${props.searchParameters}`)
         .then((response) => response.json());
     },
-    enabled: !!props.searchPath,
+    enabled: !!(props.project && props.searchPath),
     cacheTime: 0.5 * 60 * 1000,
     placeholderData: { data: {} },
   });
@@ -251,6 +270,7 @@ export {
   useProfileQuery,
   useProjectPermissionsQuery,
   useProjectFieldsQuery,
+  useChoicesQuery,
   useActivityQuery,
   useSiteUsersQuery,
   useRecordQuery,
