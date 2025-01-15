@@ -13,6 +13,11 @@ interface QueryProps extends PageProps {
   searchParameters: string;
 }
 
+interface GenericQueryProps extends OnyxProps {
+  searchPath: string;
+  searchParameters: string;
+}
+
 /** Fetch types */
 const useTypesQuery = (props: OnyxProps) => {
   return useQuery({
@@ -225,6 +230,21 @@ const useAnalysesQuery = (props: QueryProps) => {
   });
 };
 
+/** Fetch count from path and search parameters */
+const useCountQuery = (props: GenericQueryProps) => {
+  return useQuery({
+    queryKey: ["count-detail", props.searchPath, props.searchParameters],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`${props.searchPath}/count/?${props.searchParameters}`)
+        .then((response) => response.json());
+    },
+    enabled: !!props.searchPath,
+    cacheTime: 0.5 * 60 * 1000,
+    placeholderData: { data: {} },
+  });
+};
+
 export {
   useTypesQuery,
   useLookupsQuery,
@@ -240,4 +260,5 @@ export {
   useAnalysisQuery,
   useAnalysisRecordsQuery,
   useAnalysesQuery,
+  useCountQuery,
 };

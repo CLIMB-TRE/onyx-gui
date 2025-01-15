@@ -27,6 +27,7 @@ interface ResultsPanelProps extends DataProps {
     | RecordListResponse
     | AnalysisListResponse
     | ErrorResponse;
+  searchPath: string;
   searchParameters: string;
   serverPaginated: boolean;
 }
@@ -57,7 +58,6 @@ function ResultsPanelContent(props: ResultsPanelContentProps) {
     <ServerPaginatedTable
       {...props}
       response={resultsListResponse}
-      searchParameters={props.searchParameters}
       defaultFileNamePrefix={defaultFileNamePrefix}
       headerTooltips={props.fieldDescriptions}
       cellRenderers={cellRenderers}

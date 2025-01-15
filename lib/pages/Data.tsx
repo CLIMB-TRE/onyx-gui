@@ -139,12 +139,9 @@ function Data(props: DataProps) {
               resultsListPending={recordsPending}
               resultsListError={recordsError as Error}
               resultsListResponse={recordsResponse}
+              searchPath={`projects/${props.project}`}
               searchParameters={searchParameters}
-              serverPaginated={
-                !!recordsResponse?.next ||
-                !!recordsResponse?.previous ||
-                !searchParameters.includes("summarise=")
-              }
+              serverPaginated={!searchParameters.includes("summarise=")}
             />
           </Container>
         </div>

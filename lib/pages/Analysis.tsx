@@ -108,10 +108,9 @@ function Analysis(props: DataProps) {
               resultsListPending={analysesPending}
               resultsListError={analysesError as Error}
               resultsListResponse={analysesResponse}
+              searchPath={`projects/${props.project}/analysis`}
               searchParameters={searchParameters}
-              serverPaginated={
-                !!analysesResponse?.next || !!analysesResponse?.previous
-              }
+              serverPaginated={true}
             />
           </Container>
         </div>

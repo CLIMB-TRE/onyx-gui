@@ -12,7 +12,6 @@ import {
   SortDirection,
 } from "@ag-grid-community/core";
 import { CsvExportModule } from "@ag-grid-community/csv-export";
-import { useQuery } from "@tanstack/react-query";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -22,6 +21,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import DropdownDivider from "react-bootstrap/DropdownDivider";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
+import { useCountQuery } from "../api";
 import {
   RecordListResponse,
   AnalysisListResponse,
@@ -37,9 +37,9 @@ type TableRow = Record<string, string | number>;
 type TableData = TableRow[];
 
 interface BaseTableProps extends OnyxProps {
-  project: string;
   rowData: TableData;
   columnDefs: ColDef[];
+  searchPath: string;
   searchParameters: string;
   defaultFileNamePrefix: string;
   gridOptions?: GridOptions;
@@ -73,7 +73,6 @@ interface TableOptionsProps extends BaseTableProps {
 }
 
 interface TableProps extends OnyxProps {
-  project: string;
   defaultFileNamePrefix: string;
   headerNames?: Map<string, string>;
   headerTooltips?: Map<string, string>;
@@ -92,6 +91,7 @@ interface ClientTableProps extends TableProps {
 
 interface ServerPaginatedTableProps extends TableProps {
   response: RecordListResponse | AnalysisListResponse;
+  searchPath: string;
   searchParameters: string;
 }
 
@@ -286,7 +286,7 @@ function TableOptions(props: TableOptionsProps) {
     // Fetch pages of data until the 'next' field is not present
     while (search instanceof URLSearchParams) {
       await props
-        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
+        .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
         .then((response) => response.json())
         .then((response: RecordListResponse | AnalysisListResponse) => {
           if (exportProps.statusToken.status === ExportStatus.CANCELLED)
@@ -495,6 +495,7 @@ function Table(props: ClientTableProps) {
       {...props}
       rowData={rowData}
       columnDefs={columnDefs}
+      searchPath=""
       searchParameters=""
       onGridReady={onGridReady}
       rowDisplayParams={{
@@ -539,29 +540,19 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   const resultsPageSize = 1000;
   const userPageSize = 50;
 
-  // TODO: Generalise this to allow different sources of data
-  const {
-    isFetching: isCountLoading,
-    data: countData = { count: 0, numPages: 0 },
-  } = useQuery({
-    queryKey: ["count", props.project, props.searchParameters],
-    queryFn: async () => {
-      const search = new URLSearchParams(props.searchParameters).toString();
-      return props
-        .httpPathHandler(`projects/${props.project}/count/?${search}`)
-        .then((response) => response.json())
-        .then((data) => {
-          return {
-            count: data.data.count,
-            numPages: data.data.count
-              ? Math.ceil(data.data.count / userPageSize)
-              : 1,
-          };
-        });
-    },
-    enabled: !!props.project,
-    cacheTime: 0.5 * 60 * 1000,
-  });
+  const { isFetching: countPending, data: countResponse } =
+    useCountQuery(props);
+
+  //  Get count data
+  const countData = useMemo(() => {
+    if (countResponse?.status !== "success") return { count: 0, numPages: 0 };
+    return {
+      count: countResponse.data.count,
+      numPages: countResponse.data.count
+        ? Math.ceil(countResponse.data.count / userPageSize)
+        : 1,
+    };
+  }, [countResponse]);
 
   const prevPage = !!(prevParams || userPageNumber > 1);
   const nextPage = !!(nextParams || userPageNumber < countData.numPages);
@@ -639,7 +630,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       search.delete("cursor");
 
       props
-        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
+        .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
         .then((response) => response.json())
         .then((response) => handleResponse(response, resultsPage, userPage))
         .finally(() => setLoading(false));
@@ -670,11 +661,11 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       }}
       footer={props.footer}
       isDataLoading={loading}
-      isCountLoading={isCountLoading}
+      isCountLoading={countPending}
       isFilterable={false}
       isPaginated
       paginationParams={{
-        pageCountMessage: isCountLoading
+        pageCountMessage: countPending
           ? "Loading..."
           : `Page ${userPageNumber} of ${countData.numPages}`,
         pageNumber: userPageNumber,
