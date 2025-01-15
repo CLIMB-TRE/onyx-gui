@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Plotly from "plotly.js-basic-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
@@ -24,10 +24,40 @@ interface BaseGraphProps {
 
 interface GraphProps extends StatsProps {
   graphConfig: GraphConfig;
+  refresh: number;
+  setLastUpdated: (lastUpdated: string | null) => void;
 }
 
+const useRefresh = ({
+  refresh,
+  dataUpdatedAt,
+  errorUpdatedAt,
+  refetch,
+  setLastUpdated,
+}: {
+  refresh: number;
+  dataUpdatedAt: number;
+  errorUpdatedAt: number;
+  refetch: () => void;
+  setLastUpdated: (lastUpdated: string | null) => void;
+}) => {
+  useEffect(() => {
+    refetch();
+  }, [refetch, refresh]);
+
+  useEffect(() => {
+    setLastUpdated(
+      errorUpdatedAt
+        ? new Date(errorUpdatedAt).toLocaleString()
+        : dataUpdatedAt
+        ? new Date(dataUpdatedAt).toLocaleString()
+        : null
+    );
+  }, [dataUpdatedAt, errorUpdatedAt, setLastUpdated]);
+};
+
 const useSummaryQuery = (props: GraphProps) => {
-  return useQuery({
+  const { data, refetch, dataUpdatedAt, errorUpdatedAt } = useQuery({
     queryKey: ["summary", props.project, props.graphConfig.field],
     queryFn: async () => {
       return props
@@ -55,10 +85,20 @@ const useSummaryQuery = (props: GraphProps) => {
     enabled: !!props.project,
     staleTime: 1 * 60 * 1000,
   });
+
+  useRefresh({
+    refresh: props.refresh,
+    dataUpdatedAt,
+    errorUpdatedAt,
+    refetch,
+    setLastUpdated: props.setLastUpdated,
+  });
+
+  return { data };
 };
 
 const useGroupedSummaryQuery = (props: GraphProps) => {
-  return useQuery({
+  const { data, refetch, dataUpdatedAt, errorUpdatedAt } = useQuery({
     queryKey: [
       "summary",
       props.project,
@@ -114,6 +154,16 @@ const useGroupedSummaryQuery = (props: GraphProps) => {
     enabled: !!props.project,
     staleTime: 1 * 60 * 1000,
   });
+
+  useRefresh({
+    refresh: props.refresh,
+    dataUpdatedAt,
+    errorUpdatedAt,
+    refetch,
+    setLastUpdated: props.setLastUpdated,
+  });
+
+  return { data };
 };
 
 function getNullCount(
@@ -164,8 +214,7 @@ function BaseGraph(props: BaseGraphProps) {
         ...props.layout,
         autosize: true,
         title: props.title,
-        titlefont: { size: 14, color: "grey" },
-
+        titlefont: { size: 14, color: "#6c757d" },
         margin: {
           l: 60,
           r: 60,

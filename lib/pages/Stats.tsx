@@ -20,6 +20,7 @@ import { GraphType, GraphConfig } from "../types";
 import { generateKey } from "../utils/functions";
 import {
   MdCreate,
+  MdRefresh,
   MdClear,
   MdGridView,
   MdOutlineSplitscreen,
@@ -46,9 +47,14 @@ interface GraphPanelProps extends StatsProps {
   showOptions: boolean;
   firstGraph: boolean;
   lastGraph: boolean;
+  refresh: number;
 }
 
-function GraphPanelGraph(props: GraphPanelProps) {
+interface GraphPanelGraphProps extends GraphPanelProps {
+  setLastUpdated: (lastUpdated: string | null) => void;
+}
+
+function GraphPanelGraph(props: GraphPanelGraphProps) {
   let g: JSX.Element;
 
   switch (true) {
@@ -173,6 +179,8 @@ function GraphPanelOptions(props: GraphPanelProps) {
 }
 
 function GraphPanel(props: GraphPanelProps) {
+  const [lastUpdated, setLastUpdated] = useState<null | string>(null);
+
   const graphTitle = useMemo(() => {
     let title = "Empty Graph";
 
@@ -190,8 +198,19 @@ function GraphPanel(props: GraphPanelProps) {
   return (
     <Card>
       <Card.Header>
-        <span>{graphTitle}</span>
-        <Stack direction="horizontal" gap={1} className="float-end">
+        <Stack direction="horizontal" gap={1}>
+          <span className="me-auto text-truncate" title={graphTitle}>
+            {graphTitle}
+          </span>
+          {lastUpdated && (
+            <span
+              className="text-secondary text-truncate px-2"
+              title={`Last updated: ${lastUpdated}`}
+            >
+              Last updated: {lastUpdated}
+            </span>
+          )}
+
           <Button
             size="sm"
             variant="dark"
@@ -242,7 +261,7 @@ function GraphPanel(props: GraphPanelProps) {
             xxl={props.showOptions ? (props.viewMode === "list" ? 9 : 8) : 12}
           >
             <div style={{ height: "440px" }}>
-              <GraphPanelGraph {...props} />
+              <GraphPanelGraph {...props} setLastUpdated={setLastUpdated} />
             </div>
           </Col>
         </Row>
@@ -294,6 +313,11 @@ function Stats(props: StatsProps) {
     .map(([field]) => field);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showOptions, setShowOptions] = useState(true);
+  const [refresh, setRefresh] = useState(0);
+
+  const handleRefresh = () => {
+    setRefresh(refresh ? 0 : 1);
+  };
 
   // Reset graphs when project changes
   useLayoutEffect(() => {
@@ -396,8 +420,8 @@ function Stats(props: StatsProps) {
     <Container fluid className="g-2 h-100">
       <Card className="h-100">
         <Card.Header>
-          <span>Graphs</span>
-          <Stack direction="horizontal" gap={1} className="float-end">
+          <Stack direction="horizontal" gap={1}>
+            <span className="me-auto">Graphs</span>
             <Button
               size="sm"
               variant="dark"
@@ -405,6 +429,14 @@ function Stats(props: StatsProps) {
               onClick={() => handleGraphConfigAdd(0)}
             >
               <MdCreate />
+            </Button>
+            <Button
+              size="sm"
+              variant="dark"
+              title="Refresh Graphs"
+              onClick={handleRefresh}
+            >
+              <MdRefresh />
             </Button>
             <Button
               size="sm"
@@ -460,6 +492,7 @@ function Stats(props: StatsProps) {
                   showOptions={showOptions}
                   firstGraph={index === 0}
                   lastGraph={index === graphConfigList.length - 1}
+                  refresh={refresh}
                 />
               </Col>
             ))}
