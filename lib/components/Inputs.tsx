@@ -93,7 +93,7 @@ function RangeInput({
   };
 
   return (
-    <Row>
+    <Row className="g-2">
       <Form.Group className="mb-2" as={Col}>
         <Form.Label>From</Form.Label>
         <Form.Control
