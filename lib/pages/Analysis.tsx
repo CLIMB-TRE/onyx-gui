@@ -4,6 +4,7 @@ import Stack from "react-bootstrap/Stack";
 import { useAnalysesQuery } from "../api";
 import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
+import TransformsPanel from "../components/TransformsPanel";
 import ResultsPanel from "../components/ResultsPanel";
 import { SidebarButton } from "../components/Buttons";
 import { FilterConfig } from "../types";
@@ -13,6 +14,8 @@ import { useDebouncedValue } from "../utils/hooks";
 function Analysis(props: DataProps) {
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
+  const [transform, setTransform] = useState("Summarise");
+  const [transformList, setTransformList] = useState(new Array<string>());
   const [searchParameters, setSearchParameters] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -20,6 +23,8 @@ function Analysis(props: DataProps) {
   useLayoutEffect(() => {
     setSearchInput("");
     setFilterList([]);
+    setTransform("Summarise");
+    setTransformList([]);
     setSearchParameters("");
   }, [props.project]);
 
@@ -51,12 +56,17 @@ function Analysis(props: DataProps) {
             }
           })
           .concat(
+            transformList
+              .filter((field) => field)
+              .map((field) => [transform.toLowerCase(), field])
+          )
+          .concat(
             [searchInput]
               .filter((search) => search)
               .map((search) => ["search", search])
           )
       ).toString(),
-    [filterList, searchInput]
+    [filterList, transform, transformList, searchInput]
   );
 
   const debouncedSearchParams = useDebouncedValue(searchParams, 1000);
@@ -86,12 +96,27 @@ function Analysis(props: DataProps) {
                   setSearchInput={setSearchInput}
                   handleSearch={handleSearch}
                 />
-                <FilterPanel
-                  {...props}
-                  filterList={filterList}
-                  setFilterList={setFilterList}
-                  filterFieldOptions={[]}
-                />
+                <Stack gap={2} className="h-100 overflow-y-hidden">
+                  <div className="h-50">
+                    <FilterPanel
+                      {...props}
+                      filterList={filterList}
+                      setFilterList={setFilterList}
+                      filterFieldOptions={[]}
+                    />
+                  </div>
+                  <div className="h-50">
+                    <TransformsPanel
+                      {...props}
+                      transform={transform}
+                      setTransform={setTransform}
+                      transformList={transformList}
+                      setTransformList={setTransformList}
+                      filterFieldOptions={[]}
+                      listFieldOptions={[]}
+                    />
+                  </div>
+                </Stack>
               </Stack>
             </Container>
           </div>
