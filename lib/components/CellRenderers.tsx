@@ -2,6 +2,7 @@ import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Button from "react-bootstrap/Button";
 import Badge from "react-bootstrap/Badge";
 import { getReasonPhrase } from "http-status-codes";
+import { MdArrowForward } from "react-icons/md";
 import { OnyxProps } from "../interfaces";
 import { RecordType } from "../types";
 
@@ -145,7 +146,7 @@ function ChangeCellRenderer(props: CustomCellRendererProps) {
               <span className="onyx-text-pink">
                 {JSON.stringify(change.from)}
               </span>{" "}
-              &rarr;{" "}
+              <MdArrowForward />{" "}
               <span className="onyx-text-pink">
                 {JSON.stringify(change.to)}
               </span>

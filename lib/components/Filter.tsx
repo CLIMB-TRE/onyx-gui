@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import Stack from "react-bootstrap/Stack";
 import CloseButton from "react-bootstrap/CloseButton";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
@@ -147,17 +145,14 @@ function Filter(props: FilterProps) {
 
   return (
     <Stack gap={3} className="p-1">
-      <Row>
-        <Col>
-          <h5>Edit Filter</h5>
-        </Col>
-        <Col>
-          <CloseButton
-            className="float-end"
-            onClick={() => props.setEditMode(false)}
-          />
-        </Col>
-      </Row>
+      <Stack direction="horizontal">
+        <span className="me-auto">Edit Filter</span>
+        <CloseButton
+          className="float-end"
+          onClick={() => props.setEditMode(false)}
+        />
+      </Stack>
+      <hr className="m-0" />
       <Form>
         <Form.Group className="mb-2">
           <Form.Label>Field</Form.Label>

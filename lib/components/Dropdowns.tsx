@@ -34,7 +34,7 @@ const Option = (optionProps: OptionProps) => {
   const splitLabel = optionProps.label.split("|", 2);
 
   return (
-    <code>
+    <small>
       <components.Option {...optionProps}>
         {splitLabel.length > 0 && <div>{splitLabel[0]}</div>}
         {splitLabel.length > 1 && (
@@ -45,7 +45,7 @@ const Option = (optionProps: OptionProps) => {
           </div>
         )}
       </components.Option>
-    </code>
+    </small>
   );
 };
 
