@@ -48,10 +48,17 @@
   --bs-btn-disabled-border-color: var(--bs-gray-900);
 }
 
+.btn-link {
+  text-decoration: none !important;
+}
+
+.btn-link:hover {
+  text-decoration: underline !important;
+}
+
 .ag-theme-quartz {
   --ag-background-color: var(--bs-body-bg);
   --ag-foreground-color: var(--bs-body-color);
-  --ag-font-family: var(--bs-font-monospace);
 }
 
 .onyx-text-pink {
