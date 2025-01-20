@@ -30,6 +30,7 @@ import {
 } from "./types";
 import { OnyxProps } from "./interfaces";
 
+import "@fontsource/ibm-plex-sans";
 import "./Onyx.css";
 import "./bootstrap.css";
 
@@ -97,7 +98,7 @@ function App(props: OnyxProps) {
   // Query for types, lookups and project permissions
   const { data: typesResponse } = useTypesQuery(props);
   const { data: lookupsResponse } = useLookupsQuery(props);
-  const { data: userProjectPermissionsResponse } =
+  const { data: projectPermissionsResponse } =
     useProjectPermissionsQuery(props);
   const {
     isFetching: projectFieldsPending,
@@ -126,11 +127,11 @@ function App(props: OnyxProps) {
 
   // Get the list of projects
   const projects = useMemo(() => {
-    if (userProjectPermissionsResponse?.status !== "success") return [];
-    return userProjectPermissionsResponse.data.map(
+    if (projectPermissionsResponse?.status !== "success") return [];
+    return projectPermissionsResponse.data.map(
       (projectPermission: ProjectPermissionType) => projectPermission.project
     );
-  }, [userProjectPermissionsResponse]);
+  }, [projectPermissionsResponse]);
 
   // Set the first project as the default
   useEffect(() => {
@@ -142,13 +143,16 @@ function App(props: OnyxProps) {
   // Get project information:
   // projectFields: A map of field names to their type, description, actions, values and nested fields
   // fieldDescriptions: A map of field names to their descriptions
-  const { projectFields, fieldDescriptions } = useMemo(() => {
+  const { projectName, projectFields, fieldDescriptions } = useMemo(() => {
     if (projectFieldsResponse?.status !== "success") {
       return {
+        projectName: "None",
         projectFields: new Map<string, ProjectField>(),
         fieldDescriptions: new Map<string, string>(),
       };
     }
+    const projectName = projectFieldsResponse.data.name;
+
     const projectFields = new Map(
       Object.entries(flattenFields(projectFieldsResponse.data.fields))
     );
@@ -158,7 +162,7 @@ function App(props: OnyxProps) {
         options.description,
       ])
     );
-    return { projectFields, fieldDescriptions };
+    return { projectName, projectFields, fieldDescriptions };
   }, [projectFieldsResponse]);
 
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
@@ -187,7 +191,7 @@ function App(props: OnyxProps) {
             ? "Loading..."
             : projectFieldsError
             ? "Failed to load"
-            : projectFieldsResponse.data.name
+            : projectName
         }
         projectList={projects}
         handleProjectChange={setProject}

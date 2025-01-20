@@ -8,6 +8,7 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import { useProfileQuery } from "../api";
 import { MdLightMode, MdDarkMode, MdJoinInner } from "react-icons/md";
 import { PageProps } from "../interfaces";
+import { useMemo } from "react";
 
 interface HeaderProps extends PageProps {
   projectName: string;
@@ -50,10 +51,23 @@ function HeaderVersion({
 
 function Header(props: HeaderProps) {
   const {
-    isFetching: userProfilePending,
-    error: userProfileError,
-    data: userProfileResponse,
+    isFetching: profilePending,
+    error: profileError,
+    data: profileResponse,
   } = useProfileQuery(props);
+
+  const { username, site } = useMemo(() => {
+    if (profileResponse?.status !== "success")
+      return {
+        username: "None",
+        site: "None",
+      };
+
+    return {
+      username: profileResponse.data.username,
+      site: profileResponse.data.site,
+    };
+  }, [profileResponse]);
 
   return (
     <Navbar
@@ -94,11 +108,11 @@ function Header(props: HeaderProps) {
                       <HeaderText
                         label="User"
                         value={
-                          userProfilePending
+                          profilePending
                             ? "Loading..."
-                            : userProfileError
+                            : profileError
                             ? "Failed to load"
-                            : userProfileResponse.data.username
+                            : username
                         }
                       />
                     </Nav.Link>
@@ -108,11 +122,11 @@ function Header(props: HeaderProps) {
                       <HeaderText
                         label="Site"
                         value={
-                          userProfilePending
+                          profilePending
                             ? "Loading..."
-                            : userProfileError
+                            : profileError
                             ? "Failed to load"
-                            : userProfileResponse.data.site
+                            : site
                         }
                       />
                     </Nav.Link>
