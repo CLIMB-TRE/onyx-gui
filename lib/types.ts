@@ -129,6 +129,13 @@ type ProjectPermissionListResponse = SuccessResponse & {
   data: ProjectPermissionType[];
 };
 
+type FieldsInfoDetailResponse = SuccessResponse & {
+  data: {
+    name: string;
+    fields: Record<string, ProjectField>;
+  };
+};
+
 // TODO: Use a generic response type
 // type Response<T> =
 //   | ErrorResponse
@@ -159,6 +166,7 @@ export type {
   AnalysisListResponse,
   AnalysisDetailResponse,
   ProjectPermissionListResponse,
+  FieldsInfoDetailResponse,
 };
 
 export { ExportStatus };

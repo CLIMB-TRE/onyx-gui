@@ -13,6 +13,7 @@ import {
   useLookupsQuery,
   useProjectPermissionsQuery,
   useProjectFieldsQuery,
+  useAnalysisFieldsQuery,
 } from "./api";
 import Header from "./components/Header";
 import User from "./pages/User";
@@ -27,6 +28,8 @@ import {
   TypeObject,
   LookupObject,
   ProjectPermissionType,
+  FieldsInfoDetailResponse,
+  ErrorResponse,
 } from "./types";
 import { OnyxProps } from "./interfaces";
 
@@ -55,6 +58,34 @@ function flattenFields(fields: Record<string, ProjectField>) {
   flatten(fields);
   return flatFields;
 }
+
+const useFieldsInfo = (
+  fieldsResponse: FieldsInfoDetailResponse | ErrorResponse
+) => {
+  return useMemo(() => {
+    if (fieldsResponse?.status !== "success") {
+      return {
+        name: "None",
+        fields: new Map<string, ProjectField>(),
+        descriptions: new Map<string, string>(),
+      };
+    }
+
+    // The name of the project
+    const name = fieldsResponse.data.name;
+
+    // A map of field names to their type, description, actions, values and nested fields
+    const fields = new Map(
+      Object.entries(flattenFields(fieldsResponse.data.fields))
+    );
+
+    // A map of field names to their descriptions
+    const descriptions = new Map(
+      Array.from(fields, ([field, options]) => [field, options.description])
+    );
+    return { name, fields, descriptions };
+  }, [fieldsResponse]);
+};
 
 function App(props: OnyxProps) {
   const [darkMode, setDarkMode] = useState(
@@ -106,6 +137,8 @@ function App(props: OnyxProps) {
     data: projectFieldsResponse,
   } = useProjectFieldsQuery(pageProps);
 
+  const { data: analysisFieldsResponse } = useAnalysisFieldsQuery(pageProps);
+
   // Get a map of types to their lookups
   const typeLookups = useMemo(() => {
     if (typesResponse?.status !== "success") return new Map<string, string[]>();
@@ -140,30 +173,16 @@ function App(props: OnyxProps) {
     }
   }, [project, projects]);
 
-  // Get project information:
-  // projectFields: A map of field names to their type, description, actions, values and nested fields
-  // fieldDescriptions: A map of field names to their descriptions
-  const { projectName, projectFields, fieldDescriptions } = useMemo(() => {
-    if (projectFieldsResponse?.status !== "success") {
-      return {
-        projectName: "None",
-        projectFields: new Map<string, ProjectField>(),
-        fieldDescriptions: new Map<string, string>(),
-      };
-    }
-    const projectName = projectFieldsResponse.data.name;
+  // Get project information
+  const {
+    name: projectName,
+    fields: projectFields,
+    descriptions: fieldDescriptions,
+  } = useFieldsInfo(projectFieldsResponse);
 
-    const projectFields = new Map(
-      Object.entries(flattenFields(projectFieldsResponse.data.fields))
-    );
-    const fieldDescriptions = new Map(
-      Array.from(projectFields, ([field, options]) => [
-        field,
-        options.description,
-      ])
-    );
-    return { projectName, projectFields, fieldDescriptions };
-  }, [projectFieldsResponse]);
+  // Get project analyses information
+  const { fields: analysisFields, descriptions: analysisDescriptions } =
+    useFieldsInfo(analysisFieldsResponse);
 
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
@@ -173,9 +192,6 @@ function App(props: OnyxProps) {
     setRecordModalID(climbID);
   }, []);
 
-  // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
-  // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
-  // This noticeably improves responsiveness for large datasets
   const handleAnalysisModalShow = useCallback((analysisID: string) => {
     setModalState("analysis-modal");
     setAnalysisModalID(analysisID);
@@ -253,9 +269,9 @@ function App(props: OnyxProps) {
                 <Analysis
                   {...props}
                   project={project}
-                  projectFields={projectFields}
+                  projectFields={analysisFields}
                   typeLookups={typeLookups}
-                  fieldDescriptions={fieldDescriptions}
+                  fieldDescriptions={analysisDescriptions}
                   lookupDescriptions={lookupDescriptions}
                   handleRecordModalShow={handleRecordModalShow}
                   handleAnalysisModalShow={handleAnalysisModalShow}

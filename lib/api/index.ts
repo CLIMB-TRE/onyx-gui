@@ -264,6 +264,21 @@ const useCountQuery = (props: GenericQueryProps) => {
   });
 };
 
+/** Fetch fields from path and search parameters */
+const useAnalysisFieldsQuery = (props: PageProps) => {
+  return useQuery({
+    queryKey: ["analysis-fields-detail", props.project],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/${props.project}/analysis/fields/`)
+        .then((response) => response.json());
+    },
+    enabled: !!props.project,
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: {} },
+  });
+};
+
 export {
   useTypesQuery,
   useLookupsQuery,
@@ -281,4 +296,5 @@ export {
   useAnalysisRecordsQuery,
   useAnalysesQuery,
   useCountQuery,
+  useAnalysisFieldsQuery,
 };

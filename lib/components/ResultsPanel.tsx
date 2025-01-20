@@ -21,15 +21,11 @@ import { getDefaultFileNamePrefix } from "../utils/functions";
 
 interface ResultsPanelProps extends DataProps {
   title: string;
-  resultsListPending: boolean;
-  resultsListError: Error | null;
-  resultsListResponse:
-    | RecordListResponse
-    | AnalysisListResponse
-    | ErrorResponse;
   searchPath: string;
   searchParameters: string;
-  serverPaginated: boolean;
+  resultsPending: boolean;
+  resultsError: Error | null;
+  resultsResponse: RecordListResponse | AnalysisListResponse | ErrorResponse;
 }
 
 interface ResultsPanelContentProps extends ResultsPanelProps {
@@ -42,11 +38,11 @@ function ResultsPanelContent(props: ResultsPanelContentProps) {
     [props.project, props.searchParameters]
   );
 
-  const resultsListResponse = useMemo(() => {
-    if (props.resultsListResponse.status !== "success")
+  const resultsResponse = useMemo(() => {
+    if (props.resultsResponse.status !== "success")
       return { data: [] as RecordType[] } as RecordListResponse;
-    return props.resultsListResponse;
-  }, [props.resultsListResponse]);
+    return props.resultsResponse;
+  }, [props.resultsResponse]);
 
   const cellRenderers = new Map([
     ["climb_id", ClimbIDCellRendererFactory(props)],
@@ -54,10 +50,10 @@ function ResultsPanelContent(props: ResultsPanelContentProps) {
     ["ingest_report", S3ReportCellRendererFactory(props)],
   ]);
 
-  return props.serverPaginated ? (
+  return !props.searchParameters.includes("summarise=") ? (
     <ServerPaginatedTable
       {...props}
-      response={resultsListResponse}
+      response={resultsResponse}
       defaultFileNamePrefix={defaultFileNamePrefix}
       headerTooltips={props.fieldDescriptions}
       cellRenderers={cellRenderers}
@@ -65,7 +61,7 @@ function ResultsPanelContent(props: ResultsPanelContentProps) {
   ) : (
     <Table
       {...props}
-      data={resultsListResponse.data}
+      data={resultsResponse.data}
       defaultFileNamePrefix={defaultFileNamePrefix}
       headerTooltips={props.fieldDescriptions}
       cellRenderers={cellRenderers}
@@ -94,9 +90,9 @@ function ResultsPanel(props: ResultsPanelProps) {
           onHide={() => setErrorModalShow(false)}
         />
         <QueryHandler
-          isFetching={props.resultsListPending}
-          error={props.resultsListError}
-          data={props.resultsListResponse}
+          isFetching={props.resultsPending}
+          error={props.resultsError}
+          data={props.resultsResponse}
         >
           <ResultsPanelContent
             {...props}
