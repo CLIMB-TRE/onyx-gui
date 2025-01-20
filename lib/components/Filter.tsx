@@ -90,6 +90,7 @@ function Filter(props: FilterProps) {
           onChange={handleValueChange}
         />
       );
+      valueTitle = "Values";
       break;
     case filter.type === "choice":
       f = (
