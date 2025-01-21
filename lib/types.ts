@@ -115,20 +115,6 @@ type RecordDetailResponse = SuccessResponse & {
   data: RecordType;
 };
 
-type AnalysisListResponse = SuccessResponse & {
-  data: AnalysisType[];
-  next?: string;
-  previous?: string;
-};
-
-type AnalysisDetailResponse = SuccessResponse & {
-  data: AnalysisType;
-};
-
-type ProjectPermissionListResponse = SuccessResponse & {
-  data: ProjectPermissionType[];
-};
-
 type FieldsInfoDetailResponse = SuccessResponse & {
   data: {
     name: string;
@@ -163,9 +149,6 @@ export type {
   SuccessResponse,
   RecordListResponse,
   RecordDetailResponse,
-  AnalysisListResponse,
-  AnalysisDetailResponse,
-  ProjectPermissionListResponse,
   FieldsInfoDetailResponse,
 };
 

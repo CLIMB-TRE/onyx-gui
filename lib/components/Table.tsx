@@ -22,11 +22,7 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import DropdownDivider from "react-bootstrap/DropdownDivider";
 import { mkConfig, generateCsv, asString } from "export-to-csv";
 import { useCountQuery } from "../api";
-import {
-  RecordListResponse,
-  AnalysisListResponse,
-  ExportStatus,
-} from "../types";
+import { RecordListResponse, ExportStatus } from "../types";
 import { OnyxProps, ExportHandlerProps } from "../interfaces";
 import ExportModal from "./ExportModal";
 
@@ -91,7 +87,7 @@ interface ClientTableProps extends TableProps {
 
 interface ServerPaginatedTableProps extends TableProps {
   project: string;
-  response: RecordListResponse | AnalysisListResponse;
+  response: RecordListResponse;
   searchPath: string;
   searchParameters: string;
 }
@@ -289,7 +285,7 @@ function TableOptions(props: TableOptionsProps) {
       await props
         .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
         .then((response) => response.json())
-        .then((response: RecordListResponse | AnalysisListResponse) => {
+        .then((response: RecordListResponse) => {
           if (exportProps.statusToken.status === ExportStatus.CANCELLED)
             throw new Error("export_cancelled");
 
@@ -583,7 +579,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   };
 
   const handleResponse = (
-    response: RecordListResponse | AnalysisListResponse,
+    response: RecordListResponse,
     resultsPage: number,
     userPage: number
   ) => {

@@ -30,7 +30,7 @@ interface RecordDetailResponseProps extends OnyxProps {
 
 function handleJSONExport(props: RecordDetailResponseProps) {
   return (exportProps: ExportHandlerProps) => {
-    if (props.response.status !== "success") return;
+    if (props.response?.status !== "success") return;
     const jsonData = JSON.stringify(props.response.data);
 
     exportProps.setExportStatus(ExportStatus.WRITING);

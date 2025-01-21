@@ -18,9 +18,8 @@ import {
 import Header from "./components/Header";
 import User from "./pages/User";
 import Site from "./pages/Site";
-import Data from "./pages/Data";
+import Results from "./pages/Results";
 import Stats from "./pages/Stats";
-import Analysis from "./pages/Analysis";
 import RecordModal from "./components/RecordModal";
 import AnalysisModal from "./components/AnalysisModal";
 import {
@@ -254,8 +253,10 @@ function App(props: OnyxProps) {
                 <Site {...props} project={project} />
               </Tab.Pane>
               <Tab.Pane eventKey="data" className="h-100">
-                <Data
+                <Results
                   {...props}
+                  title="Data"
+                  searchPath={`projects/${project}`}
                   project={project}
                   projectFields={projectFields}
                   typeLookups={typeLookups}
@@ -266,8 +267,10 @@ function App(props: OnyxProps) {
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="analyses" className="h-100">
-                <Analysis
+                <Results
                   {...props}
+                  title="Analyses"
+                  searchPath={`projects/${project}/analysis`}
                   project={project}
                   projectFields={analysisFields}
                   typeLookups={typeLookups}

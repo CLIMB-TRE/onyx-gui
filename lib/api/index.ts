@@ -18,12 +18,9 @@ interface GenericIDProps extends PageProps {
   ID: string;
 }
 
-interface QueryProps extends PageProps {
-  searchParameters: string;
-}
-
-interface GenericQueryProps extends QueryProps {
+interface GenericQueryProps extends PageProps {
   searchPath: string;
+  searchParameters: string;
 }
 
 /** Fetch types */
@@ -201,21 +198,6 @@ const useRecordAnalysesQuery = (props: RecordIDProps) => {
   });
 };
 
-/** Fetch records from search parameters */
-const useRecordsQuery = (props: QueryProps) => {
-  return useQuery({
-    queryKey: ["record-list", props.project, props.searchParameters],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/?${props.searchParameters}`)
-        .then((response) => response.json());
-    },
-    enabled: !!props.project,
-    cacheTime: 0.5 * 60 * 1000,
-    placeholderData: { data: [] },
-  });
-};
-
 /** Fetch analysis from analysis ID */
 const useAnalysisQuery = (props: AnalysisIDProps) => {
   return useQuery({
@@ -250,18 +232,16 @@ const useAnalysisRecordsQuery = (props: AnalysisIDProps) => {
   });
 };
 
-/** Fetch analyses from search parameters */
-const useAnalysesQuery = (props: QueryProps) => {
+/** Fetch results from path and search parameters */
+const useResultsQuery = (props: GenericQueryProps) => {
   return useQuery({
-    queryKey: ["analysis-list", props.project, props.searchParameters],
+    queryKey: ["results-list", props.searchPath, props.searchParameters],
     queryFn: async () => {
       return props
-        .httpPathHandler(
-          `projects/${props.project}/analysis/?${props.searchParameters}`
-        )
+        .httpPathHandler(`${props.searchPath}/?${props.searchParameters}`)
         .then((response) => response.json());
     },
-    enabled: !!props.project,
+    enabled: !!(props.project && props.searchPath),
     cacheTime: 0.5 * 60 * 1000,
     placeholderData: { data: [] },
   });
@@ -295,9 +275,8 @@ export {
   useRecordQuery,
   useHistoryQuery,
   useRecordAnalysesQuery,
-  useRecordsQuery,
   useAnalysisQuery,
   useAnalysisRecordsQuery,
-  useAnalysesQuery,
+  useResultsQuery,
   useCountQuery,
 };

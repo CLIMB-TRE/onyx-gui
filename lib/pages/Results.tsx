@@ -6,27 +6,13 @@ import FilterPanel from "../components/FilterPanel";
 import TransformsPanel from "../components/TransformsPanel";
 import ResultsPanel from "../components/ResultsPanel";
 import { SidebarButton } from "../components/Buttons";
-import {
-  FilterConfig,
-  RecordListResponse,
-  AnalysisListResponse,
-  ErrorResponse,
-} from "../types";
-import { DataProps } from "../interfaces";
+import { FilterConfig } from "../types";
+import { ResultsProps } from "../interfaces";
 import { useDebouncedValue } from "../utils/hooks";
-
-interface ResultsProps extends DataProps {
-  title: string;
-  searchPath: string;
-  searchParameters: string;
-  setSearchParameters: (searchParameters: string) => void;
-  resultsPending: boolean;
-  resultsError: Error | null;
-  resultsResponse: RecordListResponse | AnalysisListResponse | ErrorResponse;
-  refetchResults: () => void;
-}
+import { useResultsQuery } from "../api";
 
 function Results(props: ResultsProps) {
+  const [searchParameters, setSearchParameters] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
   const [transform, setTransform] = useState("Summarise");
@@ -39,7 +25,15 @@ function Results(props: ResultsProps) {
     .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
 
-  const { setSearchParameters } = props;
+  const queryProps = useMemo(
+    () => ({
+      ...props,
+      searchParameters,
+    }),
+    [props, searchParameters]
+  );
+
+  const { isFetching, error, data, refetch } = useResultsQuery(queryProps);
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
@@ -48,7 +42,7 @@ function Results(props: ResultsProps) {
     setTransform("Summarise");
     setTransformList([]);
     setSearchParameters("");
-  }, [props.project, setSearchParameters]);
+  }, [props.project]);
 
   const searchParams = useMemo(
     () =>
@@ -86,7 +80,7 @@ function Results(props: ResultsProps) {
   // If search parameters have not changed and nothing is pending
   // Then trigger a refetch
   const handleSearch = () => {
-    if (!props.resultsPending) props.refetchResults();
+    if (!isFetching) refetch();
   };
 
   return (
@@ -134,7 +128,13 @@ function Results(props: ResultsProps) {
         />
         <div className="right-col h-100">
           <Container fluid className="g-2 h-100">
-            <ResultsPanel {...props} />
+            <ResultsPanel
+              {...props}
+              searchParameters={searchParameters}
+              isFetching={isFetching}
+              error={error as Error}
+              data={data}
+            />
           </Container>
         </div>
       </div>

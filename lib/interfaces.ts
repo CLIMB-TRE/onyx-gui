@@ -20,6 +20,11 @@ interface DataProps extends PageProps {
   handleAnalysisModalShow: (analysisID: string) => void;
 }
 
+interface ResultsProps extends DataProps {
+  title: string;
+  searchPath: string;
+}
+
 interface StatsProps extends PageProps {
   projectFields: Map<string, ProjectField>;
   fieldDescriptions: Map<string, string>;
@@ -34,4 +39,11 @@ interface ExportHandlerProps {
   setExportError: (error: Error) => void;
 }
 
-export type { OnyxProps, PageProps, DataProps, StatsProps, ExportHandlerProps };
+export type {
+  OnyxProps,
+  PageProps,
+  DataProps,
+  ResultsProps,
+  StatsProps,
+  ExportHandlerProps,
+};
