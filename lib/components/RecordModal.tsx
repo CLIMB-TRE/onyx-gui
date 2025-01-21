@@ -10,26 +10,15 @@ import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import Table from "./Table";
 import ErrorModal from "./ErrorModal";
+import History from "./History";
 import QueryHandler from "./QueryHandler";
-import {
-  useRecordQuery,
-  useRecordHistoryQuery,
-  useRecordAnalysesQuery,
-} from "../api";
-import {
-  RecordDetailResponse,
-  AnalysisListResponse,
-  ErrorResponse,
-  RecordType,
-} from "../types";
+import { useRecordQuery, useRecordAnalysesQuery } from "../api";
+import { RecordType } from "../types";
 import { DataProps } from "../interfaces";
 import ExportModal from "./ExportModal";
 import {
   DetailCellRendererFactory,
   AnalysisIDCellRendererFactory,
-  TimestampCellRenderer,
-  ActionCellRenderer,
-  ChangeCellRenderer,
 } from "./CellRenderers";
 import { handleJSONExport } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
@@ -38,14 +27,6 @@ interface RecordModalProps extends DataProps {
   recordID: string;
   show: boolean;
   onHide: () => void;
-}
-
-interface RecordDetailResponseProps extends RecordModalProps {
-  response: RecordDetailResponse | ErrorResponse;
-}
-
-interface AnalysisListResponseProps extends RecordModalProps {
-  response: AnalysisListResponse | ErrorResponse;
 }
 
 interface RecordDataFieldProps {
@@ -69,10 +50,11 @@ function RecordDataField(props: RecordDataFieldProps) {
   );
 }
 
-function RecordDataContent(props: RecordDetailResponseProps) {
+function Details(props: RecordModalProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
   const [errorModalShow, setErrorModalShow] = useState(false);
   const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
+  const { isFetching, error, data } = useRecordQuery(props);
 
   const handleErrorModalShow = useCallback((error: Error) => {
     setS3ReportError(error);
@@ -86,25 +68,27 @@ function RecordDataContent(props: RecordDetailResponseProps) {
       .join(" ");
   };
 
-  const recordData = useMemo(() => {
-    if (props.response.status !== "success") return [];
-    return Object.entries(props.response.data)
+  // Get the record details
+  const record = useMemo(() => {
+    if (data?.status !== "success") return [];
+    return Object.entries(data.data)
       .filter(([key]) => props.projectFields.get(key)?.type !== "relation")
       .map(([key, value]) => ({
         Field: key,
         Value: value,
-      }));
-  }, [props.response, props.projectFields]);
+      })) as RecordType[];
+  }, [data, props.projectFields]);
 
-  const relationsData = useMemo(() => {
-    if (props.response.status !== "success") return [];
-    return Object.entries(props.response.data)
+  // Get the relations details
+  const relations = useMemo(() => {
+    if (data?.status !== "success") return [];
+    return Object.entries(data.data)
       .filter(([key]) => props.projectFields.get(key)?.type === "relation")
       .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1)) as [
       string,
       RecordType[]
     ][];
-  }, [props.response, props.projectFields]);
+  }, [data, props.projectFields]);
 
   const errorModalProps = useMemo(
     () => ({
@@ -114,213 +98,143 @@ function RecordDataContent(props: RecordDetailResponseProps) {
     [props, handleErrorModalShow]
   );
 
+  const jsonExportProps = useMemo(
+    () => ({
+      ...props,
+      response: data,
+    }),
+    [props, data]
+  );
+
   return (
-    <Tab.Container id="record-data-tabs" defaultActiveKey="record-data-details">
-      <ErrorModal
-        title="S3 Reports"
-        message={s3BucketsMessage}
-        error={s3ReportError}
-        show={errorModalShow}
-        onHide={() => setErrorModalShow(false)}
-      />
-      <ExportModal
-        show={exportModalShow}
-        onHide={() => setExportModalShow(false)}
-        defaultFileNamePrefix={props.recordID}
-        fileExtension=".json"
-        exportProgressMessage={"Exporting record data to JSON..."}
-        handleExport={handleJSONExport(props)}
-      />
-      <Row className="h-100">
-        <Col xs={3} xl={2}>
-          <Stack gap={1}>
-            <hr />
-            {props.response.status === "success" && (
-              <Container>
-                <RecordDataField
-                  record={props.response.data}
-                  field="published_date"
-                  name="Date"
-                />
-                <RecordDataField
-                  record={props.response.data}
-                  field="site"
-                  name="Site"
-                />
-                {props.response.data?.platform && (
+    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
+      <Tab.Container
+        id="record-data-tabs"
+        defaultActiveKey="record-data-details"
+      >
+        <ErrorModal
+          title="S3 Reports"
+          message={s3BucketsMessage}
+          error={s3ReportError}
+          show={errorModalShow}
+          onHide={() => setErrorModalShow(false)}
+        />
+        <ExportModal
+          show={exportModalShow}
+          onHide={() => setExportModalShow(false)}
+          defaultFileNamePrefix={props.recordID}
+          fileExtension=".json"
+          exportProgressMessage={"Exporting record data to JSON..."}
+          handleExport={handleJSONExport(jsonExportProps)}
+        />
+        <Row className="h-100">
+          <Col xs={3} xl={2}>
+            <Stack gap={1}>
+              <hr />
+              {data?.status === "success" && (
+                <Container>
                   <RecordDataField
-                    record={props.response.data}
-                    field="platform"
-                    name="Platform"
+                    record={data.data}
+                    field="published_date"
+                    name="Date"
                   />
-                )}
-              </Container>
-            )}
-            <hr />
-            <Nav variant="pills" className="flex-column">
-              <Nav.Item>
-                <Nav.Link eventKey="record-data-details">Details</Nav.Link>
-              </Nav.Item>
-              {relationsData.map(([key]) => (
-                <Nav.Item key={key}>
-                  <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                  <RecordDataField
+                    record={data.data}
+                    field="site"
+                    name="Site"
+                  />
+                  {data.data?.platform && (
+                    <RecordDataField
+                      record={data.data}
+                      field="platform"
+                      name="Platform"
+                    />
+                  )}
+                </Container>
+              )}
+              <hr />
+              <Nav variant="pills" className="flex-column">
+                <Nav.Item>
+                  <Nav.Link eventKey="record-data-details">Details</Nav.Link>
                 </Nav.Item>
-              ))}
-            </Nav>
-            <hr />
-            <Button
-              size="sm"
-              variant="dark"
-              onClick={() => setExportModalShow(true)}
-            >
-              Export Record to JSON
-            </Button>
-          </Stack>
-        </Col>
-        <Col xs={9} xl={10}>
-          <Tab.Content className="h-100">
-            <Tab.Pane eventKey="record-data-details" className="h-100">
-              <h5>Details</h5>
-              <Table
-                {...props}
-                data={recordData}
-                defaultFileNamePrefix={`${props.recordID}_details`}
-                footer="Table showing the top-level fields for the record."
-                cellRenderers={
-                  new Map([
-                    ["Value", DetailCellRendererFactory(errorModalProps)],
-                  ])
-                }
-              />
-            </Tab.Pane>
-            {relationsData.map(([key, relationData]) => (
-              <Tab.Pane key={key} eventKey={key} className="h-100">
-                <h5>{formatTitle(key)}</h5>
+                {relations.map(([key]) => (
+                  <Nav.Item key={key}>
+                    <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                  </Nav.Item>
+                ))}
+              </Nav>
+              <hr />
+              <Button
+                size="sm"
+                variant="dark"
+                onClick={() => setExportModalShow(true)}
+              >
+                Export Record to JSON
+              </Button>
+            </Stack>
+          </Col>
+          <Col xs={9} xl={10}>
+            <Tab.Content className="h-100">
+              <Tab.Pane eventKey="record-data-details" className="h-100">
+                <h5>Details</h5>
                 <Table
                   {...props}
-                  data={relationData}
-                  defaultFileNamePrefix={`${props.recordID}_${key}`}
-                  headerTooltips={props.fieldDescriptions}
-                  headerTooltipPrefix={key + "__"}
-                  footer={props.fieldDescriptions.get(key) || "No Description."}
+                  data={record}
+                  defaultFileNamePrefix={`${props.recordID}_details`}
+                  footer="Table showing the top-level fields for the record."
+                  cellRenderers={
+                    new Map([
+                      ["Value", DetailCellRendererFactory(errorModalProps)],
+                    ])
+                  }
                 />
               </Tab.Pane>
-            ))}
-          </Tab.Content>
-        </Col>
-      </Row>
-    </Tab.Container>
-  );
-}
-
-function RecordData(props: RecordModalProps) {
-  const {
-    isFetching: recordPending,
-    error: recordError,
-    data: recordResponse,
-  } = useRecordQuery(props);
-
-  return (
-    <QueryHandler
-      isFetching={recordPending}
-      error={recordError as Error}
-      data={recordResponse}
-    >
-      <RecordDataContent {...props} response={recordResponse} />
+              {relations.map(([key, relation]) => (
+                <Tab.Pane key={key} eventKey={key} className="h-100">
+                  <h5>{formatTitle(key)}</h5>
+                  <Table
+                    {...props}
+                    data={relation}
+                    defaultFileNamePrefix={`${props.recordID}_${key}`}
+                    headerTooltips={props.fieldDescriptions}
+                    headerTooltipPrefix={key + "__"}
+                    footer={
+                      props.fieldDescriptions.get(key) || "No Description."
+                    }
+                  />
+                </Tab.Pane>
+              ))}
+            </Tab.Content>
+          </Col>
+        </Row>
+      </Tab.Container>
     </QueryHandler>
   );
 }
 
-function RecordHistoryContent(props: RecordDetailResponseProps) {
-  const recordHistoryData = useMemo(() => {
-    if (props.response.status !== "success") return [];
-    return props.response.data?.history as RecordType[];
-  }, [props.response]);
+function Analyses(props: RecordModalProps) {
+  const { isFetching, error, data } = useRecordAnalysesQuery(props);
+
+  // Get the analyses
+  const analyses = useMemo(() => {
+    if (data?.status !== "success") return [];
+    return data.data;
+  }, [data]);
 
   return (
-    <>
-      <h5>History</h5>
-      <Table
-        {...props}
-        data={recordHistoryData}
-        defaultFileNamePrefix={`${props.recordID}_history`}
-        flexOnly={["changes"]}
-        tooltipFields={["timestamp"]}
-        headerNames={
-          new Map([
-            ["username", "User"],
-            ["timestamp", "Date"],
-            ["action", "Action"],
-            ["changes", "Changes"],
-          ])
-        }
-        footer="Table showing the complete change history for the record."
-        cellRenderers={
-          new Map([
-            ["timestamp", TimestampCellRenderer],
-            ["action", ActionCellRenderer],
-            ["changes", ChangeCellRenderer],
-          ])
-        }
-      />
-    </>
-  );
-}
-
-function RecordHistory(props: RecordModalProps) {
-  const {
-    isFetching: recordHistoryPending,
-    error: recordHistoryError,
-    data: recordHistoryResponse,
-  } = useRecordHistoryQuery(props);
-
-  return (
-    <QueryHandler
-      isFetching={recordHistoryPending}
-      error={recordHistoryError as Error}
-      data={recordHistoryResponse}
-    >
-      <RecordHistoryContent {...props} response={recordHistoryResponse} />
-    </QueryHandler>
-  );
-}
-
-function RecordAnalysesContent(props: AnalysisListResponseProps) {
-  const recordAnalysesData = useMemo(() => {
-    if (props.response.status !== "success") return [];
-    return props.response.data;
-  }, [props.response]);
-
-  return (
-    <>
-      <h5>Analyses</h5>
-      <Table
-        {...props}
-        data={recordAnalysesData}
-        defaultFileNamePrefix={`${props.recordID}_analyses`}
-        footer="Table showing all analysis results for the record."
-        cellRenderers={
-          new Map([["analysis_id", AnalysisIDCellRendererFactory(props)]])
-        }
-      />
-    </>
-  );
-}
-
-function RecordAnalyses(props: RecordModalProps) {
-  const {
-    isFetching: recordAnalysesPending,
-    error: recordAnalysesError,
-    data: recordAnalysesResponse,
-  } = useRecordAnalysesQuery(props);
-
-  return (
-    <QueryHandler
-      isFetching={recordAnalysesPending}
-      error={recordAnalysesError as Error}
-      data={recordAnalysesResponse}
-    >
-      <RecordAnalysesContent {...props} response={recordAnalysesResponse} />
+    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
+      <>
+        <h5>Analyses</h5>
+        <Table
+          {...props}
+          data={analyses}
+          defaultFileNamePrefix={`${props.recordID}_analyses`}
+          footer="Table showing all analysis results for the record."
+          cellRenderers={
+            new Map([["analysis_id", AnalysisIDCellRendererFactory(props)]])
+          }
+        />
+      </>
     </QueryHandler>
   );
 }
@@ -355,21 +269,26 @@ function RecordModal(props: RecordModalProps) {
             title="Data"
             className="onyx-modal-tab-pane"
           >
-            <RecordData {...props} />
+            <Details {...props} />
           </Tab>
           <Tab
             eventKey="record-history-tab"
             title="History"
             className="onyx-modal-tab-pane"
           >
-            <RecordHistory {...props} />
+            <History
+              {...props}
+              name="record"
+              searchPath={`projects/${props.project}`}
+              ID={props.recordID}
+            />
           </Tab>
           <Tab
             eventKey="record-analyses-tab"
             title="Analyses"
             className="onyx-modal-tab-pane"
           >
-            <RecordAnalyses {...props} />
+            <Analyses {...props} />
           </Tab>
         </Tabs>
       </Modal.Body>

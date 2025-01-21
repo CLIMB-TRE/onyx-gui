@@ -13,13 +13,17 @@ interface AnalysisIDProps extends PageProps {
   analysisID: string;
 }
 
+interface GenericIDProps extends PageProps {
+  searchPath: string;
+  ID: string;
+}
+
 interface QueryProps extends PageProps {
   searchParameters: string;
 }
 
-interface GenericQueryProps extends PageProps {
+interface GenericQueryProps extends QueryProps {
   searchPath: string;
-  searchParameters: string;
 }
 
 /** Fetch types */
@@ -93,6 +97,20 @@ const useProjectFieldsQuery = (props: PageProps) => {
   });
 };
 
+/** Fetch analysis fields */
+const useAnalysisFieldsQuery = (props: OnyxProps) => {
+  return useQuery({
+    queryKey: ["analysis-fields-detail"],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`projects/analysis/fields/`)
+        .then((response) => response.json());
+    },
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: {} },
+  });
+};
+
 /** Fetch choices for a field */
 const useChoicesQuery = (props: ChoiceProps) => {
   return useQuery({
@@ -136,6 +154,21 @@ const useSiteUsersQuery = (props: OnyxProps) => {
   });
 };
 
+/** Fetch history from ID */
+const useHistoryQuery = (props: GenericIDProps) => {
+  return useQuery({
+    queryKey: ["history-detail", props.searchPath, props.ID],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(`${props.searchPath}/history/${props.ID}/`)
+        .then((response) => response.json());
+    },
+    enabled: !!(props.project && props.searchPath && props.ID),
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: {} },
+  });
+};
+
 /** Fetch record from record ID */
 const useRecordQuery = (props: RecordIDProps) => {
   return useQuery({
@@ -143,21 +176,6 @@ const useRecordQuery = (props: RecordIDProps) => {
     queryFn: async () => {
       return props
         .httpPathHandler(`projects/${props.project}/${props.recordID}/`)
-        .then((response) => response.json());
-    },
-    enabled: !!(props.project && props.recordID),
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: {} },
-  });
-};
-
-/** Fetch record history from record ID */
-const useRecordHistoryQuery = (props: RecordIDProps) => {
-  return useQuery({
-    queryKey: ["record-history-detail", props.project, props.recordID],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/history/${props.recordID}/`)
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.recordID),
@@ -264,37 +282,22 @@ const useCountQuery = (props: GenericQueryProps) => {
   });
 };
 
-/** Fetch fields from path and search parameters */
-const useAnalysisFieldsQuery = (props: PageProps) => {
-  return useQuery({
-    queryKey: ["analysis-fields-detail", props.project],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/analysis/fields/`)
-        .then((response) => response.json());
-    },
-    enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
-    placeholderData: { data: {} },
-  });
-};
-
 export {
   useTypesQuery,
   useLookupsQuery,
   useProfileQuery,
   useProjectPermissionsQuery,
   useProjectFieldsQuery,
+  useAnalysisFieldsQuery,
   useChoicesQuery,
   useActivityQuery,
   useSiteUsersQuery,
   useRecordQuery,
-  useRecordHistoryQuery,
+  useHistoryQuery,
   useRecordAnalysesQuery,
   useRecordsQuery,
   useAnalysisQuery,
   useAnalysisRecordsQuery,
   useAnalysesQuery,
   useCountQuery,
-  useAnalysisFieldsQuery,
 };
