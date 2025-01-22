@@ -11,17 +11,17 @@
 }
 
 [data-bs-theme=dark] {
+  --bs-body-bg: #121212 !important;
   --bs-secondary-bg: var(--bs-gray-900) !important;
-  --bs-body-bg: #000 !important;
   --onyx-dropdown-control-border-color: var(--bs-gray-800);
   --onyx-dropdown-control-background-color: var(--bs-body-bg);
-  --onyx-dropdown-menu-background-color: var(--bs-black);
+  --onyx-dropdown-menu-background-color: var(--bs-body-bg);
   --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-800);
   --onyx-dropdown-label-color: var(--bs-white);
-  --onyx-dropdown-option-background-color: var(--bs-black);
+  --onyx-dropdown-option-background-color: var(--bs-body-bg);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-800);
   --onyx-dropdown-option-description-color: var(--bs-gray-500);
-  --onyx-body-bg: var(--bs-black);
+  --onyx-body-bg: var(--bs-body-bg);
 }
 
 [data-bs-theme=light] .btn-dark {
