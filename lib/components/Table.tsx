@@ -143,12 +143,12 @@ function getColDefs(
     else keys = Object.keys(data[0]);
 
     colDefs = keys.map((key) => {
-      // TODO: Remove flex calculation and replace with min width and calculated ideal width
+      const width = 100 + 20 * Math.round(Math.log(key.length));
       const colDef: ColDef = {
         field: key,
         headerName: props.headerNames?.get(key) || key,
-        minWidth: 100,
-        width: 100 + 20 * Math.round(Math.log(key.length)),
+        minWidth: width,
+        width: isServerPaginated ? width : undefined,
         headerTooltip: props.headerTooltips?.get(
           (props.headerTooltipPrefix || "") + key
         ),
@@ -183,11 +183,7 @@ function getColDefs(
 
       // Apply flex to all fields unless the table is server paginated
       // or there is a list of flex-only fields
-      if (
-        !isServerPaginated &&
-        (!props.flexOnly || props.flexOnly.includes(key))
-      )
-        colDef.flex = 1;
+      if (!props.flexOnly || props.flexOnly.includes(key)) colDef.flex = 1;
 
       return colDef;
     });
