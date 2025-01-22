@@ -50,24 +50,21 @@ function HeaderVersion({
 }
 
 function Header(props: HeaderProps) {
-  const {
-    isFetching: profilePending,
-    error: profileError,
-    data: profileResponse,
-  } = useProfileQuery(props);
+  const { isFetching, error, data } = useProfileQuery(props);
 
-  const { username, site } = useMemo(() => {
-    if (profileResponse?.status !== "success")
+  // Get the user profile
+  const profile = useMemo(() => {
+    if (data?.status !== "success")
       return {
         username: "None",
         site: "None",
       };
 
     return {
-      username: profileResponse.data.username,
-      site: profileResponse.data.site,
+      username: data.data.username,
+      site: data.data.site,
     };
-  }, [profileResponse]);
+  }, [data]);
 
   return (
     <Navbar
@@ -108,11 +105,11 @@ function Header(props: HeaderProps) {
                       <HeaderText
                         label="User"
                         value={
-                          profilePending
+                          isFetching
                             ? "Loading..."
-                            : profileError
+                            : error
                             ? "Failed to load"
-                            : username
+                            : profile.username
                         }
                       />
                     </Nav.Link>
@@ -122,11 +119,11 @@ function Header(props: HeaderProps) {
                       <HeaderText
                         label="Site"
                         value={
-                          profilePending
+                          isFetching
                             ? "Loading..."
-                            : profileError
+                            : error
                             ? "Failed to load"
-                            : site
+                            : profile.site
                         }
                       />
                     </Nav.Link>

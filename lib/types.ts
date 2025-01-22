@@ -115,11 +115,15 @@ type RecordDetailResponse = SuccessResponse & {
   data: RecordType;
 };
 
-type FieldsInfoDetailResponse = SuccessResponse & {
+type FieldsResponse = SuccessResponse & {
   data: {
     name: string;
     fields: Record<string, ProjectField>;
   };
+};
+
+type ChoicesResponse = SuccessResponse & {
+  data: Record<string, ChoiceDescription>;
 };
 
 // TODO: Use a generic response type
@@ -149,7 +153,8 @@ export type {
   SuccessResponse,
   RecordListResponse,
   RecordDetailResponse,
-  FieldsInfoDetailResponse,
+  FieldsResponse,
+  ChoicesResponse,
 };
 
 export { ExportStatus };

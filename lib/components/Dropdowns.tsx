@@ -3,7 +3,7 @@ import Select, { components, OptionProps } from "react-select";
 import { useChoicesQuery } from "../api";
 import selectStyles from "../utils/selectStyles";
 import { PageProps } from "../interfaces";
-import { ChoiceDescription, OptionType } from "../types";
+import { ErrorResponse, OptionType, ChoicesResponse } from "../types";
 
 interface GenericDropdownProps {
   options: string[];
@@ -121,36 +121,28 @@ function MultiDropdown(props: MultiDropdownProps) {
   );
 }
 
-function Choice(props: ChoiceProps) {
-  const { data: choicesResponse } = useChoicesQuery(props);
-
+const useChoiceDescriptions = (data: ChoicesResponse | ErrorResponse) => {
   // Get a map of choices to their descriptions
-  const choiceDescriptions = useMemo(() => {
-    if (choicesResponse?.status !== "success") return new Map<string, string>();
+  return useMemo(() => {
+    if (data?.status !== "success") return new Map<string, string>();
     return new Map(
-      Object.entries(choicesResponse.data).map(([choice, description]) => [
+      Object.entries(data.data).map(([choice, description]) => [
         choice,
-        (description as ChoiceDescription).description,
+        description.description,
       ])
     );
-  }, [choicesResponse]);
+  }, [data]);
+};
 
+function Choice(props: ChoiceProps) {
+  const { data } = useChoicesQuery(props);
+  const choiceDescriptions = useChoiceDescriptions(data);
   return <Dropdown {...props} titles={choiceDescriptions} />;
 }
 
 function MultiChoice(props: MultiChoiceProps) {
-  const { data: choicesResponse } = useChoicesQuery(props);
-
-  const choiceDescriptions = useMemo(() => {
-    if (choicesResponse?.status !== "success") return new Map<string, string>();
-    return new Map(
-      Object.entries(choicesResponse.data).map(([choice, description]) => [
-        choice,
-        (description as ChoiceDescription).description,
-      ])
-    );
-  }, [choicesResponse]);
-
+  const { data } = useChoicesQuery(props);
+  const choiceDescriptions = useChoiceDescriptions(data);
   return <MultiDropdown {...props} titles={choiceDescriptions} />;
 }
 

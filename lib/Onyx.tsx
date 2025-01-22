@@ -27,7 +27,7 @@ import {
   TypeObject,
   LookupObject,
   ProjectPermissionType,
-  FieldsInfoDetailResponse,
+  FieldsResponse,
   ErrorResponse,
 } from "./types";
 import { OnyxProps } from "./interfaces";
@@ -58,9 +58,7 @@ function flattenFields(fields: Record<string, ProjectField>) {
   return flatFields;
 }
 
-const useFieldsInfo = (
-  fieldsResponse: FieldsInfoDetailResponse | ErrorResponse
-) => {
+const useFieldsInfo = (fieldsResponse: FieldsResponse | ErrorResponse) => {
   return useMemo(() => {
     if (fieldsResponse?.status !== "success") {
       return {
