@@ -1,8 +1,5 @@
 import Button from "react-bootstrap/Button";
-import {
-  MdKeyboardDoubleArrowLeft,
-  MdKeyboardDoubleArrowRight,
-} from "react-icons/md";
+import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from "react-icons/vsc";
 
 interface SidebarButtonProps {
   sidebarCollapsed: boolean;
@@ -14,13 +11,13 @@ function SidebarButton(props: SidebarButtonProps) {
     <Button
       size="sm"
       variant="dark"
-      title={props.sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+      title={props.sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
       onClick={() => props.setSidebarCollapsed(!props.sidebarCollapsed)}
     >
       {props.sidebarCollapsed ? (
-        <MdKeyboardDoubleArrowRight />
+        <VscLayoutSidebarLeftOff />
       ) : (
-        <MdKeyboardDoubleArrowLeft />
+        <VscLayoutSidebarLeft />
       )}
     </Button>
   );

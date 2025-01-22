@@ -5,7 +5,6 @@ import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
 import TransformsPanel from "../components/TransformsPanel";
 import ResultsPanel from "../components/ResultsPanel";
-import { SidebarButton } from "../components/Buttons";
 import { FilterConfig } from "../types";
 import { ResultsProps } from "../interfaces";
 import { useDebouncedValue } from "../utils/hooks";
@@ -122,10 +121,6 @@ function Results(props: ResultsProps) {
             </Container>
           </div>
         )}
-        <SidebarButton
-          sidebarCollapsed={sidebarCollapsed}
-          setSidebarCollapsed={setSidebarCollapsed}
-        />
         <div className="right-col h-100">
           <Container fluid className="g-2 h-100">
             <ResultsPanel
@@ -134,6 +129,8 @@ function Results(props: ResultsProps) {
               isFetching={isFetching}
               error={error as Error}
               data={data}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
             />
           </Container>
         </div>

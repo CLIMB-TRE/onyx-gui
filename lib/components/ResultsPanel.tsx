@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
+import Stack from "react-bootstrap/Stack";
 import ErrorModal from "./ErrorModal";
 import Table, { ServerPaginatedTable } from "./Table";
 import QueryHandler from "./QueryHandler";
@@ -13,12 +14,15 @@ import {
 } from "./CellRenderers";
 import { s3BucketsMessage } from "../utils/messages";
 import { getDefaultFileNamePrefix } from "../utils/functions";
+import { SidebarButton } from "./Buttons";
 
 interface ResultsPanelProps extends ResultsProps {
   searchParameters: string;
   isFetching: boolean;
   error: Error | null;
   data: RecordListResponse | ErrorResponse;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
@@ -58,7 +62,12 @@ function ResultsPanel(props: ResultsPanelProps) {
 
   return (
     <Card className="h-100">
-      <Card.Header>{props.title}</Card.Header>
+      <Card.Header>
+        <Stack gap={2} direction="horizontal">
+          <SidebarButton {...props} />
+          <span>{props.title}</span>
+        </Stack>
+      </Card.Header>
       <Container fluid className="p-2 pb-0 h-100">
         <ErrorModal
           title="S3 Reports"
