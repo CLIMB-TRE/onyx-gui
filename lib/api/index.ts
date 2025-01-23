@@ -95,14 +95,15 @@ const useProjectFieldsQuery = (props: PageProps) => {
 };
 
 /** Fetch analysis fields */
-const useAnalysisFieldsQuery = (props: OnyxProps) => {
+const useAnalysisFieldsQuery = (props: PageProps) => {
   return useQuery({
-    queryKey: ["analysis-fields-detail"],
+    queryKey: ["analysis-fields-detail", props.project],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/analysis/fields/`)
+        .httpPathHandler(`projects/${props.project}/analysis/fields/`)
         .then((response) => response.json());
     },
+    enabled: !!props.project,
     staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });

@@ -91,7 +91,7 @@ function Results(props: ResultsProps) {
               <Stack gap={2} className="h-100 pt-1">
                 <SearchBar
                   {...props}
-                  placeholder="Search records..."
+                  placeholder={`Search ${props.title.toLowerCase()}...`}
                   searchInput={searchInput}
                   setSearchInput={setSearchInput}
                   handleSearch={handleSearch}

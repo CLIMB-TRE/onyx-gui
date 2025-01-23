@@ -35,12 +35,12 @@ function ErrorMessages(props: ErrorMessagesProps) {
         Array.isArray(value) ? (
           value.map((v: string) => (
             <Alert key={key} variant="danger">
-              {key}: {v}
+              <span className="fw-bold">{key}:</span> {v}
             </Alert>
           ))
         ) : (
           <Alert key={key} variant="danger">
-            {key}: {value}
+            {value}
           </Alert>
         )
       )}
