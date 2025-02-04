@@ -71,6 +71,9 @@ type RecordType = Record<
   string | number | boolean | object | null | RecordType[]
 >;
 
+type SummaryType = Record<"count", number> &
+  Record<string, string | number | boolean | object | null>;
+
 type AnalysisType = {
   analysis_id: string;
   published_date: string;
@@ -147,6 +150,7 @@ export type {
   OptionType,
   ErrorType,
   RecordType,
+  SummaryType,
   AnalysisType,
   ProjectPermissionType,
   ErrorResponse,

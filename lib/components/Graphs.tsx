@@ -1,17 +1,25 @@
-import { useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import Plotly from "plotly.js-basic-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
 import { Template, AxisType } from "plotly.js-basic-dist";
-import { ProjectField, RecordType, GraphConfig } from "../types";
+import {
+  ProjectField,
+  SummaryType,
+  GraphConfig,
+  SuccessResponse,
+  ErrorResponse,
+} from "../types";
 import { StatsProps } from "../interfaces";
 import graphStyles from "../utils/graphStyles";
+import QueryHandler from "./QueryHandler";
+import { useQueryRefresh } from "../utils/hooks";
+import { useSummaryQuery, useGroupedSummaryQuery } from "../api";
 
 // Create Plotly component using basic plotly distribution
 const Plot = createPlotlyComponent(Plotly);
 
-interface BaseGraphProps {
-  data: Plotly.Data[];
+interface BasePlotProps {
+  plotData: Plotly.Data[];
   title?: string;
   xTitle?: string;
   yTitle?: string;
@@ -22,148 +30,99 @@ interface BaseGraphProps {
   uirevision: string;
 }
 
+interface BaseGraphProps extends BasePlotProps {
+  isFetching: boolean;
+  error: Error;
+  data: SuccessResponse | ErrorResponse;
+}
+
 interface GraphProps extends StatsProps {
   graphConfig: GraphConfig;
   refresh: number;
   setLastUpdated: (lastUpdated: string | null) => void;
 }
 
-const useRefresh = ({
-  refresh,
-  dataUpdatedAt,
-  errorUpdatedAt,
-  refetch,
-  setLastUpdated,
-}: {
-  refresh: number;
-  dataUpdatedAt: number;
-  errorUpdatedAt: number;
-  refetch: () => void;
-  setLastUpdated: (lastUpdated: string | null) => void;
-}) => {
-  useEffect(() => {
-    refetch();
-  }, [refetch, refresh]);
+/** Get string value of a summary field. Converts null values to the empty string */
+function getStringValue(summary: SummaryType, field: string): string {
+  const value = summary[field];
+  return value === null ? "" : value.toString();
+}
 
-  useEffect(() => {
-    setLastUpdated(
-      errorUpdatedAt
-        ? new Date(errorUpdatedAt).toLocaleString()
-        : dataUpdatedAt
-        ? new Date(dataUpdatedAt).toLocaleString()
-        : null
+const useSummaryData = (props: GraphProps) => {
+  const { isFetching, error, data, refetch, dataUpdatedAt, errorUpdatedAt } =
+    useSummaryQuery(props);
+
+  const plotData = useMemo(() => {
+    if (data?.status !== "success")
+      return {
+        field_data: [],
+        count_data: [],
+      };
+
+    // Convert null field value to empty string
+    const field_data = data.data.map((summary: SummaryType) =>
+      getStringValue(summary, props.graphConfig.field)
     );
-  }, [dataUpdatedAt, errorUpdatedAt, setLastUpdated]);
-};
+    // Get count values
+    const count_data = data.data.map((summary: SummaryType) => summary.count);
+    return { field_data, count_data };
+  }, [data, props.graphConfig.field]);
 
-const useSummaryQuery = (props: GraphProps) => {
-  const { data, refetch, dataUpdatedAt, errorUpdatedAt } = useQuery({
-    queryKey: ["summary", props.project, props.graphConfig.field],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(
-          `projects/${props.project}/?summarise=${props.graphConfig.field}`
-        )
-        .then((response) => response.json())
-        .then((data) => {
-          const field_data = data.data.map((record: RecordType) => {
-            // Convert null field value to empty string
-            let field_value = record[props.graphConfig.field];
-            if (field_value === null) {
-              field_value = "";
-            } else {
-              field_value = field_value.toString();
-            }
-            return field_value;
-          });
-          const count_data = data.data.map(
-            (record: { count: number }) => record.count
-          );
-          return { field_data, count_data };
-        });
-    },
-    enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
-  });
-
-  useRefresh({
-    refresh: props.refresh,
+  useQueryRefresh(
+    props.refresh,
     dataUpdatedAt,
     errorUpdatedAt,
     refetch,
-    setLastUpdated: props.setLastUpdated,
-  });
+    props.setLastUpdated
+  );
 
-  return { data };
+  return { isFetching, error, data, plotData };
 };
 
-const useGroupedSummaryQuery = (props: GraphProps) => {
-  const { data, refetch, dataUpdatedAt, errorUpdatedAt } = useQuery({
-    queryKey: [
-      "summary",
-      props.project,
-      props.graphConfig.field,
-      props.graphConfig.groupBy,
-    ],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(
-          `projects/${props.project}/?summarise=${props.graphConfig.field}&summarise=${props.graphConfig.groupBy}`
-        )
-        .then((response) => response.json())
-        .then((data) => {
-          const groupedData = new Map<
-            string,
-            { field_data: string[]; count_data: number[] }
-          >();
+const useGroupedDataQuery = (props: GraphProps) => {
+  const { isFetching, error, data, refetch, dataUpdatedAt, errorUpdatedAt } =
+    useGroupedSummaryQuery(props);
 
-          data.data.forEach((record: RecordType) => {
-            // Convert null field value to empty string
-            let field_value = record[props.graphConfig.field];
-            if (field_value === null) {
-              field_value = "";
-            } else {
-              field_value = field_value.toString();
-            }
+  const plotData = useMemo(() => {
+    if (data?.status !== "success")
+      return new Map<string, { field_data: string[]; count_data: number[] }>();
 
-            // Convert null group-by value to empty string
-            let group_by_value = record[props.graphConfig.groupBy];
-            if (group_by_value === null) {
-              group_by_value = "";
-            } else {
-              group_by_value = group_by_value.toString();
-            }
+    const groupedData = new Map<
+      string,
+      { field_data: string[]; count_data: number[] }
+    >();
 
-            // Add field value and count to grouped data
-            const groupedValue = groupedData.get(group_by_value);
-            if (!groupedValue) {
-              groupedData.set(group_by_value, {
-                field_data: [field_value],
-                count_data: [record.count as number],
-              });
-              return;
-            } else {
-              groupedValue.field_data.push(field_value);
-              groupedValue.count_data.push(record.count as number);
-            }
-          });
+    data.data.forEach((summary: SummaryType) => {
+      // Convert null field and group values to empty strings
+      const field_value = getStringValue(summary, props.graphConfig.field);
+      const group_by_value = getStringValue(summary, props.graphConfig.groupBy);
 
-          return groupedData;
+      // Add field value and count to grouped data
+      const groupedValue = groupedData.get(group_by_value);
+      if (!groupedValue) {
+        groupedData.set(group_by_value, {
+          field_data: [field_value],
+          count_data: [summary.count],
         });
-    },
-    enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
-  });
+        return;
+      } else {
+        groupedValue.field_data.push(field_value);
+        groupedValue.count_data.push(summary.count);
+      }
+    });
 
-  useRefresh({
-    refresh: props.refresh,
+    return groupedData;
+  }, [data, props.graphConfig.field, props.graphConfig.groupBy]);
+
+  useQueryRefresh(
+    props.refresh,
     dataUpdatedAt,
     errorUpdatedAt,
     refetch,
-    setLastUpdated: props.setLastUpdated,
-  });
+    props.setLastUpdated
+  );
 
-  return { data };
+  return { isFetching, error, data, plotData };
 };
 
 function getNullCount(
@@ -206,10 +165,10 @@ function getGroupedNullCount(
   return title;
 }
 
-function BaseGraph(props: BaseGraphProps) {
+function BasePlot(props: BasePlotProps) {
   return (
     <Plot
-      data={props.data}
+      data={props.plotData}
       layout={{
         ...props.layout,
         autosize: true,
@@ -258,26 +217,40 @@ function BaseGraph(props: BaseGraphProps) {
   );
 }
 
+function BaseGraph(props: BaseGraphProps) {
+  return (
+    <QueryHandler
+      isFetching={props.isFetching}
+      error={props.error}
+      data={props.data}
+    >
+      <BasePlot {...props} />
+    </QueryHandler>
+  );
+}
+
 function ScatterGraph(props: GraphProps) {
-  const {
-    data = {
-      field_data: [],
-      count_data: [],
-    },
-  } = useSummaryQuery(props);
+  const { isFetching, error, data, plotData } = useSummaryData(props);
 
   return (
     <BaseGraph
       {...props}
-      data={[
+      isFetching={isFetching}
+      error={error as Error}
+      data={data}
+      plotData={[
         {
-          x: data.field_data,
-          y: data.count_data,
+          x: plotData.field_data,
+          y: plotData.count_data,
           type: "scatter",
           mode: "lines+markers",
         },
       ]}
-      title={getNullCount(props.projectFields, props.graphConfig.field, data)}
+      title={getNullCount(
+        props.projectFields,
+        props.graphConfig.field,
+        plotData
+      )}
       xTitle={props.graphConfig.field}
       yTitle="count"
       yAxisType={props.graphConfig.yAxisType}
@@ -287,21 +260,15 @@ function ScatterGraph(props: GraphProps) {
 }
 
 function BarGraph(props: GraphProps) {
-  const {
-    data = {
-      field_data: [],
-      count_data: [],
-    },
-  } = useSummaryQuery(props);
+  const { isFetching, error, data, plotData } = useSummaryData(props);
 
   let layout: Record<string, string> = {};
   let yTitle = "count";
 
-  if (props.graphConfig.groupMode === "stack") {
-    layout = { barmode: "stack" };
-  } else if (props.graphConfig.groupMode === "group") {
+  if (props.graphConfig.groupMode === "stack") layout = { barmode: "stack" };
+  else if (props.graphConfig.groupMode === "group")
     layout = { barmode: "group" };
-  } else if (props.graphConfig.groupMode === "norm") {
+  else if (props.graphConfig.groupMode === "norm") {
     layout = { barmode: "stack", barnorm: "percent" };
     yTitle = "percentage";
   }
@@ -309,14 +276,21 @@ function BarGraph(props: GraphProps) {
   return (
     <BaseGraph
       {...props}
-      data={[
+      isFetching={isFetching}
+      error={error as Error}
+      data={data}
+      plotData={[
         {
-          x: data.field_data,
-          y: data.count_data,
+          x: plotData.field_data,
+          y: plotData.count_data,
           type: "bar",
         },
       ]}
-      title={getNullCount(props.projectFields, props.graphConfig.field, data)}
+      title={getNullCount(
+        props.projectFields,
+        props.graphConfig.field,
+        plotData
+      )}
       xTitle={props.graphConfig.field}
       yTitle={yTitle}
       yAxisType={props.graphConfig.yAxisType}
@@ -327,25 +301,27 @@ function BarGraph(props: GraphProps) {
 }
 
 function PieGraph(props: GraphProps) {
-  const {
-    data = {
-      field_data: [],
-      count_data: [],
-    },
-  } = useSummaryQuery(props);
+  const { isFetching, error, data, plotData } = useSummaryData(props);
 
   return (
     <BaseGraph
       {...props}
-      data={[
+      isFetching={isFetching}
+      error={error as Error}
+      data={data}
+      plotData={[
         {
-          labels: data.field_data,
-          values: data.count_data,
+          labels: plotData.field_data,
+          values: plotData.count_data,
           type: "pie",
           marker: { color: "#198754" },
         },
       ]}
-      title={getNullCount(props.projectFields, props.graphConfig.field, data)}
+      title={getNullCount(
+        props.projectFields,
+        props.graphConfig.field,
+        plotData
+      )}
       legendTitle={props.graphConfig.field}
       uirevision={props.graphConfig.field}
     />
@@ -353,30 +329,33 @@ function PieGraph(props: GraphProps) {
 }
 
 function GroupedScatterGraph(props: GraphProps) {
-  const {
-    data = new Map<string, { field_data: string[]; count_data: number[] }>(),
-  } = useGroupedSummaryQuery(props);
+  const { isFetching, error, data, plotData } = useGroupedDataQuery(props);
 
-  const graphData = useMemo(
+  const scatterData = useMemo(
     () =>
-      Array.from(data.entries()).map(([group, { field_data, count_data }]) => ({
-        x: field_data,
-        y: count_data,
-        name: group,
-        type: "scatter",
-        mode: "lines+markers",
-      })) as Plotly.Data[],
-    [data]
+      Array.from(plotData.entries()).map(
+        ([group, { field_data, count_data }]) => ({
+          x: field_data,
+          y: count_data,
+          name: group,
+          type: "scatter",
+          mode: "lines+markers",
+        })
+      ) as Plotly.Data[],
+    [plotData]
   );
 
   return (
     <BaseGraph
       {...props}
-      data={graphData}
+      isFetching={isFetching}
+      error={error as Error}
+      data={data}
+      plotData={scatterData}
       title={getGroupedNullCount(
         props.projectFields,
         props.graphConfig.field,
-        data
+        plotData
       )}
       xTitle={props.graphConfig.field}
       yTitle="count"
@@ -388,29 +367,28 @@ function GroupedScatterGraph(props: GraphProps) {
 }
 
 function GroupedBarGraph(props: GraphProps) {
-  const {
-    data = new Map<string, { field_data: string[]; count_data: number[] }>(),
-  } = useGroupedSummaryQuery(props);
+  const { isFetching, error, data, plotData } = useGroupedDataQuery(props);
 
-  const graphData = useMemo(
+  const barData = useMemo(
     () =>
-      Array.from(data.entries()).map(([group, { field_data, count_data }]) => ({
-        x: field_data,
-        y: count_data,
-        name: group,
-        type: "bar",
-      })) as Plotly.Data[],
-    [data]
+      Array.from(plotData.entries()).map(
+        ([group, { field_data, count_data }]) => ({
+          x: field_data,
+          y: count_data,
+          name: group,
+          type: "bar",
+        })
+      ) as Plotly.Data[],
+    [plotData]
   );
 
   let layout: Record<string, string> = {};
   let yTitle = "count";
 
-  if (props.graphConfig.groupMode === "stack") {
-    layout = { barmode: "stack" };
-  } else if (props.graphConfig.groupMode === "group") {
+  if (props.graphConfig.groupMode === "stack") layout = { barmode: "stack" };
+  else if (props.graphConfig.groupMode === "group")
     layout = { barmode: "group" };
-  } else if (props.graphConfig.groupMode === "norm") {
+  else if (props.graphConfig.groupMode === "norm") {
     layout = { barmode: "stack", barnorm: "percent" };
     yTitle = "percentage";
   }
@@ -418,11 +396,14 @@ function GroupedBarGraph(props: GraphProps) {
   return (
     <BaseGraph
       {...props}
-      data={graphData}
+      isFetching={isFetching}
+      error={error as Error}
+      data={data}
+      plotData={barData}
       title={getGroupedNullCount(
         props.projectFields,
         props.graphConfig.field,
-        data
+        plotData
       )}
       xTitle={props.graphConfig.field}
       yTitle={yTitle}
@@ -435,7 +416,7 @@ function GroupedBarGraph(props: GraphProps) {
 }
 
 export {
-  BaseGraph,
+  BasePlot,
   ScatterGraph,
   BarGraph,
   PieGraph,

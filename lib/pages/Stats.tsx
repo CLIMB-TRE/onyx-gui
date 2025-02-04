@@ -8,7 +8,7 @@ import Stack from "react-bootstrap/Stack";
 import Card from "react-bootstrap/Card";
 import { Dropdown } from "../components/Dropdowns";
 import {
-  BaseGraph,
+  BasePlot,
   ScatterGraph,
   BarGraph,
   PieGraph,
@@ -30,6 +30,7 @@ import {
   MdArrowDownward,
   MdVisibility,
   MdVisibilityOff,
+  MdDelete,
 } from "react-icons/md";
 
 interface GraphPanelProps extends StatsProps {
@@ -78,7 +79,7 @@ function GraphPanelGraph(props: GraphPanelGraphProps) {
       g = <PieGraph {...props} />;
       break;
     default:
-      g = <BaseGraph {...props} data={[]} uirevision={""} />;
+      g = <BasePlot {...props} plotData={[]} uirevision={""} />;
   }
   return g;
 }
@@ -416,6 +417,8 @@ function Stats(props: StatsProps) {
     setGraphConfigList(list);
   };
 
+  const handleGraphConfigRemoveAll = () => setGraphConfigList([]);
+
   return (
     <Container fluid className="g-2 h-100">
       <Card className="h-100">
@@ -437,6 +440,14 @@ function Stats(props: StatsProps) {
               onClick={handleRefresh}
             >
               <MdRefresh />
+            </Button>
+            <Button
+              size="sm"
+              variant="dark"
+              title="Remove All Graphs"
+              onClick={handleGraphConfigRemoveAll}
+            >
+              <MdDelete />
             </Button>
             <Button
               size="sm"

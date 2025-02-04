@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { OnyxProps, PageProps } from "../interfaces";
+import { GraphConfig } from "../types";
 
 interface ChoiceProps extends PageProps {
   field: string;
@@ -21,6 +22,10 @@ interface GenericIDProps extends PageProps {
 interface GenericQueryProps extends PageProps {
   searchPath: string;
   searchParameters: string;
+}
+
+interface GraphQueryProps extends PageProps {
+  graphConfig: GraphConfig;
 }
 
 /** Fetch types */
@@ -263,6 +268,45 @@ const useCountQuery = (props: GenericQueryProps) => {
   });
 };
 
+/** Fetch summary from project and field */
+const useSummaryQuery = (props: GraphQueryProps) => {
+  return useQuery({
+    queryKey: ["summary-list", props.project, props.graphConfig.field],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(
+          `projects/${props.project}/?summarise=${props.graphConfig.field}`
+        )
+        .then((response) => response.json());
+    },
+    enabled: !!props.project,
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: [] },
+  });
+};
+
+/** Fetch grouped summary from project, field, and groupBy */
+const useGroupedSummaryQuery = (props: GraphQueryProps) => {
+  return useQuery({
+    queryKey: [
+      "summary-list",
+      props.project,
+      props.graphConfig.field,
+      props.graphConfig.groupBy,
+    ],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(
+          `projects/${props.project}/?summarise=${props.graphConfig.field}&summarise=${props.graphConfig.groupBy}`
+        )
+        .then((response) => response.json());
+    },
+    enabled: !!props.project,
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: [] },
+  });
+};
+
 export {
   useTypesQuery,
   useLookupsQuery,
@@ -280,4 +324,6 @@ export {
   useAnalysisRecordsQuery,
   useResultsQuery,
   useCountQuery,
+  useSummaryQuery,
+  useGroupedSummaryQuery,
 };

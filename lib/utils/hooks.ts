@@ -13,4 +13,26 @@ const useDebouncedValue = (inputValue: string, delay: number) => {
   return debouncedValue;
 };
 
-export { useDebouncedValue };
+const useQueryRefresh = (
+  refresh: number,
+  dataUpdatedAt: number,
+  errorUpdatedAt: number,
+  refetch: () => void,
+  setLastUpdated: (lastUpdated: string | null) => void
+) => {
+  useEffect(() => {
+    refetch();
+  }, [refetch, refresh]);
+
+  useEffect(() => {
+    setLastUpdated(
+      errorUpdatedAt
+        ? new Date(errorUpdatedAt).toLocaleString()
+        : dataUpdatedAt
+        ? new Date(dataUpdatedAt).toLocaleString()
+        : null
+    );
+  }, [dataUpdatedAt, errorUpdatedAt, setLastUpdated]);
+};
+
+export { useDebouncedValue, useQueryRefresh };
