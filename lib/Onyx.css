@@ -97,3 +97,13 @@
   flex-grow: 1;
   min-width: 500px;
 }
+
+[data-bs-theme=light] .border-pink {
+  --bs-border-opacity: 1;
+  border-color: var(--bs-pink) !important;
+}
+
+[data-bs-theme=dark] .border-pink {
+  --bs-border-opacity: 1;
+  border-color: var(--bs-pink) !important;
+}
