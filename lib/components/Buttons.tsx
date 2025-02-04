@@ -1,7 +1,7 @@
-import Button from "react-bootstrap/Button";
+import Button, { ButtonProps } from "react-bootstrap/Button";
 import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from "react-icons/vsc";
 
-interface SidebarButtonProps {
+interface SidebarButtonProps extends ButtonProps {
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
 }
