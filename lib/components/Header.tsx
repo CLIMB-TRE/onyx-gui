@@ -68,7 +68,10 @@ function Header(props: HeaderProps) {
 
   return (
     <Navbar
-      style={{ backgroundColor: "#121212" }}
+      style={{
+        backgroundColor: "#121212",
+      }}
+      className="border-bottom border-4 border-pink"
       variant="dark"
       collapseOnSelect
       expand="lg"
