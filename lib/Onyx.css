@@ -43,7 +43,7 @@
 
 [data-bs-theme=dark] .btn-dark {
   --bs-btn-bg:  var(--bs-gray-900);
-  --bs-btn-border-color: var(--bs-gray-900);
+  --bs-btn-border-color: var(--bs-gray-700);
   --bs-btn-disabled-bg: var(--bs-gray-900);
   --bs-btn-disabled-border-color: var(--bs-gray-900);
 }
