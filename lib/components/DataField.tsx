@@ -11,10 +11,10 @@ interface DataFieldProps {
 function DataField(props: DataFieldProps) {
   return (
     <Row>
-      <Col md={6}>
+      <Col lg={6}>
         <h6>{props.name}:</h6>
       </Col>
-      <Col md={6}>
+      <Col lg={6}>
         <span className="onyx-text-pink">
           {props.record[props.field]?.toString() || ""}
         </span>
