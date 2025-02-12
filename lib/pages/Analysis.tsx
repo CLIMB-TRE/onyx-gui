@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import Card from "react-bootstrap/Card";
 import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
 import Button from "react-bootstrap/Button";
 import CloseButton from "react-bootstrap/CloseButton";
 import Nav from "react-bootstrap/Nav";
@@ -220,53 +219,52 @@ function Analysis(props: AnalysisProps) {
           </Stack>
         </Card.Header>
         <Card.Body>
-          <Tabs
-            id="analysis-modal-tabs"
-            defaultActiveKey="analysis-data-tab"
-            className="mb-3"
-            mountOnEnter
-          >
-            <Tab
-              eventKey="analysis-data-tab"
-              title="Data"
-              className="onyx-modal-tab-pane"
+          <Tab.Container defaultActiveKey="analysis-data-tab" mountOnEnter>
+            <Nav variant="tabs">
+              <Nav.Item>
+                <Nav.Link eventKey="analysis-data-tab">Data</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="analysis-history-tab">History</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="analysis-records-tab">Records</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="analysis-upstream-tab">Upstream</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="analysis-downstream-tab">
+                  Downstream
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
+            <Tab.Content
+              className="m-2"
+              style={{ height: "calc(100% - 60px)" }}
             >
-              <Details {...props} />
-            </Tab>
-            <Tab
-              eventKey="analysis-history-tab"
-              title="History"
-              className="onyx-modal-tab-pane"
-            >
-              <History
-                {...props}
-                name="analysis"
-                searchPath={`projects/${props.project}/analysis`}
-                ID={props.analysisID}
-              />
-            </Tab>
-            <Tab
-              eventKey="analysis-records-tab"
-              title="Records"
-              className="onyx-modal-tab-pane"
-            >
-              <Records {...props} />
-            </Tab>
-            <Tab
-              eventKey="analysis-upstream-tab"
-              title="Upstream"
-              className="onyx-modal-tab-pane"
-            >
-              <Upstream {...props} />
-            </Tab>
-            <Tab
-              eventKey="analysis-downstream-tab"
-              title="Downstream"
-              className="onyx-modal-tab-pane"
-            >
-              <Downstream {...props} />
-            </Tab>
-          </Tabs>
+              <Tab.Pane eventKey="analysis-data-tab" className="h-100">
+                <Details {...props} />
+              </Tab.Pane>
+              <Tab.Pane eventKey="analysis-history-tab" className="h-100">
+                <History
+                  {...props}
+                  name="analysis"
+                  searchPath={`projects/${props.project}/analysis`}
+                  ID={props.analysisID}
+                />
+              </Tab.Pane>
+              <Tab.Pane eventKey="analysis-records-tab" className="h-100">
+                <Records {...props} />
+              </Tab.Pane>
+              <Tab.Pane eventKey="analysis-upstream-tab" className="h-100">
+                <Upstream {...props} />
+              </Tab.Pane>
+              <Tab.Pane eventKey="analysis-downstream-tab" className="h-100">
+                <Downstream {...props} />
+              </Tab.Pane>
+            </Tab.Content>
+          </Tab.Container>
         </Card.Body>
       </Card>
     </Container>

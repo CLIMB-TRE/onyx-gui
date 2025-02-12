@@ -4,7 +4,6 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import CloseButton from "react-bootstrap/CloseButton";
 import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
@@ -228,39 +227,38 @@ function ProjectRecord(props: ProjectRecordProps) {
           </Stack>
         </Card.Header>
         <Card.Body>
-          <Tabs
-            id="record-modal-tabs"
-            defaultActiveKey="record-data-tab"
-            className="mb-3"
-            mountOnEnter
-          >
-            <Tab
-              eventKey="record-data-tab"
-              title="Data"
-              className="onyx-modal-tab-pane"
+          <Tab.Container defaultActiveKey="record-data-tab" mountOnEnter>
+            <Nav variant="tabs">
+              <Nav.Item>
+                <Nav.Link eventKey="record-data-tab">Data</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="record-history-tab">History</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="record-analyses-tab">Analyses</Nav.Link>
+              </Nav.Item>
+            </Nav>
+            <Tab.Content
+              className="m-2"
+              style={{ height: "calc(100% - 60px)" }}
             >
-              <Details {...props} />
-            </Tab>
-            <Tab
-              eventKey="record-history-tab"
-              title="History"
-              className="onyx-modal-tab-pane"
-            >
-              <History
-                {...props}
-                name="record"
-                searchPath={`projects/${props.project}`}
-                ID={props.recordID}
-              />
-            </Tab>
-            <Tab
-              eventKey="record-analyses-tab"
-              title="Analyses"
-              className="onyx-modal-tab-pane"
-            >
-              <Analyses {...props} />
-            </Tab>
-          </Tabs>
+              <Tab.Pane eventKey="record-data-tab" className="h-100">
+                <Details {...props} />
+              </Tab.Pane>
+              <Tab.Pane eventKey="record-history-tab" className="h-100">
+                <History
+                  {...props}
+                  name="record"
+                  searchPath={`projects/${props.project}`}
+                  ID={props.recordID}
+                />
+              </Tab.Pane>
+              <Tab.Pane eventKey="record-analyses-tab" className="h-100">
+                <Analyses {...props} />
+              </Tab.Pane>
+            </Tab.Content>
+          </Tab.Container>
         </Card.Body>
       </Card>
     </Container>

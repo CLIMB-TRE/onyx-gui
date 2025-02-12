@@ -69,18 +69,6 @@
   font-size: var(--bs-body-font-size);
 }
 
-.onyx-modal-dialog {
-  --bs-modal-width: 90vw;
-} 
-
-.onyx-modal-content {
-  height: 95vh;
-}
-
-.onyx-modal-tab-pane {
-  height: 70vh;
-}
-
 .parent {
   display: flex;
   width: 100%;
