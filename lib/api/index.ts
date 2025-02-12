@@ -37,7 +37,7 @@ const useTypesQuery = (props: OnyxProps) => {
         .httpPathHandler("projects/types/")
         .then((response) => response.json());
     },
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -65,7 +65,7 @@ const useProfileQuery = (props: OnyxProps) => {
         .httpPathHandler("accounts/profile/")
         .then((response) => response.json());
     },
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
@@ -79,7 +79,7 @@ const useProjectPermissionsQuery = (props: OnyxProps) => {
         .httpPathHandler("projects/")
         .then((response) => response.json());
     },
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -94,7 +94,7 @@ const useProjectFieldsQuery = (props: PageProps) => {
         .then((response) => response.json());
     },
     enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
@@ -109,7 +109,7 @@ const useAnalysisFieldsQuery = (props: PageProps) => {
         .then((response) => response.json());
     },
     enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
@@ -124,7 +124,7 @@ const useChoicesQuery = (props: ChoiceProps) => {
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.field),
-    staleTime: 5 * 60 * 1000,
+    // staleTime: 5 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
@@ -138,7 +138,7 @@ const useActivityQuery = (props: OnyxProps) => {
         .httpPathHandler("accounts/activity/")
         .then((response) => response.json());
     },
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -152,7 +152,7 @@ const useSiteUsersQuery = (props: OnyxProps) => {
         .httpPathHandler("accounts/site/")
         .then((response) => response.json());
     },
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -167,7 +167,7 @@ const useHistoryQuery = (props: GenericIDProps) => {
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.searchPath && props.ID),
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
@@ -182,7 +182,7 @@ const useRecordQuery = (props: RecordIDProps) => {
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.recordID),
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
@@ -216,7 +216,7 @@ const useAnalysisQuery = (props: AnalysisIDProps) => {
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.analysisID),
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: {} },
   });
 };
@@ -233,7 +233,7 @@ const useAnalysisRecordsQuery = (props: AnalysisIDProps) => {
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.analysisID),
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -250,7 +250,7 @@ const useAnalysisUpstreamQuery = (props: AnalysisIDProps) => {
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.analysisID),
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -267,7 +267,7 @@ const useAnalysisDownstreamQuery = (props: AnalysisIDProps) => {
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.analysisID),
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -314,7 +314,7 @@ const useSummaryQuery = (props: GraphQueryProps) => {
         .then((response) => response.json());
     },
     enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -336,7 +336,7 @@ const useGroupedSummaryQuery = (props: GraphQueryProps) => {
         .then((response) => response.json());
     },
     enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
+    // staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
