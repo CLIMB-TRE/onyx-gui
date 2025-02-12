@@ -215,10 +215,10 @@ function Analysis(props: AnalysisProps) {
               Analysis ID:{" "}
               <span className="onyx-text-pink">{props.analysisID}</span>
             </Card.Title>
-            <CloseButton variant="dark" onClick={props.onHide} />
+            <CloseButton onClick={props.onHide} />
           </Stack>
         </Card.Header>
-        <Card.Body>
+        <Card.Body className="pt-2">
           <Tab.Container defaultActiveKey="analysis-data-tab" mountOnEnter>
             <Nav variant="tabs">
               <Nav.Item>

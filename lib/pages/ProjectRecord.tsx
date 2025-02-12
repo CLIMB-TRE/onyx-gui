@@ -223,10 +223,10 @@ function ProjectRecord(props: ProjectRecordProps) {
             <Card.Title className="me-auto">
               CLIMB ID: <span className="onyx-text-pink">{props.recordID}</span>
             </Card.Title>
-            <CloseButton variant="dark" onClick={props.onHide} />
+            <CloseButton onClick={props.onHide} />
           </Stack>
         </Card.Header>
-        <Card.Body>
+        <Card.Body className="pt-2">
           <Tab.Container defaultActiveKey="record-data-tab" mountOnEnter>
             <Nav variant="tabs">
               <Nav.Item>
