@@ -14,8 +14,6 @@ interface HistoryProps extends PageProps {
   name?: string;
   searchPath: string;
   ID: string;
-  show: boolean;
-  onHide: () => void;
 }
 
 function History(props: HistoryProps) {

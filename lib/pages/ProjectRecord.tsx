@@ -1,56 +1,36 @@
 import { useState, useMemo, useCallback } from "react";
+import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
+import CloseButton from "react-bootstrap/CloseButton";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
-import Table from "./Table";
-import ErrorModal from "./ErrorModal";
-import History from "./History";
-import QueryHandler from "./QueryHandler";
+import Table from "../components/Table";
+import ErrorModal from "../components/ErrorModal";
+import History from "../components/History";
+import DataField from "../components/DataField";
+import QueryHandler from "../components/QueryHandler";
 import { useRecordQuery, useRecordAnalysesQuery } from "../api";
 import { RecordType } from "../types";
 import { DataProps } from "../interfaces";
-import ExportModal from "./ExportModal";
+import ExportModal from "../components/ExportModal";
 import {
   DetailCellRendererFactory,
   AnalysisIDCellRendererFactory,
-} from "./CellRenderers";
+} from "../components/CellRenderers";
 import { handleJSONExport } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 
-interface RecordModalProps extends DataProps {
+interface ProjectRecordProps extends DataProps {
   recordID: string;
-  show: boolean;
   onHide: () => void;
 }
 
-interface RecordDataFieldProps {
-  record: RecordType;
-  field: string;
-  name: string;
-}
-
-function RecordDataField(props: RecordDataFieldProps) {
-  return (
-    <Row>
-      <Col md={6}>
-        <h6>{props.name}:</h6>
-      </Col>
-      <Col md={6}>
-        <span className="onyx-text-pink">
-          {props.record[props.field]?.toString() || ""}
-        </span>
-      </Col>
-    </Row>
-  );
-}
-
-function Details(props: RecordModalProps) {
+function Details(props: ProjectRecordProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
   const [errorModalShow, setErrorModalShow] = useState(false);
   const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
@@ -133,18 +113,14 @@ function Details(props: RecordModalProps) {
               <hr />
               {data?.status === "success" && (
                 <Container>
-                  <RecordDataField
+                  <DataField
                     record={data.data}
                     field="published_date"
                     name="Date"
                   />
-                  <RecordDataField
-                    record={data.data}
-                    field="site"
-                    name="Site"
-                  />
+                  <DataField record={data.data} field="site" name="Site" />
                   {data.data?.platform && (
-                    <RecordDataField
+                    <DataField
                       record={data.data}
                       field="platform"
                       name="Platform"
@@ -212,7 +188,7 @@ function Details(props: RecordModalProps) {
   );
 }
 
-function Analyses(props: RecordModalProps) {
+function Analyses(props: ProjectRecordProps) {
   const { isFetching, error, data } = useRecordAnalysesQuery(props);
 
   // Get the analyses
@@ -239,66 +215,56 @@ function Analyses(props: RecordModalProps) {
   );
 }
 
-function RecordModal(props: RecordModalProps) {
+function ProjectRecord(props: ProjectRecordProps) {
   return (
-    <Modal
-      className="onyx-modal"
-      dialogClassName="onyx-modal-dialog"
-      contentClassName="onyx-modal-content"
-      aria-labelledby="record-modal-title"
-      show={props.show}
-      onHide={props.onHide}
-      scrollable
-      centered
-      animation={false}
-    >
-      <Modal.Header closeButton>
-        <Modal.Title id="record-modal-title">
-          CLIMB ID: <span className="onyx-text-pink">{props.recordID}</span>
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Tabs
-          id="record-modal-tabs"
-          defaultActiveKey="record-data-tab"
-          className="mb-3"
-          mountOnEnter
-        >
-          <Tab
-            eventKey="record-data-tab"
-            title="Data"
-            className="onyx-modal-tab-pane"
+    <Container fluid className="g-2 h-100">
+      <Card className="h-100">
+        <Card.Header>
+          <Stack direction="horizontal">
+            <Card.Title className="me-auto">
+              CLIMB ID: <span className="onyx-text-pink">{props.recordID}</span>
+            </Card.Title>
+            <CloseButton variant="dark" onClick={props.onHide} />
+          </Stack>
+        </Card.Header>
+        <Card.Body>
+          <Tabs
+            id="record-modal-tabs"
+            defaultActiveKey="record-data-tab"
+            className="mb-3"
+            mountOnEnter
           >
-            <Details {...props} />
-          </Tab>
-          <Tab
-            eventKey="record-history-tab"
-            title="History"
-            className="onyx-modal-tab-pane"
-          >
-            <History
-              {...props}
-              name="record"
-              searchPath={`projects/${props.project}`}
-              ID={props.recordID}
-            />
-          </Tab>
-          <Tab
-            eventKey="record-analyses-tab"
-            title="Analyses"
-            className="onyx-modal-tab-pane"
-          >
-            <Analyses {...props} />
-          </Tab>
-        </Tabs>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="dark" onClick={props.onHide}>
-          Close
-        </Button>
-      </Modal.Footer>
-    </Modal>
+            <Tab
+              eventKey="record-data-tab"
+              title="Data"
+              className="onyx-modal-tab-pane"
+            >
+              <Details {...props} />
+            </Tab>
+            <Tab
+              eventKey="record-history-tab"
+              title="History"
+              className="onyx-modal-tab-pane"
+            >
+              <History
+                {...props}
+                name="record"
+                searchPath={`projects/${props.project}`}
+                ID={props.recordID}
+              />
+            </Tab>
+            <Tab
+              eventKey="record-analyses-tab"
+              title="Analyses"
+              className="onyx-modal-tab-pane"
+            >
+              <Analyses {...props} />
+            </Tab>
+          </Tabs>
+        </Card.Body>
+      </Card>
+    </Container>
   );
 }
 
-export default RecordModal;
+export default ProjectRecord;

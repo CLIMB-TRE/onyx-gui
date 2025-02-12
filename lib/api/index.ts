@@ -238,6 +238,40 @@ const useAnalysisRecordsQuery = (props: AnalysisIDProps) => {
   });
 };
 
+/** Fetch upstream analyses from analysis ID */
+const useAnalysisUpstreamQuery = (props: AnalysisIDProps) => {
+  return useQuery({
+    queryKey: ["analysis-upstream-list", props.project, props.analysisID],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(
+          `projects/${props.project}/analysis/?downstream_analyses__analysis_id=${props.analysisID}`
+        )
+        .then((response) => response.json());
+    },
+    enabled: !!(props.project && props.analysisID),
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: [] },
+  });
+};
+
+/** Fetch downstream analyses from analysis ID */
+const useAnalysisDownstreamQuery = (props: AnalysisIDProps) => {
+  return useQuery({
+    queryKey: ["analysis-downstream-list", props.project, props.analysisID],
+    queryFn: async () => {
+      return props
+        .httpPathHandler(
+          `projects/${props.project}/analysis/?upstream_analyses__analysis_id=${props.analysisID}`
+        )
+        .then((response) => response.json());
+    },
+    enabled: !!(props.project && props.analysisID),
+    staleTime: 1 * 60 * 1000,
+    placeholderData: { data: [] },
+  });
+};
+
 /** Fetch results from path and search parameters */
 const useResultsQuery = (props: GenericQueryProps) => {
   return useQuery({
@@ -322,6 +356,8 @@ export {
   useRecordAnalysesQuery,
   useAnalysisQuery,
   useAnalysisRecordsQuery,
+  useAnalysisUpstreamQuery,
+  useAnalysisDownstreamQuery,
   useResultsQuery,
   useCountQuery,
   useSummaryQuery,

@@ -16,8 +16,8 @@ interface DataProps extends PageProps {
   typeLookups: Map<string, string[]>;
   fieldDescriptions: Map<string, string>;
   lookupDescriptions: Map<string, string>;
-  handleRecordModalShow: (recordID: string) => void;
-  handleAnalysisModalShow: (analysisID: string) => void;
+  handleProjectRecordShow: (recordID: string) => void;
+  handleAnalysisShow: (analysisID: string) => void;
 }
 
 interface ResultsProps extends DataProps {

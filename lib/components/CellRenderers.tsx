@@ -11,8 +11,8 @@ interface ErrorModalProps extends OnyxProps {
 }
 
 interface IDModalProps {
-  handleRecordModalShow: (recordID: string) => void;
-  handleAnalysisModalShow: (analysisID: string) => void;
+  handleProjectRecordShow: (recordID: string) => void;
+  handleAnalysisShow: (analysisID: string) => void;
 }
 
 function DetailCellRendererFactory(props: ErrorModalProps) {
@@ -49,7 +49,7 @@ function ClimbIDCellRendererFactory(props: IDModalProps) {
         className="p-0"
         size="sm"
         variant="link"
-        onClick={() => props.handleRecordModalShow(cellRendererProps.value)}
+        onClick={() => props.handleProjectRecordShow(cellRendererProps.value)}
       >
         {cellRendererProps.value}
       </Button>
@@ -64,7 +64,7 @@ function AnalysisIDCellRendererFactory(props: IDModalProps) {
         className="p-0"
         size="sm"
         variant="link"
-        onClick={() => props.handleAnalysisModalShow(cellRendererProps.value)}
+        onClick={() => props.handleAnalysisShow(cellRendererProps.value)}
       >
         {cellRendererProps.value}
       </Button>
