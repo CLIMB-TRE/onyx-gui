@@ -139,12 +139,22 @@ function Header(props: HeaderProps) {
             <Nav variant="underline">
               <Stack direction="horizontal" gap={3}>
                 <Nav.Item>
-                  <Nav.Link eventKey="data" className="fw-normal">
+                  <Nav.Link
+                    eventKey="data"
+                    className="fw-normal"
+                    active={props.tabKey == "data" || props.tabKey == "record"}
+                  >
                     Data
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="analyses" className="fw-normal">
+                  <Nav.Link
+                    eventKey="analyses"
+                    className="fw-normal"
+                    active={
+                      props.tabKey == "analyses" || props.tabKey == "analysis"
+                    }
+                  >
                     Analyses
                   </Nav.Link>
                 </Nav.Item>
