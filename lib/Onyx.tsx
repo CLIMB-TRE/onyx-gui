@@ -1,10 +1,4 @@
-import {
-  useState,
-  useMemo,
-  useEffect,
-  useLayoutEffect,
-  useCallback,
-} from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Tab from "react-bootstrap/Tab";
 import Container from "react-bootstrap/Container";
@@ -99,17 +93,18 @@ function App(props: OnyxProps) {
     htmlElement?.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // Clear parameters when project changes
-  useLayoutEffect(() => {
-    setTabKey("data");
-    setRecordID("");
-    setAnalysisID("");
-  }, [project]);
-
   const handleThemeChange = () => {
     const darkModeChange = !darkMode;
     setDarkMode(darkModeChange);
     localStorage.setItem("onyx-theme", darkModeChange ? "dark" : "light");
+  };
+
+  // Clear parameters when project changes
+  const handleProjectChange = (project: string) => {
+    setTabKey("data");
+    setRecordID("");
+    setAnalysisID("");
+    setProject(project);
   };
 
   const pageProps = useMemo(
@@ -204,7 +199,7 @@ function App(props: OnyxProps) {
             : projectName
         }
         projectList={projects}
-        handleProjectChange={setProject}
+        handleProjectChange={handleProjectChange}
         guiVersion={VERSION}
         tabKey={tabKey}
         setTabKey={setTabKey}
