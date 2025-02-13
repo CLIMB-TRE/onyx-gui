@@ -230,7 +230,7 @@ function App(props: OnyxProps) {
                   handleAnalysisShow={handleAnalysisShow}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="record" className="h-100" unmountOnExit>
+              <Tab.Pane eventKey="record" className="h-100">
                 <ProjectRecord
                   {...props}
                   project={project}
@@ -258,7 +258,7 @@ function App(props: OnyxProps) {
                   handleAnalysisShow={handleAnalysisShow}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="analysis" className="h-100" unmountOnExit>
+              <Tab.Pane eventKey="analysis" className="h-100">
                 <Analysis
                   {...props}
                   project={project}
