@@ -71,7 +71,7 @@ function Details(props: AnalysisProps) {
           show={exportModalShow}
           onHide={() => setExportModalShow(false)}
           defaultFileNamePrefix={props.analysisID}
-          fileExtension=".json"
+          defaultFileExtension=".json"
           exportProgressMessage={"Exporting record data to JSON..."}
           handleExport={handleJSONExport(jsonExportProps)}
         />

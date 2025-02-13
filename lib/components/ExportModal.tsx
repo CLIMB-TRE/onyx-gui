@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import Dropdown from "react-bootstrap/Dropdown";
+import DropdownButton from "react-bootstrap/DropdownButton";
 import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import ProgressBar from "react-bootstrap/ProgressBar";
@@ -14,7 +16,8 @@ interface ExportModalProps {
   show: boolean;
   onHide: () => void;
   defaultFileNamePrefix: string;
-  fileExtension: string;
+  defaultFileExtension: string;
+  fileExtensions?: string[];
   exportProgressMessage: string;
   handleExport: (exportProps: ExportHandlerProps) => void;
 }
@@ -47,6 +50,9 @@ function ExportModal(props: ExportModalProps) {
   const [exportError, setExportError] = useState<Error | null>(null);
   const [fileNamePrefix, setFileNamePrefix] = useState("");
   const [fileNameIsInvalid, setFileNameIsInvalid] = useState(false);
+  const [fileExtension, setFileExtension] = useState(
+    props.defaultFileExtension
+  );
   const { statusToken, readyExport, cancelExport } = useExportStatusToken();
 
   const handleExportRunning = () => {
@@ -63,7 +69,7 @@ function ExportModal(props: ExportModalProps) {
     setExportError(null);
     readyExport();
     props.handleExport({
-      fileName: prefix + props.fileExtension,
+      fileName: prefix + fileExtension,
       statusToken,
       setExportStatus,
       setExportProgress,
@@ -118,7 +124,20 @@ function ExportModal(props: ExportModalProps) {
               }}
               isInvalid={fileNameIsInvalid}
             />
-            <InputGroup.Text>{props.fileExtension}</InputGroup.Text>
+            {props.fileExtensions ? (
+              <DropdownButton variant="dark" title={fileExtension}>
+                {props.fileExtensions?.map((ext) => (
+                  <Dropdown.Item
+                    key={ext}
+                    onClick={() => setFileExtension(ext)}
+                  >
+                    {ext}
+                  </Dropdown.Item>
+                ))}
+              </DropdownButton>
+            ) : (
+              <InputGroup.Text>{fileExtension}</InputGroup.Text>
+            )}
             <Form.Control.Feedback type="invalid">
               Prefix must be 5 to 50 alphanumeric, underscore or dash
               characters.
@@ -171,7 +190,7 @@ function ExportModal(props: ExportModalProps) {
                 <b>
                   {(fileNamePrefix
                     ? fileNamePrefix
-                    : props.defaultFileNamePrefix) + props.fileExtension}
+                    : props.defaultFileNamePrefix) + fileExtension}
                 </b>
               </span>
             </Form.Text>

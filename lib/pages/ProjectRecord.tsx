@@ -102,7 +102,7 @@ function Details(props: ProjectRecordProps) {
           show={exportModalShow}
           onHide={() => setExportModalShow(false)}
           defaultFileNamePrefix={props.recordID}
-          fileExtension=".json"
+          defaultFileExtension=".json"
           exportProgressMessage={"Exporting record data to JSON..."}
           handleExport={handleJSONExport(jsonExportProps)}
         />

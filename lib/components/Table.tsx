@@ -269,6 +269,7 @@ function TableOptions(props: TableOptionsProps) {
 
     const csvConfig = mkConfig({
       useKeysAsHeaders: true,
+      fieldSeparator: exportProps.fileName.endsWith(".tsv") ? "\t" : ",",
     });
     const pages: TableData[] = [];
     let nRows = 0;
@@ -319,19 +320,20 @@ function TableOptions(props: TableOptionsProps) {
     }
   };
 
-  const getUnpaginatedData = async () => {
-    const csvData = props.gridRef.current?.api.getDataAsCsv();
+  const getUnpaginatedData = async (exportProps: ExportHandlerProps) => {
+    const csvData = props.gridRef.current?.api.getDataAsCsv({
+      columnSeparator: exportProps.fileName.endsWith(".tsv") ? "\t" : ",",
+    });
     return csvData || "";
   };
 
   const handleCSVExport = (exportProps: ExportHandlerProps) => {
-    let getDataFunction: () => Promise<string>;
+    let getDataFunction: (exportProps: ExportHandlerProps) => Promise<string>;
 
-    if (props.isPaginated)
-      getDataFunction = () => getPaginatedData(exportProps);
+    if (props.isPaginated) getDataFunction = getPaginatedData;
     else getDataFunction = getUnpaginatedData;
 
-    getDataFunction()
+    getDataFunction(exportProps)
       .then((data) => {
         exportProps.setExportStatus(ExportStatus.WRITING);
         props
@@ -359,7 +361,8 @@ function TableOptions(props: TableOptionsProps) {
     <Pagination size="sm">
       <ExportModal
         {...props}
-        fileExtension=".csv"
+        defaultFileExtension=".csv"
+        fileExtensions={[".csv", ".tsv"]}
         show={exportModalShow}
         handleExport={handleCSVExport}
         onHide={() => setExportModalShow(false)}
@@ -393,7 +396,7 @@ function TableOptions(props: TableOptionsProps) {
           key="exportToCSV"
           onClick={() => setExportModalShow(true)}
         >
-          Export to CSV
+          Export to CSV/TSV
         </Dropdown.Item>
       </DropdownButton>
     </Pagination>
