@@ -240,7 +240,7 @@ function Analysis(props: AnalysisProps) {
               </Nav.Item>
             </Nav>
             <Tab.Content
-              className="m-2"
+              className="p-3"
               style={{ height: "calc(100% - 60px)" }}
             >
               <Tab.Pane eventKey="analysis-data-tab" className="h-100">
