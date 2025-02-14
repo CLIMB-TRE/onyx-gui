@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import Card from "react-bootstrap/Card";
 import Tab from "react-bootstrap/Tab";
 import Button from "react-bootstrap/Button";
@@ -8,6 +8,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
+import Badge from "react-bootstrap/Badge";
 import QueryHandler from "../components/QueryHandler";
 import History from "../components/History";
 import Table from "../components/Table";
@@ -33,7 +34,11 @@ interface AnalysisProps extends DataProps {
   onHide: () => void;
 }
 
-function Details(props: AnalysisProps) {
+interface DetailsProps extends AnalysisProps {
+  setUnpublished: () => void;
+}
+
+function Details(props: DetailsProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
   const { isFetching, error, data } = useAnalysisQuery(props);
 
@@ -43,6 +48,7 @@ function Details(props: AnalysisProps) {
     return Object.entries(data.data)
       .filter(
         ([key]) =>
+          key !== "is_published" &&
           key !== "upstream_analyses" &&
           key !== "downstream_analyses" &&
           key !== "identifiers" &&
@@ -53,6 +59,11 @@ function Details(props: AnalysisProps) {
         Value: value,
       })) as RecordType[];
   }, [data]);
+
+  useEffect(() => {
+    if (data?.status === "success" && !data.data.is_published)
+      props.setUnpublished();
+  }, [data, props]);
 
   const jsonExportProps = useMemo(
     () => ({
@@ -222,14 +233,19 @@ function Downstream(props: AnalysisProps) {
 }
 
 function Analysis(props: AnalysisProps) {
+  const [published, setPublished] = useState(false);
+
   return (
     <Container fluid className="g-2 h-100">
       <Card className="h-100">
         <Card.Header>
-          <Stack direction="horizontal">
-            <Card.Title className="me-auto">
+          <Stack direction="horizontal" gap={2}>
+            <Card.Title>
               Analysis ID:{" "}
               <span className="onyx-text-pink">{props.analysisID}</span>
+            </Card.Title>
+            <Card.Title className="me-auto">
+              {!published && <Badge bg="secondary">Unpublished</Badge>}
             </Card.Title>
             <CloseButton onClick={props.onHide} />
           </Stack>
@@ -260,7 +276,10 @@ function Analysis(props: AnalysisProps) {
               style={{ height: "calc(100% - 60px)" }}
             >
               <Tab.Pane eventKey="analysis-data-tab" className="h-100">
-                <Details {...props} />
+                <Details
+                  {...props}
+                  setUnpublished={() => setPublished(false)}
+                />
               </Tab.Pane>
               <Tab.Pane eventKey="analysis-history-tab" className="h-100">
                 <History

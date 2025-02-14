@@ -5,6 +5,7 @@ import {
   githubDarkTheme,
   githubLightTheme,
 } from "json-edit-react";
+import Stack from "react-bootstrap/Stack";
 import { Input } from "../components/Inputs";
 import { PageProps } from "../interfaces";
 
@@ -16,7 +17,7 @@ function JsonSearch(props: JsonProps) {
   const [jsonSearch, setJsonSearch] = useState("");
 
   return (
-    <>
+    <Stack>
       <Input
         value={jsonSearch}
         onChange={(e) => setJsonSearch(e.target.value)}
@@ -24,14 +25,25 @@ function JsonSearch(props: JsonProps) {
       />
       <JsonEditor
         data={props.data}
-        theme={props.darkMode ? githubDarkTheme : githubLightTheme}
+        theme={
+          props.darkMode
+            ? [
+                githubDarkTheme,
+                {
+                  container: {
+                    backgroundColor: "var(--bs-body-bg)",
+                  },
+                },
+              ]
+            : githubLightTheme
+        }
         restrictAdd
         restrictEdit
         restrictDelete
         searchFilter="all"
         searchText={jsonSearch}
       />
-    </>
+    </Stack>
   );
 }
 

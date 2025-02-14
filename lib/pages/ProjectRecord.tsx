@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
@@ -8,6 +8,7 @@ import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
+import Badge from "react-bootstrap/Badge";
 import Table from "../components/Table";
 import ErrorModal from "../components/ErrorModal";
 import History from "../components/History";
@@ -17,19 +18,25 @@ import { useRecordQuery, useRecordAnalysesQuery } from "../api";
 import { RecordType } from "../types";
 import { DataProps } from "../interfaces";
 import ExportModal from "../components/ExportModal";
+import { JsonSearch } from "../components/Json";
 import {
   DetailCellRendererFactory,
   AnalysisIDCellRendererFactory,
 } from "../components/CellRenderers";
 import { handleJSONExport } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
+import { JsonData } from "json-edit-react";
 
 interface ProjectRecordProps extends DataProps {
   recordID: string;
   onHide: () => void;
 }
 
-function Details(props: ProjectRecordProps) {
+interface DetailsProps extends ProjectRecordProps {
+  setUnpublished: () => void;
+}
+
+function Details(props: DetailsProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
   const [errorModalShow, setErrorModalShow] = useState(false);
   const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
@@ -51,7 +58,12 @@ function Details(props: ProjectRecordProps) {
   const record = useMemo(() => {
     if (data?.status !== "success") return [];
     return Object.entries(data.data)
-      .filter(([key]) => props.projectFields.get(key)?.type !== "relation")
+      .filter(
+        ([key]) =>
+          props.projectFields.get(key)?.type !== "relation" &&
+          props.projectFields.get(key)?.type !== "structure" &&
+          key !== "is_published"
+      )
       .map(([key, value]) => ({
         Field: key,
         Value: value,
@@ -68,6 +80,19 @@ function Details(props: ProjectRecordProps) {
       RecordType[]
     ][];
   }, [data, props.projectFields]);
+
+  // Get the structure details
+  const structures = useMemo(() => {
+    if (data?.status !== "success") return [];
+    return Object.entries(data.data).filter(
+      ([key]) => props.projectFields.get(key)?.type === "structure"
+    );
+  }, [data, props.projectFields]);
+
+  useEffect(() => {
+    if (data?.status === "success" && !data.data.is_published)
+      props.setUnpublished();
+  }, [data, props]);
 
   const errorModalProps = useMemo(
     () => ({
@@ -137,6 +162,11 @@ function Details(props: ProjectRecordProps) {
                     <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
                   </Nav.Item>
                 ))}
+                {structures.map(([key]) => (
+                  <Nav.Item key={key}>
+                    <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                  </Nav.Item>
+                ))}
               </Nav>
               <hr />
               <Button
@@ -179,6 +209,18 @@ function Details(props: ProjectRecordProps) {
                   />
                 </Tab.Pane>
               ))}
+              {structures.map(([key, structure]) => (
+                <Tab.Pane key={key} eventKey={key} className="h-100">
+                  <h5>{formatTitle(key)}</h5>
+                  <Card
+                    body
+                    className="overflow-y-auto h-100"
+                    style={{ maxHeight: "100vh" }}
+                  >
+                    <JsonSearch {...props} data={structure as JsonData} />
+                  </Card>
+                </Tab.Pane>
+              ))}
             </Tab.Content>
           </Col>
         </Row>
@@ -215,13 +257,18 @@ function Analyses(props: ProjectRecordProps) {
 }
 
 function ProjectRecord(props: ProjectRecordProps) {
+  const [published, setPublished] = useState(true);
+
   return (
     <Container fluid className="g-2 h-100">
       <Card className="h-100">
         <Card.Header>
-          <Stack direction="horizontal">
-            <Card.Title className="me-auto">
+          <Stack direction="horizontal" gap={2}>
+            <Card.Title>
               CLIMB ID: <span className="onyx-text-pink">{props.recordID}</span>
+            </Card.Title>
+            <Card.Title className="me-auto">
+              {!published && <Badge bg="secondary">Unpublished</Badge>}
             </Card.Title>
             <CloseButton onClick={props.onHide} />
           </Stack>
@@ -244,7 +291,10 @@ function ProjectRecord(props: ProjectRecordProps) {
               style={{ height: "calc(100% - 60px)" }}
             >
               <Tab.Pane eventKey="record-data-tab" className="h-100">
-                <Details {...props} />
+                <Details
+                  {...props}
+                  setUnpublished={() => setPublished(false)}
+                />
               </Tab.Pane>
               <Tab.Pane eventKey="record-history-tab" className="h-100">
                 <History
