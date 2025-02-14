@@ -8,6 +8,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
+import { JsonEditor, githubDarkTheme, githubLightTheme } from "json-edit-react";
 import { DataProps } from "../interfaces";
 import QueryHandler from "../components/QueryHandler";
 import History from "../components/History";
@@ -94,6 +95,11 @@ function Details(props: AnalysisProps) {
                 <Nav.Item>
                   <Nav.Link eventKey="analysis-data-details">Details</Nav.Link>
                 </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="analysis-data-experiment">
+                    Experiment
+                  </Nav.Link>
+                </Nav.Item>
               </Nav>
               <hr />
               <Button
@@ -115,6 +121,22 @@ function Details(props: AnalysisProps) {
                   defaultFileNamePrefix={`${props.analysisID}_details`}
                   footer="Table showing the top-level fields for the analysis."
                 />
+              </Tab.Pane>
+              <Tab.Pane eventKey="analysis-data-experiment" className="h-100">
+                <h5>Experiment</h5>
+                <Card
+                  body
+                  className="overflow-y-auto h-100"
+                  style={{ maxHeight: "100vh" }}
+                >
+                  <JsonEditor
+                    data={data.data.experiment_details}
+                    theme={props.darkMode ? githubDarkTheme : githubLightTheme}
+                    restrictAdd
+                    restrictEdit
+                    restrictDelete
+                  />
+                </Card>
               </Tab.Pane>
             </Tab.Content>
           </Col>
@@ -218,7 +240,7 @@ function Analysis(props: AnalysisProps) {
             <CloseButton onClick={props.onHide} />
           </Stack>
         </Card.Header>
-        <Card.Body className="pt-2">
+        <Card.Body className="pt-2 overflow-y-auto">
           <Tab.Container defaultActiveKey="analysis-data-tab" mountOnEnter>
             <Nav variant="tabs">
               <Nav.Item>
