@@ -1,30 +1,30 @@
 import { useQuery } from "@tanstack/react-query";
-import { OnyxProps, PageProps } from "../interfaces";
+import { OnyxProps, ProjectProps } from "../interfaces";
 import { GraphConfig } from "../types";
 
-interface ChoiceProps extends PageProps {
+interface ChoiceProps extends ProjectProps {
   field: string;
 }
 
-interface RecordIDProps extends PageProps {
+interface RecordIDProps extends ProjectProps {
   recordID: string;
 }
 
-interface AnalysisIDProps extends PageProps {
+interface AnalysisIDProps extends ProjectProps {
   analysisID: string;
 }
 
-interface GenericIDProps extends PageProps {
+interface GenericIDProps extends ProjectProps {
   searchPath: string;
   ID: string;
 }
 
-interface GenericQueryProps extends PageProps {
+interface GenericQueryProps extends ProjectProps {
   searchPath: string;
   searchParameters: string;
 }
 
-interface GraphQueryProps extends PageProps {
+interface GraphQueryProps extends ProjectProps {
   graphConfig: GraphConfig;
 }
 
@@ -81,7 +81,7 @@ const useProjectPermissionsQuery = (props: OnyxProps) => {
 };
 
 /** Fetch project fields */
-const useProjectFieldsQuery = (props: PageProps) => {
+const useProjectFieldsQuery = (props: ProjectProps) => {
   return useQuery({
     queryKey: ["project-fields-detail", props.project],
     queryFn: async () => {
@@ -95,7 +95,7 @@ const useProjectFieldsQuery = (props: PageProps) => {
 };
 
 /** Fetch analysis fields */
-const useAnalysisFieldsQuery = (props: PageProps) => {
+const useAnalysisFieldsQuery = (props: ProjectProps) => {
   return useQuery({
     queryKey: ["analysis-fields-detail", props.project],
     queryFn: async () => {

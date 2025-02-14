@@ -7,8 +7,11 @@ interface OnyxProps {
   extVersion?: string;
 }
 
-interface PageProps extends OnyxProps {
+interface ProjectProps extends OnyxProps {
   project: string;
+}
+
+interface PageProps extends ProjectProps {
   darkMode: boolean;
 }
 
@@ -41,6 +44,7 @@ interface ExportHandlerProps {
 
 export type {
   OnyxProps,
+  ProjectProps,
   PageProps,
   DataProps,
   ResultsProps,
