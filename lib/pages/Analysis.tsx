@@ -8,24 +8,24 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
-import { JsonEditor, githubDarkTheme, githubLightTheme } from "json-edit-react";
-import { DataProps } from "../interfaces";
 import QueryHandler from "../components/QueryHandler";
 import History from "../components/History";
+import Table from "../components/Table";
+import ExportModal from "../components/ExportModal";
+import DataField from "../components/DataField";
+import { JsonSearch } from "../components/Json";
+import {
+  ClimbIDCellRendererFactory,
+  AnalysisIDCellRendererFactory,
+} from "../components/CellRenderers";
 import {
   useAnalysisQuery,
   useAnalysisRecordsQuery,
   useAnalysisUpstreamQuery,
   useAnalysisDownstreamQuery,
 } from "../api";
-import Table from "../components/Table";
-import ExportModal from "../components/ExportModal";
-import DataField from "../components/DataField";
-import {
-  ClimbIDCellRendererFactory,
-  AnalysisIDCellRendererFactory,
-} from "../components/CellRenderers";
 import { handleJSONExport } from "../utils/functions";
+import { DataProps } from "../interfaces";
 import { RecordType } from "../types";
 
 interface AnalysisProps extends DataProps {
@@ -129,13 +129,7 @@ function Details(props: AnalysisProps) {
                   className="overflow-y-auto h-100"
                   style={{ maxHeight: "100vh" }}
                 >
-                  <JsonEditor
-                    data={data.data.experiment_details}
-                    theme={props.darkMode ? githubDarkTheme : githubLightTheme}
-                    restrictAdd
-                    restrictEdit
-                    restrictDelete
-                  />
+                  <JsonSearch {...props} data={data.data.experiment_details} />
                 </Card>
               </Tab.Pane>
             </Tab.Content>
