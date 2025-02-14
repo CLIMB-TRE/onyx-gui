@@ -232,7 +232,7 @@ function App(props: OnyxProps) {
                   searchPath={`projects/${project}`}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="record" className="h-100">
+              <Tab.Pane eventKey="record" className="h-100" unmountOnExit>
                 <ProjectRecord
                   {...props}
                   project={project}
@@ -262,7 +262,7 @@ function App(props: OnyxProps) {
                   searchPath={`projects/${project}/analysis`}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="analysis" className="h-100">
+              <Tab.Pane eventKey="analysis" className="h-100" unmountOnExit>
                 <Analysis
                   {...props}
                   project={project}
