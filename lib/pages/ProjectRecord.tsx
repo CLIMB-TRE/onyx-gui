@@ -226,7 +226,7 @@ function ProjectRecord(props: ProjectRecordProps) {
             <CloseButton onClick={props.onHide} />
           </Stack>
         </Card.Header>
-        <Card.Body className="pt-2">
+        <Card.Body className="pt-2 overflow-y-auto">
           <Tab.Container defaultActiveKey="record-data-tab" mountOnEnter>
             <Nav variant="tabs">
               <Nav.Item>

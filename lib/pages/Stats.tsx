@@ -469,7 +469,7 @@ function Stats(props: StatsProps) {
             </Button>
           </Stack>
         </Card.Header>
-        <Container fluid className="overflow-y-scroll p-2 h-100">
+        <Container fluid className="overflow-y-auto p-2 h-100">
           <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
               <Col key={graphConfig.key} lg={viewMode === "list" ? 12 : 6}>

@@ -128,7 +128,7 @@ function FilterPanel(props: FilterPanelProps) {
           </Button>
         </Stack>
       </Card.Header>
-      <Container fluid className="overflow-y-scroll p-2 h-100">
+      <Container fluid className="overflow-y-auto p-2 h-100">
         {editMode ? (
           <Filter
             {...props}

@@ -51,7 +51,7 @@ function Details(props: PageProps) {
   return (
     <Card className="h-100">
       <Card.Header>Details</Card.Header>
-      <Card.Body className="overflow-y-scroll">
+      <Card.Body className="overflow-y-auto">
         <QueryHandler
           isFetching={isFetching}
           error={error as Error}
@@ -79,7 +79,7 @@ function ProjectPermissions(props: PageProps) {
   return (
     <Card className="h-100">
       <Card.Header>Project Permissions</Card.Header>
-      <Card.Body className="overflow-y-scroll p-2 h-100">
+      <Card.Body className="overflow-y-auto p-2 h-100">
         <QueryHandler
           isFetching={isFetching}
           error={error as Error}

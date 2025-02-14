@@ -61,7 +61,7 @@ function TransformsPanel(props: TransformsPanelProps) {
           </Button>
         </Stack>
       </Card.Header>
-      <Container fluid className="overflow-y-scroll p-2 h-100">
+      <Container fluid className="overflow-y-auto p-2 h-100">
         {editMode ? (
           <Transforms
             {...props}
