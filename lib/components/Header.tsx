@@ -18,7 +18,6 @@ interface HeaderProps extends PageProps {
   extVersion?: string;
   tabKey: string;
   setTabKey: (k: string) => void;
-  darkMode: boolean;
   handleThemeChange: () => void;
 }
 

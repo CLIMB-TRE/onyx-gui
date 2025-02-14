@@ -9,6 +9,7 @@ interface OnyxProps {
 
 interface PageProps extends OnyxProps {
   project: string;
+  darkMode: boolean;
 }
 
 interface DataProps extends PageProps {
@@ -28,7 +29,6 @@ interface ResultsProps extends DataProps {
 interface StatsProps extends PageProps {
   projectFields: Map<string, ProjectField>;
   fieldDescriptions: Map<string, string>;
-  darkMode: boolean;
 }
 
 interface ExportHandlerProps {

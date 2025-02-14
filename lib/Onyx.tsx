@@ -111,8 +111,9 @@ function App(props: OnyxProps) {
     () => ({
       ...props,
       project,
+      darkMode,
     }),
-    [props, project]
+    [props, project, darkMode]
   );
 
   // Query for types, lookups and project permissions
@@ -211,29 +212,31 @@ function App(props: OnyxProps) {
           <Tab.Container activeKey={tabKey} mountOnEnter>
             <Tab.Content className="h-100">
               <Tab.Pane eventKey="user" className="h-100">
-                <User {...props} project={project} />
+                <User {...props} project={project} darkMode={darkMode} />
               </Tab.Pane>
               <Tab.Pane eventKey="site" className="h-100">
-                <Site {...props} project={project} />
+                <Site {...props} project={project} darkMode={darkMode} />
               </Tab.Pane>
               <Tab.Pane eventKey="data" className="h-100">
                 <Results
                   {...props}
-                  title="Data"
-                  searchPath={`projects/${project}`}
                   project={project}
+                  darkMode={darkMode}
                   projectFields={projectFields}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
                   lookupDescriptions={lookupDescriptions}
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
+                  title="Data"
+                  searchPath={`projects/${project}`}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="record" className="h-100">
                 <ProjectRecord
                   {...props}
                   project={project}
+                  darkMode={darkMode}
                   projectFields={projectFields}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
@@ -247,21 +250,23 @@ function App(props: OnyxProps) {
               <Tab.Pane eventKey="analyses" className="h-100">
                 <Results
                   {...props}
-                  title="Analyses"
-                  searchPath={`projects/${project}/analysis`}
                   project={project}
+                  darkMode={darkMode}
                   projectFields={analysisFields}
                   typeLookups={typeLookups}
                   fieldDescriptions={analysisDescriptions}
                   lookupDescriptions={lookupDescriptions}
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
+                  title="Analyses"
+                  searchPath={`projects/${project}/analysis`}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="analysis" className="h-100">
                 <Analysis
                   {...props}
                   project={project}
+                  darkMode={darkMode}
                   projectFields={projectFields}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
@@ -276,9 +281,9 @@ function App(props: OnyxProps) {
                 <Stats
                   {...props}
                   project={project}
+                  darkMode={darkMode}
                   projectFields={projectFields}
                   fieldDescriptions={fieldDescriptions}
-                  darkMode={darkMode}
                 />
               </Tab.Pane>
             </Tab.Content>
