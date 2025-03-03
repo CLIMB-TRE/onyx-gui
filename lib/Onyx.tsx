@@ -8,7 +8,7 @@ import Site from "./pages/Site";
 import Results from "./pages/Results";
 import ProjectRecord from "./pages/ProjectRecord";
 import Analysis from "./pages/Analysis";
-import Stats from "./pages/Stats";
+import Graphs from "./pages/Graphs";
 import { OnyxProps } from "./interfaces";
 import {
   ProjectField,
@@ -269,8 +269,8 @@ function App(props: OnyxProps) {
                   onHide={() => setTabKey("analyses")}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="stats" className="h-100">
-                <Stats
+              <Tab.Pane eventKey="graphs" className="h-100">
+                <Graphs
                   {...pageProps}
                   projectFields={projectFields}
                   typeLookups={typeLookups}

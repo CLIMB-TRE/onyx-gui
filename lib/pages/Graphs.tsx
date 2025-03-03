@@ -311,7 +311,7 @@ function GraphPanel(props: GraphPanelProps) {
   );
 }
 
-function Stats(props: DataProps) {
+function Graphs(props: DataProps) {
   const defaultGraphConfig = () =>
     [
       {
@@ -571,4 +571,4 @@ function Stats(props: DataProps) {
   );
 }
 
-export default Stats;
+export default Graphs;

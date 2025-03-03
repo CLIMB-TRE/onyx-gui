@@ -158,8 +158,8 @@ function Header(props: HeaderProps) {
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="stats" className="fw-normal">
-                    Statistics
+                  <Nav.Link eventKey="graphs" className="fw-normal">
+                    Graphs
                   </Nav.Link>
                 </Nav.Item>
                 <Form.Check
