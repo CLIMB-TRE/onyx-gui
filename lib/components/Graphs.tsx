@@ -53,7 +53,21 @@ const useSummaryData = (props: GraphProps) => {
     useSummaryQuery(props);
 
   const plotData = useMemo(() => {
-    if (data?.status !== "success")
+    if (data?.status !== "success" || !data.data.length)
+      return {
+        field_data: [],
+        count_data: [],
+      };
+
+    let count_field = "";
+    for (const key in data.data[0]) {
+      if (key === "count" || key.endsWith("__count")) {
+        count_field = key;
+        break;
+      }
+    }
+
+    if (!count_field)
       return {
         field_data: [],
         count_data: [],
@@ -64,7 +78,9 @@ const useSummaryData = (props: GraphProps) => {
       getStringValue(summary, props.graphConfig.field)
     );
     // Get count values
-    const count_data = data.data.map((summary: SummaryType) => summary.count);
+    const count_data = data.data.map(
+      (summary: SummaryType) => summary[count_field] as number
+    );
     return { field_data, count_data };
   }, [data, props.graphConfig.field]);
 
@@ -84,13 +100,22 @@ const useGroupedDataQuery = (props: GraphProps) => {
     useGroupedSummaryQuery(props);
 
   const plotData = useMemo(() => {
-    if (data?.status !== "success")
-      return new Map<string, { field_data: string[]; count_data: number[] }>();
-
     const groupedData = new Map<
       string,
       { field_data: string[]; count_data: number[] }
     >();
+
+    if (data?.status !== "success" || !data.data.length) return groupedData;
+
+    let count_field = "";
+    for (const key in data.data[0]) {
+      if (key === "count" || key.endsWith("__count")) {
+        count_field = key;
+        break;
+      }
+    }
+
+    if (!count_field) return groupedData;
 
     data.data.forEach((summary: SummaryType) => {
       // Convert null field and group values to empty strings
@@ -102,12 +127,12 @@ const useGroupedDataQuery = (props: GraphProps) => {
       if (!groupedValue) {
         groupedData.set(group_by_value, {
           field_data: [field_value],
-          count_data: [summary.count],
+          count_data: [summary[count_field] as number],
         });
         return;
       } else {
         groupedValue.field_data.push(field_value);
-        groupedValue.count_data.push(summary.count);
+        groupedValue.count_data.push(summary[count_field] as number);
       }
     });
 
