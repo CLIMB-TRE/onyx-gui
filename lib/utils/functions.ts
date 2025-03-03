@@ -1,10 +1,17 @@
-import { RecordDetailResponse, ErrorResponse, ExportStatus } from "../types";
+import {
+  RecordDetailResponse,
+  ErrorResponse,
+  ExportStatus,
+  FilterConfig,
+} from "../types";
 import { OnyxProps, ExportHandlerProps } from "../interfaces";
 
+/** Returns a random hexadecimal string. */
 function generateKey() {
   return Math.random().toString(16).slice(2);
 }
 
+/** Generate a default file name prefix based on the project code and search parameters. */
 function getDefaultFileNamePrefix(project: string, searchParameters: string) {
   // Create the default file name prefix based on the project and search parameters
   // Uses filter/search values only, replaces commas and spaces with underscores,
@@ -28,6 +35,7 @@ interface RecordDetailResponseProps extends OnyxProps {
   response: RecordDetailResponse | ErrorResponse;
 }
 
+/** Handler for converting JSON data to a string for file export. */
 function handleJSONExport(props: RecordDetailResponseProps) {
   return (exportProps: ExportHandlerProps) => {
     if (props.response?.status !== "success") return;
@@ -44,4 +52,20 @@ function handleJSONExport(props: RecordDetailResponseProps) {
   };
 }
 
-export { generateKey, getDefaultFileNamePrefix, handleJSONExport };
+/** Takes an array of FilterConfig objects and formats into an array of field (+lookup), value pairs. */
+function formatFilters(filters: FilterConfig[]) {
+  return filters
+    .filter((filter) => filter.field)
+    .map((filter) => {
+      if (filter.lookup)
+        return [filter.field + "__" + filter.lookup, filter.value];
+      else return [filter.field, filter.value];
+    });
+}
+
+export {
+  generateKey,
+  getDefaultFileNamePrefix,
+  handleJSONExport,
+  formatFilters,
+};

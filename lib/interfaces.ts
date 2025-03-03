@@ -29,11 +29,6 @@ interface ResultsProps extends DataProps {
   searchPath: string;
 }
 
-interface StatsProps extends PageProps {
-  projectFields: Map<string, ProjectField>;
-  fieldDescriptions: Map<string, string>;
-}
-
 interface ExportHandlerProps {
   fileName: string;
   statusToken: { status: ExportStatus };
@@ -48,6 +43,5 @@ export type {
   PageProps,
   DataProps,
   ResultsProps,
-  StatsProps,
   ExportHandlerProps,
 };

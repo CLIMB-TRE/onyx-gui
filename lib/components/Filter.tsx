@@ -14,6 +14,7 @@ interface FilterProps extends DataProps {
   setFilterList: (value: FilterConfig[]) => void;
   fieldList: string[];
   setEditMode: (value: boolean) => void;
+  disableLookups?: boolean;
 }
 
 function getValueList(v: string) {
@@ -165,16 +166,18 @@ function Filter(props: FilterProps) {
             onChange={handleFieldChange}
           />
         </Form.Group>
-        <Form.Group className="mb-2">
-          <Form.Label>Lookup</Form.Label>
-          <Dropdown
-            options={props.typeLookups.get(filter.type) || []}
-            titles={props.lookupDescriptions}
-            value={filter.lookup}
-            placeholder="Select lookup..."
-            onChange={handleLookupChange}
-          />
-        </Form.Group>
+        {!props.disableLookups && (
+          <Form.Group className="mb-2">
+            <Form.Label>Lookup</Form.Label>
+            <Dropdown
+              options={props.typeLookups.get(filter.type) || []}
+              titles={props.lookupDescriptions}
+              value={filter.lookup}
+              placeholder="Select lookup..."
+              onChange={handleLookupChange}
+            />
+          </Form.Group>
+        )}
         {filter.lookup.endsWith("range") ? (
           f
         ) : (

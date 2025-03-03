@@ -8,6 +8,7 @@ import ResultsPanel from "../components/ResultsPanel";
 import { FilterConfig } from "../types";
 import { ResultsProps } from "../interfaces";
 import { useDebouncedValue } from "../utils/hooks";
+import { formatFilters } from "../utils/functions";
 import { useResultsQuery } from "../api";
 
 function Results(props: ResultsProps) {
@@ -46,15 +47,7 @@ function Results(props: ResultsProps) {
   const searchParams = useMemo(
     () =>
       new URLSearchParams(
-        filterList
-          .filter((filter) => filter.field)
-          .map((filter) => {
-            if (filter.lookup) {
-              return [filter.field + "__" + filter.lookup, filter.value];
-            } else {
-              return [filter.field, filter.value];
-            }
-          })
+        formatFilters(filterList)
           .concat(
             transformList
               .filter((field) => field)

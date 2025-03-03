@@ -48,17 +48,15 @@ function Details(props: DetailsProps) {
     return Object.entries(data.data)
       .filter(
         ([key]) =>
-          key !== "is_published" &&
-          key !== "upstream_analyses" &&
-          key !== "downstream_analyses" &&
-          key !== "identifiers" &&
-          key !== "records"
+          props.projectFields.get(key)?.type !== "relation" &&
+          props.projectFields.get(key)?.type !== "structure" &&
+          key !== "is_published"
       )
       .map(([key, value]) => ({
         Field: key,
         Value: value,
       })) as RecordType[];
-  }, [data]);
+  }, [data, props.projectFields]);
 
   useEffect(() => {
     if (data?.status === "success" && !data.data.is_published)

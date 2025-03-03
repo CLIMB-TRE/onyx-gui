@@ -9,7 +9,7 @@ import {
   SuccessResponse,
   ErrorResponse,
 } from "../types";
-import { StatsProps } from "../interfaces";
+import { DataProps } from "../interfaces";
 import graphStyles from "../utils/graphStyles";
 import QueryHandler from "./QueryHandler";
 import { useQueryRefresh } from "../utils/hooks";
@@ -36,7 +36,7 @@ interface BaseGraphProps extends BasePlotProps {
   data: SuccessResponse | ErrorResponse;
 }
 
-interface GraphProps extends StatsProps {
+interface GraphProps extends DataProps {
   graphConfig: GraphConfig;
   refresh: number;
   setLastUpdated: (lastUpdated: string | null) => void;

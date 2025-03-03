@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { OnyxProps, ProjectProps } from "../interfaces";
 import { GraphConfig } from "../types";
+import { formatFilters } from "../utils/functions";
 
 interface ChoiceProps extends ProjectProps {
   field: string;
@@ -286,13 +287,16 @@ const useCountQuery = (props: GenericQueryProps) => {
 
 /** Fetch summary from project and field */
 const useSummaryQuery = (props: GraphQueryProps) => {
+  const search = new URLSearchParams(formatFilters(props.graphConfig.filters));
+  const filters = search.toString();
+  if (props.graphConfig.field)
+    search.append("summarise", props.graphConfig.field);
+
   return useQuery({
-    queryKey: ["summary-list", props.project, props.graphConfig.field],
+    queryKey: ["summary-list", props.project, props.graphConfig.field, filters],
     queryFn: async () => {
       return props
-        .httpPathHandler(
-          `projects/${props.project}/?summarise=${props.graphConfig.field}`
-        )
+        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json());
     },
     enabled: !!props.project,
@@ -303,18 +307,24 @@ const useSummaryQuery = (props: GraphQueryProps) => {
 
 /** Fetch grouped summary from project, field, and groupBy */
 const useGroupedSummaryQuery = (props: GraphQueryProps) => {
+  const search = new URLSearchParams(formatFilters(props.graphConfig.filters));
+  const filters = search.toString();
+  if (props.graphConfig.field)
+    search.append("summarise", props.graphConfig.field);
+  if (props.graphConfig.groupBy)
+    search.append("summarise", props.graphConfig.groupBy);
+
   return useQuery({
     queryKey: [
       "summary-list",
       props.project,
       props.graphConfig.field,
       props.graphConfig.groupBy,
+      filters,
     ],
     queryFn: async () => {
       return props
-        .httpPathHandler(
-          `projects/${props.project}/?summarise=${props.graphConfig.field}&summarise=${props.graphConfig.groupBy}`
-        )
+        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
         .then((response) => response.json());
     },
     enabled: !!props.project,

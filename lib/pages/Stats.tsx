@@ -6,6 +6,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import Card from "react-bootstrap/Card";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
 import { Dropdown } from "../components/Dropdowns";
 import {
   BasePlot,
@@ -15,8 +17,9 @@ import {
   GroupedScatterGraph,
   GroupedBarGraph,
 } from "../components/Graphs";
-import { StatsProps } from "../interfaces";
-import { GraphType, GraphConfig } from "../types";
+import { DataProps } from "../interfaces";
+import { GraphType, GraphConfig, FilterConfig } from "../types";
+import FilterPanel from "../components/FilterPanel";
 import { generateKey } from "../utils/functions";
 import {
   MdCreate,
@@ -33,13 +36,14 @@ import {
   MdDelete,
 } from "react-icons/md";
 
-interface GraphPanelProps extends StatsProps {
+interface GraphPanelProps extends DataProps {
   graphConfig: GraphConfig;
   graphFieldOptions: string[];
   handleGraphConfigTypeChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigFieldChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigGroupByChange: React.ChangeEventHandler<HTMLSelectElement>;
   handleGraphConfigGroupModeChange: React.ChangeEventHandler<HTMLSelectElement>;
+  handleGraphConfigFiltersChange: (filters: FilterConfig[]) => void;
   handleGraphConfigYAxisTypeChange: React.ChangeEventHandler<HTMLInputElement>;
   handleGraphConfigSwapLeft: () => void;
   handleGraphConfigSwapRight: () => void;
@@ -115,67 +119,93 @@ function GraphPanelOptions(props: GraphPanelProps) {
     );
   }
 
+  const filterFieldOptions = Array.from(props.projectFields.entries())
+    .filter(([, projectField]) => projectField.actions.includes("filter"))
+    .map(([field]) => field);
+
   return (
-    <Form>
-      <Form.Group className="mb-3">
-        <Form.Label>Graph Type</Form.Label>
-        <Dropdown
-          isClearable
-          options={["line", "bar", "pie"]}
-          value={props.graphConfig.type}
-          placeholder="Select graph type..."
-          onChange={props.handleGraphConfigTypeChange}
-        />
-      </Form.Group>
-      {props.graphConfig.type && (
-        <Form.Group className="mb-3">
-          <Form.Label>Field</Form.Label>
-          <Dropdown
-            isClearable
-            options={fieldOptions}
-            titles={props.fieldDescriptions}
-            value={props.graphConfig.field}
-            placeholder="Select field..."
-            onChange={props.handleGraphConfigFieldChange}
+    <Tabs
+      defaultActiveKey="graph"
+      id="uncontrolled-tab-example"
+      className="mb-3"
+      justify
+    >
+      <Tab eventKey="graph" title="Graph">
+        <Form>
+          <Form.Group className="mb-3">
+            <Form.Label>Graph Type</Form.Label>
+            <Dropdown
+              isClearable
+              options={["line", "bar", "pie"]}
+              value={props.graphConfig.type}
+              placeholder="Select graph type..."
+              onChange={props.handleGraphConfigTypeChange}
+            />
+          </Form.Group>
+          {props.graphConfig.type && (
+            <Form.Group className="mb-3">
+              <Form.Label>Field</Form.Label>
+              <Dropdown
+                isClearable
+                options={fieldOptions}
+                titles={props.fieldDescriptions}
+                value={props.graphConfig.field}
+                placeholder="Select field..."
+                onChange={props.handleGraphConfigFieldChange}
+              />
+            </Form.Group>
+          )}
+          {(props.graphConfig.type === "line" ||
+            props.graphConfig.type === "bar") && (
+            <Form.Group className="mb-3">
+              <Form.Label>Group By</Form.Label>
+              <Dropdown
+                isClearable
+                options={groupByOptions}
+                titles={props.fieldDescriptions}
+                value={props.graphConfig.groupBy}
+                placeholder="Select field..."
+                onChange={props.handleGraphConfigGroupByChange}
+              />
+            </Form.Group>
+          )}
+          {props.graphConfig.type === "bar" && (
+            <Form.Group className="mb-3">
+              <Form.Label>Group Mode</Form.Label>
+              <Dropdown
+                options={["stack", "group", "norm"]}
+                value={props.graphConfig.groupMode}
+                onChange={props.handleGraphConfigGroupModeChange}
+              />
+            </Form.Group>
+          )}
+        </Form>
+      </Tab>
+      <Tab eventKey="filters" title="Filters">
+        {props.graphConfig.type && (
+          <FilterPanel
+            {...props}
+            filterList={props.graphConfig.filters}
+            setFilterList={props.handleGraphConfigFiltersChange}
+            filterFieldOptions={filterFieldOptions}
+            disableLookups
           />
-        </Form.Group>
-      )}
-      {(props.graphConfig.type === "line" ||
-        props.graphConfig.type === "bar") && (
-        <Form.Group className="mb-3">
-          <Form.Label>Group By</Form.Label>
-          <Dropdown
-            isClearable
-            options={groupByOptions}
-            titles={props.fieldDescriptions}
-            value={props.graphConfig.groupBy}
-            placeholder="Select field..."
-            onChange={props.handleGraphConfigGroupByChange}
-          />
-        </Form.Group>
-      )}
-      {props.graphConfig.type === "bar" && (
-        <Form.Group className="mb-3">
-          <Form.Label>Group Mode</Form.Label>
-          <Dropdown
-            options={["stack", "group", "norm"]}
-            value={props.graphConfig.groupMode}
-            onChange={props.handleGraphConfigGroupModeChange}
-          />
-        </Form.Group>
-      )}
-      {(props.graphConfig.type === "line" ||
-        props.graphConfig.type === "bar") && (
-        <Form.Group className="mb-3">
-          <Form.Label>Axis Type</Form.Label>
-          <Form.Check
-            type="checkbox"
-            label="Logarithmic Y Axis"
-            onChange={props.handleGraphConfigYAxisTypeChange}
-          />
-        </Form.Group>
-      )}
-    </Form>
+        )}
+      </Tab>
+      <Tab eventKey="display" title="Display">
+        {(props.graphConfig.type === "line" ||
+          props.graphConfig.type === "bar") && (
+          <Form.Group className="mb-3">
+            <Form.Label>Y Axis</Form.Label>
+            <Form.Check
+              type="checkbox"
+              label="Logarithmic"
+              onChange={props.handleGraphConfigYAxisTypeChange}
+            />
+          </Form.Group>
+        )}
+      </Tab>
+    </Tabs>
   );
 }
 
@@ -188,13 +218,24 @@ function GraphPanel(props: GraphPanelProps) {
     if (props.graphConfig.field) {
       title = `Records by ${props.graphConfig.field}`;
 
-      if (props.graphConfig.groupBy) {
+      if (props.graphConfig.groupBy)
         title += `, grouped by ${props.graphConfig.groupBy}`;
+
+      if (props.graphConfig.filters.length > 0) {
+        props.graphConfig.filters
+          .filter((filter) => filter.field)
+          .forEach((filter) => {
+            title += `, filtered by ${filter.field} == '${filter.value}'`;
+          });
       }
     }
 
     return title;
-  }, [props.graphConfig.field, props.graphConfig.groupBy]);
+  }, [
+    props.graphConfig.field,
+    props.graphConfig.groupBy,
+    props.graphConfig.filters,
+  ]);
 
   return (
     <Card>
@@ -211,7 +252,6 @@ function GraphPanel(props: GraphPanelProps) {
               Last updated: {lastUpdated}
             </span>
           )}
-
           <Button
             size="sm"
             variant="dark"
@@ -252,7 +292,7 @@ function GraphPanel(props: GraphPanelProps) {
         <Row className="g-2">
           {props.showOptions && (
             <Col xl={12} xxl={props.viewMode === "list" ? 3 : 4}>
-              <Card body style={{ height: "440px" }}>
+              <Card body style={{ height: "440px" }} className="h-100">
                 <GraphPanelOptions {...props} />
               </Card>
             </Col>
@@ -271,7 +311,7 @@ function GraphPanel(props: GraphPanelProps) {
   );
 }
 
-function Stats(props: StatsProps) {
+function Stats(props: DataProps) {
   const defaultGraphConfig = () =>
     [
       {
@@ -280,6 +320,7 @@ function Stats(props: StatsProps) {
         field: "published_date",
         groupBy: "",
         groupMode: "stack",
+        filters: [],
         yAxisType: "",
       },
       {
@@ -288,6 +329,7 @@ function Stats(props: StatsProps) {
         field: "published_date",
         groupBy: "site",
         groupMode: "stack",
+        filters: [],
         yAxisType: "",
       },
       {
@@ -296,6 +338,7 @@ function Stats(props: StatsProps) {
         field: "site",
         groupBy: "",
         groupMode: "",
+        filters: [],
         yAxisType: "",
       },
       {
@@ -304,6 +347,7 @@ function Stats(props: StatsProps) {
         field: "published_date",
         groupBy: "site",
         groupMode: "",
+        filters: [],
         yAxisType: "",
       },
     ] as GraphConfig[];
@@ -371,6 +415,15 @@ function Stats(props: StatsProps) {
     setGraphConfigList(list);
   };
 
+  const handleGraphConfigFiltersChange = (
+    filters: FilterConfig[],
+    index: number
+  ) => {
+    const list = [...graphConfigList];
+    list[index].filters = filters;
+    setGraphConfigList(list);
+  };
+
   const handleGraphConfigYAxisTypeChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
@@ -389,6 +442,7 @@ function Stats(props: StatsProps) {
         field: "",
         groupBy: "",
         groupMode: "",
+        filters: [],
         yAxisType: "",
       },
       ...graphConfigList.slice(index),
@@ -488,6 +542,9 @@ function Stats(props: StatsProps) {
                   }
                   handleGraphConfigGroupModeChange={(e) =>
                     handleGraphConfigGroupModeChange(e, index)
+                  }
+                  handleGraphConfigFiltersChange={(e) =>
+                    handleGraphConfigFiltersChange(e, index)
                   }
                   handleGraphConfigYAxisTypeChange={(e) =>
                     handleGraphConfigYAxisTypeChange(e, index)

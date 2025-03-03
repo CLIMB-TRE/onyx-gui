@@ -35,6 +35,7 @@ type GraphConfig = {
   field: string;
   groupBy: string;
   groupMode: string;
+  filters: FilterConfig[];
   yAxisType: string;
 };
 

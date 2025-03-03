@@ -14,6 +14,7 @@ interface FilterPanelProps extends DataProps {
   filterList: FilterConfig[];
   setFilterList: (value: FilterConfig[]) => void;
   filterFieldOptions: string[];
+  disableLookups?: boolean;
 }
 
 function formatLookup(lookup: string) {

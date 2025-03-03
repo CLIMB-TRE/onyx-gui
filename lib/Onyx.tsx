@@ -219,9 +219,7 @@ function App(props: OnyxProps) {
               </Tab.Pane>
               <Tab.Pane eventKey="data" className="h-100">
                 <Results
-                  {...props}
-                  project={project}
-                  darkMode={darkMode}
+                  {...pageProps}
                   projectFields={projectFields}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
@@ -234,9 +232,7 @@ function App(props: OnyxProps) {
               </Tab.Pane>
               <Tab.Pane eventKey="record" className="h-100" unmountOnExit>
                 <ProjectRecord
-                  {...props}
-                  project={project}
-                  darkMode={darkMode}
+                  {...pageProps}
                   projectFields={projectFields}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
@@ -249,9 +245,7 @@ function App(props: OnyxProps) {
               </Tab.Pane>
               <Tab.Pane eventKey="analyses" className="h-100">
                 <Results
-                  {...props}
-                  project={project}
-                  darkMode={darkMode}
+                  {...pageProps}
                   projectFields={analysisFields}
                   typeLookups={typeLookups}
                   fieldDescriptions={analysisDescriptions}
@@ -264,10 +258,8 @@ function App(props: OnyxProps) {
               </Tab.Pane>
               <Tab.Pane eventKey="analysis" className="h-100" unmountOnExit>
                 <Analysis
-                  {...props}
-                  project={project}
-                  darkMode={darkMode}
-                  projectFields={projectFields}
+                  {...pageProps}
+                  projectFields={analysisFields}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
                   lookupDescriptions={lookupDescriptions}
@@ -279,11 +271,13 @@ function App(props: OnyxProps) {
               </Tab.Pane>
               <Tab.Pane eventKey="stats" className="h-100">
                 <Stats
-                  {...props}
-                  project={project}
-                  darkMode={darkMode}
+                  {...pageProps}
                   projectFields={projectFields}
+                  typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
+                  lookupDescriptions={lookupDescriptions}
+                  handleProjectRecordShow={handleProjectRecordShow}
+                  handleAnalysisShow={handleAnalysisShow}
                 />
               </Tab.Pane>
             </Tab.Content>
