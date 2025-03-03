@@ -182,9 +182,19 @@ function App(props: OnyxProps) {
     setRecordID(climbID);
   }, []);
 
+  const handleProjectRecordHide = useCallback(() => {
+    setTabKey("data");
+    setRecordID("");
+  }, []);
+
   const handleAnalysisShow = useCallback((analysisID: string) => {
     setTabKey("analysis");
     setAnalysisID(analysisID);
+  }, []);
+
+  const handleAnalysisHide = useCallback(() => {
+    setTabKey("analyses");
+    setAnalysisID("");
   }, []);
 
   return (
@@ -206,6 +216,10 @@ function App(props: OnyxProps) {
         setTabKey={setTabKey}
         darkMode={darkMode}
         handleThemeChange={handleThemeChange}
+        recordID={recordID}
+        handleProjectRecordHide={handleProjectRecordHide}
+        analysisID={analysisID}
+        handleAnalysisHide={handleAnalysisHide}
       />
       <div className="h-100" style={{ paddingTop: "60px" }}>
         <Container fluid className="h-100 px-0 py-2">
@@ -240,7 +254,7 @@ function App(props: OnyxProps) {
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
                   recordID={recordID}
-                  onHide={() => setTabKey("data")}
+                  onHide={handleProjectRecordHide}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="analyses" className="h-100">
@@ -266,7 +280,7 @@ function App(props: OnyxProps) {
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
                   analysisID={analysisID}
-                  onHide={() => setTabKey("analyses")}
+                  onHide={handleAnalysisHide}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="graphs" className="h-100">

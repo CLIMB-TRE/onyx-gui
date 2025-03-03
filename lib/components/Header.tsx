@@ -19,6 +19,10 @@ interface HeaderProps extends PageProps {
   tabKey: string;
   setTabKey: (k: string) => void;
   handleThemeChange: () => void;
+  recordID: string;
+  handleProjectRecordHide: () => void;
+  analysisID: string;
+  handleAnalysisHide: () => void;
 }
 
 function HeaderText({ label, value }: { label: string; value: string }) {
@@ -65,6 +69,20 @@ function Header(props: HeaderProps) {
     };
   }, [data]);
 
+  const handleTabChange = (eventKey: string | null) => {
+    if (eventKey === "data" && props.recordID) {
+      if (props.tabKey === "record") {
+        props.handleProjectRecordHide();
+      } else {
+        props.setTabKey("record");
+      }
+    } else if (eventKey === "analyses" && props.analysisID) {
+      if (props.tabKey === "analysis") {
+        props.handleAnalysisHide();
+      } else props.setTabKey("analysis");
+    } else props.setTabKey(eventKey || "data");
+  };
+
   return (
     <Navbar
       style={{
@@ -77,10 +95,7 @@ function Header(props: HeaderProps) {
       fixed="top"
     >
       <Container fluid>
-        <Tab.Container
-          activeKey={props.tabKey}
-          onSelect={(k) => props.setTabKey(k || "data")}
-        >
+        <Tab.Container activeKey={props.tabKey} onSelect={handleTabChange}>
           <Navbar.Brand>
             <MdJoinInner color="var(--bs-pink)" /> Onyx
           </Navbar.Brand>
