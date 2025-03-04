@@ -160,9 +160,10 @@ function getNullCount(
   if (projectFields.get(field)?.type === "date") {
     const nullCount = data.count_data[data.field_data.indexOf("")] || 0;
 
-    if (nullCount) {
-      title += `Excluding ${nullCount} records with no ${field}.`;
-    }
+    const recordText = nullCount === 1 ? "record" : "records";
+
+    if (nullCount)
+      title += `Excluding ${nullCount} ${recordText} with no ${field}.`;
   }
 
   return title;
@@ -182,9 +183,10 @@ function getGroupedNullCount(
       nullCount += count_data[field_data.indexOf("")] || 0;
     });
 
-    if (nullCount) {
-      title += `Excluding ${nullCount} records with no ${field}.`;
-    }
+    const recordText = nullCount === 1 ? "record" : "records";
+
+    if (nullCount)
+      title += `Excluding ${nullCount} ${recordText} with no ${field}.`;
   }
 
   return title;

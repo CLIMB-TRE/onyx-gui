@@ -59,33 +59,56 @@ interface GraphPanelGraphProps extends GraphPanelProps {
   setLastUpdated: (lastUpdated: string | null) => void;
 }
 
-function GraphPanelGraph(props: GraphPanelGraphProps) {
-  let g: JSX.Element;
+function GraphPanelTitle(props: GraphPanelProps) {
+  const textTitle = useMemo(() => {
+    let title = "Empty Graph";
 
-  switch (true) {
-    case props.graphConfig.type === "line" &&
-      !!props.graphConfig.field &&
-      !!props.graphConfig.groupBy:
-      g = <GroupedScatterGraph {...props} />;
-      break;
-    case props.graphConfig.type === "line" && !!props.graphConfig.field:
-      g = <ScatterGraph {...props} />;
-      break;
-    case props.graphConfig.type === "bar" &&
-      !!props.graphConfig.field &&
-      !!props.graphConfig.groupBy:
-      g = <GroupedBarGraph {...props} />;
-      break;
-    case props.graphConfig.type === "bar" && !!props.graphConfig.field:
-      g = <BarGraph {...props} />;
-      break;
-    case props.graphConfig.type === "pie" && !!props.graphConfig.field:
-      g = <PieGraph {...props} />;
-      break;
-    default:
-      g = <BasePlot {...props} plotData={[]} uirevision={""} />;
-  }
-  return g;
+    if (props.graphConfig.field) {
+      title = `Records by ${props.graphConfig.field}`;
+
+      if (props.graphConfig.groupBy)
+        title += `, grouped by ${props.graphConfig.groupBy}`;
+
+      if (props.graphConfig.filters.length > 0) {
+        props.graphConfig.filters
+          .filter((filter) => filter.field)
+          .forEach((filter) => {
+            title += `, filtered by ${filter.field}: '${filter.value}'`;
+          });
+      }
+    }
+
+    return title;
+  }, [
+    props.graphConfig.field,
+    props.graphConfig.groupBy,
+    props.graphConfig.filters,
+  ]);
+
+  return (
+    <span className="me-auto text-truncate" title={textTitle}>
+      {props.graphConfig.field ? (
+        <span>
+          Records by {props.graphConfig.field}
+          {props.graphConfig.groupBy &&
+            `, grouped by ${props.graphConfig.groupBy}`}
+          {props.graphConfig.filters.length > 0 &&
+            props.graphConfig.filters
+              .filter((filter) => filter.field)
+              .map((filter) => (
+                <span>
+                  , filtered by {filter.field}:{" "}
+                  <span className="onyx-text-pink font-monospace">
+                    {filter.value}
+                  </span>
+                </span>
+              ))}
+        </span>
+      ) : (
+        textTitle
+      )}
+    </span>
+  );
 }
 
 function GraphPanelOptions(props: GraphPanelProps) {
@@ -120,7 +143,11 @@ function GraphPanelOptions(props: GraphPanelProps) {
   }
 
   const filterFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, projectField]) => projectField.actions.includes("filter"))
+    .filter(
+      ([, projectField]) =>
+        projectField.type !== "relation" &&
+        projectField.actions.includes("filter")
+    )
     .map(([field]) => field);
 
   return (
@@ -209,41 +236,43 @@ function GraphPanelOptions(props: GraphPanelProps) {
   );
 }
 
+function GraphPanelGraph(props: GraphPanelGraphProps) {
+  let g: JSX.Element;
+
+  switch (true) {
+    case props.graphConfig.type === "line" &&
+      !!props.graphConfig.field &&
+      !!props.graphConfig.groupBy:
+      g = <GroupedScatterGraph {...props} />;
+      break;
+    case props.graphConfig.type === "line" && !!props.graphConfig.field:
+      g = <ScatterGraph {...props} />;
+      break;
+    case props.graphConfig.type === "bar" &&
+      !!props.graphConfig.field &&
+      !!props.graphConfig.groupBy:
+      g = <GroupedBarGraph {...props} />;
+      break;
+    case props.graphConfig.type === "bar" && !!props.graphConfig.field:
+      g = <BarGraph {...props} />;
+      break;
+    case props.graphConfig.type === "pie" && !!props.graphConfig.field:
+      g = <PieGraph {...props} />;
+      break;
+    default:
+      g = <BasePlot {...props} plotData={[]} uirevision={""} />;
+  }
+  return g;
+}
+
 function GraphPanel(props: GraphPanelProps) {
   const [lastUpdated, setLastUpdated] = useState<null | string>(null);
-
-  const graphTitle = useMemo(() => {
-    let title = "Empty Graph";
-
-    if (props.graphConfig.field) {
-      title = `Records by ${props.graphConfig.field}`;
-
-      if (props.graphConfig.groupBy)
-        title += `, grouped by ${props.graphConfig.groupBy}`;
-
-      if (props.graphConfig.filters.length > 0) {
-        props.graphConfig.filters
-          .filter((filter) => filter.field)
-          .forEach((filter) => {
-            title += `, filtered by ${filter.field} == '${filter.value}'`;
-          });
-      }
-    }
-
-    return title;
-  }, [
-    props.graphConfig.field,
-    props.graphConfig.groupBy,
-    props.graphConfig.filters,
-  ]);
 
   return (
     <Card>
       <Card.Header>
         <Stack direction="horizontal" gap={1}>
-          <span className="me-auto text-truncate" title={graphTitle}>
-            {graphTitle}
-          </span>
+          <GraphPanelTitle {...props} />
           {lastUpdated && (
             <span
               className="text-secondary text-truncate px-2"
