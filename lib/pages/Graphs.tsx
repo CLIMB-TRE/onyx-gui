@@ -145,7 +145,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
   const filterFieldOptions = Array.from(props.projectFields.entries())
     .filter(
       ([, projectField]) =>
-        projectField.type !== "relation" &&
+        (props.typeLookups.get(projectField.type) || []).includes("exact") &&
         projectField.actions.includes("filter")
     )
     .map(([field]) => field);
