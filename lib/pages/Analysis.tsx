@@ -246,7 +246,11 @@ function Analysis(props: AnalysisProps) {
               <span className="onyx-text-pink">{props.analysisID}</span>
             </Card.Title>
             <Card.Title className="me-auto">
-              {!published && <Badge bg="secondary">Unpublished</Badge>}
+              {!published && (
+                <Badge bg="secondary" className="m-0 p-1">
+                  Unpublished
+                </Badge>
+              )}
             </Card.Title>
             <CloseButton onClick={props.onHide} />
           </Stack>
