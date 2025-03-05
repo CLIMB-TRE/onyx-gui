@@ -105,8 +105,8 @@ function Details(props: DetailsProps) {
                   <Nav.Link eventKey="analysis-data-details">Details</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="analysis-data-experiment">
-                    Experiment
+                  <Nav.Link eventKey="analysis-data-experiment-details">
+                    Experiment Details
                   </Nav.Link>
                 </Nav.Item>
               </Nav>
@@ -131,8 +131,11 @@ function Details(props: DetailsProps) {
                   footer="Table showing the top-level fields for the analysis."
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="analysis-data-experiment" className="h-100">
-                <h5>Experiment</h5>
+              <Tab.Pane
+                eventKey="analysis-data-experiment-details"
+                className="h-100"
+              >
+                <h5>Experiment Details</h5>
                 <Card
                   body
                   className="overflow-y-auto h-100"
