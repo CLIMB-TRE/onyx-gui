@@ -17,7 +17,7 @@ function JsonSearch(props: JsonProps) {
   const [jsonSearch, setJsonSearch] = useState("");
 
   return (
-    <Stack>
+    <Stack gap={2}>
       <Input
         value={jsonSearch}
         onChange={(e) => setJsonSearch(e.target.value)}
