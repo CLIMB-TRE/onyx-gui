@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 import Card from "react-bootstrap/Card";
 import Tab from "react-bootstrap/Tab";
 import Button from "react-bootstrap/Button";
@@ -11,11 +11,13 @@ import Stack from "react-bootstrap/Stack";
 import QueryHandler from "../components/QueryHandler";
 import History from "../components/History";
 import Table from "../components/Table";
+import ErrorModal from "../components/ErrorModal";
 import ExportModal from "../components/ExportModal";
 import DataField from "../components/DataField";
 import { JsonSearch } from "../components/Json";
 import { UnpublishedBadge } from "../components/Badges";
 import {
+  DetailCellRendererFactory,
   ClimbIDCellRendererFactory,
   AnalysisIDCellRendererFactory,
 } from "../components/CellRenderers";
@@ -26,6 +28,7 @@ import {
   useAnalysisDownstreamQuery,
 } from "../api";
 import { handleJSONExport } from "../utils/functions";
+import { s3BucketsMessage } from "../utils/messages";
 import { DataProps } from "../interfaces";
 import { RecordType } from "../types";
 
@@ -40,7 +43,14 @@ interface DetailsProps extends AnalysisProps {
 
 function Details(props: DetailsProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
+  const [errorModalShow, setErrorModalShow] = useState(false);
+  const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
   const { isFetching, error, data } = useAnalysisQuery(props);
+
+  const handleErrorModalShow = useCallback((error: Error) => {
+    setS3ReportError(error);
+    setErrorModalShow(true);
+  }, []);
 
   // Get the analysis details
   const analysis = useMemo(() => {
@@ -63,6 +73,14 @@ function Details(props: DetailsProps) {
       props.setUnpublished();
   }, [data, props]);
 
+  const errorModalProps = useMemo(
+    () => ({
+      ...props,
+      handleErrorModalShow,
+    }),
+    [props, handleErrorModalShow]
+  );
+
   const jsonExportProps = useMemo(
     () => ({
       ...props,
@@ -77,6 +95,13 @@ function Details(props: DetailsProps) {
         id="analysis-data-tabs"
         defaultActiveKey="analysis-data-details"
       >
+        <ErrorModal
+          title="S3 Reports"
+          message={s3BucketsMessage}
+          error={s3ReportError}
+          show={errorModalShow}
+          onHide={() => setErrorModalShow(false)}
+        />
         <ExportModal
           show={exportModalShow}
           onHide={() => setExportModalShow(false)}
@@ -129,6 +154,11 @@ function Details(props: DetailsProps) {
                   data={analysis}
                   defaultFileNamePrefix={`${props.analysisID}_details`}
                   footer="Table showing the top-level fields for the analysis."
+                  cellRenderers={
+                    new Map([
+                      ["Value", DetailCellRendererFactory(errorModalProps)],
+                    ])
+                  }
                 />
               </Tab.Pane>
               <Tab.Pane
