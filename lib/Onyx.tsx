@@ -83,7 +83,7 @@ function App(props: OnyxProps) {
     localStorage.getItem("onyx-theme") === "dark"
   );
   const [project, setProject] = useState("");
-  const [tabKey, setTabKey] = useState("data");
+  const [tabKey, setTabKey] = useState("records");
   const [recordID, setRecordID] = useState("");
   const [analysisID, setAnalysisID] = useState("");
 
@@ -101,7 +101,7 @@ function App(props: OnyxProps) {
 
   // Clear parameters when project changes
   const handleProjectChange = (project: string) => {
-    setTabKey("data");
+    setTabKey("records");
     setRecordID("");
     setAnalysisID("");
     setProject(project);
@@ -183,7 +183,7 @@ function App(props: OnyxProps) {
   }, []);
 
   const handleProjectRecordHide = useCallback(() => {
-    setTabKey("data");
+    setTabKey("records");
     setRecordID("");
   }, []);
 
@@ -231,7 +231,7 @@ function App(props: OnyxProps) {
               <Tab.Pane eventKey="site" className="h-100">
                 <Site {...props} project={project} darkMode={darkMode} />
               </Tab.Pane>
-              <Tab.Pane eventKey="data" className="h-100">
+              <Tab.Pane eventKey="records" className="h-100">
                 <Results
                   {...pageProps}
                   projectFields={projectFields}
@@ -240,7 +240,7 @@ function App(props: OnyxProps) {
                   lookupDescriptions={lookupDescriptions}
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
-                  title="Data"
+                  title="Records"
                   searchPath={`projects/${project}`}
                 />
               </Tab.Pane>

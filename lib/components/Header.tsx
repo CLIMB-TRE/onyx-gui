@@ -70,7 +70,7 @@ function Header(props: HeaderProps) {
   }, [data]);
 
   const handleTabChange = (eventKey: string | null) => {
-    if (eventKey === "data" && props.recordID) {
+    if (eventKey === "records" && props.recordID) {
       if (props.tabKey === "record") {
         props.handleProjectRecordHide();
       } else {
@@ -80,7 +80,7 @@ function Header(props: HeaderProps) {
       if (props.tabKey === "analysis") {
         props.handleAnalysisHide();
       } else props.setTabKey("analysis");
-    } else props.setTabKey(eventKey || "data");
+    } else props.setTabKey(eventKey || "records");
   };
 
   return (
@@ -154,11 +154,13 @@ function Header(props: HeaderProps) {
               <Stack direction="horizontal" gap={3}>
                 <Nav.Item>
                   <Nav.Link
-                    eventKey="data"
+                    eventKey="records"
                     className="fw-normal"
-                    active={props.tabKey == "data" || props.tabKey == "record"}
+                    active={
+                      props.tabKey == "records" || props.tabKey == "record"
+                    }
                   >
-                    Data
+                    Records
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
