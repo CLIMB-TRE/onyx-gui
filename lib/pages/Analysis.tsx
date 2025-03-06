@@ -8,13 +8,13 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
-import Badge from "react-bootstrap/Badge";
 import QueryHandler from "../components/QueryHandler";
 import History from "../components/History";
 import Table from "../components/Table";
 import ExportModal from "../components/ExportModal";
 import DataField from "../components/DataField";
 import { JsonSearch } from "../components/Json";
+import { UnpublishedBadge } from "../components/Badges";
 import {
   ClimbIDCellRendererFactory,
   AnalysisIDCellRendererFactory,
@@ -246,11 +246,7 @@ function Analysis(props: AnalysisProps) {
               <span className="onyx-text-pink">{props.analysisID}</span>
             </Card.Title>
             <Card.Title className="me-auto">
-              {!published && (
-                <Badge bg="secondary" className="m-0 p-1">
-                  Unpublished
-                </Badge>
-              )}
+              {!published && <UnpublishedBadge />}
             </Card.Title>
             <CloseButton onClick={props.onHide} />
           </Stack>

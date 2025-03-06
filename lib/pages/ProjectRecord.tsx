@@ -8,7 +8,6 @@ import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
-import Badge from "react-bootstrap/Badge";
 import Table from "../components/Table";
 import ErrorModal from "../components/ErrorModal";
 import History from "../components/History";
@@ -19,6 +18,7 @@ import { RecordType } from "../types";
 import { DataProps } from "../interfaces";
 import ExportModal from "../components/ExportModal";
 import { JsonSearch } from "../components/Json";
+import { UnpublishedBadge } from "../components/Badges";
 import {
   DetailCellRendererFactory,
   AnalysisIDCellRendererFactory,
@@ -268,7 +268,7 @@ function ProjectRecord(props: ProjectRecordProps) {
               CLIMB ID: <span className="onyx-text-pink">{props.recordID}</span>
             </Card.Title>
             <Card.Title className="me-auto">
-              {!published && <Badge bg="secondary">Unpublished</Badge>}
+              {!published && <UnpublishedBadge />}
             </Card.Title>
             <CloseButton onClick={props.onHide} />
           </Stack>
