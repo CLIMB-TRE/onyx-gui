@@ -450,11 +450,10 @@ function BaseTable(props: BaseTableProps) {
                   <Pagination.Item as="span">
                     {props.isCountLoading
                       ? "Loading..."
-                      : `${props.rowDisplayParams.from} to ${
-                          props.isPaginated
-                            ? props.rowDisplayParams.to
-                            : displayedRowCount
-                        } of ${props.rowDisplayParams.of}`}
+                      : `${props.rowDisplayParams.from.toLocaleString()} to ${(props.isPaginated
+                          ? props.rowDisplayParams.to
+                          : displayedRowCount
+                        ).toLocaleString()} of ${props.rowDisplayParams.of.toLocaleString()}`}
                   </Pagination.Item>
                 </Pagination>
               </Col>
@@ -663,7 +662,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       paginationParams={{
         pageCountMessage: countPending
           ? "Loading..."
-          : `Page ${userPageNumber} of ${countData.numPages}`,
+          : `Page ${userPageNumber.toLocaleString()} of ${countData.numPages.toLocaleString()}`,
         pageNumber: userPageNumber,
         numPages: countData.numPages,
         prevPage,
