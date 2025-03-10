@@ -10,6 +10,7 @@ import { DataProps } from "../interfaces";
 import { useChoicesQueries } from "../api";
 import { useChoicesDescriptions } from "../api/hooks";
 import { Input } from "./Inputs";
+import { CopyToClipboardButton } from "./Buttons";
 
 interface ObjectDetailsProps extends DataProps {
   data: RecordDetailResponse | ErrorResponse;
@@ -41,45 +42,42 @@ function ObjectField(props: ObjectFieldProps) {
 }
 
 function ObjectValue(props: ObjectValueProps) {
-  if (
-    typeof props.value === "string" &&
-    props.value.startsWith("s3://") &&
-    props.value.endsWith(".html")
-  ) {
-    return (
-      <Button
-        className="p-0"
-        size="sm"
-        variant="link"
-        onClick={() =>
-          props
-            .s3PathHandler(props.value)
-            .catch((error: Error) => props.handleErrorModalShow(error))
-        }
-      >
-        {props.value}
-      </Button>
-    );
-  } else {
-    return (
-      <small>
-        {props.choiceDescriptions
-          .get(props.field)
-          ?.get(props.value.toLowerCase()) ? (
-          <>
-            <div>{props.value}</div>
-            <div className="text-muted">
-              {props.choiceDescriptions
-                .get(props.field)
-                ?.get(props.value.toLowerCase())}
-            </div>
-          </>
-        ) : (
-          props.value
-        )}
-      </small>
-    );
-  }
+  return (
+    <small>
+      <div>
+        <Stack direction="horizontal">
+          {typeof props.value === "string" &&
+          props.value.startsWith("s3://") &&
+          props.value.endsWith(".html") ? (
+            <Button
+              className="p-0 me-auto"
+              size="sm"
+              variant="link"
+              onClick={() =>
+                props
+                  .s3PathHandler(props.value)
+                  .catch((error: Error) => props.handleErrorModalShow(error))
+              }
+            >
+              {props.value}
+            </Button>
+          ) : (
+            <span className="me-auto">{props.value}</span>
+          )}
+          <CopyToClipboardButton>{props.value}</CopyToClipboardButton>
+        </Stack>
+      </div>
+      {props.choiceDescriptions
+        .get(props.field)
+        ?.get(props.value.toLowerCase()) && (
+        <div className="text-muted">
+          {props.choiceDescriptions
+            .get(props.field)
+            ?.get(props.value.toLowerCase())}
+        </div>
+      )}
+    </small>
+  );
 }
 
 function ObjectDetails(props: ObjectDetailsProps) {
