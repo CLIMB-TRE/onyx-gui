@@ -122,6 +122,7 @@ type RecordDetailResponse = SuccessResponse & {
 type FieldsResponse = SuccessResponse & {
   data: {
     name: string;
+    description: string;
     fields: Record<string, ProjectField>;
   };
 };

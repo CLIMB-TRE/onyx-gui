@@ -116,6 +116,7 @@ function App(props: OnyxProps) {
   // Get project information
   const {
     name: projectName,
+    description: projectDescription,
     fields: projectFields,
     descriptions: fieldDescriptions,
   } = useFieldsInfo(projectFieldsResponse);
@@ -192,6 +193,7 @@ function App(props: OnyxProps) {
                   handleAnalysisShow={handleAnalysisShow}
                   title="Records"
                   searchPath={`projects/${project}`}
+                  projectDescription={projectDescription}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="record" className="h-100" unmountOnExit>
@@ -218,6 +220,7 @@ function App(props: OnyxProps) {
                   handleAnalysisShow={handleAnalysisShow}
                   title="Analyses"
                   searchPath={`projects/${project}/analysis`}
+                  projectDescription={projectDescription}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="analysis" className="h-100" unmountOnExit>

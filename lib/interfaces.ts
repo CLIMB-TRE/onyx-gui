@@ -27,6 +27,7 @@ interface DataProps extends PageProps {
 interface ResultsProps extends DataProps {
   title: string;
   searchPath: string;
+  projectDescription: string;
 }
 
 interface ExportHandlerProps {

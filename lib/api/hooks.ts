@@ -31,6 +31,7 @@ const useFieldsInfo = (fieldsResponse: FieldsResponse | ErrorResponse) => {
     if (fieldsResponse?.status !== "success") {
       return {
         name: "None",
+        description: "None",
         fields: new Map<string, ProjectField>(),
         descriptions: new Map<string, string>(),
       };
@@ -38,6 +39,9 @@ const useFieldsInfo = (fieldsResponse: FieldsResponse | ErrorResponse) => {
 
     // The name of the project
     const name = fieldsResponse.data.name;
+
+    // The description of the project
+    const description = fieldsResponse.data.description;
 
     // A map of field names to their type, description, actions, values and nested fields
     const fields = new Map(
@@ -48,7 +52,7 @@ const useFieldsInfo = (fieldsResponse: FieldsResponse | ErrorResponse) => {
     const descriptions = new Map(
       Array.from(fields, ([field, options]) => [field, options.description])
     );
-    return { name, fields, descriptions };
+    return { name, description, fields, descriptions };
   }, [fieldsResponse]);
 };
 

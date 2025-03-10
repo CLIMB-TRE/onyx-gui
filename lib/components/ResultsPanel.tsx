@@ -65,7 +65,10 @@ function ResultsPanel(props: ResultsPanelProps) {
       <Card.Header>
         <Stack gap={2} direction="horizontal">
           <SidebarButton {...props} />
-          <span>{props.title}</span>
+          <span>
+            {props.title} |{" "}
+            <span className="text-muted">{props.projectDescription}</span>
+          </span>
         </Stack>
       </Card.Header>
       <Container fluid className="p-2 pb-0 h-100">
