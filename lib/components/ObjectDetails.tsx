@@ -5,7 +5,7 @@ import Stack from "react-bootstrap/Stack";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
-import { ErrorResponse, RecordDetailResponse, RecordType } from "../types";
+import { ErrorResponse, RecordDetailResponse } from "../types";
 import { DataProps } from "../interfaces";
 import { useChoicesQueries } from "../api";
 import { useChoicesDescriptions } from "../api/hooks";
@@ -82,8 +82,8 @@ function ObjectValue(props: ObjectValueProps) {
 }
 
 function ObjectDetails(props: ObjectDetailsProps) {
-  const [search, setSearch] = useState<string>("");
-  const debouncedSearch = useDebouncedValue(search, 200);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search.toLowerCase(), 200);
 
   // Get choice fields
   // I'm drowning in hooks
@@ -121,8 +121,8 @@ function ObjectDetails(props: ObjectDetailsProps) {
       )
       .map(([key, value]) => ({
         Field: key,
-        Value: value,
-      })) as RecordType[];
+        Value: value?.toString() || "",
+      })) as { Field: string; Value: string }[];
   }, [props]);
 
   return (
@@ -141,12 +141,18 @@ function ObjectDetails(props: ObjectDetailsProps) {
       {object
         .filter(
           (row) =>
-            row.Field?.toString()
+            row.Field.toLowerCase().includes(debouncedSearch) ||
+            row.Value.toLowerCase().includes(debouncedSearch) ||
+            props.fieldDescriptions
+              .get(row.Field)
+              ?.toLowerCase()
+              .includes(debouncedSearch) ||
+            (
+              choiceDescriptions.get(row.Field)?.get(row.Value.toLowerCase()) ||
+              ""
+            )
               .toLowerCase()
-              .includes(debouncedSearch.toLowerCase()) ||
-            row.Value?.toString()
-              .toLowerCase()
-              .includes(debouncedSearch.toLowerCase())
+              .includes(debouncedSearch)
         )
         .map((row, index) => (
           <Card body key={index}>
