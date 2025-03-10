@@ -10,14 +10,7 @@ import ProjectRecord from "./pages/ProjectRecord";
 import Analysis from "./pages/Analysis";
 import Graphs from "./pages/Graphs";
 import { OnyxProps } from "./interfaces";
-import {
-  ProjectField,
-  TypeObject,
-  LookupObject,
-  ProjectPermissionType,
-  FieldsResponse,
-  ErrorResponse,
-} from "./types";
+import { TypeObject, LookupObject, ProjectPermissionType } from "./types";
 import {
   useTypesQuery,
   useLookupsQuery,
@@ -25,58 +18,13 @@ import {
   useProjectFieldsQuery,
   useAnalysisFieldsQuery,
 } from "./api";
+import { useFieldsInfo } from "./api/hooks";
 
 import "@fontsource/ibm-plex-sans";
 import "./Onyx.css";
 import "./bootstrap.css";
 
 const VERSION = "0.13.0";
-
-function flattenFields(fields: Record<string, ProjectField>) {
-  const flatFields: Record<string, ProjectField> = {};
-
-  // Loop over object and flatten nested fields
-  const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
-    for (const [field, fieldInfo] of Object.entries(obj)) {
-      flatFields[prefix + field] = fieldInfo;
-      if (fieldInfo.type === "relation" && fieldInfo.fields) {
-        flatten(
-          fieldInfo.fields as Record<string, ProjectField>,
-          prefix + field + "__"
-        );
-      }
-    }
-  };
-
-  flatten(fields);
-  return flatFields;
-}
-
-const useFieldsInfo = (fieldsResponse: FieldsResponse | ErrorResponse) => {
-  return useMemo(() => {
-    if (fieldsResponse?.status !== "success") {
-      return {
-        name: "None",
-        fields: new Map<string, ProjectField>(),
-        descriptions: new Map<string, string>(),
-      };
-    }
-
-    // The name of the project
-    const name = fieldsResponse.data.name;
-
-    // A map of field names to their type, description, actions, values and nested fields
-    const fields = new Map(
-      Object.entries(flattenFields(fieldsResponse.data.fields))
-    );
-
-    // A map of field names to their descriptions
-    const descriptions = new Map(
-      Array.from(fields, ([field, options]) => [field, options.description])
-    );
-    return { name, fields, descriptions };
-  }, [fieldsResponse]);
-};
 
 function App(props: OnyxProps) {
   const [darkMode, setDarkMode] = useState(
