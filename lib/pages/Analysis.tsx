@@ -16,8 +16,8 @@ import ExportModal from "../components/ExportModal";
 import DataField from "../components/DataField";
 import { JsonSearch } from "../components/Json";
 import { UnpublishedBadge } from "../components/Badges";
+import ObjectDetails from "../components/ObjectDetails";
 import {
-  DetailCellRendererFactory,
   ClimbIDCellRendererFactory,
   AnalysisIDCellRendererFactory,
 } from "../components/CellRenderers";
@@ -30,7 +30,6 @@ import {
 import { handleJSONExport } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { DataProps } from "../interfaces";
-import { RecordType } from "../types";
 
 interface AnalysisProps extends DataProps {
   analysisID: string;
@@ -52,34 +51,10 @@ function Details(props: DetailsProps) {
     setErrorModalShow(true);
   }, []);
 
-  // Get the analysis details
-  const analysis = useMemo(() => {
-    if (data?.status !== "success") return [];
-    return Object.entries(data.data)
-      .filter(
-        ([key]) =>
-          props.projectFields.get(key)?.type !== "relation" &&
-          props.projectFields.get(key)?.type !== "structure" &&
-          key !== "is_published"
-      )
-      .map(([key, value]) => ({
-        Field: key,
-        Value: value,
-      })) as RecordType[];
-  }, [data, props.projectFields]);
-
   useEffect(() => {
     if (data?.status === "success" && !data.data.is_published)
       props.setUnpublished();
   }, [data, props]);
-
-  const errorModalProps = useMemo(
-    () => ({
-      ...props,
-      handleErrorModalShow,
-    }),
-    [props, handleErrorModalShow]
-  );
 
   const jsonExportProps = useMemo(
     () => ({
@@ -148,17 +123,10 @@ function Details(props: DetailsProps) {
           <Col xs={9} xl={10}>
             <Tab.Content className="h-100">
               <Tab.Pane eventKey="analysis-data-details" className="h-100">
-                <h5>Details</h5>
-                <Table
+                <ObjectDetails
                   {...props}
-                  data={analysis}
-                  defaultFileNamePrefix={`${props.analysisID}_details`}
-                  footer="Table showing the top-level fields for the analysis."
-                  cellRenderers={
-                    new Map([
-                      ["Value", DetailCellRendererFactory(errorModalProps)],
-                    ])
-                  }
+                  data={data}
+                  handleErrorModalShow={handleErrorModalShow}
                 />
               </Tab.Pane>
               <Tab.Pane

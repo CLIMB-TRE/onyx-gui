@@ -19,10 +19,8 @@ import { DataProps } from "../interfaces";
 import ExportModal from "../components/ExportModal";
 import { JsonSearch } from "../components/Json";
 import { UnpublishedBadge } from "../components/Badges";
-import {
-  DetailCellRendererFactory,
-  AnalysisIDCellRendererFactory,
-} from "../components/CellRenderers";
+import ObjectDetails from "../components/ObjectDetails";
+import { AnalysisIDCellRendererFactory } from "../components/CellRenderers";
 import { handleJSONExport } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { JsonData } from "json-edit-react";
@@ -54,22 +52,6 @@ function Details(props: DetailsProps) {
       .join(" ");
   };
 
-  // Get the record details
-  const record = useMemo(() => {
-    if (data?.status !== "success") return [];
-    return Object.entries(data.data)
-      .filter(
-        ([key]) =>
-          props.projectFields.get(key)?.type !== "relation" &&
-          props.projectFields.get(key)?.type !== "structure" &&
-          key !== "is_published"
-      )
-      .map(([key, value]) => ({
-        Field: key,
-        Value: value,
-      })) as RecordType[];
-  }, [data, props.projectFields]);
-
   // Get the relations details
   const relations = useMemo(() => {
     if (data?.status !== "success") return [];
@@ -93,14 +75,6 @@ function Details(props: DetailsProps) {
     if (data?.status === "success" && !data.data.is_published)
       props.setUnpublished();
   }, [data, props]);
-
-  const errorModalProps = useMemo(
-    () => ({
-      ...props,
-      handleErrorModalShow,
-    }),
-    [props, handleErrorModalShow]
-  );
 
   const jsonExportProps = useMemo(
     () => ({
@@ -181,17 +155,10 @@ function Details(props: DetailsProps) {
           <Col xs={9} xl={10}>
             <Tab.Content className="h-100">
               <Tab.Pane eventKey="record-data-details" className="h-100">
-                <h5>Details</h5>
-                <Table
+                <ObjectDetails
                   {...props}
-                  data={record}
-                  defaultFileNamePrefix={`${props.recordID}_details`}
-                  footer="Table showing the top-level fields for the record."
-                  cellRenderers={
-                    new Map([
-                      ["Value", DetailCellRendererFactory(errorModalProps)],
-                    ])
-                  }
+                  data={data}
+                  handleErrorModalShow={handleErrorModalShow}
                 />
               </Tab.Pane>
               {relations.map(([key, relation]) => (
