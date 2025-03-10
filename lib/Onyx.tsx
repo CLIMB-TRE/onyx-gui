@@ -99,9 +99,11 @@ function App(props: OnyxProps) {
   // Get the list of projects
   const projects = useMemo(() => {
     if (projectPermissionsResponse?.status !== "success") return [];
-    return projectPermissionsResponse.data.map(
-      (projectPermission: ProjectPermissionType) => projectPermission.project
-    );
+    return projectPermissionsResponse.data
+      .map(
+        (projectPermission: ProjectPermissionType) => projectPermission.project
+      )
+      .sort();
   }, [projectPermissionsResponse]);
 
   // Set the first project as the default
