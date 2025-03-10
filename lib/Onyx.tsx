@@ -223,7 +223,7 @@ function App(props: OnyxProps) {
                   {...pageProps}
                   projectFields={analysisFields}
                   typeLookups={typeLookups}
-                  fieldDescriptions={fieldDescriptions}
+                  fieldDescriptions={analysisDescriptions}
                   lookupDescriptions={lookupDescriptions}
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
