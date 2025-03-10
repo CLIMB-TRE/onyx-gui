@@ -32,12 +32,12 @@ interface ObjectValueProps extends DataProps {
 function ObjectField(props: ObjectFieldProps) {
   return (
     <small>
-      <div>
+      <Stack gap={1}>
         <b>{props.field}</b>
-      </div>
-      <div className="text-muted">
-        {props.fieldDescriptions.get(props.field)}
-      </div>
+        <div className="text-muted">
+          {props.fieldDescriptions.get(props.field)}
+        </div>
+      </Stack>
     </small>
   );
 }
@@ -45,8 +45,8 @@ function ObjectField(props: ObjectFieldProps) {
 function ObjectValue(props: ObjectValueProps) {
   return (
     <small>
-      <div>
-        <Stack direction="horizontal">
+      <Stack gap={3} direction="horizontal">
+        <Stack gap={1}>
           {typeof props.value === "string" &&
           props.value.startsWith("s3://") &&
           props.value.endsWith(".html") ? (
@@ -65,18 +65,18 @@ function ObjectValue(props: ObjectValueProps) {
           ) : (
             <span className="me-auto">{props.value}</span>
           )}
-          <CopyToClipboardButton>{props.value}</CopyToClipboardButton>
-        </Stack>
-      </div>
-      {props.choiceDescriptions
-        .get(props.field)
-        ?.get(props.value.toLowerCase()) && (
-        <div className="text-muted">
           {props.choiceDescriptions
             .get(props.field)
-            ?.get(props.value.toLowerCase())}
-        </div>
-      )}
+            ?.get(props.value.toLowerCase()) && (
+            <div className="text-muted">
+              {props.choiceDescriptions
+                .get(props.field)
+                ?.get(props.value.toLowerCase())}
+            </div>
+          )}
+        </Stack>
+        <CopyToClipboardButton>{props.value}</CopyToClipboardButton>
+      </Stack>
     </small>
   );
 }
@@ -126,7 +126,7 @@ function ObjectDetails(props: ObjectDetailsProps) {
   }, [props]);
 
   return (
-    <Stack gap={2} className="h-100">
+    <Stack gap={2} className="h-100 mb-2">
       <Stack direction="horizontal" gap={2}>
         <h5 className="me-auto">Details</h5>
         <div style={{ width: "300px" }}>
