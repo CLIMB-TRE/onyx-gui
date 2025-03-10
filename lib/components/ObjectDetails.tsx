@@ -11,6 +11,7 @@ import { useChoicesQueries } from "../api";
 import { useChoicesDescriptions } from "../api/hooks";
 import { Input } from "./Inputs";
 import { CopyToClipboardButton } from "./Buttons";
+import { useDebouncedValue } from "../utils/hooks";
 
 interface ObjectDetailsProps extends DataProps {
   data: RecordDetailResponse | ErrorResponse;
@@ -82,6 +83,7 @@ function ObjectValue(props: ObjectValueProps) {
 
 function ObjectDetails(props: ObjectDetailsProps) {
   const [search, setSearch] = useState<string>("");
+  const debouncedSearch = useDebouncedValue(search, 200);
 
   // Get choice fields
   // I'm drowning in hooks
@@ -123,26 +125,28 @@ function ObjectDetails(props: ObjectDetailsProps) {
       })) as RecordType[];
   }, [props]);
 
-  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-  };
-
   return (
     <Stack gap={2} className="h-100">
-      <h5>Details</h5>
-      <Input
-        {...props}
-        value={search}
-        onChange={onSearchChange}
-        placeholder="Enter field/value..."
-      />
+      <Stack direction="horizontal" gap={2}>
+        <h5 className="me-auto">Details</h5>
+        <div style={{ width: "300px" }}>
+          <Input
+            {...props}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Enter field/value..."
+          />
+        </div>
+      </Stack>
       {object
         .filter(
           (row) =>
             row.Field?.toString()
               .toLowerCase()
-              .includes(search.toLowerCase()) ||
-            row.Value?.toString().toLowerCase().includes(search.toLowerCase())
+              .includes(debouncedSearch.toLowerCase()) ||
+            row.Value?.toString()
+              .toLowerCase()
+              .includes(debouncedSearch.toLowerCase())
         )
         .map((row, index) => (
           <Card body key={index}>
