@@ -1,10 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { OnyxProps, ProjectProps } from "../interfaces";
 import { GraphConfig } from "../types";
 import { formatFilters } from "../utils/functions";
 
 interface ChoiceProps extends ProjectProps {
   field: string;
+}
+
+interface ChoicesProps extends ProjectProps {
+  fields: string[];
 }
 
 interface RecordIDProps extends ProjectProps {
@@ -120,6 +124,22 @@ const useChoicesQuery = (props: ChoiceProps) => {
     },
     enabled: !!(props.project && props.field),
     placeholderData: { data: {} },
+  });
+};
+
+/** Fetch choices for multiple fields */
+const useChoicesQueries = (props: ChoicesProps) => {
+  return useQueries({
+    queries: props.fields.map((field) => ({
+      queryKey: ["choices-detail", props.project, field],
+      queryFn: async () => {
+        return props
+          .httpPathHandler(`projects/${props.project}/choices/${field}/`)
+          .then((response) => response.json());
+      },
+      enabled: !!(props.project && field),
+      placeholderData: { data: {} },
+    })),
   });
 };
 
@@ -341,6 +361,7 @@ export {
   useProjectFieldsQuery,
   useAnalysisFieldsQuery,
   useChoicesQuery,
+  useChoicesQueries,
   useActivityQuery,
   useSiteUsersQuery,
   useRecordQuery,

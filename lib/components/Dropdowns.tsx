@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
 import Select, { components, OptionProps } from "react-select";
 import { useChoicesQuery } from "../api";
+import { useChoiceDescriptions } from "../api/hooks";
 import selectStyles from "../utils/selectStyles";
 import { PageProps } from "../interfaces";
-import { ErrorResponse, OptionType, ChoicesResponse } from "../types";
+import { OptionType } from "../types";
 
 interface GenericDropdownProps {
   options: string[];
@@ -120,19 +120,6 @@ function MultiDropdown(props: MultiDropdownProps) {
     />
   );
 }
-
-const useChoiceDescriptions = (data: ChoicesResponse | ErrorResponse) => {
-  // Get a map of choices to their descriptions
-  return useMemo(() => {
-    if (data?.status !== "success") return new Map<string, string>();
-    return new Map(
-      Object.entries(data.data).map(([choice, description]) => [
-        choice,
-        description.description,
-      ])
-    );
-  }, [data]);
-};
 
 function Choice(props: ChoiceProps) {
   const { data } = useChoicesQuery(props);
