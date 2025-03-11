@@ -3,7 +3,7 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Creatable from "react-select/creatable";
-import selectStyles from "../utils/selectStyles";
+import { selectStyles } from "../utils/styles";
 import { OptionType } from "../types";
 
 function Input({

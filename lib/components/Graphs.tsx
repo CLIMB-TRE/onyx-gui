@@ -10,7 +10,7 @@ import {
   ErrorResponse,
 } from "../types";
 import { DataProps } from "../interfaces";
-import graphStyles from "../utils/graphStyles";
+import { graphStyles } from "../utils/styles";
 import QueryHandler from "./QueryHandler";
 import { useQueryRefresh } from "../utils/hooks";
 import { useSummaryQuery, useGroupedSummaryQuery } from "../api";

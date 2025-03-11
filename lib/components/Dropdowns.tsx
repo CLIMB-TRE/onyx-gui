@@ -1,7 +1,7 @@
 import Select, { components, OptionProps } from "react-select";
 import { useChoicesQuery } from "../api";
 import { useChoiceDescriptions } from "../api/hooks";
-import selectStyles from "../utils/selectStyles";
+import { selectStyles } from "../utils/styles";
 import { PageProps } from "../interfaces";
 import { OptionType } from "../types";
 
