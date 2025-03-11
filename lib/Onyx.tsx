@@ -186,6 +186,7 @@ function App(props: OnyxProps) {
                 <Results
                   {...pageProps}
                   projectFields={projectFields}
+                  projectDescription={projectDescription}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
                   lookupDescriptions={lookupDescriptions}
@@ -193,13 +194,13 @@ function App(props: OnyxProps) {
                   handleAnalysisShow={handleAnalysisShow}
                   title="Records"
                   searchPath={`projects/${project}`}
-                  projectDescription={projectDescription}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="record" className="h-100" unmountOnExit>
                 <ProjectRecord
                   {...pageProps}
                   projectFields={projectFields}
+                  projectDescription={projectDescription}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
                   lookupDescriptions={lookupDescriptions}
@@ -213,6 +214,7 @@ function App(props: OnyxProps) {
                 <Results
                   {...pageProps}
                   projectFields={analysisFields}
+                  projectDescription={projectDescription}
                   typeLookups={typeLookups}
                   fieldDescriptions={analysisDescriptions}
                   lookupDescriptions={lookupDescriptions}
@@ -220,13 +222,13 @@ function App(props: OnyxProps) {
                   handleAnalysisShow={handleAnalysisShow}
                   title="Analyses"
                   searchPath={`projects/${project}/analysis`}
-                  projectDescription={projectDescription}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="analysis" className="h-100" unmountOnExit>
                 <Analysis
                   {...pageProps}
                   projectFields={analysisFields}
+                  projectDescription={projectDescription}
                   typeLookups={typeLookups}
                   fieldDescriptions={analysisDescriptions}
                   lookupDescriptions={lookupDescriptions}
@@ -240,6 +242,7 @@ function App(props: OnyxProps) {
                 <Graphs
                   {...pageProps}
                   projectFields={projectFields}
+                  projectDescription={projectDescription}
                   typeLookups={typeLookups}
                   fieldDescriptions={fieldDescriptions}
                   lookupDescriptions={lookupDescriptions}

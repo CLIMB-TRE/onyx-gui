@@ -20,6 +20,7 @@ import {
 import { DataProps } from "../interfaces";
 import { GraphType, GraphConfig, FilterConfig } from "../types";
 import FilterPanel from "../components/FilterPanel";
+import PageTitle from "../components/PageTitle";
 import { generateKey } from "../utils/functions";
 import {
   MdCreate,
@@ -507,7 +508,9 @@ function Graphs(props: DataProps) {
       <Card className="h-100">
         <Card.Header>
           <Stack direction="horizontal" gap={1}>
-            <span className="me-auto">Graphs</span>
+            <span className="me-auto">
+              <PageTitle {...props} title="Graphs" />
+            </span>
             <Button
               size="sm"
               variant="dark"

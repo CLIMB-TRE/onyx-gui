@@ -15,6 +15,7 @@ import {
 import { s3BucketsMessage } from "../utils/messages";
 import { getDefaultFileNamePrefix } from "../utils/functions";
 import { SidebarButton } from "./Buttons";
+import PageTitle from "./PageTitle";
 
 interface ResultsPanelProps extends ResultsProps {
   searchParameters: string;
@@ -65,10 +66,7 @@ function ResultsPanel(props: ResultsPanelProps) {
       <Card.Header>
         <Stack gap={2} direction="horizontal">
           <SidebarButton {...props} />
-          <span>
-            {props.title} |{" "}
-            <span className="text-muted">{props.projectDescription}</span>
-          </span>
+          <PageTitle {...props} />
         </Stack>
       </Card.Header>
       <Container fluid className="p-2 pb-0 h-100">

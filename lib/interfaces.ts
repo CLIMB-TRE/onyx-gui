@@ -17,6 +17,7 @@ interface PageProps extends ProjectProps {
 
 interface DataProps extends PageProps {
   projectFields: Map<string, ProjectField>;
+  projectDescription: string;
   typeLookups: Map<string, string[]>;
   fieldDescriptions: Map<string, string>;
   lookupDescriptions: Map<string, string>;
@@ -27,7 +28,6 @@ interface DataProps extends PageProps {
 interface ResultsProps extends DataProps {
   title: string;
   searchPath: string;
-  projectDescription: string;
 }
 
 interface ExportHandlerProps {

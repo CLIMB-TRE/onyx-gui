@@ -134,7 +134,6 @@ function ObjectDetails(props: ObjectDetailsProps) {
             {...props}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Enter field/value..."
           />
         </div>
       </Stack>
