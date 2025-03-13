@@ -2,7 +2,6 @@ import { useMemo, useEffect, useState, useCallback } from "react";
 import Card from "react-bootstrap/Card";
 import Tab from "react-bootstrap/Tab";
 import Button from "react-bootstrap/Button";
-import CloseButton from "react-bootstrap/CloseButton";
 import Nav from "react-bootstrap/Nav";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -30,6 +29,8 @@ import {
 import { handleJSONExport } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { DataProps } from "../interfaces";
+import { JsonData } from "json-edit-react";
+import { MdArrowBackIosNew } from "react-icons/md";
 
 interface AnalysisProps extends DataProps {
   analysisID: string;
@@ -50,6 +51,21 @@ function Details(props: DetailsProps) {
     setS3ReportError(error);
     setErrorModalShow(true);
   }, []);
+
+  const formatTitle = (str: string) => {
+    return str
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  // Get the structure details
+  const structures = useMemo(() => {
+    if (data?.status !== "success") return [];
+    return Object.entries(data.data).filter(
+      ([key]) => props.projectFields.get(key)?.type === "structure"
+    );
+  }, [data, props.projectFields]);
 
   useEffect(() => {
     if (data?.status === "success" && !data.data.is_published)
@@ -97,6 +113,7 @@ function Details(props: DetailsProps) {
                     name="Date"
                   />
                   <DataField record={data.data} field="site" name="Site" />
+                  <DataField record={data.data} field="name" name="Name" />
                 </Container>
               )}
               <hr />
@@ -104,11 +121,11 @@ function Details(props: DetailsProps) {
                 <Nav.Item>
                   <Nav.Link eventKey="analysis-data-details">Details</Nav.Link>
                 </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="analysis-data-experiment-details">
-                    Experiment Details
-                  </Nav.Link>
-                </Nav.Item>
+                {structures.map(([key]) => (
+                  <Nav.Item key={key}>
+                    <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                  </Nav.Item>
+                ))}
               </Nav>
               <hr />
               <Button
@@ -129,19 +146,18 @@ function Details(props: DetailsProps) {
                   handleErrorModalShow={handleErrorModalShow}
                 />
               </Tab.Pane>
-              <Tab.Pane
-                eventKey="analysis-data-experiment-details"
-                className="h-100"
-              >
-                <h5>Experiment Details</h5>
-                <Card
-                  body
-                  className="overflow-y-auto h-100"
-                  style={{ maxHeight: "100vh" }}
-                >
-                  <JsonSearch {...props} data={data.data.experiment_details} />
-                </Card>
-              </Tab.Pane>
+              {structures.map(([key, structure]) => (
+                <Tab.Pane key={key} eventKey={key} className="h-100">
+                  <h5>{formatTitle(key)}</h5>
+                  <Card
+                    body
+                    className="overflow-y-auto h-100"
+                    style={{ maxHeight: "100vh" }}
+                  >
+                    <JsonSearch {...props} data={structure as JsonData} />
+                  </Card>
+                </Tab.Pane>
+              ))}
             </Tab.Content>
           </Col>
         </Row>
@@ -232,21 +248,26 @@ function Downstream(props: AnalysisProps) {
 }
 
 function Analysis(props: AnalysisProps) {
-  const [published, setPublished] = useState(false);
+  const [published, setPublished] = useState(true);
 
   return (
     <Container fluid className="g-2 h-100">
       <Card className="h-100">
         <Card.Header>
           <Stack direction="horizontal" gap={2}>
-            <Card.Title>
+            <Button
+              size="sm"
+              variant="dark"
+              title="Back to Analyses"
+              onClick={props.onHide}
+            >
+              <MdArrowBackIosNew />
+            </Button>
+            <big className="me-auto">
               Analysis ID:{" "}
               <span className="onyx-text-pink">{props.analysisID}</span>
-            </Card.Title>
-            <Card.Title className="me-auto">
-              {!published && <UnpublishedBadge />}
-            </Card.Title>
-            <CloseButton onClick={props.onHide} />
+            </big>
+            {!published && <UnpublishedBadge />}
           </Stack>
         </Card.Header>
         <Card.Body className="pt-2 overflow-y-auto">

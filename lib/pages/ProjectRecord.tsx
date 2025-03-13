@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
-import CloseButton from "react-bootstrap/CloseButton";
 import Tab from "react-bootstrap/Tab";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
@@ -24,6 +23,7 @@ import { AnalysisIDCellRendererFactory } from "../components/CellRenderers";
 import { handleJSONExport } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { JsonData } from "json-edit-react";
+import { MdArrowBackIosNew } from "react-icons/md";
 
 interface ProjectRecordProps extends DataProps {
   recordID: string;
@@ -231,13 +231,18 @@ function ProjectRecord(props: ProjectRecordProps) {
       <Card className="h-100">
         <Card.Header>
           <Stack direction="horizontal" gap={2}>
-            <Card.Title>
+            <Button
+              size="sm"
+              variant="dark"
+              title="Back to Records"
+              onClick={props.onHide}
+            >
+              <MdArrowBackIosNew />
+            </Button>
+            <big className="me-auto">
               CLIMB ID: <span className="onyx-text-pink">{props.recordID}</span>
-            </Card.Title>
-            <Card.Title className="me-auto">
-              {!published && <UnpublishedBadge />}
-            </Card.Title>
-            <CloseButton onClick={props.onHide} />
+            </big>
+            {!published && <UnpublishedBadge />}
           </Stack>
         </Card.Header>
         <Card.Body className="pt-2 overflow-y-auto">
