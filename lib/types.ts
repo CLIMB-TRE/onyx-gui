@@ -75,23 +75,6 @@ type RecordType = Record<
 type SummaryType = Record<"count", number> &
   Record<string, string | number | boolean | object | null>;
 
-type AnalysisType = {
-  analysis_id: string;
-  published_date: string;
-  analysis_date: string;
-  name: string;
-  command_details: string;
-  pipeline_details: string;
-  experiment_details: object;
-  result: string;
-  report: string;
-  outputs: string;
-  upstream_analyses: string[];
-  downstream_analyses: string[];
-  identifiers: string[];
-  records: string[];
-};
-
 type ProjectPermissionType = {
   project: string;
   scope: string;
@@ -153,7 +136,6 @@ export type {
   ErrorType,
   RecordType,
   SummaryType,
-  AnalysisType,
   ProjectPermissionType,
   ErrorResponse,
   SuccessResponse,
