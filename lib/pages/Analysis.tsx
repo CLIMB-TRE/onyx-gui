@@ -1,21 +1,14 @@
-import { useMemo, useEffect, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import Card from "react-bootstrap/Card";
 import Tab from "react-bootstrap/Tab";
 import Button from "react-bootstrap/Button";
 import Nav from "react-bootstrap/Nav";
 import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
 import QueryHandler from "../components/QueryHandler";
 import History from "../components/History";
 import Table from "../components/Table";
-import ErrorModal from "../components/ErrorModal";
-import ExportModal from "../components/ExportModal";
-import DataField from "../components/DataField";
-import { JsonSearch } from "../components/Json";
 import { UnpublishedBadge } from "../components/Badges";
-import ObjectDetails from "../components/ObjectDetails";
 import {
   ClimbIDCellRendererFactory,
   AnalysisIDCellRendererFactory,
@@ -26,144 +19,13 @@ import {
   useAnalysisUpstreamQuery,
   useAnalysisDownstreamQuery,
 } from "../api";
-import { handleJSONExport } from "../utils/functions";
-import { s3BucketsMessage } from "../utils/messages";
-import { DataProps } from "../interfaces";
-import { JsonData } from "json-edit-react";
+import { IDProps } from "../interfaces";
 import { MdArrowBackIosNew } from "react-icons/md";
+import DataPanel from "../components/DataPanel";
 
-interface AnalysisProps extends DataProps {
-  analysisID: string;
+interface AnalysisProps extends IDProps {
+  ID: string;
   onHide: () => void;
-}
-
-interface DetailsProps extends AnalysisProps {
-  setUnpublished: () => void;
-}
-
-function Details(props: DetailsProps) {
-  const [exportModalShow, setExportModalShow] = useState(false);
-  const [errorModalShow, setErrorModalShow] = useState(false);
-  const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
-  const { isFetching, error, data } = useAnalysisQuery(props);
-
-  const handleErrorModalShow = useCallback((error: Error) => {
-    setS3ReportError(error);
-    setErrorModalShow(true);
-  }, []);
-
-  const formatTitle = (str: string) => {
-    return str
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-
-  // Get the structure details
-  const structures = useMemo(() => {
-    if (data?.status !== "success") return [];
-    return Object.entries(data.data).filter(
-      ([key]) => props.projectFields.get(key)?.type === "structure"
-    );
-  }, [data, props.projectFields]);
-
-  useEffect(() => {
-    if (data?.status === "success" && !data.data.is_published)
-      props.setUnpublished();
-  }, [data, props]);
-
-  const jsonExportProps = useMemo(
-    () => ({
-      ...props,
-      response: data,
-    }),
-    [props, data]
-  );
-
-  return (
-    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
-      <Tab.Container
-        id="analysis-data-tabs"
-        defaultActiveKey="analysis-data-details"
-      >
-        <ErrorModal
-          title="S3 Reports"
-          message={s3BucketsMessage}
-          error={s3ReportError}
-          show={errorModalShow}
-          onHide={() => setErrorModalShow(false)}
-        />
-        <ExportModal
-          show={exportModalShow}
-          onHide={() => setExportModalShow(false)}
-          defaultFileNamePrefix={props.analysisID}
-          defaultFileExtension=".json"
-          exportProgressMessage={"Exporting record data to JSON..."}
-          handleExport={handleJSONExport(jsonExportProps)}
-        />
-        <Row className="h-100">
-          <Col xs={3} xl={2}>
-            <Stack gap={1}>
-              <hr />
-              {data?.status === "success" && (
-                <Container>
-                  <DataField
-                    record={data.data}
-                    field="published_date"
-                    name="Date"
-                  />
-                  <DataField record={data.data} field="site" name="Site" />
-                  <DataField record={data.data} field="name" name="Name" />
-                </Container>
-              )}
-              <hr />
-              <Nav variant="pills" className="flex-column">
-                <Nav.Item>
-                  <Nav.Link eventKey="analysis-data-details">Details</Nav.Link>
-                </Nav.Item>
-                {structures.map(([key]) => (
-                  <Nav.Item key={key}>
-                    <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
-                  </Nav.Item>
-                ))}
-              </Nav>
-              <hr />
-              <Button
-                size="sm"
-                variant="dark"
-                onClick={() => setExportModalShow(true)}
-              >
-                Export Analysis to JSON
-              </Button>
-            </Stack>
-          </Col>
-          <Col xs={9} xl={10}>
-            <Tab.Content className="h-100">
-              <Tab.Pane eventKey="analysis-data-details" className="h-100">
-                <ObjectDetails
-                  {...props}
-                  data={data}
-                  handleErrorModalShow={handleErrorModalShow}
-                />
-              </Tab.Pane>
-              {structures.map(([key, structure]) => (
-                <Tab.Pane key={key} eventKey={key} className="h-100">
-                  <h5>{formatTitle(key)}</h5>
-                  <Card
-                    body
-                    className="overflow-y-auto h-100"
-                    style={{ maxHeight: "100vh" }}
-                  >
-                    <JsonSearch {...props} data={structure as JsonData} />
-                  </Card>
-                </Tab.Pane>
-              ))}
-            </Tab.Content>
-          </Col>
-        </Row>
-      </Tab.Container>
-    </QueryHandler>
-  );
 }
 
 function Records(props: AnalysisProps) {
@@ -182,7 +44,7 @@ function Records(props: AnalysisProps) {
         <Table
           {...props}
           data={records}
-          defaultFileNamePrefix={`${props.analysisID}_records`}
+          defaultFileNamePrefix={`${props.ID}_records`}
           footer="Table showing all records involved in the analysis."
           cellRenderers={
             new Map([["climb_id", ClimbIDCellRendererFactory(props)]])
@@ -209,7 +71,7 @@ function Upstream(props: AnalysisProps) {
         <Table
           {...props}
           data={analyses}
-          defaultFileNamePrefix={`${props.analysisID}_upstream`}
+          defaultFileNamePrefix={`${props.ID}_upstream`}
           footer="Table showing all analyses that were used for the analysis."
           cellRenderers={
             new Map([["analysis_id", AnalysisIDCellRendererFactory(props)]])
@@ -236,7 +98,7 @@ function Downstream(props: AnalysisProps) {
         <Table
           {...props}
           data={analyses}
-          defaultFileNamePrefix={`${props.analysisID}_downstream`}
+          defaultFileNamePrefix={`${props.ID}_downstream`}
           footer="Table showing all analyses that used the analysis."
           cellRenderers={
             new Map([["analysis_id", AnalysisIDCellRendererFactory(props)]])
@@ -264,8 +126,7 @@ function Analysis(props: AnalysisProps) {
               <MdArrowBackIosNew />
             </Button>
             <big className="me-auto">
-              Analysis ID:{" "}
-              <span className="onyx-text-pink">{props.analysisID}</span>
+              Analysis ID: <span className="onyx-text-pink">{props.ID}</span>
             </big>
             {!published && <UnpublishedBadge />}
           </Stack>
@@ -296,9 +157,18 @@ function Analysis(props: AnalysisProps) {
               style={{ height: "calc(100% - 60px)" }}
             >
               <Tab.Pane eventKey="analysis-data-tab" className="h-100">
-                <Details
+                <DataPanel
                   {...props}
+                  queryHook={useAnalysisQuery}
                   setUnpublished={() => setPublished(false)}
+                  dataFields={
+                    new Map([
+                      ["published_date", "Date"],
+                      ["site", "Site"],
+                      ["name", "Name"],
+                    ])
+                  }
+                  hideRelations
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="analysis-history-tab" className="h-100">
@@ -306,7 +176,7 @@ function Analysis(props: AnalysisProps) {
                   {...props}
                   name="analysis"
                   searchPath={`projects/${props.project}/analysis`}
-                  ID={props.analysisID}
+                  ID={props.ID}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="analysis-records-tab" className="h-100">

@@ -1,6 +1,6 @@
-import { useQuery, useQueries } from "@tanstack/react-query";
+import { useQuery, useQueries, UseQueryResult } from "@tanstack/react-query";
 import { OnyxProps, ProjectProps } from "../interfaces";
-import { GraphConfig } from "../types";
+import { ErrorResponse, GraphConfig, RecordDetailResponse } from "../types";
 import { formatFilters } from "../utils/functions";
 
 interface ChoiceProps extends ProjectProps {
@@ -11,20 +11,12 @@ interface ChoicesProps extends ProjectProps {
   fields: string[];
 }
 
-interface RecordIDProps extends ProjectProps {
-  recordID: string;
-}
-
-interface AnalysisIDProps extends ProjectProps {
-  analysisID: string;
-}
-
-interface GenericIDProps extends ProjectProps {
-  searchPath: string;
+interface IDProps extends ProjectProps {
+  searchPath?: string;
   ID: string;
 }
 
-interface GenericQueryProps extends ProjectProps {
+interface QueryProps extends ProjectProps {
   searchPath: string;
   searchParameters: string;
 }
@@ -170,7 +162,7 @@ const useSiteUsersQuery = (props: OnyxProps) => {
 };
 
 /** Fetch history from ID */
-const useHistoryQuery = (props: GenericIDProps) => {
+const useHistoryQuery = (props: IDProps) => {
   return useQuery({
     queryKey: ["history-detail", props.searchPath, props.ID],
     queryFn: async () => {
@@ -184,101 +176,101 @@ const useHistoryQuery = (props: GenericIDProps) => {
 };
 
 /** Fetch record from record ID */
-const useRecordQuery = (props: RecordIDProps) => {
+const useRecordQuery = (
+  props: IDProps
+): UseQueryResult<RecordDetailResponse | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: ["record-detail", props.project, props.recordID],
+    queryKey: ["record-detail", props.project, props.ID],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/${props.recordID}/`)
+        .httpPathHandler(`projects/${props.project}/${props.ID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.recordID),
+    enabled: !!(props.project && props.ID),
     placeholderData: { data: {} },
   });
 };
 
 /** Fetch record analyses from record ID */
-const useRecordAnalysesQuery = (props: RecordIDProps) => {
+const useRecordAnalysesQuery = (props: IDProps) => {
   return useQuery({
-    queryKey: ["record-analysis-list", props.project, props.recordID],
+    queryKey: ["record-analysis-list", props.project, props.ID],
     queryFn: async () => {
       return props
-        .httpPathHandler(
-          `projects/${props.project}/analyses/${props.recordID}/`
-        )
+        .httpPathHandler(`projects/${props.project}/analyses/${props.ID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.recordID),
+    enabled: !!(props.project && props.ID),
     placeholderData: { data: [] },
   });
 };
 
 /** Fetch analysis from analysis ID */
-const useAnalysisQuery = (props: AnalysisIDProps) => {
+const useAnalysisQuery = (
+  props: IDProps
+): UseQueryResult<RecordDetailResponse | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: ["analysis-detail", props.project, props.analysisID],
+    queryKey: ["analysis-detail", props.project, props.ID],
     queryFn: async () => {
       return props
-        .httpPathHandler(
-          `projects/${props.project}/analysis/${props.analysisID}/`
-        )
+        .httpPathHandler(`projects/${props.project}/analysis/${props.ID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.analysisID),
+    enabled: !!(props.project && props.ID),
     placeholderData: { data: {} },
   });
 };
 
 /** Fetch analysis records from analysis ID */
-const useAnalysisRecordsQuery = (props: AnalysisIDProps) => {
+const useAnalysisRecordsQuery = (props: IDProps) => {
   return useQuery({
-    queryKey: ["analysis-record-list", props.project, props.analysisID],
+    queryKey: ["analysis-record-list", props.project, props.ID],
     queryFn: async () => {
       return props
         .httpPathHandler(
-          `projects/${props.project}/analysis/records/${props.analysisID}/`
+          `projects/${props.project}/analysis/records/${props.ID}/`
         )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.analysisID),
+    enabled: !!(props.project && props.ID),
     placeholderData: { data: [] },
   });
 };
 
 /** Fetch upstream analyses from analysis ID */
-const useAnalysisUpstreamQuery = (props: AnalysisIDProps) => {
+const useAnalysisUpstreamQuery = (props: IDProps) => {
   return useQuery({
-    queryKey: ["analysis-upstream-list", props.project, props.analysisID],
+    queryKey: ["analysis-upstream-list", props.project, props.ID],
     queryFn: async () => {
       return props
         .httpPathHandler(
-          `projects/${props.project}/analysis/?downstream_analyses__analysis_id=${props.analysisID}`
+          `projects/${props.project}/analysis/?downstream_analyses__analysis_id=${props.ID}`
         )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.analysisID),
+    enabled: !!(props.project && props.ID),
     placeholderData: { data: [] },
   });
 };
 
 /** Fetch downstream analyses from analysis ID */
-const useAnalysisDownstreamQuery = (props: AnalysisIDProps) => {
+const useAnalysisDownstreamQuery = (props: IDProps) => {
   return useQuery({
-    queryKey: ["analysis-downstream-list", props.project, props.analysisID],
+    queryKey: ["analysis-downstream-list", props.project, props.ID],
     queryFn: async () => {
       return props
         .httpPathHandler(
-          `projects/${props.project}/analysis/?upstream_analyses__analysis_id=${props.analysisID}`
+          `projects/${props.project}/analysis/?upstream_analyses__analysis_id=${props.ID}`
         )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.analysisID),
+    enabled: !!(props.project && props.ID),
     placeholderData: { data: [] },
   });
 };
 
 /** Fetch results from path and search parameters */
-const useResultsQuery = (props: GenericQueryProps) => {
+const useResultsQuery = (props: QueryProps) => {
   return useQuery({
     queryKey: ["results-list", props.searchPath, props.searchParameters],
     queryFn: async () => {
@@ -292,7 +284,7 @@ const useResultsQuery = (props: GenericQueryProps) => {
 };
 
 /** Fetch count from path and search parameters */
-const useCountQuery = (props: GenericQueryProps) => {
+const useCountQuery = (props: QueryProps) => {
   return useQuery({
     queryKey: ["count-detail", props.searchPath, props.searchParameters],
     queryFn: async () => {

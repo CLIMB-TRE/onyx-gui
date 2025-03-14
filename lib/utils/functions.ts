@@ -32,7 +32,7 @@ function getDefaultFileNamePrefix(project: string, searchParameters: string) {
 }
 
 interface RecordDetailResponseProps extends OnyxProps {
-  response: RecordDetailResponse | ErrorResponse;
+  response: RecordDetailResponse | ErrorResponse | undefined;
 }
 
 /** Handler for converting JSON data to a string for file export. */

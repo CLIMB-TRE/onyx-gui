@@ -25,6 +25,10 @@ interface DataProps extends PageProps {
   handleAnalysisShow: (analysisID: string) => void;
 }
 
+interface IDProps extends DataProps {
+  ID: string;
+}
+
 interface ResultsProps extends DataProps {
   title: string;
   searchPath: string;
@@ -43,6 +47,7 @@ export type {
   ProjectProps,
   PageProps,
   DataProps,
+  IDProps,
   ResultsProps,
   ExportHandlerProps,
 };

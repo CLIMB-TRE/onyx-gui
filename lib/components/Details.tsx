@@ -13,23 +13,23 @@ import { Input } from "./Inputs";
 import { CopyToClipboardButton } from "./Buttons";
 import { useDebouncedValue } from "../utils/hooks";
 
-interface ObjectDetailsProps extends DataProps {
-  data: RecordDetailResponse | ErrorResponse;
+interface DetailsProps extends DataProps {
+  data: RecordDetailResponse | ErrorResponse | undefined;
   handleErrorModalShow: (error: Error) => void;
 }
 
-interface ObjectFieldProps extends DataProps {
+interface FieldProps extends DataProps {
   field: string;
 }
 
-interface ObjectValueProps extends DataProps {
+interface ValueProps extends DataProps {
   handleErrorModalShow: (error: Error) => void;
   field: string;
   value: string;
   choiceDescriptions: Map<string, Map<string, string>>;
 }
 
-function ObjectField(props: ObjectFieldProps) {
+function Field(props: FieldProps) {
   return (
     <small>
       <Stack gap={1}>
@@ -42,7 +42,7 @@ function ObjectField(props: ObjectFieldProps) {
   );
 }
 
-function ObjectValue(props: ObjectValueProps) {
+function Value(props: ValueProps) {
   return (
     <small>
       <Stack gap={3} direction="horizontal">
@@ -81,7 +81,7 @@ function ObjectValue(props: ObjectValueProps) {
   );
 }
 
-function ObjectDetails(props: ObjectDetailsProps) {
+function Details(props: DetailsProps) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search.toLowerCase(), 200);
 
@@ -158,10 +158,10 @@ function ObjectDetails(props: ObjectDetailsProps) {
             <Container fluid>
               <Row>
                 <Col>
-                  <ObjectField {...props} field={row.Field as string} />
+                  <Field {...props} field={row.Field as string} />
                 </Col>
                 <Col>
-                  <ObjectValue
+                  <Value
                     {...props}
                     field={row.Field as string} // TODO: Fix this
                     value={row.Value as string}
@@ -176,4 +176,4 @@ function ObjectDetails(props: ObjectDetailsProps) {
   );
 }
 
-export default ObjectDetails;
+export default Details;

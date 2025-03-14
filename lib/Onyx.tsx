@@ -206,7 +206,7 @@ function App(props: OnyxProps) {
                   lookupDescriptions={lookupDescriptions}
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
-                  recordID={recordID}
+                  ID={recordID}
                   onHide={handleProjectRecordHide}
                 />
               </Tab.Pane>
@@ -234,7 +234,7 @@ function App(props: OnyxProps) {
                   lookupDescriptions={lookupDescriptions}
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
-                  analysisID={analysisID}
+                  ID={analysisID}
                   onHide={handleAnalysisHide}
                 />
               </Tab.Pane>
