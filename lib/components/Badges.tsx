@@ -3,8 +3,8 @@ import Badge from "react-bootstrap/Badge";
 function UnpublishedBadge() {
   return (
     <big>
-      <Badge bg="info" text="dark">
-        Unpublished
+      <Badge bg="" style={{ backgroundColor: "var(--bs-pink)" }}>
+        UNPUBLISHED
       </Badge>
     </big>
   );

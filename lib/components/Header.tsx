@@ -96,7 +96,10 @@ function Header(props: HeaderProps) {
     >
       <Container fluid>
         <Tab.Container activeKey={props.tabKey} onSelect={handleTabChange}>
-          <Navbar.Brand>
+          <Navbar.Brand
+            onClick={() => handleTabChange("records")}
+            style={{ cursor: "pointer" }}
+          >
             <MdJoinInner color="var(--bs-pink)" /> Onyx
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="header" />
