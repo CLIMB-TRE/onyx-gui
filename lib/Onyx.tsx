@@ -146,25 +146,25 @@ function App(props: OnyxProps) {
   // This noticeably improves responsiveness for large datasets
   const handleProjectRecordShow = useCallback((climbID: string) => {
     setTabKey("record");
+    setRecordTabKey(RecordTabKeys.Data);
+    setRecordDataPanelTabKey(DataPanelTabKeys.Details);
     setRecordID(climbID);
   }, []);
 
   const handleProjectRecordHide = useCallback(() => {
     setTabKey("records");
-    setRecordTabKey(RecordTabKeys.Data);
-    setRecordDataPanelTabKey(DataPanelTabKeys.Details);
     setRecordID("");
   }, []);
 
   const handleAnalysisShow = useCallback((analysisID: string) => {
     setTabKey("analysis");
+    setAnalysisTabKey(AnalysisTabKeys.Data);
+    setAnalysisDataPanelTabKey(DataPanelTabKeys.Details);
     setAnalysisID(analysisID);
   }, []);
 
   const handleAnalysisHide = useCallback(() => {
     setTabKey("analyses");
-    setAnalysisTabKey(AnalysisTabKeys.Data);
-    setAnalysisDataPanelTabKey(DataPanelTabKeys.Details);
     setAnalysisID("");
   }, []);
 
