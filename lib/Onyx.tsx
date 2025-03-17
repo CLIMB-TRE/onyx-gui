@@ -216,7 +216,7 @@ function App(props: OnyxProps) {
                   searchPath={`projects/${project}`}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="record" className="h-100" unmountOnExit>
+              <Tab.Pane eventKey="record" className="h-100">
                 <ProjectRecord
                   {...pageProps}
                   projectFields={projectFields}
@@ -248,7 +248,7 @@ function App(props: OnyxProps) {
                   searchPath={`projects/${project}/analysis`}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="analysis" className="h-100" unmountOnExit>
+              <Tab.Pane eventKey="analysis" className="h-100">
                 <Analysis
                   {...pageProps}
                   projectFields={analysisFields}
