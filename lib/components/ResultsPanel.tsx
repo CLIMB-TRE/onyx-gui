@@ -59,6 +59,7 @@ function ResultsPanel(props: ResultsPanelProps) {
     ["climb_id", ClimbIDCellRendererFactory(props)],
     ["analysis_id", AnalysisIDCellRendererFactory(props)],
     ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
+    ["report", S3ReportCellRendererFactory(errorModalProps)],
   ]);
 
   return (
