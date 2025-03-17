@@ -10,7 +10,14 @@ import ProjectRecord from "./pages/ProjectRecord";
 import Analysis from "./pages/Analysis";
 import Graphs from "./pages/Graphs";
 import { OnyxProps } from "./interfaces";
-import { TypeObject, LookupObject, ProjectPermissionType } from "./types";
+import {
+  RecordTabKeys,
+  AnalysisTabKeys,
+  DataPanelTabKeys,
+  TypeObject,
+  LookupObject,
+  ProjectPermissionType,
+} from "./types";
 import {
   useTypesQuery,
   useLookupsQuery,
@@ -33,7 +40,16 @@ function App(props: OnyxProps) {
   const [project, setProject] = useState("");
   const [tabKey, setTabKey] = useState("records");
   const [recordID, setRecordID] = useState("");
+  const [recordTabKey, setRecordTabKey] = useState<string>(RecordTabKeys.Data);
+  const [recordDataPanelTabKey, setRecordDataPanelTabKey] = useState<string>(
+    DataPanelTabKeys.Details
+  );
   const [analysisID, setAnalysisID] = useState("");
+  const [analysisTabKey, setAnalysisTabKey] = useState<string>(
+    AnalysisTabKeys.Data
+  );
+  const [analysisDataPanelTabKey, setAnalysisDataPanelTabKey] =
+    useState<string>(DataPanelTabKeys.Details);
 
   // Set the theme based on darkMode state
   useEffect(() => {
@@ -135,6 +151,8 @@ function App(props: OnyxProps) {
 
   const handleProjectRecordHide = useCallback(() => {
     setTabKey("records");
+    setRecordTabKey(RecordTabKeys.Data);
+    setRecordDataPanelTabKey(DataPanelTabKeys.Details);
     setRecordID("");
   }, []);
 
@@ -145,6 +163,8 @@ function App(props: OnyxProps) {
 
   const handleAnalysisHide = useCallback(() => {
     setTabKey("analyses");
+    setAnalysisTabKey(AnalysisTabKeys.Data);
+    setAnalysisDataPanelTabKey(DataPanelTabKeys.Details);
     setAnalysisID("");
   }, []);
 
@@ -207,6 +227,10 @@ function App(props: OnyxProps) {
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
                   ID={recordID}
+                  tabKey={recordTabKey}
+                  setTabKey={setRecordTabKey}
+                  dataPanelTabKey={recordDataPanelTabKey}
+                  setDataPanelTabKey={setRecordDataPanelTabKey}
                   onHide={handleProjectRecordHide}
                 />
               </Tab.Pane>
@@ -235,6 +259,10 @@ function App(props: OnyxProps) {
                   handleProjectRecordShow={handleProjectRecordShow}
                   handleAnalysisShow={handleAnalysisShow}
                   ID={analysisID}
+                  tabKey={analysisTabKey}
+                  setTabKey={setAnalysisTabKey}
+                  dataPanelTabKey={analysisDataPanelTabKey}
+                  setDataPanelTabKey={setAnalysisDataPanelTabKey}
                   onHide={handleAnalysisHide}
                 />
               </Tab.Pane>

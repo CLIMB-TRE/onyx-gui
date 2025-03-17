@@ -27,6 +27,11 @@ interface DataProps extends PageProps {
 
 interface IDProps extends DataProps {
   ID: string;
+  tabKey: string;
+  setTabKey: (key: string) => void;
+  dataPanelTabKey: string;
+  setDataPanelTabKey: (key: string) => void;
+  onHide: () => void;
 }
 
 interface ResultsProps extends DataProps {

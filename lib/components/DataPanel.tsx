@@ -11,7 +11,12 @@ import Table from "./Table";
 import ErrorModal from "./ErrorModal";
 import DataField from "./DataField";
 import QueryHandler from "./QueryHandler";
-import { ErrorResponse, RecordDetailResponse, RecordType } from "../types";
+import {
+  DataPanelTabKeys,
+  ErrorResponse,
+  RecordDetailResponse,
+  RecordType,
+} from "../types";
 import { IDProps } from "../interfaces";
 import ExportModal from "./ExportModal";
 import { JsonSearch } from "./Json";
@@ -25,7 +30,6 @@ interface DataPanelProps extends IDProps {
   queryHook: (
     props: IDProps
   ) => UseQueryResult<RecordDetailResponse | ErrorResponse, Error>;
-  onHide: () => void;
   setUnpublished: () => void;
   dataFields: Map<string, string>;
   hideRelations?: boolean;
@@ -88,8 +92,11 @@ function DataPanel(props: DataPanelProps) {
       data={data as RecordDetailResponse}
     >
       <Tab.Container
-        id="record-data-tabs"
-        defaultActiveKey="record-data-details"
+        id="data-panel-tabs"
+        activeKey={props.dataPanelTabKey}
+        onSelect={(key) =>
+          props.setDataPanelTabKey(key || DataPanelTabKeys.Details)
+        }
       >
         <ErrorModal
           title="S3 Reports"
@@ -125,17 +132,23 @@ function DataPanel(props: DataPanelProps) {
               <hr />
               <Nav variant="pills" className="flex-column">
                 <Nav.Item>
-                  <Nav.Link eventKey="record-data-details">Details</Nav.Link>
+                  <Nav.Link eventKey={DataPanelTabKeys.Details}>
+                    Details
+                  </Nav.Link>
                 </Nav.Item>
                 {!props.hideRelations &&
                   relations.map(([key]) => (
                     <Nav.Item key={key}>
-                      <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                      <Nav.Link eventKey={`data-panel-${key}`}>
+                        {formatTitle(key)}
+                      </Nav.Link>
                     </Nav.Item>
                   ))}
                 {structures.map(([key]) => (
                   <Nav.Item key={key}>
-                    <Nav.Link eventKey={key}>{formatTitle(key)}</Nav.Link>
+                    <Nav.Link eventKey={`data-panel-${key}`}>
+                      {formatTitle(key)}
+                    </Nav.Link>
                   </Nav.Item>
                 ))}
               </Nav>
@@ -151,7 +164,7 @@ function DataPanel(props: DataPanelProps) {
           </Col>
           <Col xs={9} xl={10}>
             <Tab.Content className="h-100">
-              <Tab.Pane eventKey="record-data-details" className="h-100">
+              <Tab.Pane eventKey={DataPanelTabKeys.Details} className="h-100">
                 <Details
                   {...props}
                   data={data}
@@ -160,7 +173,11 @@ function DataPanel(props: DataPanelProps) {
               </Tab.Pane>
               {!props.hideRelations &&
                 relations.map(([key, relation]) => (
-                  <Tab.Pane key={key} eventKey={key} className="h-100">
+                  <Tab.Pane
+                    key={key}
+                    eventKey={`data-panel-${key}`}
+                    className="h-100"
+                  >
                     <h5>{formatTitle(key)}</h5>
                     <Table
                       {...props}
@@ -175,7 +192,11 @@ function DataPanel(props: DataPanelProps) {
                   </Tab.Pane>
                 ))}
               {structures.map(([key, structure]) => (
-                <Tab.Pane key={key} eventKey={key} className="h-100">
+                <Tab.Pane
+                  key={key}
+                  eventKey={`data-panel-${key}`}
+                  className="h-100"
+                >
                   <h5>{formatTitle(key)}</h5>
                   <Card
                     body

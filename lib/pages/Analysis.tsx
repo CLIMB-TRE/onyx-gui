@@ -22,13 +22,9 @@ import {
 import { IDProps } from "../interfaces";
 import { MdArrowBackIosNew } from "react-icons/md";
 import DataPanel from "../components/DataPanel";
+import { AnalysisTabKeys } from "../types";
 
-interface AnalysisProps extends IDProps {
-  ID: string;
-  onHide: () => void;
-}
-
-function Records(props: AnalysisProps) {
+function Records(props: IDProps) {
   const { isFetching, error, data } = useAnalysisRecordsQuery(props);
 
   // Get the records
@@ -55,7 +51,7 @@ function Records(props: AnalysisProps) {
   );
 }
 
-function Upstream(props: AnalysisProps) {
+function Upstream(props: IDProps) {
   const { isFetching, error, data } = useAnalysisUpstreamQuery(props);
 
   // Get the analyses
@@ -82,7 +78,7 @@ function Upstream(props: AnalysisProps) {
   );
 }
 
-function Downstream(props: AnalysisProps) {
+function Downstream(props: IDProps) {
   const { isFetching, error, data } = useAnalysisDownstreamQuery(props);
 
   // Get the analyses
@@ -109,7 +105,7 @@ function Downstream(props: AnalysisProps) {
   );
 }
 
-function Analysis(props: AnalysisProps) {
+function Analysis(props: IDProps) {
   const [published, setPublished] = useState(true);
 
   return (
@@ -132,22 +128,28 @@ function Analysis(props: AnalysisProps) {
           </Stack>
         </Card.Header>
         <Card.Body className="pt-2 overflow-y-auto">
-          <Tab.Container defaultActiveKey="analysis-data-tab" mountOnEnter>
+          <Tab.Container
+            activeKey={props.tabKey}
+            onSelect={(key) => props.setTabKey(key || AnalysisTabKeys.Data)}
+            mountOnEnter
+          >
             <Nav variant="tabs">
               <Nav.Item>
-                <Nav.Link eventKey="analysis-data-tab">Data</Nav.Link>
+                <Nav.Link eventKey={AnalysisTabKeys.Data}>Data</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="analysis-history-tab">History</Nav.Link>
+                <Nav.Link eventKey={AnalysisTabKeys.History}>History</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="analysis-records-tab">Records</Nav.Link>
+                <Nav.Link eventKey={AnalysisTabKeys.Records}>Records</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="analysis-upstream-tab">Upstream</Nav.Link>
+                <Nav.Link eventKey={AnalysisTabKeys.Upstream}>
+                  Upstream
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="analysis-downstream-tab">
+                <Nav.Link eventKey={AnalysisTabKeys.Downstream}>
                   Downstream
                 </Nav.Link>
               </Nav.Item>
@@ -156,7 +158,7 @@ function Analysis(props: AnalysisProps) {
               className="p-3"
               style={{ height: "calc(100% - 60px)" }}
             >
-              <Tab.Pane eventKey="analysis-data-tab" className="h-100">
+              <Tab.Pane eventKey={AnalysisTabKeys.Data} className="h-100">
                 <DataPanel
                   {...props}
                   queryHook={useAnalysisQuery}
@@ -171,7 +173,7 @@ function Analysis(props: AnalysisProps) {
                   hideRelations
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="analysis-history-tab" className="h-100">
+              <Tab.Pane eventKey={AnalysisTabKeys.History} className="h-100">
                 <History
                   {...props}
                   name="analysis"
@@ -179,13 +181,13 @@ function Analysis(props: AnalysisProps) {
                   ID={props.ID}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey="analysis-records-tab" className="h-100">
+              <Tab.Pane eventKey={AnalysisTabKeys.Records} className="h-100">
                 <Records {...props} />
               </Tab.Pane>
-              <Tab.Pane eventKey="analysis-upstream-tab" className="h-100">
+              <Tab.Pane eventKey={AnalysisTabKeys.Upstream} className="h-100">
                 <Upstream {...props} />
               </Tab.Pane>
-              <Tab.Pane eventKey="analysis-downstream-tab" className="h-100">
+              <Tab.Pane eventKey={AnalysisTabKeys.Downstream} className="h-100">
                 <Downstream {...props} />
               </Tab.Pane>
             </Tab.Content>

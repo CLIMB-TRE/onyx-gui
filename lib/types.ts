@@ -1,3 +1,21 @@
+enum RecordTabKeys {
+  Data = "record-data-tab",
+  History = "record-history-tab",
+  Analyses = "record-analyses-tab",
+}
+
+enum AnalysisTabKeys {
+  Data = "analysis-data-tab",
+  History = "analysis-history-tab",
+  Records = "analysis-records-tab",
+  Upstream = "analysis-upstream-tab",
+  Downstream = "analysis-downstream-tab",
+}
+
+enum DataPanelTabKeys {
+  Details = "data-panel-details",
+}
+
 type FieldType =
   | "text"
   | "choice"
@@ -145,4 +163,4 @@ export type {
   ChoicesResponse,
 };
 
-export { ExportStatus };
+export { RecordTabKeys, AnalysisTabKeys, DataPanelTabKeys, ExportStatus };
