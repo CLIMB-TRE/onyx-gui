@@ -67,6 +67,7 @@
 
 .onyx-modal {
   font-size: var(--bs-body-font-size);
+  font-family: var(--bs-body-font-family);
 }
 
 .parent {
