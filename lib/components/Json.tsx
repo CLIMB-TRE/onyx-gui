@@ -11,6 +11,7 @@ import { PageProps } from "../interfaces";
 
 interface JsonProps extends PageProps {
   data: JsonData;
+  description: string;
 }
 
 function JsonSearch(props: JsonProps) {
@@ -18,11 +19,16 @@ function JsonSearch(props: JsonProps) {
 
   return (
     <Stack gap={2}>
-      <Input
-        value={jsonSearch}
-        onChange={(e) => setJsonSearch(e.target.value)}
-        placeholder="Enter key/value..."
-      />
+      <Stack direction="horizontal" gap={2}>
+        <span className="me-auto text-muted">{props.description}</span>
+        <div style={{ width: "300px" }}>
+          <Input
+            value={jsonSearch}
+            onChange={(e) => setJsonSearch(e.target.value)}
+            placeholder="Enter key/value..."
+          />
+        </div>
+      </Stack>
       <JsonEditor
         data={props.data}
         theme={

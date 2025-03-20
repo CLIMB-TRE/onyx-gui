@@ -203,7 +203,13 @@ function DataPanel(props: DataPanelProps) {
                     className="overflow-y-auto h-100"
                     style={{ maxHeight: "100vh" }}
                   >
-                    <JsonSearch {...props} data={structure as JsonData} />
+                    <JsonSearch
+                      {...props}
+                      data={structure as JsonData}
+                      description={
+                        props.fieldDescriptions.get(key) || "No Description."
+                      }
+                    />
                   </Card>
                 </Tab.Pane>
               ))}
