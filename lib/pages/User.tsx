@@ -20,25 +20,7 @@ import {
 import { PageProps } from "../interfaces";
 import { RecordType, ProjectPermissionType } from "../types";
 import { recentActivityMessage } from "../utils/messages";
-
-function UserDataField({
-  name,
-  value,
-}: {
-  name: string;
-  value: string | JSX.Element;
-}) {
-  return (
-    <Row>
-      <Col md={6}>
-        <h6>{name}:</h6>
-      </Col>
-      <Col md={6}>
-        <span className="onyx-text-pink">{value}</span>
-      </Col>
-    </Row>
-  );
-}
+import DataField from "../components/DataField";
 
 function Details(props: PageProps) {
   const { isFetching, error, data } = useProfileQuery(props);
@@ -58,9 +40,9 @@ function Details(props: PageProps) {
           data={data}
         >
           <Container>
-            <UserDataField name="Username" value={details.username} />
-            <UserDataField name="Site" value={details.site} />
-            <UserDataField name="Email" value={details.email} />
+            <DataField name="Username" value={details.username} />
+            <DataField name="Site" value={details.site} />
+            <DataField name="Email" value={details.email} />
           </Container>
         </QueryHandler>
       </Card.Body>
@@ -89,9 +71,9 @@ function ProjectPermissions(props: PageProps) {
             {projectPermissions.map(
               (project: ProjectPermissionType, index: number) => (
                 <Card body key={index}>
-                  <UserDataField name="Project" value={project.project} />
-                  <UserDataField name="Scope" value={project.scope} />
-                  <UserDataField
+                  <DataField name="Project" value={project.project} />
+                  <DataField name="Scope" value={project.scope} />
+                  <DataField
                     name="Actions"
                     value={
                       <ul>

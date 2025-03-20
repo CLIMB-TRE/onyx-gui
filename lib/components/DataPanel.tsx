@@ -122,9 +122,8 @@ function DataPanel(props: DataPanelProps) {
                   {Array.from(props.dataFields).map(([field, name]) => (
                     <DataField
                       key={field}
-                      record={data.data}
-                      field={field}
                       name={name}
+                      value={data.data[field]?.toString() || ""}
                     />
                   ))}
                 </Container>
