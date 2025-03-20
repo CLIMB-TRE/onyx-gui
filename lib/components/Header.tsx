@@ -97,6 +97,7 @@ function Header(props: HeaderProps) {
       <Container fluid>
         <Tab.Container activeKey={props.tabKey} onSelect={handleTabChange}>
           <Navbar.Brand
+            title="Onyx | API for Pathogen Metadata"
             onClick={() => handleTabChange("records")}
             style={{ cursor: "pointer" }}
           >
