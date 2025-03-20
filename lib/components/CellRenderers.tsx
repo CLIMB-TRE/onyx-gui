@@ -15,33 +15,6 @@ interface IDModalProps {
   handleAnalysisShow: (analysisID: string) => void;
 }
 
-function DetailCellRendererFactory(props: ErrorModalProps) {
-  return (cellRendererProps: CustomCellRendererProps) => {
-    if (
-      typeof cellRendererProps.value === "string" &&
-      cellRendererProps.value.startsWith("s3://") &&
-      cellRendererProps.value.endsWith(".html")
-    ) {
-      return (
-        <Button
-          className="p-0"
-          size="sm"
-          variant="link"
-          onClick={() =>
-            props
-              .s3PathHandler(cellRendererProps.value)
-              .catch((error: Error) => props.handleErrorModalShow(error))
-          }
-        >
-          {cellRendererProps.value}
-        </Button>
-      );
-    } else {
-      return cellRendererProps.value;
-    }
-  };
-}
-
 function ClimbIDCellRendererFactory(props: IDModalProps) {
   return (cellRendererProps: CustomCellRendererProps) => {
     return (
@@ -232,7 +205,6 @@ function JSONCellRenderer(props: CustomCellRendererProps) {
 }
 
 export {
-  DetailCellRendererFactory,
   ClimbIDCellRendererFactory,
   AnalysisIDCellRendererFactory,
   S3ReportCellRendererFactory,
