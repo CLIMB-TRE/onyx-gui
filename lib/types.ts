@@ -110,13 +110,13 @@ type SuccessResponse = {
   code: number;
 };
 
-type RecordListResponse = SuccessResponse & {
+type ListResponse = SuccessResponse & {
   data: RecordType[];
   next: string | null;
   previous: string | null;
 };
 
-type RecordDetailResponse = SuccessResponse & {
+type DetailResponse = SuccessResponse & {
   data: RecordType;
 };
 
@@ -132,18 +132,10 @@ type ChoicesResponse = SuccessResponse & {
   data: Record<string, ChoiceDescription>;
 };
 
-// TODO: Use a generic response type
-// type Response<T> =
-//   | ErrorResponse
-//   | {
-//       status: "success";
-//       code: number;
-//       data: T;
-//     };
-
 export type {
   ChoiceDescription,
   ChoicesResponse,
+  DetailResponse,
   ErrorResponse,
   ErrorType,
   FieldsResponse,
@@ -151,12 +143,11 @@ export type {
   FilterConfig,
   GraphConfig,
   GraphType,
+  ListResponse,
   LookupObject,
   OptionType,
   ProjectField,
   ProjectPermissionType,
-  RecordDetailResponse,
-  RecordListResponse,
   RecordType,
   SuccessResponse,
   SummaryType,

@@ -3,7 +3,7 @@ import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { ResultsProps } from "../interfaces";
-import { ErrorResponse, RecordListResponse, RecordType } from "../types";
+import { ErrorResponse, ListResponse, RecordType } from "../types";
 import { getDefaultFileNamePrefix } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { SidebarButton } from "./Buttons";
@@ -21,7 +21,7 @@ interface ResultsPanelProps extends ResultsProps {
   searchParameters: string;
   isFetching: boolean;
   error: Error | null;
-  data: RecordListResponse | ErrorResponse;
+  data: ListResponse | ErrorResponse;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
 }
@@ -38,7 +38,7 @@ function ResultsPanel(props: ResultsPanelProps) {
   // Get the result data
   const results = useMemo(() => {
     if (props.data?.status !== "success")
-      return { data: [] as RecordType[] } as RecordListResponse;
+      return { data: [] as RecordType[] } as ListResponse;
     return props.data;
   }, [props.data]);
 

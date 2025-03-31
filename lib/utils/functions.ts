@@ -1,9 +1,9 @@
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
+  DetailResponse,
   ErrorResponse,
   ExportStatus,
   FilterConfig,
-  RecordDetailResponse,
 } from "../types";
 
 /** Returns a random hexadecimal string. */
@@ -31,12 +31,12 @@ function getDefaultFileNamePrefix(project: string, searchParameters: string) {
     .slice(0, 50);
 }
 
-interface RecordDetailResponseProps extends OnyxProps {
-  response: RecordDetailResponse | ErrorResponse | undefined;
+interface DetailResponseProps extends OnyxProps {
+  response: DetailResponse | ErrorResponse | undefined;
 }
 
 /** Handler for converting JSON data to a string for file export. */
-function handleJSONExport(props: RecordDetailResponseProps) {
+function handleJSONExport(props: DetailResponseProps) {
   return (exportProps: ExportHandlerProps) => {
     if (props.response?.status !== "success") return;
     const jsonData = JSON.stringify(props.response.data);

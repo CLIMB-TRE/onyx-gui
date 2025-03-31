@@ -1,10 +1,10 @@
 import { useQueries, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { OnyxProps, ProjectProps } from "../interfaces";
 import {
+  DetailResponse,
   ErrorResponse,
   GraphConfig,
-  RecordDetailResponse,
-  RecordListResponse,
+  ListResponse,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
@@ -183,7 +183,7 @@ const useHistoryQuery = (props: IDProps) => {
 /** Fetch record from record ID */
 const useRecordQuery = (
   props: IDProps
-): UseQueryResult<RecordDetailResponse | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["record-detail", props.project, props.ID],
     queryFn: async () => {
@@ -213,7 +213,7 @@ const useRecordAnalysesQuery = (props: IDProps) => {
 /** Fetch analysis from analysis ID */
 const useAnalysisQuery = (
   props: IDProps
-): UseQueryResult<RecordDetailResponse | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-detail", props.project, props.ID],
     queryFn: async () => {
@@ -245,7 +245,7 @@ const useAnalysisRecordsQuery = (props: IDProps) => {
 /** Fetch upstream analyses from analysis ID */
 const useAnalysisUpstreamQuery = (
   props: IDProps
-): UseQueryResult<RecordListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-upstream-list", props.project, props.ID],
     queryFn: async () => {
@@ -263,7 +263,7 @@ const useAnalysisUpstreamQuery = (
 /** Fetch downstream analyses from analysis ID */
 const useAnalysisDownstreamQuery = (
   props: IDProps
-): UseQueryResult<RecordListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-downstream-list", props.project, props.ID],
     queryFn: async () => {

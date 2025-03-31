@@ -23,7 +23,7 @@ import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 import { useCountQuery } from "../api";
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
-import { ExportStatus, RecordListResponse } from "../types";
+import { ExportStatus, ListResponse } from "../types";
 import ExportModal from "./ExportModal";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
@@ -87,7 +87,7 @@ interface ClientTableProps extends TableProps {
 
 interface ServerPaginatedTableProps extends TableProps {
   project: string;
-  response: RecordListResponse;
+  response: ListResponse;
   searchPath: string;
   searchParameters: string;
 }
@@ -282,7 +282,7 @@ function TableOptions(props: TableOptionsProps) {
       await props
         .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
         .then((response) => response.json())
-        .then((response: RecordListResponse) => {
+        .then((response: ListResponse) => {
           if (exportProps.statusToken.status === ExportStatus.CANCELLED)
             throw new Error("export_cancelled");
 
@@ -577,7 +577,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   };
 
   const handleResponse = (
-    response: RecordListResponse,
+    response: ListResponse,
     resultsPage: number,
     userPage: number
   ) => {

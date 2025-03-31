@@ -25,13 +25,13 @@ import History from "../components/History";
 import QueryHandler from "../components/QueryHandler";
 import Table from "../components/Table";
 import { IDProps } from "../interfaces";
-import { AnalysisTabKeys, ErrorResponse, RecordListResponse } from "../types";
+import { AnalysisTabKeys, ErrorResponse, ListResponse } from "../types";
 import { s3BucketsMessage } from "../utils/messages";
 
 interface RelatedAnalysesProps extends IDProps {
   queryHook: (
     props: IDProps
-  ) => UseQueryResult<RecordListResponse | ErrorResponse, Error>;
+  ) => UseQueryResult<ListResponse | ErrorResponse, Error>;
   title: string;
   description: string;
   defaultFileNamePrefix: string;
@@ -92,7 +92,7 @@ function RelatedAnalyses(props: RelatedAnalysesProps) {
     <QueryHandler
       isFetching={isFetching}
       error={error as Error}
-      data={data as RecordListResponse}
+      data={data as ListResponse}
     >
       <>
         <ErrorModal

@@ -12,8 +12,8 @@ import Tab from "react-bootstrap/Tab";
 import { IDProps } from "../interfaces";
 import {
   DataPanelTabKeys,
+  DetailResponse,
   ErrorResponse,
-  RecordDetailResponse,
   RecordType,
 } from "../types";
 import { handleJSONExport } from "../utils/functions";
@@ -29,7 +29,7 @@ import Table from "./Table";
 interface DataPanelProps extends IDProps {
   queryHook: (
     props: IDProps
-  ) => UseQueryResult<RecordDetailResponse | ErrorResponse, Error>;
+  ) => UseQueryResult<DetailResponse | ErrorResponse, Error>;
   setUnpublished: () => void;
   dataFields: Map<string, string>;
 }
@@ -88,7 +88,7 @@ function DataPanel(props: DataPanelProps) {
     <QueryHandler
       isFetching={isFetching}
       error={error as Error}
-      data={data as RecordDetailResponse}
+      data={data as DetailResponse}
     >
       <Tab.Container
         id="data-panel-tabs"
