@@ -1,30 +1,30 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import Card from "react-bootstrap/Card";
-import Stack from "react-bootstrap/Stack";
+import { UseQueryResult } from "@tanstack/react-query";
+import { JsonData } from "json-edit-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
-import Tab from "react-bootstrap/Tab";
+import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Row from "react-bootstrap/Row";
-import Container from "react-bootstrap/Container";
-import Table from "./Table";
-import ErrorModal from "./ErrorModal";
-import DataField from "./DataField";
-import QueryHandler from "./QueryHandler";
+import Stack from "react-bootstrap/Stack";
+import Tab from "react-bootstrap/Tab";
+import { IDProps } from "../interfaces";
 import {
   DataPanelTabKeys,
   ErrorResponse,
   RecordDetailResponse,
   RecordType,
 } from "../types";
-import { IDProps } from "../interfaces";
-import ExportModal from "./ExportModal";
-import { JsonSearch } from "./Json";
-import Details from "./Details";
 import { handleJSONExport } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
-import { JsonData } from "json-edit-react";
-import { UseQueryResult } from "@tanstack/react-query";
+import DataField from "./DataField";
+import Details from "./Details";
+import ErrorModal from "./ErrorModal";
+import ExportModal from "./ExportModal";
+import { JsonSearch } from "./Json";
+import QueryHandler from "./QueryHandler";
+import Table from "./Table";
 
 interface DataPanelProps extends IDProps {
   queryHook: (
@@ -32,7 +32,6 @@ interface DataPanelProps extends IDProps {
   ) => UseQueryResult<RecordDetailResponse | ErrorResponse, Error>;
   setUnpublished: () => void;
   dataFields: Map<string, string>;
-  hideRelations?: boolean;
 }
 
 function DataPanel(props: DataPanelProps) {
@@ -135,14 +134,13 @@ function DataPanel(props: DataPanelProps) {
                     Details
                   </Nav.Link>
                 </Nav.Item>
-                {!props.hideRelations &&
-                  relations.map(([key]) => (
-                    <Nav.Item key={key}>
-                      <Nav.Link eventKey={`data-panel-${key}`}>
-                        {formatTitle(key)}
-                      </Nav.Link>
-                    </Nav.Item>
-                  ))}
+                {relations.map(([key]) => (
+                  <Nav.Item key={key}>
+                    <Nav.Link eventKey={`data-panel-${key}`}>
+                      {formatTitle(key)}
+                    </Nav.Link>
+                  </Nav.Item>
+                ))}
                 {structures.map(([key]) => (
                   <Nav.Item key={key}>
                     <Nav.Link eventKey={`data-panel-${key}`}>
@@ -170,26 +168,25 @@ function DataPanel(props: DataPanelProps) {
                   handleErrorModalShow={handleErrorModalShow}
                 />
               </Tab.Pane>
-              {!props.hideRelations &&
-                relations.map(([key, relation]) => (
-                  <Tab.Pane
-                    key={key}
-                    eventKey={`data-panel-${key}`}
-                    className="h-100"
-                  >
-                    <h5>{formatTitle(key)}</h5>
-                    <Table
-                      {...props}
-                      data={relation}
-                      defaultFileNamePrefix={`${props.ID}_${key}`}
-                      headerTooltips={props.fieldDescriptions}
-                      headerTooltipPrefix={key + "__"}
-                      footer={
-                        props.fieldDescriptions.get(key) || "No Description."
-                      }
-                    />
-                  </Tab.Pane>
-                ))}
+              {relations.map(([key, relation]) => (
+                <Tab.Pane
+                  key={key}
+                  eventKey={`data-panel-${key}`}
+                  className="h-100"
+                >
+                  <h5>{formatTitle(key)}</h5>
+                  <Table
+                    {...props}
+                    data={relation}
+                    defaultFileNamePrefix={`${props.ID}_${key}`}
+                    headerTooltips={props.fieldDescriptions}
+                    headerTooltipPrefix={key + "__"}
+                    footer={
+                      props.fieldDescriptions.get(key) || "No Description."
+                    }
+                  />
+                </Tab.Pane>
+              ))}
               {structures.map(([key, structure]) => (
                 <Tab.Pane
                   key={key}
