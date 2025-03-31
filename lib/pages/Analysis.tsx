@@ -1,28 +1,41 @@
-import { useMemo, useState } from "react";
-import Card from "react-bootstrap/Card";
-import Tab from "react-bootstrap/Tab";
+import { UseQueryResult } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
-import Nav from "react-bootstrap/Nav";
+import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
+import Nav from "react-bootstrap/Nav";
 import Stack from "react-bootstrap/Stack";
-import QueryHandler from "../components/QueryHandler";
-import History from "../components/History";
-import Table from "../components/Table";
-import { UnpublishedBadge } from "../components/Badges";
+import Tab from "react-bootstrap/Tab";
+import { MdArrowBackIosNew } from "react-icons/md";
 import {
-  ClimbIDCellRendererFactory,
-  AnalysisIDCellRendererFactory,
-} from "../components/CellRenderers";
-import {
+  useAnalysisDownstreamQuery,
   useAnalysisQuery,
   useAnalysisRecordsQuery,
   useAnalysisUpstreamQuery,
-  useAnalysisDownstreamQuery,
 } from "../api";
-import { IDProps } from "../interfaces";
-import { MdArrowBackIosNew } from "react-icons/md";
+import { UnpublishedBadge } from "../components/Badges";
+import {
+  AnalysisIDCellRendererFactory,
+  ClimbIDCellRendererFactory,
+  S3ReportCellRendererFactory,
+} from "../components/CellRenderers";
 import DataPanel from "../components/DataPanel";
-import { AnalysisTabKeys } from "../types";
+import ErrorModal from "../components/ErrorModal";
+import History from "../components/History";
+import QueryHandler from "../components/QueryHandler";
+import Table from "../components/Table";
+import { IDProps } from "../interfaces";
+import { AnalysisTabKeys, ErrorResponse, RecordListResponse } from "../types";
+import { s3BucketsMessage } from "../utils/messages";
+
+interface RelatedAnalysesProps extends IDProps {
+  queryHook: (
+    props: IDProps
+  ) => UseQueryResult<RecordListResponse | ErrorResponse, Error>;
+  title: string;
+  description: string;
+  defaultFileNamePrefix: string;
+}
 
 function Records(props: IDProps) {
   const { isFetching, error, data } = useAnalysisRecordsQuery(props);
@@ -51,8 +64,23 @@ function Records(props: IDProps) {
   );
 }
 
-function Upstream(props: IDProps) {
-  const { isFetching, error, data } = useAnalysisUpstreamQuery(props);
+function RelatedAnalyses(props: RelatedAnalysesProps) {
+  const [errorModalShow, setErrorModalShow] = useState(false);
+  const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
+  const { isFetching, error, data } = props.queryHook(props);
+
+  const handleErrorModalShow = useCallback((error: Error) => {
+    setS3ReportError(error);
+    setErrorModalShow(true);
+  }, []);
+
+  const errorModalProps = useMemo(
+    () => ({
+      ...props,
+      handleErrorModalShow,
+    }),
+    [props, handleErrorModalShow]
+  );
 
   // Get the analyses
   const analyses = useMemo(() => {
@@ -61,16 +89,30 @@ function Upstream(props: IDProps) {
   }, [data]);
 
   return (
-    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
+    <QueryHandler
+      isFetching={isFetching}
+      error={error as Error}
+      data={data as RecordListResponse}
+    >
       <>
-        <h5>Upstream Analyses</h5>
+        <ErrorModal
+          title="S3 Reports"
+          message={s3BucketsMessage}
+          error={s3ReportError}
+          show={errorModalShow}
+          onHide={() => setErrorModalShow(false)}
+        />
+        <h5>{props.title}</h5>
         <Table
           {...props}
           data={analyses}
           defaultFileNamePrefix={`${props.ID}_upstream`}
-          footer="Table showing all analyses that were used for the analysis."
+          footer={props.description}
           cellRenderers={
-            new Map([["analysis_id", AnalysisIDCellRendererFactory(props)]])
+            new Map([
+              ["analysis_id", AnalysisIDCellRendererFactory(props)],
+              ["report", S3ReportCellRendererFactory(errorModalProps)],
+            ])
           }
         />
       </>
@@ -78,30 +120,27 @@ function Upstream(props: IDProps) {
   );
 }
 
-function Downstream(props: IDProps) {
-  const { isFetching, error, data } = useAnalysisDownstreamQuery(props);
-
-  // Get the analyses
-  const analyses = useMemo(() => {
-    if (data?.status !== "success") return [];
-    return data.data;
-  }, [data]);
-
+function Upstream(props: IDProps) {
   return (
-    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
-      <>
-        <h5>Downstream Analyses</h5>
-        <Table
-          {...props}
-          data={analyses}
-          defaultFileNamePrefix={`${props.ID}_downstream`}
-          footer="Table showing all analyses that used the analysis."
-          cellRenderers={
-            new Map([["analysis_id", AnalysisIDCellRendererFactory(props)]])
-          }
-        />
-      </>
-    </QueryHandler>
+    <RelatedAnalyses
+      {...props}
+      queryHook={useAnalysisUpstreamQuery}
+      title="Upstream Analyses"
+      description="Table showing all analyses that were used for the analysis."
+      defaultFileNamePrefix={`${props.ID}_upstream`}
+    />
+  );
+}
+
+function Downstream(props: IDProps) {
+  return (
+    <RelatedAnalyses
+      {...props}
+      queryHook={useAnalysisDownstreamQuery}
+      title="Downstream Analyses"
+      description="Table showing all analyses that used the analysis."
+      defaultFileNamePrefix={`${props.ID}_downstream`}
+    />
   );
 }
 
@@ -170,7 +209,6 @@ function Analysis(props: IDProps) {
                       ["name", "Name"],
                     ])
                   }
-                  hideRelations
                 />
               </Tab.Pane>
               <Tab.Pane eventKey={AnalysisTabKeys.History} className="h-100">

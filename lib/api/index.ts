@@ -1,6 +1,11 @@
-import { useQuery, useQueries, UseQueryResult } from "@tanstack/react-query";
+import { useQueries, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { OnyxProps, ProjectProps } from "../interfaces";
-import { ErrorResponse, GraphConfig, RecordDetailResponse } from "../types";
+import {
+  ErrorResponse,
+  GraphConfig,
+  RecordDetailResponse,
+  RecordListResponse,
+} from "../types";
 import { formatFilters } from "../utils/functions";
 
 interface ChoiceProps extends ProjectProps {
@@ -238,7 +243,9 @@ const useAnalysisRecordsQuery = (props: IDProps) => {
 };
 
 /** Fetch upstream analyses from analysis ID */
-const useAnalysisUpstreamQuery = (props: IDProps) => {
+const useAnalysisUpstreamQuery = (
+  props: IDProps
+): UseQueryResult<RecordListResponse | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-upstream-list", props.project, props.ID],
     queryFn: async () => {
@@ -254,7 +261,9 @@ const useAnalysisUpstreamQuery = (props: IDProps) => {
 };
 
 /** Fetch downstream analyses from analysis ID */
-const useAnalysisDownstreamQuery = (props: IDProps) => {
+const useAnalysisDownstreamQuery = (
+  props: IDProps
+): UseQueryResult<RecordListResponse | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-downstream-list", props.project, props.ID],
     queryFn: async () => {
@@ -346,25 +355,25 @@ const useGroupedSummaryQuery = (props: GraphQueryProps) => {
 };
 
 export {
-  useTypesQuery,
-  useLookupsQuery,
-  useProfileQuery,
-  useProjectPermissionsQuery,
-  useProjectFieldsQuery,
-  useAnalysisFieldsQuery,
-  useChoicesQuery,
-  useChoicesQueries,
   useActivityQuery,
-  useSiteUsersQuery,
-  useRecordQuery,
-  useHistoryQuery,
-  useRecordAnalysesQuery,
+  useAnalysisDownstreamQuery,
+  useAnalysisFieldsQuery,
   useAnalysisQuery,
   useAnalysisRecordsQuery,
   useAnalysisUpstreamQuery,
-  useAnalysisDownstreamQuery,
-  useResultsQuery,
+  useChoicesQueries,
+  useChoicesQuery,
   useCountQuery,
-  useSummaryQuery,
   useGroupedSummaryQuery,
+  useHistoryQuery,
+  useLookupsQuery,
+  useProfileQuery,
+  useProjectFieldsQuery,
+  useProjectPermissionsQuery,
+  useRecordAnalysesQuery,
+  useRecordQuery,
+  useResultsQuery,
+  useSiteUsersQuery,
+  useSummaryQuery,
+  useTypesQuery,
 };
