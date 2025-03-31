@@ -1,17 +1,17 @@
-import { useState, useMemo } from "react";
-import Container from "react-bootstrap/Container";
-import Card from "react-bootstrap/Card";
-import Stack from "react-bootstrap/Stack";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
+import { useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
-import { ErrorResponse, RecordDetailResponse } from "../types";
-import { DataProps } from "../interfaces";
+import Card from "react-bootstrap/Card";
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Stack from "react-bootstrap/Stack";
 import { useChoicesQueries } from "../api";
 import { useChoicesDescriptions } from "../api/hooks";
-import { Input } from "./Inputs";
-import { CopyToClipboardButton } from "./Buttons";
+import { DataProps } from "../interfaces";
+import { ErrorResponse, RecordDetailResponse } from "../types";
 import { useDebouncedValue } from "../utils/hooks";
+import { CopyToClipboardButton } from "./Buttons";
+import { Input } from "./Inputs";
 
 interface DetailsProps extends DataProps {
   data: RecordDetailResponse | ErrorResponse | undefined;

@@ -142,25 +142,25 @@ type ChoicesResponse = SuccessResponse & {
 //     };
 
 export type {
+  ChoiceDescription,
+  ChoicesResponse,
+  ErrorResponse,
+  ErrorType,
+  FieldsResponse,
   FieldType,
-  GraphType,
-  ProjectField,
   FilterConfig,
   GraphConfig,
-  TypeObject,
+  GraphType,
   LookupObject,
-  ChoiceDescription,
   OptionType,
-  ErrorType,
-  RecordType,
-  SummaryType,
+  ProjectField,
   ProjectPermissionType,
-  ErrorResponse,
-  SuccessResponse,
-  RecordListResponse,
   RecordDetailResponse,
-  FieldsResponse,
-  ChoicesResponse,
+  RecordListResponse,
+  RecordType,
+  SuccessResponse,
+  SummaryType,
+  TypeObject,
 };
 
-export { RecordTabKeys, AnalysisTabKeys, DataPanelTabKeys, ExportStatus };
+export { AnalysisTabKeys, DataPanelTabKeys, ExportStatus, RecordTabKeys };

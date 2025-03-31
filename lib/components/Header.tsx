@@ -1,14 +1,14 @@
+import { useMemo } from "react";
 import Container from "react-bootstrap/Container";
-import Stack from "react-bootstrap/Stack";
 import Form from "react-bootstrap/Form";
-import Tab from "react-bootstrap/Tab";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
+import Stack from "react-bootstrap/Stack";
+import Tab from "react-bootstrap/Tab";
+import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
 import { useProfileQuery } from "../api";
-import { MdLightMode, MdDarkMode, MdJoinInner } from "react-icons/md";
 import { PageProps } from "../interfaces";
-import { useMemo } from "react";
 
 interface HeaderProps extends PageProps {
   projectName: string;

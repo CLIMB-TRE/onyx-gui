@@ -1,31 +1,31 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Tab from "react-bootstrap/Tab";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
-import Header from "./components/Header";
-import User from "./pages/User";
-import Site from "./pages/Site";
-import Results from "./pages/Results";
-import ProjectRecord from "./pages/ProjectRecord";
-import Analysis from "./pages/Analysis";
-import Graphs from "./pages/Graphs";
-import { OnyxProps } from "./interfaces";
+import Tab from "react-bootstrap/Tab";
 import {
-  RecordTabKeys,
-  AnalysisTabKeys,
-  DataPanelTabKeys,
-  TypeObject,
-  LookupObject,
-  ProjectPermissionType,
-} from "./types";
-import {
-  useTypesQuery,
-  useLookupsQuery,
-  useProjectPermissionsQuery,
-  useProjectFieldsQuery,
   useAnalysisFieldsQuery,
+  useLookupsQuery,
+  useProjectFieldsQuery,
+  useProjectPermissionsQuery,
+  useTypesQuery,
 } from "./api";
 import { useFieldsInfo } from "./api/hooks";
+import Header from "./components/Header";
+import { OnyxProps } from "./interfaces";
+import Analysis from "./pages/Analysis";
+import Graphs from "./pages/Graphs";
+import ProjectRecord from "./pages/ProjectRecord";
+import Results from "./pages/Results";
+import Site from "./pages/Site";
+import User from "./pages/User";
+import {
+  AnalysisTabKeys,
+  DataPanelTabKeys,
+  LookupObject,
+  ProjectPermissionType,
+  RecordTabKeys,
+  TypeObject,
+} from "./types";
 
 import "@fontsource/ibm-plex-sans";
 import "./Onyx.css";

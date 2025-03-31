@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Stack from "react-bootstrap/Stack";
-import CloseButton from "react-bootstrap/CloseButton";
 import Button from "react-bootstrap/Button";
-import { MultiDropdown } from "./Dropdowns";
+import CloseButton from "react-bootstrap/CloseButton";
+import Stack from "react-bootstrap/Stack";
 import { DataProps } from "../interfaces";
+import { MultiDropdown } from "./Dropdowns";
 
 interface TransformsProps extends DataProps {
   transform: string;

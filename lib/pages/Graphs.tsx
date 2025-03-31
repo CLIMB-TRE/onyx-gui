@@ -1,41 +1,41 @@
-import { useState, useLayoutEffect, useMemo } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
+import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
-import Card from "react-bootstrap/Card";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
-import { Dropdown } from "../components/Dropdowns";
 import {
-  BasePlot,
-  ScatterGraph,
-  BarGraph,
-  PieGraph,
-  GroupedScatterGraph,
-  GroupedBarGraph,
-} from "../components/Graphs";
-import { DataProps } from "../interfaces";
-import { GraphType, GraphConfig, FilterConfig } from "../types";
-import FilterPanel from "../components/FilterPanel";
-import PageTitle from "../components/PageTitle";
-import { generateKey } from "../utils/functions";
-import {
-  MdCreate,
-  MdRefresh,
-  MdClear,
-  MdGridView,
-  MdOutlineSplitscreen,
   MdArrowBack,
+  MdArrowDownward,
   MdArrowForward,
   MdArrowUpward,
-  MdArrowDownward,
+  MdClear,
+  MdCreate,
+  MdDelete,
+  MdGridView,
+  MdOutlineSplitscreen,
+  MdRefresh,
   MdVisibility,
   MdVisibilityOff,
-  MdDelete,
 } from "react-icons/md";
+import { Dropdown } from "../components/Dropdowns";
+import FilterPanel from "../components/FilterPanel";
+import {
+  BarGraph,
+  BasePlot,
+  GroupedBarGraph,
+  GroupedScatterGraph,
+  PieGraph,
+  ScatterGraph,
+} from "../components/Graphs";
+import PageTitle from "../components/PageTitle";
+import { DataProps } from "../interfaces";
+import { FilterConfig, GraphConfig, GraphType } from "../types";
+import { generateKey } from "../utils/functions";
 
 interface GraphPanelProps extends DataProps {
   graphConfig: GraphConfig;

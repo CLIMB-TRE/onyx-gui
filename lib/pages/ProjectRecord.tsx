@@ -1,19 +1,19 @@
-import { useState, useMemo } from "react";
-import Card from "react-bootstrap/Card";
-import Stack from "react-bootstrap/Stack";
+import { useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
-import Tab from "react-bootstrap/Tab";
-import Nav from "react-bootstrap/Nav";
+import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
-import Table from "../components/Table";
-import History from "../components/History";
-import QueryHandler from "../components/QueryHandler";
-import { useRecordQuery, useRecordAnalysesQuery } from "../api";
-import { IDProps } from "../interfaces";
+import Nav from "react-bootstrap/Nav";
+import Stack from "react-bootstrap/Stack";
+import Tab from "react-bootstrap/Tab";
+import { MdArrowBackIosNew } from "react-icons/md";
+import { useRecordAnalysesQuery, useRecordQuery } from "../api";
 import { UnpublishedBadge } from "../components/Badges";
 import { AnalysisIDCellRendererFactory } from "../components/CellRenderers";
-import { MdArrowBackIosNew } from "react-icons/md";
 import DataPanel from "../components/DataPanel";
+import History from "../components/History";
+import QueryHandler from "../components/QueryHandler";
+import Table from "../components/Table";
+import { IDProps } from "../interfaces";
 import { RecordTabKeys } from "../types";
 
 function Analyses(props: IDProps) {

@@ -1,6 +1,6 @@
 import Button, { ButtonProps } from "react-bootstrap/Button";
-import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from "react-icons/vsc";
 import { MdContentCopy } from "react-icons/md";
+import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from "react-icons/vsc";
 
 interface SidebarButtonProps extends ButtonProps {
   sidebarCollapsed: boolean;
@@ -37,4 +37,4 @@ function CopyToClipboardButton(props: ButtonProps) {
   );
 }
 
-export { SidebarButton, CopyToClipboardButton };
+export { CopyToClipboardButton, SidebarButton };

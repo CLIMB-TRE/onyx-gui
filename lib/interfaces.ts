@@ -1,4 +1,4 @@
-import { ProjectField, ExportStatus } from "./types";
+import { ExportStatus, ProjectField } from "./types";
 
 interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
@@ -48,11 +48,11 @@ interface ExportHandlerProps {
 }
 
 export type {
-  OnyxProps,
-  ProjectProps,
-  PageProps,
   DataProps,
-  IDProps,
-  ResultsProps,
   ExportHandlerProps,
+  IDProps,
+  OnyxProps,
+  PageProps,
+  ProjectProps,
+  ResultsProps,
 };

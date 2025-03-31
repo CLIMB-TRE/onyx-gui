@@ -1,6 +1,6 @@
+import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Stack from "react-bootstrap/Stack";
-import Button from "react-bootstrap/Button";
 
 interface SearchBarProps {
   placeholder: string;

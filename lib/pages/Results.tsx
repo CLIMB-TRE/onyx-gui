@@ -1,15 +1,15 @@
-import { useState, useMemo, useLayoutEffect, useEffect } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import SearchBar from "../components/SearchBar";
-import FilterPanel from "../components/FilterPanel";
-import TransformsPanel from "../components/TransformsPanel";
-import ResultsPanel from "../components/ResultsPanel";
-import { FilterConfig } from "../types";
-import { ResultsProps } from "../interfaces";
-import { useDebouncedValue } from "../utils/hooks";
-import { formatFilters } from "../utils/functions";
 import { useResultsQuery } from "../api";
+import FilterPanel from "../components/FilterPanel";
+import ResultsPanel from "../components/ResultsPanel";
+import SearchBar from "../components/SearchBar";
+import TransformsPanel from "../components/TransformsPanel";
+import { ResultsProps } from "../interfaces";
+import { FilterConfig } from "../types";
+import { formatFilters } from "../utils/functions";
+import { useDebouncedValue } from "../utils/hooks";
 
 function Results(props: ResultsProps) {
   const [searchParameters, setSearchParameters] = useState("");

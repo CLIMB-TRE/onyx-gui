@@ -1,19 +1,18 @@
+import Plotly, { AxisType, Template } from "plotly.js-basic-dist";
 import { useMemo } from "react";
-import Plotly from "plotly.js-basic-dist";
 import createPlotlyComponent from "react-plotly.js/factory";
-import { Template, AxisType } from "plotly.js-basic-dist";
-import {
-  ProjectField,
-  SummaryType,
-  GraphConfig,
-  SuccessResponse,
-  ErrorResponse,
-} from "../types";
+import { useGroupedSummaryQuery, useSummaryQuery } from "../api";
 import { DataProps } from "../interfaces";
+import {
+  ErrorResponse,
+  GraphConfig,
+  ProjectField,
+  SuccessResponse,
+  SummaryType,
+} from "../types";
+import { useQueryRefresh } from "../utils/hooks";
 import { graphStyles } from "../utils/styles";
 import QueryHandler from "./QueryHandler";
-import { useQueryRefresh } from "../utils/hooks";
-import { useSummaryQuery, useGroupedSummaryQuery } from "../api";
 
 // Create Plotly component using basic plotly distribution
 const Plot = createPlotlyComponent(Plotly);
@@ -443,10 +442,10 @@ function GroupedBarGraph(props: GraphProps) {
 }
 
 export {
-  BasePlot,
-  ScatterGraph,
   BarGraph,
-  PieGraph,
-  GroupedScatterGraph,
+  BasePlot,
   GroupedBarGraph,
+  GroupedScatterGraph,
+  PieGraph,
+  ScatterGraph,
 };

@@ -1,26 +1,26 @@
 import { useMemo } from "react";
+import Card from "react-bootstrap/Card";
+import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Stack from "react-bootstrap/Stack";
-import Card from "react-bootstrap/Card";
-import QueryHandler from "../components/QueryHandler";
 import {
   useActivityQuery,
   useProfileQuery,
   useProjectPermissionsQuery,
 } from "../api";
-import Table from "../components/Table";
 import {
-  TimestampCellRenderer,
-  HTTPStatusCellRenderer,
   HTTPMethodCellRenderer,
+  HTTPStatusCellRenderer,
   JSONCellRenderer,
+  TimestampCellRenderer,
 } from "../components/CellRenderers";
-import { PageProps } from "../interfaces";
-import { RecordType, ProjectPermissionType } from "../types";
-import { recentActivityMessage } from "../utils/messages";
 import DataField from "../components/DataField";
+import QueryHandler from "../components/QueryHandler";
+import Table from "../components/Table";
+import { PageProps } from "../interfaces";
+import { ProjectPermissionType, RecordType } from "../types";
+import { recentActivityMessage } from "../utils/messages";
 
 function Details(props: PageProps) {
   const { isFetching, error, data } = useProfileQuery(props);

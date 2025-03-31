@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import Stack from "react-bootstrap/Stack";
-import CloseButton from "react-bootstrap/CloseButton";
 import Button from "react-bootstrap/Button";
+import CloseButton from "react-bootstrap/CloseButton";
 import Form from "react-bootstrap/Form";
-import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
-import { Input, MultiInput, RangeInput } from "./Inputs";
-import { FilterConfig } from "../types";
+import Stack from "react-bootstrap/Stack";
 import { DataProps } from "../interfaces";
+import { FilterConfig } from "../types";
+import { Choice, Dropdown, MultiChoice } from "./Dropdowns";
+import { Input, MultiInput, RangeInput } from "./Inputs";
 
 interface FilterProps extends DataProps {
   index: number;

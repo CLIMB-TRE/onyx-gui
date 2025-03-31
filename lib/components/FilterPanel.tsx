@@ -1,14 +1,14 @@
-import { useState, useLayoutEffect } from "react";
-import Container from "react-bootstrap/Container";
-import Stack from "react-bootstrap/Stack";
+import { useLayoutEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
-import Filter from "./Filter";
-import { FilterConfig } from "../types";
+import Container from "react-bootstrap/Container";
+import Stack from "react-bootstrap/Stack";
+import { MdClear, MdCreate, MdDelete } from "react-icons/md";
 import { DataProps } from "../interfaces";
+import { FilterConfig } from "../types";
 import { generateKey } from "../utils/functions";
-import { MdCreate, MdClear, MdDelete } from "react-icons/md";
+import Filter from "./Filter";
 
 interface FilterPanelProps extends DataProps {
   filterList: FilterConfig[];

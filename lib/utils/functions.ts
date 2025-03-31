@@ -1,10 +1,10 @@
+import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
-  RecordDetailResponse,
   ErrorResponse,
   ExportStatus,
   FilterConfig,
+  RecordDetailResponse,
 } from "../types";
-import { OnyxProps, ExportHandlerProps } from "../interfaces";
 
 /** Returns a random hexadecimal string. */
 function generateKey() {
@@ -64,8 +64,8 @@ function formatFilters(filters: FilterConfig[]) {
 }
 
 export {
+  formatFilters,
   generateKey,
   getDefaultFileNamePrefix,
   handleJSONExport,
-  formatFilters,
 };

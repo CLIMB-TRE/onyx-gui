@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
+import Container from "react-bootstrap/Container";
+import { useSiteUsersQuery } from "../api";
 import QueryHandler from "../components/QueryHandler";
 import Table from "../components/Table";
 import { PageProps } from "../interfaces";
 import { RecordType } from "../types";
-import { useSiteUsersQuery } from "../api";
 
 function SiteUsers(props: PageProps) {
   const { isFetching, error, data } = useSiteUsersQuery(props);

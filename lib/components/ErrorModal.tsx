@@ -1,7 +1,7 @@
-import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
 import Accordion from "react-bootstrap/Accordion";
 import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
 import { errorModalMessage } from "../utils/messages";
 
 interface ErrorModalContentsProps {

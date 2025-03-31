@@ -65,4 +65,4 @@ const graphStyles = {
   },
 };
 
-export { selectStyles, graphStyles };
+export { graphStyles, selectStyles };

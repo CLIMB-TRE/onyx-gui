@@ -1,13 +1,13 @@
-import { useState, useLayoutEffect } from "react";
-import Container from "react-bootstrap/Container";
-import Stack from "react-bootstrap/Stack";
+import { useLayoutEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
-import Transforms from "./Transforms";
+import Container from "react-bootstrap/Container";
 import NavDropdown from "react-bootstrap/NavDropdown";
+import Stack from "react-bootstrap/Stack";
+import { MdClear, MdCreate } from "react-icons/md";
 import { DataProps } from "../interfaces";
-import { MdCreate, MdClear } from "react-icons/md";
+import Transforms from "./Transforms";
 
 interface TransformsPanelProps extends DataProps {
   transform: string;

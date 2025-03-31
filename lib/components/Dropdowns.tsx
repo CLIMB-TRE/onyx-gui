@@ -1,9 +1,9 @@
 import Select, { components, OptionProps } from "react-select";
 import { useChoicesQuery } from "../api";
 import { useChoiceDescriptions } from "../api/hooks";
-import { selectStyles } from "../utils/styles";
 import { PageProps } from "../interfaces";
 import { OptionType } from "../types";
+import { selectStyles } from "../utils/styles";
 
 interface GenericDropdownProps {
   options: string[];
@@ -133,4 +133,4 @@ function MultiChoice(props: MultiChoiceProps) {
   return <MultiDropdown {...props} titles={choiceDescriptions} />;
 }
 
-export { Dropdown, MultiDropdown, Choice, MultiChoice };
+export { Choice, Dropdown, MultiChoice, MultiDropdown };

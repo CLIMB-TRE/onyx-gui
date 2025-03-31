@@ -1,14 +1,14 @@
 import { useMemo } from "react";
 import { useHistoryQuery } from "../api";
-import Table from "./Table";
+import { PageProps } from "../interfaces";
+import { RecordType } from "../types";
 import {
-  TimestampCellRenderer,
   ActionCellRenderer,
   ChangeCellRenderer,
+  TimestampCellRenderer,
 } from "./CellRenderers";
 import QueryHandler from "./QueryHandler";
-import { RecordType } from "../types";
-import { PageProps } from "../interfaces";
+import Table from "./Table";
 
 interface HistoryProps extends PageProps {
   name?: string;

@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import {
-  ProjectField,
-  FieldsResponse,
-  ErrorResponse,
   ChoicesResponse,
+  ErrorResponse,
+  FieldsResponse,
+  ProjectField,
 } from "../types";
 
 function flattenFields(fields: Record<string, ProjectField>) {
@@ -94,4 +94,4 @@ const useChoicesDescriptions = (
   }, [fields, data]);
 };
 
-export { useFieldsInfo, useChoiceDescriptions, useChoicesDescriptions };
+export { useChoiceDescriptions, useChoicesDescriptions, useFieldsInfo };
