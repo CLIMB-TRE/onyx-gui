@@ -91,7 +91,7 @@ function RelatedAnalyses(props: RelatedAnalysesProps) {
   return (
     <QueryHandler
       isFetching={isFetching}
-      error={error as Error}
+      error={error}
       data={data as ListResponse}
     >
       <>

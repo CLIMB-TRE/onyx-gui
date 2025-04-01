@@ -87,7 +87,7 @@ function DataPanel(props: DataPanelProps) {
   return (
     <QueryHandler
       isFetching={isFetching}
-      error={error as Error}
+      error={error}
       data={data as DetailResponse}
     >
       <Tab.Container

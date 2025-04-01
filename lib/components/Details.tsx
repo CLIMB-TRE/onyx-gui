@@ -158,13 +158,13 @@ function Details(props: DetailsProps) {
             <Container fluid>
               <Row>
                 <Col>
-                  <Field {...props} field={row.Field as string} />
+                  <Field {...props} field={row.Field} />
                 </Col>
                 <Col>
                   <Value
                     {...props}
-                    field={row.Field as string} // TODO: Fix this
-                    value={row.Value as string}
+                    field={row.Field}
+                    value={row.Value}
                     choiceDescriptions={choiceDescriptions}
                   />
                 </Col>

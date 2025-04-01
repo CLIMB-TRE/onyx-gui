@@ -75,8 +75,7 @@ function TransformsPanel(props: TransformsPanelProps) {
         ) : (
           <Stack gap={2}>
             {props.transformList.map((transform, index) => (
-              // TODO: Use transform key
-              <Container key={index} fluid className="g-0">
+              <Container key={transform} fluid className="g-0">
                 <ButtonGroup size="sm">
                   <Button variant="dark" onClick={() => setEditMode(true)}>
                     <span className="onyx-text-pink font-monospace">

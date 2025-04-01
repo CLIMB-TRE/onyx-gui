@@ -30,7 +30,9 @@ function CopyToClipboardButton(props: ButtonProps) {
       size="sm"
       variant="dark"
       title="Copy to Clipboard"
-      onClick={() => navigator.clipboard.writeText(props.children as string)}
+      onClick={() =>
+        navigator.clipboard.writeText(props.children?.toString() || "")
+      }
     >
       <MdContentCopy />
     </Button>

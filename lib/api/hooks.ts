@@ -14,10 +14,7 @@ function flattenFields(fields: Record<string, ProjectField>) {
     for (const [field, fieldInfo] of Object.entries(obj)) {
       flatFields[prefix + field] = fieldInfo;
       if (fieldInfo.type === "relation" && fieldInfo.fields) {
-        flatten(
-          fieldInfo.fields as Record<string, ProjectField>,
-          prefix + field + "__"
-        );
+        flatten(fieldInfo.fields, prefix + field + "__");
       }
     }
   };

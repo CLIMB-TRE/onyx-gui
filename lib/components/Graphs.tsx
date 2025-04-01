@@ -78,7 +78,7 @@ const useSummaryData = (props: GraphProps) => {
     );
     // Get count values
     const count_data = data.data.map(
-      (summary: SummaryType) => summary[count_field] as number
+      (summary: SummaryType) => summary[count_field]
     );
     return { field_data, count_data };
   }, [data, props.graphConfig.field]);
