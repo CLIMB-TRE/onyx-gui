@@ -6,7 +6,7 @@ import {
 } from "json-edit-react";
 import { useState } from "react";
 import Stack from "react-bootstrap/Stack";
-import { Input } from "../components/Inputs";
+import { Input } from "./Inputs";
 import { PageProps } from "../interfaces";
 
 interface JsonProps extends PageProps {
@@ -53,4 +53,4 @@ function JsonSearch(props: JsonProps) {
   );
 }
 
-export { JsonSearch };
+export default JsonSearch;

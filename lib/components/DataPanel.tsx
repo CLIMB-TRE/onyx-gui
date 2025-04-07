@@ -22,7 +22,7 @@ import DataField from "./DataField";
 import Details from "./Details";
 import ErrorModal from "./ErrorModal";
 import ExportModal from "./ExportModal";
-import { JsonSearch } from "./Json";
+import JsonSearch from "./JsonSearch";
 import QueryHandler from "./QueryHandler";
 import Table from "./Table";
 
