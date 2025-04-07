@@ -1,20 +1,24 @@
 import React, { useState } from "react";
-import Stack from "react-bootstrap/Stack";
-import CloseButton from "react-bootstrap/CloseButton";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import { Dropdown, Choice, MultiChoice } from "./Dropdowns";
-import { Input, MultiInput } from "./Inputs";
-import { FilterField } from "../types";
+import CloseButton from "react-bootstrap/CloseButton";
+import Form from "react-bootstrap/Form";
+import Stack from "react-bootstrap/Stack";
 import { DataProps } from "../interfaces";
+import { FilterConfig } from "../types";
+import { Choice, Dropdown, MultiChoice } from "./Dropdowns";
+import { Input, MultiInput, RangeInput } from "./Inputs";
 
 interface FilterProps extends DataProps {
   index: number;
-  filterList: FilterField[];
-  setFilterList: (value: FilterField[]) => void;
+  filterList: FilterConfig[];
+  setFilterList: (value: FilterConfig[]) => void;
   fieldList: string[];
   setEditMode: (value: boolean) => void;
+  disableLookups?: boolean;
+}
+
+function getValueList(v: string) {
+  return v ? v.split(",") : [];
 }
 
 function Filter(props: FilterProps) {
@@ -22,17 +26,13 @@ function Filter(props: FilterProps) {
 
   const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const updatedFilter = { ...filter };
+    updatedFilter.type = props.projectFields.get(e.target.value)?.type || "";
     updatedFilter.field = e.target.value;
-    updatedFilter.lookup =
-      props.typeLookups.get(
-        props.projectFields.get(e.target.value)?.type || ""
-      )?.[0] || "";
+    updatedFilter.lookup = props.typeLookups.get(updatedFilter.type)?.[0] || "";
 
-    if (updatedFilter.lookup === "isnull") {
-      updatedFilter.value = "true";
-    } else {
-      updatedFilter.value = "";
-    }
+    if (updatedFilter.lookup === "isnull") updatedFilter.value = "true";
+    else updatedFilter.value = "";
+
     setFilter(updatedFilter);
   };
 
@@ -40,11 +40,14 @@ function Filter(props: FilterProps) {
     const updatedFilter = { ...filter };
     updatedFilter.lookup = e.target.value;
 
-    if (updatedFilter.lookup === "isnull") {
-      updatedFilter.value = "true";
-    } else {
-      updatedFilter.value = "";
-    }
+    if (updatedFilter.lookup === "isnull") updatedFilter.value = "true";
+    else if (updatedFilter.lookup.endsWith("range"))
+      updatedFilter.value = getValueList(updatedFilter.value)
+        .slice(0, 2)
+        .join(",");
+    else if (!updatedFilter.lookup.endsWith("in"))
+      updatedFilter.value = getValueList(updatedFilter.value)[0];
+
     setFilter(updatedFilter);
   };
 
@@ -66,104 +69,124 @@ function Filter(props: FilterProps) {
   };
 
   let f: JSX.Element;
-  const getValueList = (v: string) => {
-    return v ? v.split(",") : [];
-  };
+  let valueTitle = "Value";
 
-  if (filter.lookup === "isnull") {
-    f = (
-      <Dropdown
-        options={["true", "false"]}
-        value={filter.value}
-        onChange={handleValueChange}
-      />
-    );
-  } else if (props.projectFields.get(filter.field)?.type === "choice") {
-    if (filter.lookup.endsWith("in")) {
+  switch (true) {
+    case filter.lookup === "isnull":
+      f = (
+        <Dropdown
+          options={["true", "false"]}
+          value={filter.value}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    case filter.type === "choice" && filter.lookup.endsWith("in"):
       f = (
         <MultiChoice
-          project={props.project}
+          {...props}
           field={filter.field}
-          httpPathHandler={props.httpPathHandler}
           options={props.projectFields.get(filter.field)?.values || []}
           value={getValueList(filter.value)}
           onChange={handleValueChange}
         />
       );
-    } else {
+      valueTitle = "Values";
+      break;
+    case filter.type === "choice":
       f = (
         <Choice
-          project={props.project}
-          field={filter.field}
-          httpPathHandler={props.httpPathHandler}
+          {...props}
           isClearable
+          field={filter.field}
           options={props.projectFields.get(filter.field)?.values || []}
           value={filter.value}
           onChange={handleValueChange}
         />
       );
-    }
-  } else if (filter.lookup.endsWith("in")) {
-    f = (
-      <MultiInput
-        value={getValueList(filter.value)}
-        onChange={handleValueChange}
-      />
-    );
-  } else if (filter.lookup.endsWith("range")) {
-    f = (
-      <MultiInput
-        value={getValueList(filter.value)}
-        limit={2}
-        onChange={handleValueChange}
-      />
-    );
-  } else if (props.projectFields.get(filter.field)?.type === "bool") {
-    f = (
-      <Dropdown
-        isClearable
-        options={["true", "false"]}
-        value={filter.value}
-        onChange={handleValueChange}
-      />
-    );
-  } else {
-    f = <Input value={filter.value} onChange={handleValueChange} />;
+      break;
+    case filter.type === "array" && !filter.lookup.includes("length"):
+      f = (
+        <MultiInput
+          value={getValueList(filter.value)}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    case filter.lookup.endsWith("in"):
+      f = (
+        <MultiInput
+          value={getValueList(filter.value)}
+          onChange={handleValueChange}
+        />
+      );
+      valueTitle = "Values";
+      break;
+    case filter.lookup.endsWith("range"):
+      f = (
+        <RangeInput
+          from={getValueList(filter.value)[0]}
+          to={getValueList(filter.value)[1]}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    case filter.type === "bool":
+      f = (
+        <Dropdown
+          isClearable
+          options={["true", "false"]}
+          value={filter.value}
+          onChange={handleValueChange}
+        />
+      );
+      break;
+    default:
+      f = <Input value={filter.value} onChange={handleValueChange} />;
   }
+
   return (
     <Stack gap={3} className="p-1">
-      <Row>
-        <Col>
-          <h5>Edit Filter</h5>
-        </Col>
-        <Col>
-          <CloseButton
-            className="float-end"
-            onClick={() => props.setEditMode(false)}
-          />
-        </Col>
-      </Row>
-      <Stack gap={1}>
-        <Dropdown
-          options={props.fieldList}
-          titles={props.fieldDescriptions}
-          value={filter.field}
-          placeholder="Select field..."
-          onChange={handleFieldChange}
+      <Stack direction="horizontal">
+        <span className="me-auto">Edit Filter</span>
+        <CloseButton
+          className="float-end"
+          onClick={() => props.setEditMode(false)}
         />
-        <Dropdown
-          options={
-            props.typeLookups.get(
-              props.projectFields.get(filter.field)?.type || ""
-            ) || []
-          }
-          titles={props.lookupDescriptions}
-          value={filter.lookup}
-          placeholder="Select lookup..."
-          onChange={handleLookupChange}
-        />
-        {f}
       </Stack>
+      <hr className="m-0" />
+      <Form>
+        <Form.Group className="mb-2">
+          <Form.Label>Field</Form.Label>
+          <Dropdown
+            options={props.fieldList}
+            titles={props.fieldDescriptions}
+            value={filter.field}
+            placeholder="Select field..."
+            onChange={handleFieldChange}
+          />
+        </Form.Group>
+        {!props.disableLookups && (
+          <Form.Group className="mb-2">
+            <Form.Label>Lookup</Form.Label>
+            <Dropdown
+              options={props.typeLookups.get(filter.type) || []}
+              titles={props.lookupDescriptions}
+              value={filter.lookup}
+              placeholder="Select lookup..."
+              onChange={handleLookupChange}
+            />
+          </Form.Group>
+        )}
+        {filter.lookup.endsWith("range") ? (
+          f
+        ) : (
+          <Form.Group className="mb-2">
+            <Form.Label>{valueTitle}</Form.Label>
+            {f}
+          </Form.Group>
+        )}
+      </Form>
       <Stack direction="horizontal" gap={1}>
         <div className="me-auto"></div>
         <Button

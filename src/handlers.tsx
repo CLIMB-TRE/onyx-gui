@@ -21,4 +21,4 @@ function fileWriter(path: string, content: string) {
   });
 }
 
-export { httpPathHandler, s3PathHandler, fileWriter };
+export { fileWriter, httpPathHandler, s3PathHandler };

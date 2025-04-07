@@ -11,23 +11,23 @@
 }
 
 [data-bs-theme=dark] {
+  --bs-body-bg: #121212 !important;
   --bs-secondary-bg: var(--bs-gray-900) !important;
-  --bs-body-bg: #000 !important;
   --onyx-dropdown-control-border-color: var(--bs-gray-800);
   --onyx-dropdown-control-background-color: var(--bs-body-bg);
-  --onyx-dropdown-menu-background-color: var(--bs-black);
+  --onyx-dropdown-menu-background-color: var(--bs-body-bg);
   --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-800);
   --onyx-dropdown-label-color: var(--bs-white);
-  --onyx-dropdown-option-background-color: var(--bs-black);
+  --onyx-dropdown-option-background-color: var(--bs-body-bg);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-800);
   --onyx-dropdown-option-description-color: var(--bs-gray-500);
-  --onyx-body-bg: var(--bs-black);
+  --onyx-body-bg: var(--bs-body-bg);
 }
 
 [data-bs-theme=light] .btn-dark {
   --bs-btn-color: var(--bs-black);
   --bs-btn-bg: var(--bs-gray-300);
-  --bs-btn-border-color: var(--bs-gray-300);
+  --bs-btn-border-color: var(--bs-gray-500);
   --bs-btn-hover-color: var(--bs-black);
   --bs-btn-hover-bg: #d3d4d5;
   --bs-btn-hover-border-color: #c6c7c8;
@@ -43,15 +43,22 @@
 
 [data-bs-theme=dark] .btn-dark {
   --bs-btn-bg:  var(--bs-gray-900);
-  --bs-btn-border-color: var(--bs-gray-900);
+  --bs-btn-border-color: var(--bs-gray-700);
   --bs-btn-disabled-bg: var(--bs-gray-900);
   --bs-btn-disabled-border-color: var(--bs-gray-900);
+}
+
+.btn-link {
+  text-decoration: none !important;
+}
+
+.btn-link:hover {
+  text-decoration: underline !important;
 }
 
 .ag-theme-quartz {
   --ag-background-color: var(--bs-body-bg);
   --ag-foreground-color: var(--bs-body-color);
-  --ag-font-family: var(--bs-font-monospace);
 }
 
 .onyx-text-pink {
@@ -60,18 +67,7 @@
 
 .onyx-modal {
   font-size: var(--bs-body-font-size);
-}
-
-.onyx-modal-dialog {
-  --bs-modal-width: 90vw;
-} 
-
-.onyx-modal-content {
-  height: 95vh;
-}
-
-.onyx-modal-tab-pane {
-  height: 70vh;
+  font-family: var(--bs-body-font-family);
 }
 
 .parent {
@@ -89,4 +85,14 @@
 .right-col {
   flex-grow: 1;
   min-width: 500px;
+}
+
+[data-bs-theme=light] .border-pink {
+  --bs-border-opacity: 1;
+  border-color: var(--bs-pink) !important;
+}
+
+[data-bs-theme=dark] .border-pink {
+  --bs-border-opacity: 1;
+  border-color: var(--bs-pink) !important;
 }
