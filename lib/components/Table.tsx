@@ -366,7 +366,7 @@ function TableOptions(props: TableOptionsProps) {
         show={exportModalShow}
         handleExport={handleCSVExport}
         onHide={() => setExportModalShow(false)}
-        exportProgressMessage={`Fetching ${props.rowDisplayParams.of} items...`}
+        exportProgressMessage={`Fetching ${props.rowDisplayParams.of.toLocaleString()} items...`}
       />
       <DropdownButton
         id="table-options"
