@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import Stack from "react-bootstrap/Stack";
-import CloseButton from "react-bootstrap/CloseButton";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import { MultiDropdown } from "./Dropdowns";
+import CloseButton from "react-bootstrap/CloseButton";
+import Stack from "react-bootstrap/Stack";
 import { DataProps } from "../interfaces";
+import { MultiDropdown } from "./Dropdowns";
 
 interface TransformsProps extends DataProps {
   transform: string;
@@ -32,17 +30,14 @@ function Transforms(props: TransformsProps) {
 
   return (
     <Stack gap={3} className="p-1">
-      <Row>
-        <Col>
-          <h5>Edit Fields</h5>
-        </Col>
-        <Col>
-          <CloseButton
-            className="float-end"
-            onClick={() => props.setEditMode(false)}
-          />
-        </Col>
-      </Row>
+      <Stack direction="horizontal">
+        <span className="me-auto">Edit Fields</span>
+        <CloseButton
+          className="float-end"
+          onClick={() => props.setEditMode(false)}
+        />
+      </Stack>
+      <hr className="m-0" />
       <MultiDropdown
         options={
           props.transform === "Summarise"

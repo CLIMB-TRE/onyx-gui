@@ -1,36 +1,29 @@
-import { useMemo, useState } from "react";
-import { CustomCellRendererProps } from "@ag-grid-community/react";
-import Container from "react-bootstrap/Container";
+import { useCallback, useMemo, useState } from "react";
 import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
-import Table from "./Table";
+import Container from "react-bootstrap/Container";
+import Stack from "react-bootstrap/Stack";
+import { ResultsProps } from "../interfaces";
+import { ErrorResponse, ListResponse, RecordType } from "../types";
+import { getDefaultFileNamePrefix } from "../utils/functions";
+import { s3BucketsMessage } from "../utils/messages";
+import { SidebarButton } from "./Buttons";
+import {
+  AnalysisIDCellRendererFactory,
+  ClimbIDCellRendererFactory,
+  S3ReportCellRendererFactory,
+} from "./CellRenderers";
 import ErrorModal from "./ErrorModal";
-import { ServerPaginatedTable } from "./Table";
+import PageTitle from "./PageTitle";
 import QueryHandler from "./QueryHandler";
-import { ResultData } from "../types";
-import { DataProps } from "../interfaces";
-import { s3BucketsMessage } from "../utils/errorMessages";
+import Table, { ServerPaginatedTable } from "./Table";
 
-interface ResultsPanelProps extends DataProps {
-  resultPending: boolean;
-  resultError: Error | null;
-  resultData: ResultData;
+interface ResultsPanelProps extends ResultsProps {
   searchParameters: string;
-  handleRecordModalShow: (climbID: string) => void;
-}
-
-function getDefaultFileNamePrefix(project: string, searchParameters: string) {
-  // Create the default file name prefix based on the project and search parameters
-  // Uses filter/search values only, replaces commas and spaces with underscores,
-  // removes special characters, and truncates to 50 characters
-  return [["", project]]
-    .concat(Array.from(new URLSearchParams(searchParameters).entries()))
-    .map(([, value]) =>
-      value.split(/[ ,]+/).map((v) => v.replace(/[^a-zA-Z0-9_/-]/, ""))
-    )
-    .flat()
-    .join("_")
-    .slice(0, 50);
+  isFetching: boolean;
+  error: Error | null;
+  data: ListResponse | ErrorResponse;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
@@ -42,49 +35,41 @@ function ResultsPanel(props: ResultsPanelProps) {
     [props.project, props.searchParameters]
   );
 
-  const handleErrorModalShow = (error: Error) => {
+  // Get the result data
+  const results = useMemo(() => {
+    if (props.data?.status !== "success")
+      return { data: [] as RecordType[] } as ListResponse;
+    return props.data;
+  }, [props.data]);
+
+  const handleErrorModalShow = useCallback((error: Error) => {
     setS3ReportError(error);
     setErrorModalShow(true);
-  };
+  }, []);
 
-  const ClimbIDCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
-    return (
-      <Button
-        className="p-0"
-        size="sm"
-        variant="link"
-        onClick={() => props.handleRecordModalShow(cellRendererProps.value)}
-      >
-        {cellRendererProps.value}
-      </Button>
-    );
-  };
-
-  const S3ReportCellRenderer = (cellRendererProps: CustomCellRendererProps) => {
-    return (
-      <Button
-        className="p-0"
-        size="sm"
-        variant="link"
-        onClick={() =>
-          props
-            .s3PathHandler(cellRendererProps.value)
-            .catch((error: Error) => handleErrorModalShow(error))
-        }
-      >
-        {cellRendererProps.value}
-      </Button>
-    );
-  };
+  const errorModalProps = useMemo(
+    () => ({
+      ...props,
+      handleErrorModalShow,
+    }),
+    [props, handleErrorModalShow]
+  );
 
   const cellRenderers = new Map([
-    ["climb_id", ClimbIDCellRenderer],
-    ["ingest_report", S3ReportCellRenderer],
+    ["climb_id", ClimbIDCellRendererFactory(props)],
+    ["analysis_id", AnalysisIDCellRendererFactory(props)],
+    ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
+    ["report", S3ReportCellRendererFactory(errorModalProps)],
   ]);
 
   return (
     <Card className="h-100">
-      <Card.Header>Results</Card.Header>
+      <Card.Header>
+        <Stack gap={2} direction="horizontal">
+          <SidebarButton {...props} />
+          <PageTitle {...props} />
+        </Stack>
+      </Card.Header>
       <Container fluid className="p-2 pb-0 h-100">
         <ErrorModal
           title="S3 Reports"
@@ -94,24 +79,23 @@ function ResultsPanel(props: ResultsPanelProps) {
           onHide={() => setErrorModalShow(false)}
         />
         <QueryHandler
-          isFetching={props.resultPending}
-          error={props.resultError}
-          data={props.resultData}
+          isFetching={props.isFetching}
+          error={props.error}
+          data={props.data}
         >
-          {props.searchParameters.includes("summarise=") ? (
-            <Table
+          {!props.searchParameters.includes("summarise=") ? (
+            <ServerPaginatedTable
               {...props}
-              data={props.resultData || {}}
+              response={results}
               defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={props.fieldDescriptions}
               cellRenderers={cellRenderers}
             />
           ) : (
-            <ServerPaginatedTable
+            <Table
               {...props}
-              searchParameters={props.searchParameters}
+              data={results.data}
               defaultFileNamePrefix={defaultFileNamePrefix}
-              data={props.resultData || {}}
               headerTooltips={props.fieldDescriptions}
               cellRenderers={cellRenderers}
             />
