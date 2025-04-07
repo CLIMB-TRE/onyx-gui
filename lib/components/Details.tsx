@@ -121,7 +121,9 @@ function Details(props: DetailsProps) {
       )
       .map(([key, value]) => ({
         Field: key,
-        Value: value?.toString() || "",
+        Value: Array.isArray(value)
+          ? value.join(", ")
+          : value?.toString() || "",
       })) as { Field: string; Value: string }[];
   }, [props]);
 
