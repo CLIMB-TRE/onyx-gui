@@ -193,7 +193,7 @@ function App(props: OnyxProps) {
         handleAnalysisHide={handleAnalysisHide}
       />
       <div className="h-100" style={{ paddingTop: "60px" }}>
-        <Container fluid className="h-100 px-0 py-2">
+        <Container fluid className="h-100 p-2">
           <Tab.Container activeKey={tabKey} mountOnEnter>
             <Tab.Content className="h-100">
               <Tab.Pane eventKey="user" className="h-100">

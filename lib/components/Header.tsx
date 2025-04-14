@@ -88,7 +88,7 @@ function Header(props: HeaderProps) {
       style={{
         backgroundColor: "#121212",
       }}
-      className="border-bottom border-3 onyx-border"
+      className="border-bottom onyx-border"
       variant="dark"
       collapseOnSelect
       expand="lg"

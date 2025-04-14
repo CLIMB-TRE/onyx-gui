@@ -76,7 +76,7 @@ function Results(props: ResultsProps) {
   };
 
   return (
-    <Container fluid className="g-2 h-100">
+    <Container fluid className="g-0 h-100">
       <div className="parent h-100">
         {!sidebarCollapsed && (
           <div className="left-col h-100">

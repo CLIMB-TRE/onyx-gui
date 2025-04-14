@@ -47,7 +47,7 @@ function ProjectRecord(props: IDProps) {
   const [published, setPublished] = useState(true);
 
   return (
-    <Container fluid className="g-2 h-100">
+    <Container fluid className="g-0 h-100">
       <Card className="h-100">
         <Card.Header>
           <Stack direction="horizontal" gap={2}>

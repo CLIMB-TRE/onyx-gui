@@ -46,7 +46,7 @@ function SiteUsers(props: PageProps) {
 
 function Site(props: PageProps) {
   return (
-    <Container fluid className="h-100">
+    <Container fluid className="g-0 h-100">
       <SiteUsers {...props} />
     </Container>
   );

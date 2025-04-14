@@ -154,7 +154,7 @@ function Activity(props: PageProps) {
 
 function User(props: PageProps) {
   return (
-    <Container fluid className="h-100">
+    <Container fluid className="g-0 h-100">
       <Row className="g-2 h-100">
         <Col xs={4} sm={3} xl={2} className="h-100">
           <Stack gap={2} className="h-100">
