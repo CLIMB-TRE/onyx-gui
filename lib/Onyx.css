@@ -87,12 +87,12 @@
   min-width: 500px;
 }
 
-[data-bs-theme=light] .border-pink {
+[data-bs-theme=light] .onyx-border {
   --bs-border-opacity: 1;
-  border-color: var(--bs-pink) !important;
+  border-color: var(--bs-white) !important;
 }
 
-[data-bs-theme=dark] .border-pink {
+[data-bs-theme=dark] .onyx-border {
   --bs-border-opacity: 1;
-  border-color: var(--bs-pink) !important;
+  border-color: var(--bs-gray-700) !important;
 }
