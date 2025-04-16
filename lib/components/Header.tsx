@@ -161,7 +161,7 @@ function Header(props: HeaderProps) {
                     eventKey="records"
                     className="fw-normal"
                     active={
-                      props.tabKey == "records" || props.tabKey == "record"
+                      props.tabKey === "records" || props.tabKey === "record"
                     }
                   >
                     Records
@@ -172,7 +172,7 @@ function Header(props: HeaderProps) {
                     eventKey="analyses"
                     className="fw-normal"
                     active={
-                      props.tabKey == "analyses" || props.tabKey == "analysis"
+                      props.tabKey === "analyses" || props.tabKey === "analysis"
                     }
                   >
                     Analyses
