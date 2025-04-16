@@ -12,7 +12,6 @@
 
 [data-bs-theme=dark] {
   --bs-body-bg: #121212 !important;
-  --bs-pink: #d65495 !important;
   --bs-secondary-bg: var(--bs-gray-900) !important;
   --onyx-dropdown-control-border-color: var(--bs-gray-800);
   --onyx-dropdown-control-background-color: var(--bs-body-bg);
@@ -95,5 +94,5 @@
 
 [data-bs-theme=dark] .onyx-border {
   --bs-border-opacity: 1;
-  border-color: var(--bs-gray-700) !important;
+  border-color: var(--bs-border-color-translucent) !important;
 }
