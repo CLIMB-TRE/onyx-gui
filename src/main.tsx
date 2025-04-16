@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Onyx from "../lib/Onyx.tsx";
-import { httpPathHandler, fileWriter, s3PathHandler } from "./handlers.tsx";
+import { fileWriter, httpPathHandler, s3PathHandler } from "./handlers.tsx";
 
 import "./font.css";
 
