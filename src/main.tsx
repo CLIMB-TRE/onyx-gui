@@ -1,7 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Onyx from "../lib/Onyx.tsx";
-import { fileWriter, httpPathHandler, s3PathHandler } from "./handlers.tsx";
+import {
+  fileWriter,
+  httpPathHandler,
+  s3PathHandler,
+  extVersion,
+} from "./handlers.tsx";
 
 import "./font.css";
 
@@ -11,6 +16,7 @@ ReactDOM.render(
       httpPathHandler={httpPathHandler}
       s3PathHandler={s3PathHandler}
       fileWriter={fileWriter}
+      extVersion={extVersion}
     />
   </React.StrictMode>,
   document.getElementById("root")
