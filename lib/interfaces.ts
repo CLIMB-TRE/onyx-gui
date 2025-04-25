@@ -1,21 +1,21 @@
 import { ExportStatus, ProjectField } from "./types";
 
-interface OnyxProps {
+export interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
   s3PathHandler: (path: string) => Promise<void>;
   fileWriter: (path: string, content: string) => Promise<void>;
   extVersion: string;
 }
 
-interface ProjectProps extends OnyxProps {
+export interface ProjectProps extends OnyxProps {
   project: string;
 }
 
-interface PageProps extends ProjectProps {
+export interface PageProps extends ProjectProps {
   darkMode: boolean;
 }
 
-interface DataProps extends PageProps {
+export interface DataProps extends PageProps {
   projectFields: Map<string, ProjectField>;
   projectDescription: string;
   typeLookups: Map<string, string[]>;
@@ -25,7 +25,7 @@ interface DataProps extends PageProps {
   handleAnalysisShow: (analysisID: string) => void;
 }
 
-interface IDProps extends DataProps {
+export interface IDProps extends DataProps {
   ID: string;
   tabKey: string;
   setTabKey: (key: string) => void;
@@ -34,25 +34,15 @@ interface IDProps extends DataProps {
   onHide: () => void;
 }
 
-interface ResultsProps extends DataProps {
+export interface ResultsProps extends DataProps {
   title: string;
   searchPath: string;
 }
 
-interface ExportHandlerProps {
+export interface ExportHandlerProps {
   fileName: string;
   statusToken: { status: ExportStatus };
   setExportStatus: (exportStatus: ExportStatus) => void;
   setExportProgress: (exportProgress: number) => void;
   setExportError: (error: Error) => void;
 }
-
-export type {
-  DataProps,
-  ExportHandlerProps,
-  IDProps,
-  OnyxProps,
-  PageProps,
-  ProjectProps,
-  ResultsProps,
-};

@@ -1,10 +1,10 @@
-enum RecordTabKeys {
+export enum RecordTabKeys {
   Data = "record-data-tab",
   History = "record-history-tab",
   Analyses = "record-analyses-tab",
 }
 
-enum AnalysisTabKeys {
+export enum AnalysisTabKeys {
   Data = "analysis-data-tab",
   History = "analysis-history-tab",
   Records = "analysis-records-tab",
@@ -12,11 +12,20 @@ enum AnalysisTabKeys {
   Downstream = "analysis-downstream-tab",
 }
 
-enum DataPanelTabKeys {
+export enum DataPanelTabKeys {
   Details = "data-panel-details",
 }
 
-type FieldType =
+export enum ExportStatus {
+  READY,
+  RUNNING,
+  WRITING,
+  FINISHED,
+  CANCELLED,
+  ERROR,
+}
+
+export type FieldType =
   | "text"
   | "choice"
   | "integer"
@@ -29,9 +38,9 @@ type FieldType =
   | "structure"
   | "";
 
-type GraphType = "line" | "bar" | "pie" | "";
+export type GraphType = "line" | "bar" | "pie" | "";
 
-type ProjectField = {
+export type ProjectField = {
   type: FieldType;
   description: string;
   actions: string[];
@@ -39,7 +48,7 @@ type ProjectField = {
   fields?: Record<string, ProjectField>;
 };
 
-type FilterConfig = {
+export type FilterConfig = {
   key: string;
   type: FieldType;
   field: string;
@@ -47,7 +56,7 @@ type FilterConfig = {
   value: string;
 };
 
-type GraphConfig = {
+export type GraphConfig = {
   key: string;
   type: GraphType;
   field: string;
@@ -57,101 +66,68 @@ type GraphConfig = {
   yAxisType: string;
 };
 
-enum ExportStatus {
-  READY,
-  RUNNING,
-  WRITING,
-  FINISHED,
-  CANCELLED,
-  ERROR,
-}
-
-type TypeObject = {
+export type TypeObject = {
   type: FieldType;
   lookups: string[];
 };
 
-type LookupObject = {
+export type LookupObject = {
   lookup: string;
   description: string;
 };
 
-type ChoiceDescription = {
+export type ChoiceDescription = {
   description: string;
   is_active: boolean;
 };
 
-type OptionType = { label: string; value: string };
+export type OptionType = { label: string; value: string };
 
-type ErrorType = Record<string, string | string[]>;
+export type ErrorType = Record<string, string | string[]>;
 
-type RecordType = Record<
+export type RecordType = Record<
   string,
   string | number | boolean | object | null | RecordType[]
 >;
 
-type SummaryType = Record<"count", number> &
+export type SummaryType = Record<"count", number> &
   Record<string, string | number | boolean | object | null>;
 
-type ProjectPermissionType = {
+export type ProjectPermissionType = {
   project: string;
   scope: string;
   actions: string[];
 };
 
-type ErrorResponse = {
+export interface ErrorResponse {
   status: "fail" | "error";
   code: number;
   messages: ErrorType;
-};
+}
 
-type SuccessResponse = {
+export interface SuccessResponse {
   status: "success";
   code: number;
-};
+}
 
-type ListResponse = SuccessResponse & {
+export interface ListResponse extends SuccessResponse {
   data: RecordType[];
   next: string | null;
   previous: string | null;
-};
+}
 
-type DetailResponse = SuccessResponse & {
+export interface DetailResponse extends SuccessResponse {
   data: RecordType;
-};
+}
 
-type FieldsResponse = SuccessResponse & {
+export interface FieldsResponse extends SuccessResponse {
   data: {
     name: string;
     description: string;
     fields: Record<string, ProjectField>;
   };
-};
+}
 
-type ChoicesResponse = SuccessResponse & {
+export interface ChoicesResponse extends SuccessResponse {
   data: Record<string, ChoiceDescription>;
-};
-
-export type {
-  ChoiceDescription,
-  ChoicesResponse,
-  DetailResponse,
-  ErrorResponse,
-  ErrorType,
-  FieldsResponse,
-  FieldType,
-  FilterConfig,
-  GraphConfig,
-  GraphType,
-  ListResponse,
-  LookupObject,
-  OptionType,
-  ProjectField,
-  ProjectPermissionType,
-  RecordType,
-  SuccessResponse,
-  SummaryType,
-  TypeObject,
-};
-
-export { AnalysisTabKeys, DataPanelTabKeys, ExportStatus, RecordTabKeys };
+}
