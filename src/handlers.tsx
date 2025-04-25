@@ -21,4 +21,6 @@ function fileWriter(path: string, content: string) {
   });
 }
 
-export { fileWriter, httpPathHandler, s3PathHandler };
+const extVersion = import.meta.env.VITE_ONYX_VERSION;
+
+export { fileWriter, httpPathHandler, s3PathHandler, extVersion };
