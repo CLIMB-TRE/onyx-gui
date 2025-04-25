@@ -31,8 +31,6 @@ import "@fontsource/ibm-plex-sans";
 import "./Onyx.css";
 import "./bootstrap.css";
 
-const VERSION = "0.13.0";
-
 function App(props: OnyxProps) {
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("onyx-theme") === "dark"
@@ -182,7 +180,6 @@ function App(props: OnyxProps) {
         }
         projectList={projects}
         handleProjectChange={handleProjectChange}
-        guiVersion={VERSION}
         tabKey={tabKey}
         setTabKey={setTabKey}
         darkMode={darkMode}

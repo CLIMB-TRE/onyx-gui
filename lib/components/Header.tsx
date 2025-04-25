@@ -14,8 +14,6 @@ interface HeaderProps extends PageProps {
   projectName: string;
   projectList: string[];
   handleProjectChange: (p: string) => void;
-  guiVersion?: string;
-  extVersion?: string;
   tabKey: string;
   setTabKey: (k: string) => void;
   handleThemeChange: () => void;
@@ -90,7 +88,6 @@ function Header(props: HeaderProps) {
       }}
       className="border-bottom onyx-border"
       variant="dark"
-      collapseOnSelect
       expand="lg"
       fixed="top"
     >
@@ -103,8 +100,8 @@ function Header(props: HeaderProps) {
           >
             <MdJoinInner color="var(--bs-pink)" /> Onyx
           </Navbar.Brand>
-          <Navbar.Toggle aria-controls="header" />
-          <Navbar.Collapse id="header">
+          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+          <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="me-auto">
               <NavDropdown
                 title={<HeaderText label="Project" value={props.projectName} />}
@@ -121,68 +118,59 @@ function Header(props: HeaderProps) {
               </NavDropdown>
               <Nav variant="underline">
                 <Stack direction="horizontal" gap={3}>
-                  <Nav.Item>
-                    <Nav.Link eventKey="user" className="fw-normal">
-                      <HeaderText
-                        label="User"
-                        value={
-                          isFetching
-                            ? "Loading..."
-                            : error
-                            ? "Failed to load"
-                            : profile.username
-                        }
-                      />
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link eventKey="site" className="fw-normal">
-                      <HeaderText
-                        label="Site"
-                        value={
-                          isFetching
-                            ? "Loading..."
-                            : error
-                            ? "Failed to load"
-                            : profile.site
-                        }
-                      />
-                    </Nav.Link>
-                  </Nav.Item>
-                  <HeaderVersion label="GUI" version={props.guiVersion} />
-                  <HeaderVersion label="Extension" version={props.extVersion} />
+                  <Nav.Link eventKey="user" className="fw-normal">
+                    <HeaderText
+                      label="User"
+                      value={
+                        isFetching
+                          ? "Loading..."
+                          : error
+                          ? "Failed to load"
+                          : profile.username
+                      }
+                    />
+                  </Nav.Link>
+                  <Nav.Link eventKey="site" className="fw-normal">
+                    <HeaderText
+                      label="Site"
+                      value={
+                        isFetching
+                          ? "Loading..."
+                          : error
+                          ? "Failed to load"
+                          : profile.site
+                      }
+                    />
+                  </Nav.Link>
+                  <Nav.Link disabled className="fw-normal ">
+                    <HeaderVersion label="Version" version={props.extVersion} />
+                  </Nav.Link>
                 </Stack>
               </Nav>
             </Nav>
             <Nav variant="underline">
               <Stack direction="horizontal" gap={3}>
-                <Nav.Item>
-                  <Nav.Link
-                    eventKey="records"
-                    className="fw-normal"
-                    active={
-                      props.tabKey === "records" || props.tabKey === "record"
-                    }
-                  >
-                    Records
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link
-                    eventKey="analyses"
-                    className="fw-normal"
-                    active={
-                      props.tabKey === "analyses" || props.tabKey === "analysis"
-                    }
-                  >
-                    Analyses
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="graphs" className="fw-normal">
-                    Graphs
-                  </Nav.Link>
-                </Nav.Item>
+                <Nav.Link
+                  eventKey="records"
+                  className="fw-normal"
+                  active={
+                    props.tabKey === "records" || props.tabKey === "record"
+                  }
+                >
+                  Records
+                </Nav.Link>
+                <Nav.Link
+                  eventKey="analyses"
+                  className="fw-normal"
+                  active={
+                    props.tabKey === "analyses" || props.tabKey === "analysis"
+                  }
+                >
+                  Analyses
+                </Nav.Link>
+                <Nav.Link eventKey="graphs" className="fw-normal">
+                  Graphs
+                </Nav.Link>
                 <Form.Check
                   type="switch"
                   id="theme-switch"
