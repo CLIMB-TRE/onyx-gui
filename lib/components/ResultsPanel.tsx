@@ -31,8 +31,12 @@ function ResultsPanel(props: ResultsPanelProps) {
   const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
 
   const defaultFileNamePrefix = useMemo(
-    () => getDefaultFileNamePrefix(props.project, props.searchParameters),
-    [props.project, props.searchParameters]
+    () =>
+      getDefaultFileNamePrefix(
+        `${props.project}_${props.title.toLowerCase()}`,
+        props.searchParameters
+      ),
+    [props.project, props.title, props.searchParameters]
   );
 
   // Get the result data
