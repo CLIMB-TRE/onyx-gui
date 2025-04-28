@@ -170,7 +170,6 @@ function Analysis(props: IDProps) {
           <Tab.Container
             activeKey={props.tabKey}
             onSelect={(key) => props.setTabKey(key || AnalysisTabKeys.Data)}
-            mountOnEnter
           >
             <Nav variant="tabs">
               <Nav.Item>

@@ -69,7 +69,6 @@ function ProjectRecord(props: IDProps) {
           <Tab.Container
             activeKey={props.tabKey}
             onSelect={(key) => props.setTabKey(key || RecordTabKeys.Data)}
-            mountOnEnter
           >
             <Nav variant="tabs">
               <Nav.Item>

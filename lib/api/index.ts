@@ -321,7 +321,6 @@ const useSummaryQuery = (props: GraphQueryProps) => {
         .then((response) => response.json());
     },
     enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
@@ -349,7 +348,6 @@ const useGroupedSummaryQuery = (props: GraphQueryProps) => {
         .then((response) => response.json());
     },
     enabled: !!props.project,
-    staleTime: 1 * 60 * 1000,
     placeholderData: { data: [] },
   });
 };
