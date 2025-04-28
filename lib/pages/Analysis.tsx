@@ -106,7 +106,7 @@ function RelatedAnalyses(props: RelatedAnalysesProps) {
         <Table
           {...props}
           data={analyses}
-          defaultFileNamePrefix={`${props.ID}_upstream`}
+          defaultFileNamePrefix={props.defaultFileNamePrefix}
           footer={props.description}
           cellRenderers={
             new Map([
