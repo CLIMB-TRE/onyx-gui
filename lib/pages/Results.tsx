@@ -90,7 +90,7 @@ function Results(props: ResultsProps) {
                   handleSearch={handleSearch}
                 />
                 <Stack gap={2} className="h-100 overflow-y-hidden">
-                  <div className="h-50">
+                  <div style={{ height: "55%" }}>
                     <FilterPanel
                       {...props}
                       filterList={filterList}
@@ -98,7 +98,7 @@ function Results(props: ResultsProps) {
                       filterFieldOptions={filterFieldOptions}
                     />
                   </div>
-                  <div className="h-50">
+                  <div style={{ height: "45%" }}>
                     <TransformsPanel
                       {...props}
                       transform={transform}

@@ -48,11 +48,7 @@ function formatValue(value: string) {
 
 function formatFilter(filter: FilterConfig) {
   if (!filter.field && !filter.lookup && !filter.value) {
-    return "Empty Filter";
-  }
-
-  if (!filter.field || !filter.lookup) {
-    return "Incomplete Filter";
+    return "Click to Edit";
   }
 
   if (filter.lookup.endsWith("in") || filter.lookup.endsWith("range"))
