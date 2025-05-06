@@ -55,6 +55,7 @@ function Results(props: ResultsProps) {
           )
           .concat(
             [searchInput]
+              .map((search) => search.trim())
               .filter((search) => search)
               .map((search) => ["search", search])
           )

@@ -60,9 +60,13 @@ function Filter(props: FilterProps) {
   };
 
   const handleApply = () => {
+    // Trim whitespace from value
+    const updatedFilter = { ...filter };
+    updatedFilter.value = updatedFilter.value.toString().trim();
+
     props.setFilterList([
       ...props.filterList.slice(0, props.index),
-      filter,
+      updatedFilter,
       ...props.filterList.slice(props.index + 1),
     ]);
     props.setEditMode(false);
