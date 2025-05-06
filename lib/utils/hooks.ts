@@ -14,13 +14,17 @@ const useDebouncedValue = (inputValue: string, delay: number) => {
 };
 
 const useQueryRefresh = (
-  refresh: number,
+  refresh: number | null,
   dataUpdatedAt: number,
   errorUpdatedAt: number,
   refetch: () => void,
   setLastUpdated: (lastUpdated: string | null) => void
 ) => {
   useEffect(() => {
+    // The refresh value begins as null, and is set to a number when the user clicks the refresh button.
+    // It then alternates between 0 and 1 on every refresh click, to trigger the refetch in this useEffect.
+    // If the refresh value is null, then the user has not clicked the refresh button, and we do not want to refetch.
+    if (refresh === null) return;
     refetch();
   }, [refetch, refresh]);
 

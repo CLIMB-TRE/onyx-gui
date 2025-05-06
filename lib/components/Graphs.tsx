@@ -37,7 +37,7 @@ interface BaseGraphProps extends BasePlotProps {
 
 interface GraphProps extends DataProps {
   graphConfig: GraphConfig;
-  refresh: number;
+  refresh: number | null;
   setLastUpdated: (lastUpdated: string | null) => void;
 }
 
