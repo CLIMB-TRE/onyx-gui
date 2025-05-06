@@ -300,6 +300,9 @@ function TableOptions(props: TableOptionsProps) {
           exportProps.setExportProgress(
             (nRows / props.rowDisplayParams.of) * 100
           );
+          exportProps.setExportProgressMessage(
+            `Fetched ${nRows.toLocaleString()}/${props.rowDisplayParams.of.toLocaleString()} items...`
+          );
         });
     }
 
@@ -370,7 +373,6 @@ function TableOptions(props: TableOptionsProps) {
         show={exportModalShow}
         handleExport={handleCSVExport}
         onHide={() => setExportModalShow(false)}
-        exportProgressMessage={`Fetching ${props.rowDisplayParams.of.toLocaleString()} items...`}
       />
       <DropdownButton
         id="table-options"

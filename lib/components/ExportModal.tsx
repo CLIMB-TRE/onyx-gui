@@ -11,6 +11,7 @@ import Stack from "react-bootstrap/Stack";
 import { ExportHandlerProps } from "../interfaces";
 import { ExportStatus } from "../types";
 import { ErrorModalContents } from "./ErrorModal";
+import { defaultExportProgressMessage } from "../utils/messages";
 
 interface ExportModalProps {
   show: boolean;
@@ -18,7 +19,6 @@ interface ExportModalProps {
   defaultFileNamePrefix: string;
   defaultFileExtension: string;
   fileExtensions?: string[];
-  exportProgressMessage: string;
   handleExport: (exportProps: ExportHandlerProps) => void;
 }
 
@@ -47,6 +47,9 @@ function isInvalidPrefix(prefix: string) {
 function ExportModal(props: ExportModalProps) {
   const [exportStatus, setExportStatus] = useState(ExportStatus.READY);
   const [exportProgress, setExportProgress] = useState(0);
+  const [exportProgressMessage, setExportProgressMessage] = useState(
+    defaultExportProgressMessage
+  );
   const [exportError, setExportError] = useState<Error | null>(null);
   const [fileNamePrefix, setFileNamePrefix] = useState("");
   const [fileNameIsInvalid, setFileNameIsInvalid] = useState(false);
@@ -66,6 +69,7 @@ function ExportModal(props: ExportModalProps) {
     } else setFileNameIsInvalid(false);
 
     setExportProgress(0);
+    setExportProgressMessage(defaultExportProgressMessage);
     setExportError(null);
     readyExport();
     props.handleExport({
@@ -73,6 +77,7 @@ function ExportModal(props: ExportModalProps) {
       statusToken,
       setExportStatus,
       setExportProgress,
+      setExportProgressMessage,
       setExportError,
     });
   };
@@ -153,7 +158,7 @@ function ExportModal(props: ExportModalProps) {
         {exportStatus === ExportStatus.RUNNING && (
           <Form.Group className="mb-3">
             <Form.Label className="d-flex justify-content-center">
-              {props.exportProgressMessage}
+              {exportProgressMessage}
             </Form.Label>
             <ProgressBar now={exportProgress} />
           </Form.Group>

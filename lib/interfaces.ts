@@ -44,5 +44,6 @@ export interface ExportHandlerProps {
   statusToken: { status: ExportStatus };
   setExportStatus: (exportStatus: ExportStatus) => void;
   setExportProgress: (exportProgress: number) => void;
+  setExportProgressMessage: (message: string) => void;
   setExportError: (error: Error) => void;
 }
