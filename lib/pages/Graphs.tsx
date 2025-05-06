@@ -53,7 +53,7 @@ interface GraphPanelProps extends DataProps {
   showOptions: boolean;
   firstGraph: boolean;
   lastGraph: boolean;
-  refresh: number;
+  refresh: number | null;
 }
 
 interface GraphPanelGraphProps extends GraphPanelProps {
@@ -388,7 +388,7 @@ function Graphs(props: DataProps) {
     .map(([field]) => field);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showOptions, setShowOptions] = useState(true);
-  const [refresh, setRefresh] = useState(0);
+  const [refresh, setRefresh] = useState<number | null>(null);
 
   const handleRefresh = () => {
     setRefresh(refresh ? 0 : 1);

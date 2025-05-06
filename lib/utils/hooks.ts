@@ -14,13 +14,14 @@ const useDebouncedValue = (inputValue: string, delay: number) => {
 };
 
 const useQueryRefresh = (
-  refresh: number,
+  refresh: number | null,
   dataUpdatedAt: number,
   errorUpdatedAt: number,
   refetch: () => void,
   setLastUpdated: (lastUpdated: string | null) => void
 ) => {
   useEffect(() => {
+    if (refresh === null) return;
     refetch();
   }, [refetch, refresh]);
 
