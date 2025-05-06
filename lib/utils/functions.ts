@@ -63,8 +63,14 @@ function formatFilters(filters: FilterConfig[]) {
     });
 }
 
+/** Takes a Response object and returns its status code, formatted as a string. */
+function formatResponseStatus(response: Response) {
+  return `${response.status} (${response.statusText})`;
+}
+
 export {
   formatFilters,
+  formatResponseStatus,
   generateKey,
   getDefaultFileNamePrefix,
   handleJSONExport,
