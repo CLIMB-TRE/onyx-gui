@@ -1,12 +1,43 @@
 {
   "name": "climb-onyx-gui",
-  "version": "0.13.0",
+  "version": "0.14.0",
+  "description": "Onyx Graphical User Interface",
+  "keywords": [
+    "gui",
+    "onyx",
+    "climb-tre",
+    "metadata",
+    "bioinformatics"
+  ],
+  "homepage": "https://github.com/CLIMB-TRE/onyx-gui",
+  "bugs": {
+    "url": "https://github.com/CLIMB-TRE/onyx-gui/issues"
+  },
+  "license": "GPL-3.0-or-later",
+  "author": {
+    "name": "Thomas Brier",
+    "email": "t.o.brier@bham.ac.uk"
+  },
+  "contributors": [
+    {
+      "name": "Thomas Brier",
+      "email": "t.o.brier@bham.ac.uk"
+    },
+    {
+      "name": "Neil Butcher",
+      "email": "n.a.butcher@bham.ac.uk"
+    }
+  ],
   "type": "module",
   "main": "dist/climb-onyx-gui.js",
   "types": "dist/main.d.ts",
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CLIMB-TRE/onyx-gui.git"
+  },
   "sideEffects": [
     "**/*.css"
   ],
