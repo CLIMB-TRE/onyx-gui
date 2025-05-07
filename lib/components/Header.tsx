@@ -1,24 +1,26 @@
+import { useMemo } from "react";
 import Container from "react-bootstrap/Container";
-import Stack from "react-bootstrap/Stack";
 import Form from "react-bootstrap/Form";
-import Tab from "react-bootstrap/Tab";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { useQuery } from "@tanstack/react-query";
-import { MdLightMode, MdDarkMode, MdJoinInner } from "react-icons/md";
+import Stack from "react-bootstrap/Stack";
+import Tab from "react-bootstrap/Tab";
+import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
+import { useProfileQuery } from "../api";
+import { PageProps } from "../interfaces";
 
-interface HeaderProps {
-  httpPathHandler: (path: string) => Promise<Response>;
+interface HeaderProps extends PageProps {
   projectName: string;
   projectList: string[];
   handleProjectChange: (p: string) => void;
-  guiVersion?: string;
-  extVersion?: string;
   tabKey: string;
   setTabKey: (k: string) => void;
-  darkMode: boolean;
   handleThemeChange: () => void;
+  recordID: string;
+  handleProjectRecordHide: () => void;
+  analysisID: string;
+  handleAnalysisHide: () => void;
 }
 
 function HeaderText({ label, value }: { label: string; value: string }) {
@@ -40,7 +42,7 @@ function HeaderVersion({
     <Navbar.Text>
       {label}:{" "}
       {version ? (
-        <code style={{ color: "var(--bs-pink)" }}>{`v${version}`}</code>
+        <span className="onyx-text-pink font-monospace">{version}</span>
       ) : (
         <span className="text-light">None</span>
       )}
@@ -49,85 +51,126 @@ function HeaderVersion({
 }
 
 function Header(props: HeaderProps) {
-  // Fetch user profile
-  const {
-    isFetching: profilePending,
-    data: { username, site } = { username: "", site: "" },
-  } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      return props
-        .httpPathHandler("accounts/profile/")
-        .then((response) => response.json())
-        .then((data) => {
-          return { username: data.data.username, site: data.data.site };
-        });
-    },
-  });
+  const { isFetching, error, data } = useProfileQuery(props);
+
+  // Get the user profile
+  const profile = useMemo(() => {
+    if (data?.status !== "success")
+      return {
+        username: "None",
+        site: "None",
+      };
+
+    return {
+      username: data.data.username,
+      site: data.data.site,
+    };
+  }, [data]);
+
+  const handleTabChange = (eventKey: string | null) => {
+    if (eventKey === "records" && props.recordID) {
+      if (props.tabKey === "record") {
+        props.handleProjectRecordHide();
+      } else {
+        props.setTabKey("record");
+      }
+    } else if (eventKey === "analyses" && props.analysisID) {
+      if (props.tabKey === "analysis") {
+        props.handleAnalysisHide();
+      } else props.setTabKey("analysis");
+    } else props.setTabKey(eventKey || "records");
+  };
 
   return (
     <Navbar
-      style={{ backgroundColor: "var(--bs-black)" }}
+      style={{
+        backgroundColor: "#121212",
+      }}
+      className="border-bottom onyx-border"
       variant="dark"
-      collapseOnSelect
       expand="lg"
       fixed="top"
     >
       <Container fluid>
-        <Navbar.Brand>
-          <MdJoinInner color="var(--bs-pink)" /> Onyx
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="navbarScroll" />
-        <Navbar.Collapse id="navbarScroll">
-          <Nav className="me-auto">
-            <Nav style={{ maxHeight: "200px" }} navbarScroll>
-              <Stack direction="horizontal" gap={2}>
-                <NavDropdown
-                  title={
-                    <HeaderText label="Project" value={props.projectName} />
-                  }
-                  id="navbarScrollingDropdown"
-                  style={{ color: "white" }}
-                >
-                  {props.projectList.map((p) => (
-                    <NavDropdown.Item
-                      key={p}
-                      onClick={() => props.handleProjectChange(p)}
-                    >
-                      {p}
-                    </NavDropdown.Item>
-                  ))}
-                </NavDropdown>
-                <div></div>
-              </Stack>
-            </Nav>
-            <Nav>
-              <Stack direction="horizontal" gap={3}>
-                <HeaderText
-                  label="User"
-                  value={profilePending ? "Loading..." : username}
-                />
-                <HeaderText
-                  label="Site"
-                  value={profilePending ? "Loading..." : site}
-                />
-                <HeaderVersion label="GUI" version={props.guiVersion} />
-                <HeaderVersion label="Extension" version={props.extVersion} />
-              </Stack>
-            </Nav>
-          </Nav>
-          <Tab.Container
-            activeKey={props.tabKey}
-            onSelect={(k) => props.setTabKey(k || "data")}
+        <Tab.Container activeKey={props.tabKey} onSelect={handleTabChange}>
+          <Navbar.Brand
+            title="Onyx | API for Pathogen Metadata"
+            onClick={() => handleTabChange("records")}
+            style={{ cursor: "pointer" }}
           >
+            <MdJoinInner color="var(--bs-pink)" /> Onyx
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+          <Navbar.Collapse id="responsive-navbar-nav">
+            <Nav className="me-auto">
+              <NavDropdown
+                title={<HeaderText label="Project" value={props.projectName} />}
+                style={{ color: "white" }}
+              >
+                {props.projectList.map((p) => (
+                  <NavDropdown.Item
+                    key={p}
+                    onClick={() => props.handleProjectChange(p)}
+                  >
+                    {p}
+                  </NavDropdown.Item>
+                ))}
+              </NavDropdown>
+              <Nav variant="underline">
+                <Stack direction="horizontal" gap={3}>
+                  <Nav.Link eventKey="user" className="fw-normal">
+                    <HeaderText
+                      label="User"
+                      value={
+                        isFetching
+                          ? "Loading..."
+                          : error
+                          ? "Failed to load"
+                          : profile.username
+                      }
+                    />
+                  </Nav.Link>
+                  <Nav.Link eventKey="site" className="fw-normal">
+                    <HeaderText
+                      label="Site"
+                      value={
+                        isFetching
+                          ? "Loading..."
+                          : error
+                          ? "Failed to load"
+                          : profile.site
+                      }
+                    />
+                  </Nav.Link>
+                  <Nav.Link disabled className="fw-normal ">
+                    <HeaderVersion label="Version" version={props.extVersion} />
+                  </Nav.Link>
+                </Stack>
+              </Nav>
+            </Nav>
             <Nav variant="underline">
               <Stack direction="horizontal" gap={3}>
-                <Nav.Item>
-                  <Nav.Link eventKey="data">Data</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="stats">Statistics</Nav.Link>
-                </Nav.Item>
+                <Nav.Link
+                  eventKey="records"
+                  className="fw-normal"
+                  active={
+                    props.tabKey === "records" || props.tabKey === "record"
+                  }
+                >
+                  Records
+                </Nav.Link>
+                <Nav.Link
+                  eventKey="analyses"
+                  className="fw-normal"
+                  active={
+                    props.tabKey === "analyses" || props.tabKey === "analysis"
+                  }
+                >
+                  Analyses
+                </Nav.Link>
+                <Nav.Link eventKey="graphs" className="fw-normal">
+                  Graphs
+                </Nav.Link>
                 <Form.Check
                   type="switch"
                   id="theme-switch"
@@ -144,8 +187,8 @@ function Header(props: HeaderProps) {
                 />
               </Stack>
             </Nav>
-          </Tab.Container>
-        </Navbar.Collapse>
+          </Navbar.Collapse>
+        </Tab.Container>
       </Container>
     </Navbar>
   );

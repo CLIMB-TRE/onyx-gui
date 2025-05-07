@@ -1,7 +1,8 @@
-import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
 import Accordion from "react-bootstrap/Accordion";
 import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
+import { errorModalMessage } from "../utils/messages";
 
 interface ErrorModalContentsProps {
   error: Error | null;
@@ -27,7 +28,7 @@ function ErrorModalContents(props: ErrorModalContentsProps) {
           </Form.Text>
         )}
         <Form.Text className="d-flex justify-content-center">
-          Please try again or contact CLIMB-TRE support if the problem persists.
+          {errorModalMessage}
         </Form.Text>
       </Form.Group>
       <Accordion>
@@ -51,6 +52,7 @@ function ErrorModal(props: ErrorModalProps) {
     <Modal
       className="onyx-modal"
       centered
+      animation={false}
       show={props.show}
       onHide={props.onHide}
     >

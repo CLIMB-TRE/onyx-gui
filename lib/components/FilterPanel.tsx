@@ -1,19 +1,20 @@
-import { useState, useLayoutEffect } from "react";
-import Container from "react-bootstrap/Container";
-import Stack from "react-bootstrap/Stack";
+import { useLayoutEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
-import Filter from "./Filter";
-import { FilterField } from "../types";
+import Container from "react-bootstrap/Container";
+import Stack from "react-bootstrap/Stack";
+import { MdClear, MdCreate, MdDelete } from "react-icons/md";
 import { DataProps } from "../interfaces";
-import generateKey from "../utils/generateKey";
-import { MdCreate, MdClear } from "react-icons/md";
+import { FilterConfig } from "../types";
+import { generateKey } from "../utils/functions";
+import Filter from "./Filter";
 
 interface FilterPanelProps extends DataProps {
-  filterList: FilterField[];
-  setFilterList: (value: FilterField[]) => void;
+  filterList: FilterConfig[];
+  setFilterList: (value: FilterConfig[]) => void;
   filterFieldOptions: string[];
+  disableLookups?: boolean;
 }
 
 function formatLookup(lookup: string) {
@@ -45,33 +46,34 @@ function formatValue(value: string) {
   return valueSet.join(", ");
 }
 
-function formatFilter(filter: FilterField) {
+function formatFilter(filter: FilterConfig) {
   if (!filter.field && !filter.lookup && !filter.value) {
-    return "Empty Filter";
+    return "Click to Edit";
   }
 
-  if (!filter.field || !filter.lookup) {
-    return "Incomplete Filter";
-  }
-
-  return `${filter.field} ${formatLookup(filter.lookup)} ${formatValue(
-    filter.value
-  )}`;
+  if (filter.lookup.endsWith("in") || filter.lookup.endsWith("range"))
+    return `${filter.field} ${formatLookup(filter.lookup)} [${formatValue(
+      filter.value
+    )}]`;
+  else
+    return `${filter.field} ${formatLookup(filter.lookup)} ${formatValue(
+      filter.value
+    )}`;
 }
 
 function FilterPanel(props: FilterPanelProps) {
   const [editMode, setEditMode] = useState(false);
-  const [editFilter, setEditFilter] = useState({} as FilterField);
+  const [editFilter, setEditFilter] = useState({} as FilterConfig);
   const [editIndex, setEditIndex] = useState(0);
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
     setEditMode(false);
-    setEditFilter({} as FilterField);
+    setEditFilter({} as FilterConfig);
     setEditIndex(0);
   }, [props.project]);
 
-  const handleEditMode = (filter: FilterField, index: number) => {
+  const handleEditMode = (filter: FilterConfig, index: number) => {
     setEditMode(true);
     setEditFilter(filter);
     setEditIndex(index);
@@ -83,6 +85,7 @@ function FilterPanel(props: FilterPanelProps) {
       ...props.filterList.slice(0, index),
       {
         key: generateKey(),
+        type: "",
         field: "",
         lookup: "",
         value: "",
@@ -97,21 +100,32 @@ function FilterPanel(props: FilterPanelProps) {
     props.setFilterList(list);
   };
 
+  const handleFilterRemoveAll = () => props.setFilterList([]);
+
   return (
-    <Card className="h-50">
+    <Card className="h-100">
       <Card.Header>
-        <span>Filter</span>
-        <Button
-          className="float-end"
-          size="sm"
-          variant="dark"
-          title="Add Filter"
-          onClick={() => handleFilterAdd(props.filterList.length)}
-        >
-          <MdCreate />
-        </Button>
+        <Stack direction="horizontal" gap={1}>
+          <span className="me-auto">Filter</span>
+          <Button
+            size="sm"
+            variant="dark"
+            title="Add Filter"
+            onClick={() => handleFilterAdd(props.filterList.length)}
+          >
+            <MdCreate />
+          </Button>
+          <Button
+            size="sm"
+            variant="dark"
+            title="Remove All Filters"
+            onClick={() => handleFilterRemoveAll()}
+          >
+            <MdDelete />
+          </Button>
+        </Stack>
       </Card.Header>
-      <Container fluid className="overflow-y-scroll p-2 h-100">
+      <Container fluid className="overflow-y-auto p-2 h-100">
         {editMode ? (
           <Filter
             {...props}

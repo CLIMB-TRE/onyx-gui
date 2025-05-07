@@ -1,8 +1,9 @@
-import React from "react";
 import Select, { components, OptionProps } from "react-select";
-import { useQuery } from "@tanstack/react-query";
-import selectStyles from "../utils/selectStyles";
+import { useChoicesQuery } from "../api";
+import { useChoiceDescriptions } from "../api/hooks";
+import { PageProps } from "../interfaces";
 import { OptionType } from "../types";
+import { selectStyles } from "../utils/styles";
 
 interface GenericDropdownProps {
   options: string[];
@@ -21,32 +22,32 @@ interface MultiDropdownProps extends GenericDropdownProps {
   value: string[];
 }
 
-interface GenericChoiceProps {
-  project: string;
+interface GenericChoiceProps extends PageProps {
   field: string;
-  httpPathHandler: (path: string) => Promise<Response>;
 }
 
 interface ChoiceProps extends DropdownProps, GenericChoiceProps {}
 
 interface MultiChoiceProps extends MultiDropdownProps, GenericChoiceProps {}
 
-const Option = (optionProps: OptionProps) => {
-  const splitLabel = optionProps.label.split("|", 2);
+const Option = (props: OptionProps) => {
+  const splitLabel = props.label.split("|", 2);
 
   return (
-    <code>
-      <components.Option {...optionProps}>
-        {splitLabel.length > 0 && <div>{splitLabel[0]}</div>}
-        {splitLabel.length > 1 && (
-          <div
-            style={{ color: "var(--onyx-dropdown-option-description-color)" }}
-          >
-            {splitLabel[1]}
-          </div>
-        )}
-      </components.Option>
-    </code>
+    <div className="onyx-modal">
+      <small>
+        <components.Option {...props}>
+          {splitLabel.length > 0 && <div>{splitLabel[0]}</div>}
+          {splitLabel.length > 1 && (
+            <div
+              style={{ color: "var(--onyx-dropdown-option-description-color)" }}
+            >
+              {splitLabel[1]}
+            </div>
+          )}
+        </components.Option>
+      </small>
+    </div>
   );
 };
 
@@ -122,36 +123,16 @@ function MultiDropdown(props: MultiDropdownProps) {
   );
 }
 
-const useChoiceQuery = (props: GenericChoiceProps) => {
-  // Fetch choices and their descriptions
-  return useQuery({
-    queryKey: ["choices", props.project, props.field],
-    queryFn: async () => {
-      return props
-        .httpPathHandler(`projects/${props.project}/choices/${props.field}/`)
-        .then((response) => response.json())
-        .then((data) => {
-          const choices = new Map(
-            Object.entries(data.data).map(([choice, choiceInfo]) => [
-              choice,
-              (choiceInfo as { description: string }).description,
-            ])
-          );
-          return choices;
-        });
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-};
-
 function Choice(props: ChoiceProps) {
-  const { data: choiceDescriptions } = useChoiceQuery(props);
+  const { data } = useChoicesQuery(props);
+  const choiceDescriptions = useChoiceDescriptions(data);
   return <Dropdown {...props} titles={choiceDescriptions} />;
 }
 
 function MultiChoice(props: MultiChoiceProps) {
-  const { data: choiceDescriptions } = useChoiceQuery(props);
+  const { data } = useChoicesQuery(props);
+  const choiceDescriptions = useChoiceDescriptions(data);
   return <MultiDropdown {...props} titles={choiceDescriptions} />;
 }
 
-export { Dropdown, MultiDropdown, Choice, MultiChoice };
+export { Choice, Dropdown, MultiChoice, MultiDropdown };

@@ -3,8 +3,12 @@ function delay(ms: number) {
 }
 
 function httpPathHandler(path: string) {
-  return fetch(import.meta.env.VITE_ONYX_DOMAIN + path, {
-    headers: { Authorization: "Token " + import.meta.env.VITE_ONYX_TOKEN },
+  const domain = import.meta.env.VITE_ONYX_DOMAIN || "";
+  const token = import.meta.env.VITE_ONYX_TOKEN || "";
+  return fetch(domain + path, {
+    headers: {
+      Authorization: "Token " + token,
+    },
   });
 }
 
@@ -21,4 +25,6 @@ function fileWriter(path: string, content: string) {
   });
 }
 
-export { httpPathHandler, s3PathHandler, fileWriter };
+const extVersion = import.meta.env.VITE_ONYX_VERSION || "";
+
+export { fileWriter, httpPathHandler, s3PathHandler, extVersion };

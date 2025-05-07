@@ -1,13 +1,13 @@
-import { useState, useLayoutEffect } from "react";
-import Container from "react-bootstrap/Container";
-import Stack from "react-bootstrap/Stack";
+import { useLayoutEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
-import Transforms from "./Transforms";
+import Container from "react-bootstrap/Container";
 import NavDropdown from "react-bootstrap/NavDropdown";
+import Stack from "react-bootstrap/Stack";
+import { MdClear, MdCreate } from "react-icons/md";
 import { DataProps } from "../interfaces";
-import { MdCreate, MdClear } from "react-icons/md";
+import Transforms from "./Transforms";
 
 interface TransformsPanelProps extends DataProps {
   transform: string;
@@ -38,7 +38,7 @@ function TransformsPanel(props: TransformsPanelProps) {
   };
 
   return (
-    <Card className="h-50">
+    <Card className="h-100">
       <Card.Header>
         <Stack direction="horizontal" gap={1}>
           <NavDropdown className="me-auto" title={props.transform}>
@@ -61,7 +61,7 @@ function TransformsPanel(props: TransformsPanelProps) {
           </Button>
         </Stack>
       </Card.Header>
-      <Container fluid className="overflow-y-scroll p-2 h-100">
+      <Container fluid className="overflow-y-auto p-2 h-100">
         {editMode ? (
           <Transforms
             {...props}
@@ -75,8 +75,7 @@ function TransformsPanel(props: TransformsPanelProps) {
         ) : (
           <Stack gap={2}>
             {props.transformList.map((transform, index) => (
-              // TODO: Use transform key
-              <Container key={index} fluid className="g-0">
+              <Container key={transform} fluid className="g-0">
                 <ButtonGroup size="sm">
                   <Button variant="dark" onClick={() => setEditMode(true)}>
                     <span className="onyx-text-pink font-monospace">
