@@ -60,9 +60,22 @@ function Filter(props: FilterProps) {
   };
 
   const handleApply = () => {
-    // Trim whitespace from value
     const updatedFilter = { ...filter };
-    updatedFilter.value = updatedFilter.value.toString().trim();
+
+    // Trim whitespace from value
+    // Handle both single and multi-value inputs
+    if (
+      updatedFilter.lookup.endsWith("in") ||
+      updatedFilter.lookup.endsWith("range") ||
+      (updatedFilter.type === "array" &&
+        !updatedFilter.lookup.includes("length"))
+    ) {
+      updatedFilter.value = getValueList(updatedFilter.value)
+        .map((v) => v.trim())
+        .join(",");
+    } else {
+      updatedFilter.value = updatedFilter.value.trim();
+    }
 
     props.setFilterList([
       ...props.filterList.slice(0, props.index),
