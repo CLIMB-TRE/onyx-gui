@@ -25,6 +25,7 @@ import { useCountQuery } from "../api";
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import { ExportStatus, ListResponse } from "../types";
 import ExportModal from "./ExportModal";
+import { formatResponseStatus } from "../utils/functions";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
@@ -281,7 +282,10 @@ function TableOptions(props: TableOptionsProps) {
     while (search instanceof URLSearchParams) {
       await props
         .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
-        .then((response) => response.json())
+        .then((response) => {
+          if (!response.ok) throw new Error(formatResponseStatus(response));
+          return response.json();
+        })
         .then((response: ListResponse) => {
           if (exportProps.statusToken.status === ExportStatus.CANCELLED)
             throw new Error("export_cancelled");
@@ -626,7 +630,10 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
 
       props
         .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
-        .then((response) => response.json())
+        .then((response) => {
+          if (!response.ok) throw new Error(formatResponseStatus(response));
+          return response.json();
+        })
         .then((response) => handleResponse(response, resultsPage, userPage))
         .finally(() => setLoading(false));
     } else {
