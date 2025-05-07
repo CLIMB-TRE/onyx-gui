@@ -42,7 +42,8 @@ export interface ResultsProps extends DataProps {
 export interface ExportHandlerProps {
   fileName: string;
   statusToken: { status: ExportStatus };
-  setExportStatus: (exportStatus: ExportStatus) => void;
-  setExportProgress: (exportProgress: number) => void;
+  setExportStatus: (status: ExportStatus) => void;
+  setExportProgress: (progress: number) => void;
+  setExportProgressMessage: (message: string) => void;
   setExportError: (error: Error) => void;
 }

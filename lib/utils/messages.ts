@@ -6,3 +6,5 @@ export const recentActivityMessage =
 
 export const errorModalMessage =
   "Please try again or contact CLIMB-TRE support if the problem persists.";
+
+export const defaultExportProgressMessage = "Fetching items...";

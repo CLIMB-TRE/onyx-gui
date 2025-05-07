@@ -109,7 +109,6 @@ function DataPanel(props: DataPanelProps) {
           onHide={() => setExportModalShow(false)}
           defaultFileNamePrefix={props.ID}
           defaultFileExtension=".json"
-          exportProgressMessage={`Exporting ${props.ID} to JSON...`}
           handleExport={handleJSONExport(jsonExportProps)}
         />
         <Row className="h-100">
