@@ -42,7 +42,7 @@ function HeaderVersion({
     <Navbar.Text>
       {label}:{" "}
       {version ? (
-        <code style={{ color: "var(--bs-pink)" }}>{`v${version}`}</code>
+        <span className="onyx-text-pink font-monospace">{version}</span>
       ) : (
         <span className="text-light">None</span>
       )}
