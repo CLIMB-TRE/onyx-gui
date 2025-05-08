@@ -98,7 +98,6 @@ function ExportModal(props: ExportModalProps) {
     <Modal
       className="onyx-modal"
       centered
-      animation={false}
       show={props.show}
       onHide={props.onHide}
       onExited={() => {
