@@ -78,10 +78,10 @@ function Results(props: ResultsProps) {
 
   return (
     <Container fluid className="g-0 h-100">
-      <div className="parent h-100">
+      <Stack gap={2} direction="horizontal" className="h-100 parent">
         {!sidebarCollapsed && (
-          <div className="left-col h-100">
-            <Container fluid className="g-2 h-100">
+          <div className="h-100 left-col">
+            <Container fluid className="h-100 g-0">
               <Stack gap={2} className="h-100 pt-1">
                 <SearchBar
                   {...props}
@@ -111,8 +111,8 @@ function Results(props: ResultsProps) {
             </Container>
           </div>
         )}
-        <div className="right-col h-100">
-          <Container fluid className="g-2 h-100">
+        <div className="h-100 right-col">
+          <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}
               searchParameters={searchParameters}
@@ -124,7 +124,7 @@ function Results(props: ResultsProps) {
             />
           </Container>
         </div>
-      </div>
+      </Stack>
     </Container>
   );
 }
