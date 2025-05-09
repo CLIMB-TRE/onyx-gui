@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import Card from "react-bootstrap/Card";
-import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { ResultsProps } from "../interfaces";
 import { ErrorResponse, ListResponse, RecordType } from "../types";
@@ -67,14 +66,14 @@ function ResultsPanel(props: ResultsPanelProps) {
   ]);
 
   return (
-    <Card className="h-100">
+    <Card className="h-100 overflow-y-auto">
       <Card.Header>
         <Stack gap={2} direction="horizontal">
           <SidebarButton {...props} />
           <PageTitle {...props} />
         </Stack>
       </Card.Header>
-      <Container fluid className="p-2 pb-0 h-100">
+      <Card.Body className="h-100 p-2 overflow-y-auto">
         <ErrorModal
           title="S3 Reports"
           message={s3BucketsMessage}
@@ -105,7 +104,7 @@ function ResultsPanel(props: ResultsPanelProps) {
             />
           )}
         </QueryHandler>
-      </Container>
+      </Card.Body>
     </Card>
   );
 }
