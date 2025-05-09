@@ -103,7 +103,7 @@ function FilterPanel(props: FilterPanelProps) {
   const handleFilterRemoveAll = () => props.setFilterList([]);
 
   return (
-    <Card className="h-100">
+    <Card className="h-100 overflow-y-auto">
       <Card.Header>
         <Stack direction="horizontal" gap={1}>
           <span className="me-auto">Filter</span>
@@ -125,7 +125,7 @@ function FilterPanel(props: FilterPanelProps) {
           </Button>
         </Stack>
       </Card.Header>
-      <Container fluid className="overflow-y-auto p-2 h-100">
+      <Card.Body className="h-100 p-2 overflow-y-auto">
         {editMode ? (
           <Filter
             {...props}
@@ -159,7 +159,7 @@ function FilterPanel(props: FilterPanelProps) {
             ))}
           </Stack>
         )}
-      </Container>
+      </Card.Body>
     </Card>
   );
 }

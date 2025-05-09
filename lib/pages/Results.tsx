@@ -91,25 +91,21 @@ function Results(props: ResultsProps) {
                   handleSearch={handleSearch}
                 />
                 <Stack gap={2} className="h-100 overflow-y-hidden">
-                  <div style={{ height: "55%" }}>
-                    <FilterPanel
-                      {...props}
-                      filterList={filterList}
-                      setFilterList={setFilterList}
-                      filterFieldOptions={filterFieldOptions}
-                    />
-                  </div>
-                  <div style={{ height: "45%" }}>
-                    <TransformsPanel
-                      {...props}
-                      transform={transform}
-                      setTransform={setTransform}
-                      transformList={transformList}
-                      setTransformList={setTransformList}
-                      filterFieldOptions={filterFieldOptions}
-                      listFieldOptions={listFieldOptions}
-                    />
-                  </div>
+                  <FilterPanel
+                    {...props}
+                    filterList={filterList}
+                    setFilterList={setFilterList}
+                    filterFieldOptions={filterFieldOptions}
+                  />
+                  <TransformsPanel
+                    {...props}
+                    transform={transform}
+                    setTransform={setTransform}
+                    transformList={transformList}
+                    setTransformList={setTransformList}
+                    filterFieldOptions={filterFieldOptions}
+                    listFieldOptions={listFieldOptions}
+                  />
                 </Stack>
               </Stack>
             </Container>
