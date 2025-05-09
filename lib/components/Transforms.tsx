@@ -29,7 +29,7 @@ function Transforms(props: TransformsProps) {
   };
 
   return (
-    <Stack gap={3} className="p-1">
+    <Stack gap={2} className="p-1">
       <Stack direction="horizontal">
         <span className="me-auto">Edit Fields</span>
         <CloseButton
@@ -37,7 +37,7 @@ function Transforms(props: TransformsProps) {
           onClick={() => props.setEditMode(false)}
         />
       </Stack>
-      <hr className="m-0" />
+      <hr className="m-0 mb-1" />
       <MultiDropdown
         options={
           props.transform === "Summarise"
@@ -49,7 +49,7 @@ function Transforms(props: TransformsProps) {
         placeholder={`${props.transform} fields...`}
         onChange={handleTransformListChange}
       />
-      <Stack direction="horizontal" gap={1}>
+      <Stack className="mt-1" direction="horizontal" gap={1}>
         <div className="me-auto"></div>
         <Button
           size="sm"
