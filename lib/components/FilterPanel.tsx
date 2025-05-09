@@ -9,6 +9,7 @@ import { DataProps } from "../interfaces";
 import { FilterConfig } from "../types";
 import { generateKey } from "../utils/functions";
 import Filter from "./Filter";
+import RemoveAllModal from "./RemoveAllModal";
 
 interface FilterPanelProps extends DataProps {
   filterList: FilterConfig[];
@@ -65,6 +66,7 @@ function FilterPanel(props: FilterPanelProps) {
   const [editMode, setEditMode] = useState(false);
   const [editFilter, setEditFilter] = useState({} as FilterConfig);
   const [editIndex, setEditIndex] = useState(0);
+  const [removeAllModalShow, setRemoveAllModalShow] = useState(false);
 
   // Clear parameters when project changes
   useLayoutEffect(() => {
@@ -100,10 +102,19 @@ function FilterPanel(props: FilterPanelProps) {
     props.setFilterList(list);
   };
 
-  const handleFilterRemoveAll = () => props.setFilterList([]);
+  const handleFilterRemoveAll = () => {
+    setEditMode(false);
+    props.setFilterList([]);
+  };
 
   return (
     <Card className="h-100 overflow-y-auto">
+      <RemoveAllModal
+        show={removeAllModalShow}
+        onHide={() => setRemoveAllModalShow(false)}
+        item="Filters"
+        handleRemove={handleFilterRemoveAll}
+      />
       <Card.Header>
         <Stack direction="horizontal" gap={1}>
           <span className="me-auto">Filter</span>
@@ -119,7 +130,7 @@ function FilterPanel(props: FilterPanelProps) {
             size="sm"
             variant="dark"
             title="Remove All Filters"
-            onClick={() => handleFilterRemoveAll()}
+            onClick={() => setRemoveAllModalShow(true)}
           >
             <MdDelete />
           </Button>
