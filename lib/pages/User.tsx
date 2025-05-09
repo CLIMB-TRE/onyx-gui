@@ -31,9 +31,9 @@ function Details(props: PageProps) {
   }, [data]);
 
   return (
-    <Card className="h-100">
+    <Card className="h-100 overflow-y-auto">
       <Card.Header>Details</Card.Header>
-      <Card.Body className="overflow-y-auto">
+      <Card.Body className="h-100 p-2 overflow-y-auto">
         <QueryHandler
           isFetching={isFetching}
           error={error as Error}
@@ -59,9 +59,9 @@ function ProjectPermissions(props: PageProps) {
   }, [data]);
 
   return (
-    <Card className="h-100">
+    <Card className="h-100 overflow-y-auto">
       <Card.Header>Project Permissions</Card.Header>
-      <Card.Body className="overflow-y-auto p-2 h-100">
+      <Card.Body className="h-100 p-2 overflow-y-auto">
         <QueryHandler
           isFetching={isFetching}
           error={error as Error}
@@ -102,16 +102,16 @@ function Activity(props: PageProps) {
   }, [data]);
 
   return (
-    <Card className="h-100">
+    <Card className="h-100 overflow-y-auto">
       <Card.Header>Recent Activity</Card.Header>
-      <Card.Body className="h-100">
+      <Card.Body className="h-100 p-2 overflow-y-auto">
         <QueryHandler
           isFetching={isFetching}
           error={error as Error}
           data={data}
         >
           <Stack className="h-100">
-            <Card.Text>{recentActivityMessage}</Card.Text>
+            <Card.Text className="m-2">{recentActivityMessage}</Card.Text>
             <Table
               {...props}
               data={activity}
@@ -158,12 +158,8 @@ function User(props: PageProps) {
       <Row className="g-2 h-100">
         <Col xs={4} sm={3} xl={2} className="h-100">
           <Stack gap={2} className="h-100">
-            <div className="h-25">
-              <Details {...props} />
-            </div>
-            <div className="h-75">
-              <ProjectPermissions {...props} />
-            </div>
+            <Details {...props} />
+            <ProjectPermissions {...props} />
           </Stack>
         </Col>
         <Col xs={8} sm={9} xl={10} className="h-100">

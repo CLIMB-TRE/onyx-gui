@@ -78,10 +78,10 @@ function Results(props: ResultsProps) {
 
   return (
     <Container fluid className="g-0 h-100">
-      <div className="parent h-100">
+      <Stack gap={2} direction="horizontal" className="h-100 parent">
         {!sidebarCollapsed && (
-          <div className="left-col h-100">
-            <Container fluid className="g-2 h-100">
+          <div className="h-100 left-col">
+            <Container fluid className="h-100 g-0">
               <Stack gap={2} className="h-100 pt-1">
                 <SearchBar
                   {...props}
@@ -91,32 +91,28 @@ function Results(props: ResultsProps) {
                   handleSearch={handleSearch}
                 />
                 <Stack gap={2} className="h-100 overflow-y-hidden">
-                  <div style={{ height: "55%" }}>
-                    <FilterPanel
-                      {...props}
-                      filterList={filterList}
-                      setFilterList={setFilterList}
-                      filterFieldOptions={filterFieldOptions}
-                    />
-                  </div>
-                  <div style={{ height: "45%" }}>
-                    <TransformsPanel
-                      {...props}
-                      transform={transform}
-                      setTransform={setTransform}
-                      transformList={transformList}
-                      setTransformList={setTransformList}
-                      filterFieldOptions={filterFieldOptions}
-                      listFieldOptions={listFieldOptions}
-                    />
-                  </div>
+                  <FilterPanel
+                    {...props}
+                    filterList={filterList}
+                    setFilterList={setFilterList}
+                    filterFieldOptions={filterFieldOptions}
+                  />
+                  <TransformsPanel
+                    {...props}
+                    transform={transform}
+                    setTransform={setTransform}
+                    transformList={transformList}
+                    setTransformList={setTransformList}
+                    filterFieldOptions={filterFieldOptions}
+                    listFieldOptions={listFieldOptions}
+                  />
                 </Stack>
               </Stack>
             </Container>
           </div>
         )}
-        <div className="right-col h-100">
-          <Container fluid className="g-2 h-100">
+        <div className="h-100 right-col">
+          <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}
               searchParameters={searchParameters}
@@ -128,7 +124,7 @@ function Results(props: ResultsProps) {
             />
           </Container>
         </div>
-      </div>
+      </Stack>
     </Container>
   );
 }
