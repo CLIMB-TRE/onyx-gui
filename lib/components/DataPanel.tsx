@@ -72,7 +72,7 @@ function DataPanel(props: DataPanelProps) {
   }, [data, props.projectFields]);
 
   useEffect(() => {
-    if (data?.status === "success" && !data.data.is_published)
+    if (data?.status === "success" && data.data.is_published === false)
       props.setUnpublished();
   }, [data, props]);
 
