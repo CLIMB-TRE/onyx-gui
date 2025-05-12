@@ -513,7 +513,7 @@ function Graphs(props: DataProps) {
         item="Graphs"
         handleRemove={handleGraphConfigRemoveAll}
       />
-      <Card className="h-100">
+      <Card className="h-100 overflow-y-auto">
         <Card.Header>
           <Stack direction="horizontal" gap={1}>
             <span className="me-auto">
@@ -563,7 +563,7 @@ function Graphs(props: DataProps) {
             </Button>
           </Stack>
         </Card.Header>
-        <Container fluid className="overflow-y-auto p-2 h-100">
+        <Card.Body className="h-100 p-2 overflow-y-auto">
           <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
               <Col key={graphConfig.key} lg={viewMode === "list" ? 12 : 6}>
@@ -605,7 +605,7 @@ function Graphs(props: DataProps) {
               </Col>
             ))}
           </Row>
-        </Container>
+        </Card.Body>
       </Card>
     </Container>
   );
