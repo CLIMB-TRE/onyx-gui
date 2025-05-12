@@ -36,6 +36,7 @@ import PageTitle from "../components/PageTitle";
 import { DataProps } from "../interfaces";
 import { FilterConfig, GraphConfig, GraphType } from "../types";
 import { generateKey } from "../utils/functions";
+import RemoveAllModal from "../components/RemoveAllModal";
 
 interface GraphPanelProps extends DataProps {
   graphConfig: GraphConfig;
@@ -389,6 +390,7 @@ function Graphs(props: DataProps) {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showOptions, setShowOptions] = useState(true);
   const [refresh, setRefresh] = useState<number | null>(null);
+  const [removeAllModalShow, setRemoveAllModalShow] = useState(false);
 
   const handleRefresh = () => {
     setRefresh(refresh ? 0 : 1);
@@ -505,7 +507,13 @@ function Graphs(props: DataProps) {
 
   return (
     <Container fluid className="g-0 h-100">
-      <Card className="h-100">
+      <RemoveAllModal
+        show={removeAllModalShow}
+        onHide={() => setRemoveAllModalShow(false)}
+        item="Graphs"
+        handleRemove={handleGraphConfigRemoveAll}
+      />
+      <Card className="h-100 overflow-y-auto">
         <Card.Header>
           <Stack direction="horizontal" gap={1}>
             <span className="me-auto">
@@ -531,7 +539,7 @@ function Graphs(props: DataProps) {
               size="sm"
               variant="dark"
               title="Remove All Graphs"
-              onClick={handleGraphConfigRemoveAll}
+              onClick={() => setRemoveAllModalShow(true)}
             >
               <MdDelete />
             </Button>
@@ -555,7 +563,7 @@ function Graphs(props: DataProps) {
             </Button>
           </Stack>
         </Card.Header>
-        <Container fluid className="overflow-y-auto p-2 h-100">
+        <Card.Body className="h-100 p-2 overflow-y-auto">
           <Row className="g-2">
             {graphConfigList.map((graphConfig, index) => (
               <Col key={graphConfig.key} lg={viewMode === "list" ? 12 : 6}>
@@ -597,7 +605,7 @@ function Graphs(props: DataProps) {
               </Col>
             ))}
           </Row>
-        </Container>
+        </Card.Body>
       </Card>
     </Container>
   );
