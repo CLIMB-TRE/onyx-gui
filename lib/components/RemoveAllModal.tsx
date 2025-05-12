@@ -22,7 +22,7 @@ function RemoveAllModal(props: RemoveAllModalProps) {
       <Modal.Body className="text-center">
         {`Are you sure you want to remove all ${props.item.toLowerCase()}?`}
         <br />
-        <strong>This action cannot be undone.</strong>
+        <b>This action cannot be undone.</b>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="dark" onClick={props.onHide}>
