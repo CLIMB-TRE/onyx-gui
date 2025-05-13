@@ -112,7 +112,7 @@ function DataPanel(props: DataPanelProps) {
           handleExport={handleJSONExport(jsonExportProps)}
         />
         <Row className="h-100">
-          <Col xs={3} xl={2}>
+          <Col xs={3} xl={2} className="h-100">
             <Stack gap={1}>
               <hr />
               {data?.status === "success" && (
@@ -158,7 +158,7 @@ function DataPanel(props: DataPanelProps) {
               </Button>
             </Stack>
           </Col>
-          <Col xs={9} xl={10}>
+          <Col xs={9} xl={10} className="h-100">
             <Tab.Content className="h-100">
               <Tab.Pane eventKey={DataPanelTabKeys.Details} className="h-100">
                 <Details

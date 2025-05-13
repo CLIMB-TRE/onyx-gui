@@ -128,8 +128,8 @@ function Details(props: DetailsProps) {
   }, [props]);
 
   return (
-    <Stack gap={2} className="h-100 mb-2">
-      <Stack direction="horizontal" gap={2}>
+    <Container fluid className="h-100 p-0 pb-3">
+      <Stack direction="horizontal" gap={2} className="pb-2">
         <h5 className="me-auto">Details</h5>
         <div style={{ width: "300px" }}>
           <Input
@@ -139,42 +139,47 @@ function Details(props: DetailsProps) {
           />
         </div>
       </Stack>
-      {object
-        .filter(
-          (row) =>
-            row.Field.toLowerCase().includes(debouncedSearch) ||
-            row.Value.toLowerCase().includes(debouncedSearch) ||
-            props.fieldDescriptions
-              .get(row.Field)
-              ?.toLowerCase()
-              .includes(debouncedSearch) ||
-            (
-              choiceDescriptions.get(row.Field)?.get(row.Value.toLowerCase()) ||
-              ""
+      <Card body className="h-100 overflow-y-auto">
+        <Stack gap={2}>
+          {object
+            .filter(
+              (row) =>
+                row.Field.toLowerCase().includes(debouncedSearch) ||
+                row.Value.toLowerCase().includes(debouncedSearch) ||
+                props.fieldDescriptions
+                  .get(row.Field)
+                  ?.toLowerCase()
+                  .includes(debouncedSearch) ||
+                (
+                  choiceDescriptions
+                    .get(row.Field)
+                    ?.get(row.Value.toLowerCase()) || ""
+                )
+                  .toLowerCase()
+                  .includes(debouncedSearch)
             )
-              .toLowerCase()
-              .includes(debouncedSearch)
-        )
-        .map((row, index) => (
-          <Card body key={index}>
-            <Container fluid>
-              <Row>
-                <Col>
-                  <Field {...props} field={row.Field} />
-                </Col>
-                <Col>
-                  <Value
-                    {...props}
-                    field={row.Field}
-                    value={row.Value}
-                    choiceDescriptions={choiceDescriptions}
-                  />
-                </Col>
-              </Row>
-            </Container>
-          </Card>
-        ))}
-    </Stack>
+            .map((row, index) => (
+              <Card body key={index}>
+                <Container fluid>
+                  <Row>
+                    <Col>
+                      <Field {...props} field={row.Field} />
+                    </Col>
+                    <Col>
+                      <Value
+                        {...props}
+                        field={row.Field}
+                        value={row.Value}
+                        choiceDescriptions={choiceDescriptions}
+                      />
+                    </Col>
+                  </Row>
+                </Container>
+              </Card>
+            ))}
+        </Stack>
+      </Card>
+    </Container>
   );
 }
 
