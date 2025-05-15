@@ -9,6 +9,7 @@ import Tab from "react-bootstrap/Tab";
 import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
+import { OnyxTabKeys } from "../types";
 
 interface HeaderProps extends PageProps {
   projectName: string;
@@ -17,10 +18,6 @@ interface HeaderProps extends PageProps {
   tabKey: string;
   setTabKey: (k: string) => void;
   handleThemeChange: () => void;
-  recordID: string;
-  handleProjectRecordHide: () => void;
-  analysisID: string;
-  handleAnalysisHide: () => void;
 }
 
 function HeaderText({ label, value }: { label: string; value: string }) {
@@ -67,20 +64,6 @@ function Header(props: HeaderProps) {
     };
   }, [data]);
 
-  const handleTabChange = (eventKey: string | null) => {
-    if (eventKey === "records" && props.recordID) {
-      if (props.tabKey === "record") {
-        props.handleProjectRecordHide();
-      } else {
-        props.setTabKey("record");
-      }
-    } else if (eventKey === "analyses" && props.analysisID) {
-      if (props.tabKey === "analysis") {
-        props.handleAnalysisHide();
-      } else props.setTabKey("analysis");
-    } else props.setTabKey(eventKey || "records");
-  };
-
   return (
     <Navbar
       style={{
@@ -92,10 +75,13 @@ function Header(props: HeaderProps) {
       fixed="top"
     >
       <Container fluid>
-        <Tab.Container activeKey={props.tabKey} onSelect={handleTabChange}>
+        <Tab.Container
+          activeKey={props.tabKey}
+          onSelect={(k) => props.setTabKey(k || OnyxTabKeys.RECORDS)}
+        >
           <Navbar.Brand
             title="Onyx | API for Pathogen Metadata"
-            onClick={() => handleTabChange("records")}
+            onClick={() => props.setTabKey(OnyxTabKeys.RECORDS)}
             style={{ cursor: "pointer" }}
           >
             <MdJoinInner color="var(--bs-pink)" /> Onyx
@@ -118,7 +104,7 @@ function Header(props: HeaderProps) {
               </NavDropdown>
               <Nav variant="underline">
                 <Stack direction="horizontal" gap={3}>
-                  <Nav.Link eventKey="user" className="fw-normal">
+                  <Nav.Link eventKey={OnyxTabKeys.USER} className="fw-normal">
                     <HeaderText
                       label="User"
                       value={
@@ -130,7 +116,7 @@ function Header(props: HeaderProps) {
                       }
                     />
                   </Nav.Link>
-                  <Nav.Link eventKey="site" className="fw-normal">
+                  <Nav.Link eventKey={OnyxTabKeys.SITE} className="fw-normal">
                     <HeaderText
                       label="Site"
                       value={
@@ -150,25 +136,13 @@ function Header(props: HeaderProps) {
             </Nav>
             <Nav variant="underline">
               <Stack direction="horizontal" gap={3}>
-                <Nav.Link
-                  eventKey="records"
-                  className="fw-normal"
-                  active={
-                    props.tabKey === "records" || props.tabKey === "record"
-                  }
-                >
+                <Nav.Link eventKey={OnyxTabKeys.RECORDS} className="fw-normal">
                   Records
                 </Nav.Link>
-                <Nav.Link
-                  eventKey="analyses"
-                  className="fw-normal"
-                  active={
-                    props.tabKey === "analyses" || props.tabKey === "analysis"
-                  }
-                >
+                <Nav.Link eventKey={OnyxTabKeys.ANALYSES} className="fw-normal">
                   Analyses
                 </Nav.Link>
-                <Nav.Link eventKey="graphs" className="fw-normal">
+                <Nav.Link eventKey={OnyxTabKeys.GRAPHS} className="fw-normal">
                   Graphs
                 </Nav.Link>
                 <Form.Check
