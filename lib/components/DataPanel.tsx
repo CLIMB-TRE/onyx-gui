@@ -94,8 +94,9 @@ function DataPanel(props: DataPanelProps) {
         id="data-panel-tabs"
         activeKey={props.dataPanelTabKey}
         onSelect={(key) =>
-          props.setDataPanelTabKey(key || DataPanelTabKeys.Details)
+          props.setDataPanelTabKey(key || DataPanelTabKeys.DETAILS)
         }
+        transition={false}
       >
         <ErrorModal
           title="S3 Reports"
@@ -129,7 +130,7 @@ function DataPanel(props: DataPanelProps) {
               <hr />
               <Nav variant="pills" className="flex-column">
                 <Nav.Item>
-                  <Nav.Link eventKey={DataPanelTabKeys.Details}>
+                  <Nav.Link eventKey={DataPanelTabKeys.DETAILS}>
                     Details
                   </Nav.Link>
                 </Nav.Item>
@@ -160,7 +161,7 @@ function DataPanel(props: DataPanelProps) {
           </Col>
           <Col xs={9} xl={10} className="h-100">
             <Tab.Content className="h-100">
-              <Tab.Pane eventKey={DataPanelTabKeys.Details} className="h-100">
+              <Tab.Pane eventKey={DataPanelTabKeys.DETAILS} className="h-100">
                 <Details
                   {...props}
                   data={data}

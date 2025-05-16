@@ -5,10 +5,10 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Stack from "react-bootstrap/Stack";
-import Tab from "react-bootstrap/Tab";
 import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
+import { OnyxTabKeys } from "../types";
 
 interface HeaderProps extends PageProps {
   projectName: string;
@@ -17,9 +17,7 @@ interface HeaderProps extends PageProps {
   tabKey: string;
   setTabKey: (k: string) => void;
   handleThemeChange: () => void;
-  recordID: string;
   handleProjectRecordHide: () => void;
-  analysisID: string;
   handleAnalysisHide: () => void;
 }
 
@@ -68,17 +66,19 @@ function Header(props: HeaderProps) {
   }, [data]);
 
   const handleTabChange = (eventKey: string | null) => {
-    if (eventKey === "records" && props.recordID) {
-      if (props.tabKey === "record") {
-        props.handleProjectRecordHide();
-      } else {
-        props.setTabKey("record");
-      }
-    } else if (eventKey === "analyses" && props.analysisID) {
-      if (props.tabKey === "analysis") {
-        props.handleAnalysisHide();
-      } else props.setTabKey("analysis");
-    } else props.setTabKey(eventKey || "records");
+    if (
+      props.tabKey === OnyxTabKeys.RECORDS &&
+      eventKey === OnyxTabKeys.RECORDS
+    )
+      props.handleProjectRecordHide();
+
+    if (
+      props.tabKey === OnyxTabKeys.ANALYSES &&
+      eventKey === OnyxTabKeys.ANALYSES
+    )
+      props.handleAnalysisHide();
+
+    props.setTabKey(eventKey || OnyxTabKeys.RECORDS);
   };
 
   return (
@@ -90,105 +90,95 @@ function Header(props: HeaderProps) {
       variant="dark"
       expand="lg"
       fixed="top"
+      onSelect={handleTabChange}
     >
       <Container fluid>
-        <Tab.Container activeKey={props.tabKey} onSelect={handleTabChange}>
-          <Navbar.Brand
-            title="Onyx | API for Pathogen Metadata"
-            onClick={() => handleTabChange("records")}
-            style={{ cursor: "pointer" }}
-          >
-            <MdJoinInner color="var(--bs-pink)" /> Onyx
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-          <Navbar.Collapse id="responsive-navbar-nav">
-            <Nav className="me-auto">
-              <NavDropdown
-                title={<HeaderText label="Project" value={props.projectName} />}
-                style={{ color: "white" }}
-              >
-                {props.projectList.map((p) => (
-                  <NavDropdown.Item
-                    key={p}
-                    onClick={() => props.handleProjectChange(p)}
-                  >
-                    {p}
-                  </NavDropdown.Item>
-                ))}
-              </NavDropdown>
-              <Nav variant="underline">
-                <Stack direction="horizontal" gap={3}>
-                  <Nav.Link eventKey="user" className="fw-normal">
-                    <HeaderText
-                      label="User"
-                      value={
-                        isFetching
-                          ? "Loading..."
-                          : error
-                          ? "Failed to load"
-                          : profile.username
-                      }
-                    />
-                  </Nav.Link>
-                  <Nav.Link eventKey="site" className="fw-normal">
-                    <HeaderText
-                      label="Site"
-                      value={
-                        isFetching
-                          ? "Loading..."
-                          : error
-                          ? "Failed to load"
-                          : profile.site
-                      }
-                    />
-                  </Nav.Link>
-                  <Nav.Link disabled className="fw-normal ">
-                    <HeaderVersion label="Version" version={props.extVersion} />
-                  </Nav.Link>
-                </Stack>
-              </Nav>
-            </Nav>
+        <Navbar.Brand
+          title="Onyx | API for Pathogen Metadata"
+          onClick={() => {
+            props.setTabKey(OnyxTabKeys.RECORDS);
+            props.handleProjectRecordHide();
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          <MdJoinInner color="var(--bs-pink)" size={30} /> Onyx
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Collapse id="responsive-navbar-nav">
+          <Nav className="me-auto" activeKey={props.tabKey}>
+            <NavDropdown
+              title={<HeaderText label="Project" value={props.projectName} />}
+              style={{ color: "white" }}
+            >
+              {props.projectList.map((p) => (
+                <NavDropdown.Item
+                  key={p}
+                  onClick={() => props.handleProjectChange(p)}
+                >
+                  {p}
+                </NavDropdown.Item>
+              ))}
+            </NavDropdown>
             <Nav variant="underline">
               <Stack direction="horizontal" gap={3}>
-                <Nav.Link
-                  eventKey="records"
-                  className="fw-normal"
-                  active={
-                    props.tabKey === "records" || props.tabKey === "record"
-                  }
-                >
-                  Records
+                <Nav.Link eventKey={OnyxTabKeys.USER} className="fw-normal">
+                  <HeaderText
+                    label="User"
+                    value={
+                      isFetching
+                        ? "Loading..."
+                        : error
+                        ? "Failed to load"
+                        : profile.username
+                    }
+                  />
                 </Nav.Link>
-                <Nav.Link
-                  eventKey="analyses"
-                  className="fw-normal"
-                  active={
-                    props.tabKey === "analyses" || props.tabKey === "analysis"
-                  }
-                >
-                  Analyses
+                <Nav.Link eventKey={OnyxTabKeys.SITE} className="fw-normal">
+                  <HeaderText
+                    label="Site"
+                    value={
+                      isFetching
+                        ? "Loading..."
+                        : error
+                        ? "Failed to load"
+                        : profile.site
+                    }
+                  />
                 </Nav.Link>
-                <Nav.Link eventKey="graphs" className="fw-normal">
-                  Graphs
+                <Nav.Link disabled className="fw-normal ">
+                  <HeaderVersion label="Version" version={props.extVersion} />
                 </Nav.Link>
-                <Form.Check
-                  type="switch"
-                  id="theme-switch"
-                  label={
-                    <span className="text-light">
-                      {props.darkMode ? <MdDarkMode /> : <MdLightMode />}{" "}
-                    </span>
-                  }
-                  title={`Switch to ${
-                    props.darkMode ? "light mode" : "dark mode"
-                  }`}
-                  checked={props.darkMode}
-                  onChange={props.handleThemeChange}
-                />
               </Stack>
             </Nav>
-          </Navbar.Collapse>
-        </Tab.Container>
+          </Nav>
+          <Nav variant="underline" activeKey={props.tabKey}>
+            <Stack direction="horizontal" gap={3}>
+              <Nav.Link eventKey={OnyxTabKeys.RECORDS} className="fw-normal">
+                Records
+              </Nav.Link>
+              <Nav.Link eventKey={OnyxTabKeys.ANALYSES} className="fw-normal">
+                Analyses
+              </Nav.Link>
+              <Nav.Link eventKey={OnyxTabKeys.GRAPHS} className="fw-normal">
+                Graphs
+              </Nav.Link>
+              <Form.Check
+                type="switch"
+                id="theme-switch"
+                label={
+                  <span className="text-light">
+                    {props.darkMode ? <MdDarkMode /> : <MdLightMode />}{" "}
+                  </span>
+                }
+                title={`Switch to ${
+                  props.darkMode ? "light mode" : "dark mode"
+                }`}
+                checked={props.darkMode}
+                onChange={props.handleThemeChange}
+              />
+            </Stack>
+          </Nav>
+        </Navbar.Collapse>
       </Container>
     </Navbar>
   );

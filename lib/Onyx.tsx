@@ -20,10 +20,13 @@ import Site from "./pages/Site";
 import User from "./pages/User";
 import {
   AnalysisTabKeys,
+  AnalysisDetailTabKeys,
   DataPanelTabKeys,
   LookupObject,
+  OnyxTabKeys,
   ProjectPermissionType,
   RecordTabKeys,
+  RecordDetailTabKeys,
   TypeObject,
 } from "./types";
 
@@ -32,22 +35,33 @@ import "./Onyx.css";
 import "./bootstrap.css";
 
 function App(props: OnyxProps) {
+  // Global app state
   const [darkMode, setDarkMode] = useState(
     localStorage.getItem("onyx-theme") === "dark"
   );
   const [project, setProject] = useState("");
-  const [tabKey, setTabKey] = useState("records");
+  const [tabKey, setTabKey] = useState<string>(OnyxTabKeys.RECORDS);
+
+  // Record tab state
+  const [recordTabKey, setRecordTabKey] = useState<string>(RecordTabKeys.LIST);
   const [recordID, setRecordID] = useState("");
-  const [recordTabKey, setRecordTabKey] = useState<string>(RecordTabKeys.Data);
+  const [recordDetailTabKey, setRecordDetailTabKey] = useState<string>(
+    RecordDetailTabKeys.DATA
+  );
   const [recordDataPanelTabKey, setRecordDataPanelTabKey] = useState<string>(
-    DataPanelTabKeys.Details
+    DataPanelTabKeys.DETAILS
+  );
+
+  // Analysis tab state
+  const [analysisTabKey, setAnalysisTabKey] = useState<string>(
+    AnalysisTabKeys.LIST
   );
   const [analysisID, setAnalysisID] = useState("");
-  const [analysisTabKey, setAnalysisTabKey] = useState<string>(
-    AnalysisTabKeys.Data
+  const [analysisDetailTabKey, setAnalysisDetailTabKey] = useState<string>(
+    AnalysisDetailTabKeys.DATA
   );
   const [analysisDataPanelTabKey, setAnalysisDataPanelTabKey] =
-    useState<string>(DataPanelTabKeys.Details);
+    useState<string>(DataPanelTabKeys.DETAILS);
 
   // Set the theme based on darkMode state
   useEffect(() => {
@@ -63,7 +77,9 @@ function App(props: OnyxProps) {
 
   // Clear parameters when project changes
   const handleProjectChange = (project: string) => {
-    setTabKey("records");
+    setTabKey(OnyxTabKeys.RECORDS);
+    setRecordTabKey(RecordTabKeys.LIST);
+    setAnalysisTabKey(AnalysisTabKeys.LIST);
     setRecordID("");
     setAnalysisID("");
     setProject(project);
@@ -143,27 +159,27 @@ function App(props: OnyxProps) {
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
   const handleProjectRecordShow = useCallback((climbID: string) => {
-    setTabKey("record");
-    setRecordTabKey(RecordTabKeys.Data);
-    setRecordDataPanelTabKey(DataPanelTabKeys.Details);
+    setTabKey(OnyxTabKeys.RECORDS);
+    setRecordTabKey(RecordTabKeys.DETAIL);
+    setRecordDetailTabKey(RecordDetailTabKeys.DATA);
+    setRecordDataPanelTabKey(DataPanelTabKeys.DETAILS);
     setRecordID(climbID);
   }, []);
 
   const handleProjectRecordHide = useCallback(() => {
-    setTabKey("records");
-    setRecordID("");
+    setRecordTabKey(RecordTabKeys.LIST);
   }, []);
 
   const handleAnalysisShow = useCallback((analysisID: string) => {
-    setTabKey("analysis");
-    setAnalysisTabKey(AnalysisTabKeys.Data);
-    setAnalysisDataPanelTabKey(DataPanelTabKeys.Details);
+    setTabKey(OnyxTabKeys.ANALYSES);
+    setAnalysisTabKey(AnalysisTabKeys.DETAIL);
+    setAnalysisDetailTabKey(AnalysisDetailTabKeys.DATA);
+    setAnalysisDataPanelTabKey(DataPanelTabKeys.DETAILS);
     setAnalysisID(analysisID);
   }, []);
 
   const handleAnalysisHide = useCallback(() => {
-    setTabKey("analyses");
-    setAnalysisID("");
+    setAnalysisTabKey(AnalysisTabKeys.LIST);
   }, []);
 
   return (
@@ -184,86 +200,104 @@ function App(props: OnyxProps) {
         setTabKey={setTabKey}
         darkMode={darkMode}
         handleThemeChange={handleThemeChange}
-        recordID={recordID}
         handleProjectRecordHide={handleProjectRecordHide}
-        analysisID={analysisID}
         handleAnalysisHide={handleAnalysisHide}
       />
       <div className="h-100" style={{ paddingTop: "60px" }}>
         <Container fluid className="h-100 p-2">
-          <Tab.Container activeKey={tabKey} mountOnEnter>
+          <Tab.Container activeKey={tabKey} mountOnEnter transition={false}>
             <Tab.Content className="h-100">
-              <Tab.Pane eventKey="user" className="h-100">
+              <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
                 <User {...props} project={project} darkMode={darkMode} />
               </Tab.Pane>
-              <Tab.Pane eventKey="site" className="h-100">
+              <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
                 <Site {...props} project={project} darkMode={darkMode} />
               </Tab.Pane>
-              <Tab.Pane eventKey="records" className="h-100">
-                <Results
-                  {...pageProps}
-                  projectFields={projectFields}
-                  projectDescription={projectDescription}
-                  typeLookups={typeLookups}
-                  fieldDescriptions={fieldDescriptions}
-                  lookupDescriptions={lookupDescriptions}
-                  handleProjectRecordShow={handleProjectRecordShow}
-                  handleAnalysisShow={handleAnalysisShow}
-                  title="Records"
-                  searchPath={`projects/${project}`}
-                />
+              <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
+                <Tab.Container activeKey={recordTabKey} transition={false}>
+                  <Tab.Content className="h-100">
+                    <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
+                      <Results
+                        {...pageProps}
+                        projectFields={projectFields}
+                        projectDescription={projectDescription}
+                        typeLookups={typeLookups}
+                        fieldDescriptions={fieldDescriptions}
+                        lookupDescriptions={lookupDescriptions}
+                        handleProjectRecordShow={handleProjectRecordShow}
+                        handleAnalysisShow={handleAnalysisShow}
+                        title="Records"
+                        searchPath={`projects/${project}`}
+                      />
+                    </Tab.Pane>
+                    <Tab.Pane
+                      eventKey={RecordTabKeys.DETAIL}
+                      className="h-100"
+                      unmountOnExit
+                    >
+                      <ProjectRecord
+                        {...pageProps}
+                        projectFields={projectFields}
+                        projectDescription={projectDescription}
+                        typeLookups={typeLookups}
+                        fieldDescriptions={fieldDescriptions}
+                        lookupDescriptions={lookupDescriptions}
+                        handleProjectRecordShow={handleProjectRecordShow}
+                        handleAnalysisShow={handleAnalysisShow}
+                        ID={recordID}
+                        tabKey={recordDetailTabKey}
+                        setTabKey={setRecordDetailTabKey}
+                        dataPanelTabKey={recordDataPanelTabKey}
+                        setDataPanelTabKey={setRecordDataPanelTabKey}
+                        onHide={handleProjectRecordHide}
+                      />
+                    </Tab.Pane>
+                  </Tab.Content>
+                </Tab.Container>
               </Tab.Pane>
-              <Tab.Pane eventKey="record" className="h-100">
-                <ProjectRecord
-                  {...pageProps}
-                  projectFields={projectFields}
-                  projectDescription={projectDescription}
-                  typeLookups={typeLookups}
-                  fieldDescriptions={fieldDescriptions}
-                  lookupDescriptions={lookupDescriptions}
-                  handleProjectRecordShow={handleProjectRecordShow}
-                  handleAnalysisShow={handleAnalysisShow}
-                  ID={recordID}
-                  tabKey={recordTabKey}
-                  setTabKey={setRecordTabKey}
-                  dataPanelTabKey={recordDataPanelTabKey}
-                  setDataPanelTabKey={setRecordDataPanelTabKey}
-                  onHide={handleProjectRecordHide}
-                />
+              <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
+                <Tab.Container activeKey={analysisTabKey} transition={false}>
+                  <Tab.Content className="h-100">
+                    <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
+                      <Results
+                        {...pageProps}
+                        projectFields={analysisFields}
+                        projectDescription={projectDescription}
+                        typeLookups={typeLookups}
+                        fieldDescriptions={analysisDescriptions}
+                        lookupDescriptions={lookupDescriptions}
+                        handleProjectRecordShow={handleProjectRecordShow}
+                        handleAnalysisShow={handleAnalysisShow}
+                        title="Analyses"
+                        searchPath={`projects/${project}/analysis`}
+                      />
+                    </Tab.Pane>
+                    <Tab.Pane
+                      eventKey={AnalysisTabKeys.DETAIL}
+                      className="h-100"
+                      unmountOnExit
+                    >
+                      <Analysis
+                        {...pageProps}
+                        projectFields={analysisFields}
+                        projectDescription={projectDescription}
+                        typeLookups={typeLookups}
+                        fieldDescriptions={analysisDescriptions}
+                        lookupDescriptions={lookupDescriptions}
+                        handleProjectRecordShow={handleProjectRecordShow}
+                        handleAnalysisShow={handleAnalysisShow}
+                        ID={analysisID}
+                        tabKey={analysisDetailTabKey}
+                        setTabKey={setAnalysisDetailTabKey}
+                        dataPanelTabKey={analysisDataPanelTabKey}
+                        setDataPanelTabKey={setAnalysisDataPanelTabKey}
+                        onHide={handleAnalysisHide}
+                      />
+                    </Tab.Pane>
+                  </Tab.Content>
+                </Tab.Container>
               </Tab.Pane>
-              <Tab.Pane eventKey="analyses" className="h-100">
-                <Results
-                  {...pageProps}
-                  projectFields={analysisFields}
-                  projectDescription={projectDescription}
-                  typeLookups={typeLookups}
-                  fieldDescriptions={analysisDescriptions}
-                  lookupDescriptions={lookupDescriptions}
-                  handleProjectRecordShow={handleProjectRecordShow}
-                  handleAnalysisShow={handleAnalysisShow}
-                  title="Analyses"
-                  searchPath={`projects/${project}/analysis`}
-                />
-              </Tab.Pane>
-              <Tab.Pane eventKey="analysis" className="h-100">
-                <Analysis
-                  {...pageProps}
-                  projectFields={analysisFields}
-                  projectDescription={projectDescription}
-                  typeLookups={typeLookups}
-                  fieldDescriptions={analysisDescriptions}
-                  lookupDescriptions={lookupDescriptions}
-                  handleProjectRecordShow={handleProjectRecordShow}
-                  handleAnalysisShow={handleAnalysisShow}
-                  ID={analysisID}
-                  tabKey={analysisTabKey}
-                  setTabKey={setAnalysisTabKey}
-                  dataPanelTabKey={analysisDataPanelTabKey}
-                  setDataPanelTabKey={setAnalysisDataPanelTabKey}
-                  onHide={handleAnalysisHide}
-                />
-              </Tab.Pane>
-              <Tab.Pane eventKey="graphs" className="h-100">
+              <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
                 <Graphs
                   {...pageProps}
                   projectFields={projectFields}
