@@ -1,19 +1,43 @@
+export enum OnyxTabKeys {
+  USER = "user-tab",
+  SITE = "site-tab",
+  RECORDS = "records-tab",
+  ANALYSES = "analyses-tab",
+  GRAPHS = "graphs-tab",
+}
+
 export enum RecordTabKeys {
-  Data = "record-data-tab",
-  History = "record-history-tab",
-  Analyses = "record-analyses-tab",
+  LIST = "record-list-tab",
+  DETAIL = "record-detail-tab",
 }
 
 export enum AnalysisTabKeys {
-  Data = "analysis-data-tab",
-  History = "analysis-history-tab",
-  Records = "analysis-records-tab",
-  Upstream = "analysis-upstream-tab",
-  Downstream = "analysis-downstream-tab",
+  LIST = "analysis-list-tab",
+  DETAIL = "analysis-detail-tab",
+}
+
+export enum RecordDetailTabKeys {
+  DATA = "record-detail-data-tab",
+  HISTORY = "record-detail-history-tab",
+  ANALYSES = "record-detail-analyses-tab",
+}
+
+export enum AnalysisDetailTabKeys {
+  DATA = "analysis-detail-data-tab",
+  HISTORY = "analysis-detail-history-tab",
+  RECORDS = "analysis-detail-records-tab",
+  UPSTREAM = "analysis-detail-upstream-tab",
+  DOWNSTREAM = "analysis-detail-downstream-tab",
 }
 
 export enum DataPanelTabKeys {
-  Details = "data-panel-details",
+  DETAILS = "data-panel-details",
+}
+
+export enum GraphPanelTabKeys {
+  GRAPH = "graph-panel-graph",
+  FILTERS = "graph-panel-filters",
+  DISPLAY = "graph-panel-display",
 }
 
 export enum ExportStatus {

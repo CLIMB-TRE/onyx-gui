@@ -34,7 +34,12 @@ import {
 } from "../components/Graphs";
 import PageTitle from "../components/PageTitle";
 import { DataProps } from "../interfaces";
-import { FilterConfig, GraphConfig, GraphType } from "../types";
+import {
+  FilterConfig,
+  GraphConfig,
+  GraphType,
+  GraphPanelTabKeys,
+} from "../types";
 import { generateKey } from "../utils/functions";
 import RemoveAllModal from "../components/RemoveAllModal";
 
@@ -154,12 +159,12 @@ function GraphPanelOptions(props: GraphPanelProps) {
 
   return (
     <Tabs
-      defaultActiveKey="graph"
+      defaultActiveKey={GraphPanelTabKeys.GRAPH}
       id="uncontrolled-tab-example"
       className="mb-3"
       justify
     >
-      <Tab eventKey="graph" title="Graph">
+      <Tab eventKey={GraphPanelTabKeys.GRAPH} title="Graph">
         <Form>
           <Form.Group className="mb-3">
             <Form.Label>Graph Type</Form.Label>
@@ -210,7 +215,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
           )}
         </Form>
       </Tab>
-      <Tab eventKey="filters" title="Filters">
+      <Tab eventKey={GraphPanelTabKeys.FILTERS} title="Filters">
         {props.graphConfig.type && (
           <FilterPanel
             {...props}
@@ -221,7 +226,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
           />
         )}
       </Tab>
-      <Tab eventKey="display" title="Display">
+      <Tab eventKey={GraphPanelTabKeys.DISPLAY} title="Display">
         {(props.graphConfig.type === "line" ||
           props.graphConfig.type === "bar") && (
           <Form.Group className="mb-3">
