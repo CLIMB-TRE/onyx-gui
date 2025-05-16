@@ -70,6 +70,7 @@ function ProjectRecord(props: IDProps) {
             activeKey={props.tabKey}
             onSelect={(key) => props.setTabKey(key || RecordDetailTabKeys.DATA)}
             mountOnEnter
+            transition={false}
           >
             <Nav variant="tabs">
               <Nav.Item>

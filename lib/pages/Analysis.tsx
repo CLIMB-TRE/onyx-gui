@@ -173,6 +173,7 @@ function Analysis(props: IDProps) {
               props.setTabKey(key || AnalysisDetailTabKeys.DATA)
             }
             mountOnEnter
+            transition={false}
           >
             <Nav variant="tabs">
               <Nav.Item>
