@@ -163,6 +163,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
       id="uncontrolled-tab-example"
       className="mb-3"
       justify
+      transition={false}
     >
       <Tab eventKey={GraphPanelTabKeys.GRAPH} title="Graph">
         <Form>

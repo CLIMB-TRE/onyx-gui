@@ -200,10 +200,12 @@ function App(props: OnyxProps) {
         setTabKey={setTabKey}
         darkMode={darkMode}
         handleThemeChange={handleThemeChange}
+        handleProjectRecordHide={handleProjectRecordHide}
+        handleAnalysisHide={handleAnalysisHide}
       />
       <div className="h-100" style={{ paddingTop: "60px" }}>
         <Container fluid className="h-100 p-2">
-          <Tab.Container activeKey={tabKey} mountOnEnter>
+          <Tab.Container activeKey={tabKey} mountOnEnter transition={false}>
             <Tab.Content className="h-100">
               <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
                 <User {...props} project={project} darkMode={darkMode} />
@@ -212,7 +214,7 @@ function App(props: OnyxProps) {
                 <Site {...props} project={project} darkMode={darkMode} />
               </Tab.Pane>
               <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
-                <Tab.Container activeKey={recordTabKey}>
+                <Tab.Container activeKey={recordTabKey} transition={false}>
                   <Tab.Content className="h-100">
                     <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
                       <Results
@@ -254,7 +256,7 @@ function App(props: OnyxProps) {
                 </Tab.Container>
               </Tab.Pane>
               <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
-                <Tab.Container activeKey={analysisTabKey}>
+                <Tab.Container activeKey={analysisTabKey} transition={false}>
                   <Tab.Content className="h-100">
                     <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
                       <Results

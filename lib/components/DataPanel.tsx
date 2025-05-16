@@ -96,6 +96,7 @@ function DataPanel(props: DataPanelProps) {
         onSelect={(key) =>
           props.setDataPanelTabKey(key || DataPanelTabKeys.DETAILS)
         }
+        transition={false}
       >
         <ErrorModal
           title="S3 Reports"
