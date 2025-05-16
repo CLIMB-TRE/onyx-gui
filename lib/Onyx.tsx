@@ -133,7 +133,7 @@ function App(props: OnyxProps) {
       .map(
         (projectPermission: ProjectPermissionType) => projectPermission.project
       )
-      .sort();
+      .sort() as string[];
   }, [projectPermissionsResponse]);
 
   // Set the first project as the default
@@ -205,110 +205,161 @@ function App(props: OnyxProps) {
       />
       <div className="h-100" style={{ paddingTop: "60px" }}>
         <Container fluid className="h-100 p-2">
-          <Tab.Container activeKey={tabKey} mountOnEnter transition={false}>
+          <Tab.Container
+            activeKey={project}
+            mountOnEnter
+            unmountOnExit
+            transition={false}
+          >
             <Tab.Content className="h-100">
-              <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
-                <User {...props} project={project} darkMode={darkMode} />
-              </Tab.Pane>
-              <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
-                <Site {...props} project={project} darkMode={darkMode} />
-              </Tab.Pane>
-              <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
-                <Tab.Container activeKey={recordTabKey} transition={false}>
-                  <Tab.Content className="h-100">
-                    <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
-                      <Results
-                        {...pageProps}
-                        projectFields={projectFields}
-                        projectDescription={projectDescription}
-                        typeLookups={typeLookups}
-                        fieldDescriptions={fieldDescriptions}
-                        lookupDescriptions={lookupDescriptions}
-                        handleProjectRecordShow={handleProjectRecordShow}
-                        handleAnalysisShow={handleAnalysisShow}
-                        title="Records"
-                        searchPath={`projects/${project}`}
-                      />
-                    </Tab.Pane>
-                    <Tab.Pane
-                      eventKey={RecordTabKeys.DETAIL}
-                      className="h-100"
-                      unmountOnExit
-                    >
-                      <ProjectRecord
-                        {...pageProps}
-                        projectFields={projectFields}
-                        projectDescription={projectDescription}
-                        typeLookups={typeLookups}
-                        fieldDescriptions={fieldDescriptions}
-                        lookupDescriptions={lookupDescriptions}
-                        handleProjectRecordShow={handleProjectRecordShow}
-                        handleAnalysisShow={handleAnalysisShow}
-                        ID={recordID}
-                        tabKey={recordDetailTabKey}
-                        setTabKey={setRecordDetailTabKey}
-                        dataPanelTabKey={recordDataPanelTabKey}
-                        setDataPanelTabKey={setRecordDataPanelTabKey}
-                        onHide={handleProjectRecordHide}
-                      />
-                    </Tab.Pane>
-                  </Tab.Content>
-                </Tab.Container>
-              </Tab.Pane>
-              <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
-                <Tab.Container activeKey={analysisTabKey} transition={false}>
-                  <Tab.Content className="h-100">
-                    <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
-                      <Results
-                        {...pageProps}
-                        projectFields={analysisFields}
-                        projectDescription={projectDescription}
-                        typeLookups={typeLookups}
-                        fieldDescriptions={analysisDescriptions}
-                        lookupDescriptions={lookupDescriptions}
-                        handleProjectRecordShow={handleProjectRecordShow}
-                        handleAnalysisShow={handleAnalysisShow}
-                        title="Analyses"
-                        searchPath={`projects/${project}/analysis`}
-                      />
-                    </Tab.Pane>
-                    <Tab.Pane
-                      eventKey={AnalysisTabKeys.DETAIL}
-                      className="h-100"
-                      unmountOnExit
-                    >
-                      <Analysis
-                        {...pageProps}
-                        projectFields={analysisFields}
-                        projectDescription={projectDescription}
-                        typeLookups={typeLookups}
-                        fieldDescriptions={analysisDescriptions}
-                        lookupDescriptions={lookupDescriptions}
-                        handleProjectRecordShow={handleProjectRecordShow}
-                        handleAnalysisShow={handleAnalysisShow}
-                        ID={analysisID}
-                        tabKey={analysisDetailTabKey}
-                        setTabKey={setAnalysisDetailTabKey}
-                        dataPanelTabKey={analysisDataPanelTabKey}
-                        setDataPanelTabKey={setAnalysisDataPanelTabKey}
-                        onHide={handleAnalysisHide}
-                      />
-                    </Tab.Pane>
-                  </Tab.Content>
-                </Tab.Container>
-              </Tab.Pane>
-              <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
-                <Graphs
-                  {...pageProps}
-                  projectFields={projectFields}
-                  projectDescription={projectDescription}
-                  typeLookups={typeLookups}
-                  fieldDescriptions={fieldDescriptions}
-                  lookupDescriptions={lookupDescriptions}
-                  handleProjectRecordShow={handleProjectRecordShow}
-                  handleAnalysisShow={handleAnalysisShow}
-                />
-              </Tab.Pane>
+              {projects.map((project) => (
+                <Tab.Pane key={project} eventKey={project} className="h-100">
+                  <Tab.Container
+                    activeKey={tabKey}
+                    mountOnEnter
+                    transition={false}
+                  >
+                    <Tab.Content className="h-100">
+                      <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
+                        <User
+                          {...props}
+                          project={project}
+                          darkMode={darkMode}
+                        />
+                      </Tab.Pane>
+                      <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
+                        <Site
+                          {...props}
+                          project={project}
+                          darkMode={darkMode}
+                        />
+                      </Tab.Pane>
+                      <Tab.Pane
+                        eventKey={OnyxTabKeys.RECORDS}
+                        className="h-100"
+                      >
+                        <Tab.Container
+                          activeKey={recordTabKey}
+                          transition={false}
+                        >
+                          <Tab.Content className="h-100">
+                            <Tab.Pane
+                              eventKey={RecordTabKeys.LIST}
+                              className="h-100"
+                            >
+                              <Results
+                                {...pageProps}
+                                projectFields={projectFields}
+                                projectDescription={projectDescription}
+                                typeLookups={typeLookups}
+                                fieldDescriptions={fieldDescriptions}
+                                lookupDescriptions={lookupDescriptions}
+                                handleProjectRecordShow={
+                                  handleProjectRecordShow
+                                }
+                                handleAnalysisShow={handleAnalysisShow}
+                                title="Records"
+                                searchPath={`projects/${project}`}
+                              />
+                            </Tab.Pane>
+                            <Tab.Pane
+                              eventKey={RecordTabKeys.DETAIL}
+                              className="h-100"
+                              unmountOnExit
+                            >
+                              <ProjectRecord
+                                {...pageProps}
+                                projectFields={projectFields}
+                                projectDescription={projectDescription}
+                                typeLookups={typeLookups}
+                                fieldDescriptions={fieldDescriptions}
+                                lookupDescriptions={lookupDescriptions}
+                                handleProjectRecordShow={
+                                  handleProjectRecordShow
+                                }
+                                handleAnalysisShow={handleAnalysisShow}
+                                ID={recordID}
+                                tabKey={recordDetailTabKey}
+                                setTabKey={setRecordDetailTabKey}
+                                dataPanelTabKey={recordDataPanelTabKey}
+                                setDataPanelTabKey={setRecordDataPanelTabKey}
+                                onHide={handleProjectRecordHide}
+                              />
+                            </Tab.Pane>
+                          </Tab.Content>
+                        </Tab.Container>
+                      </Tab.Pane>
+                      <Tab.Pane
+                        eventKey={OnyxTabKeys.ANALYSES}
+                        className="h-100"
+                      >
+                        <Tab.Container
+                          activeKey={analysisTabKey}
+                          transition={false}
+                        >
+                          <Tab.Content className="h-100">
+                            <Tab.Pane
+                              eventKey={AnalysisTabKeys.LIST}
+                              className="h-100"
+                            >
+                              <Results
+                                {...pageProps}
+                                projectFields={analysisFields}
+                                projectDescription={projectDescription}
+                                typeLookups={typeLookups}
+                                fieldDescriptions={analysisDescriptions}
+                                lookupDescriptions={lookupDescriptions}
+                                handleProjectRecordShow={
+                                  handleProjectRecordShow
+                                }
+                                handleAnalysisShow={handleAnalysisShow}
+                                title="Analyses"
+                                searchPath={`projects/${project}/analysis`}
+                              />
+                            </Tab.Pane>
+                            <Tab.Pane
+                              eventKey={AnalysisTabKeys.DETAIL}
+                              className="h-100"
+                              unmountOnExit
+                            >
+                              <Analysis
+                                {...pageProps}
+                                projectFields={analysisFields}
+                                projectDescription={projectDescription}
+                                typeLookups={typeLookups}
+                                fieldDescriptions={analysisDescriptions}
+                                lookupDescriptions={lookupDescriptions}
+                                handleProjectRecordShow={
+                                  handleProjectRecordShow
+                                }
+                                handleAnalysisShow={handleAnalysisShow}
+                                ID={analysisID}
+                                tabKey={analysisDetailTabKey}
+                                setTabKey={setAnalysisDetailTabKey}
+                                dataPanelTabKey={analysisDataPanelTabKey}
+                                setDataPanelTabKey={setAnalysisDataPanelTabKey}
+                                onHide={handleAnalysisHide}
+                              />
+                            </Tab.Pane>
+                          </Tab.Content>
+                        </Tab.Container>
+                      </Tab.Pane>
+                      <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
+                        <Graphs
+                          {...pageProps}
+                          projectFields={projectFields}
+                          projectDescription={projectDescription}
+                          typeLookups={typeLookups}
+                          fieldDescriptions={fieldDescriptions}
+                          lookupDescriptions={lookupDescriptions}
+                          handleProjectRecordShow={handleProjectRecordShow}
+                          handleAnalysisShow={handleAnalysisShow}
+                        />
+                      </Tab.Pane>
+                    </Tab.Content>
+                  </Tab.Container>
+                </Tab.Pane>
+              ))}
             </Tab.Content>
           </Tab.Container>
         </Container>

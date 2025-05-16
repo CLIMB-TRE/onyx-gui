@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
@@ -401,11 +401,6 @@ function Graphs(props: DataProps) {
   const handleRefresh = () => {
     setRefresh(refresh ? 0 : 1);
   };
-
-  // Reset graphs when project changes
-  useLayoutEffect(() => {
-    setGraphConfigList(defaultGraphConfig());
-  }, [props.project]);
 
   const handleGraphConfigTypeChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
