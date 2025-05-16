@@ -105,7 +105,7 @@ function Header(props: HeaderProps) {
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
-          <Nav className="me-auto" activeKey={props.tabKey}>
+          <Nav className="me-auto">
             <NavDropdown
               title={<HeaderText label="Project" value={props.projectName} />}
               style={{ color: "white" }}
@@ -119,7 +119,7 @@ function Header(props: HeaderProps) {
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
-            <Nav variant="underline">
+            <Nav variant="underline" activeKey={props.tabKey}>
               <Stack direction="horizontal" gap={3}>
                 <Nav.Link eventKey={OnyxTabKeys.USER} className="fw-normal">
                   <HeaderText
