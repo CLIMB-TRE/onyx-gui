@@ -1,19 +1,28 @@
 import { useEffect, useState } from "react";
 
-const useDebouncedValue = (inputValue: string, delay: number) => {
+export const useDebouncedValue = (inputValue: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(inputValue);
+
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(inputValue);
-    }, delay);
-    return () => {
-      clearTimeout(handler);
-    };
+    const timeout = setTimeout(() => setDebouncedValue(inputValue), delay);
+    return () => clearTimeout(timeout);
   }, [inputValue, delay]);
+
   return debouncedValue;
 };
 
-const useQueryRefresh = (
+export const useDelayedValue = (delay?: number) => {
+  const [showValue, setShowValue] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowValue(true), delay || 500);
+    return () => clearTimeout(timer);
+  });
+
+  return showValue;
+};
+
+export const useQueryRefresh = (
   refresh: number | null,
   dataUpdatedAt: number,
   errorUpdatedAt: number,
@@ -38,5 +47,3 @@ const useQueryRefresh = (
     );
   }, [dataUpdatedAt, errorUpdatedAt, setLastUpdated]);
 };
-
-export { useDebouncedValue, useQueryRefresh };
