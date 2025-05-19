@@ -22,6 +22,19 @@ export const useDelayedValue = (delay?: number) => {
   return showValue;
 };
 
+export const useCyclicValue = (start: number, end: number, pause?: number) => {
+  const [value, setValue] = useState(start);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setValue((v) => (v + 1) % (end + 1));
+    }, pause || 500);
+    return () => clearInterval(interval);
+  });
+
+  return value;
+};
+
 export const useQueryRefresh = (
   refresh: number | null,
   dataUpdatedAt: number,
