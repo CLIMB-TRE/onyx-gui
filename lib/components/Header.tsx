@@ -13,7 +13,7 @@ import { TextQueryHandler } from "./QueryHandler";
 
 interface HeaderProps extends PageProps {
   projectObj?: Project;
-  projectObjs: Project[];
+  projectList: Project[];
   handleProjectChange: (p: Project) => void;
   tabKey: string;
   setTabKey: (k: string) => void;
@@ -122,7 +122,7 @@ function Header(props: HeaderProps) {
               }
               style={{ color: "white" }}
             >
-              {props.projectObjs.map((p) => (
+              {props.projectList.map((p) => (
                 <NavDropdown.Item
                   key={p.code}
                   onClick={() => props.handleProjectChange(p)}

@@ -318,7 +318,7 @@ function App(props: OnyxProps) {
         {...props}
         project={project?.code || ""}
         projectObj={project}
-        projectObjs={projects}
+        projectList={projects}
         handleProjectChange={handleProjectChange}
         tabKey={tabKey}
         setTabKey={setTabKey}
