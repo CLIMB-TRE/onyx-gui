@@ -267,15 +267,23 @@ function App(props: OnyxProps) {
     );
   }, [lookupsResponse]);
 
-  // Get the list of projects
+  // Get the project list
   const projects = useMemo(() => {
     if (projectPermissionsResponse?.status !== "success") return [];
-    return projectPermissionsResponse.data
+
+    // Map the project permissions to a list of projects
+    // Each item in the list is an object with a code and name
+    const ps = projectPermissionsResponse.data
       .map((projectPermission: ProjectPermissionType) => ({
         code: projectPermission.project,
         name: projectPermission.name,
       }))
-      .sort() as Project[];
+      .sort((a: Project, b: Project) =>
+        a.code < b.code ? -1 : 1
+      ) as Project[];
+
+    // Deduplicate the project list by code
+    return [...new Map(ps.map((p) => [p.code, p])).values()];
   }, [projectPermissionsResponse]);
 
   // Set the first project as the default
