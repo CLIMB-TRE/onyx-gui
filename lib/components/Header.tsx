@@ -8,12 +8,13 @@ import Stack from "react-bootstrap/Stack";
 import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
-import { OnyxTabKeys } from "../types";
+import { OnyxTabKeys, Project } from "../types";
+import { TextQueryHandler } from "./QueryHandler";
 
 interface HeaderProps extends PageProps {
-  projectName: string;
-  projectList: string[];
-  handleProjectChange: (p: string) => void;
+  projectObj?: Project;
+  projectObjs: Project[];
+  handleProjectChange: (p: Project) => void;
   tabKey: string;
   setTabKey: (k: string) => void;
   handleThemeChange: () => void;
@@ -21,10 +22,16 @@ interface HeaderProps extends PageProps {
   handleAnalysisHide: () => void;
 }
 
-function HeaderText({ label, value }: { label: string; value: string }) {
+function HeaderText({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | JSX.Element;
+}) {
   return (
     <Navbar.Text>
-      {label}: <span className="text-light">{value || "None"}</span>
+      {label}: <span className="text-light">{value}</span>
     </Navbar.Text>
   );
 }
@@ -107,15 +114,20 @@ function Header(props: HeaderProps) {
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
             <NavDropdown
-              title={<HeaderText label="Project" value={props.projectName} />}
+              title={
+                <HeaderText
+                  label="Project"
+                  value={props.projectObj?.name || "Not Selected"}
+                />
+              }
               style={{ color: "white" }}
             >
-              {props.projectList.map((p) => (
+              {props.projectObjs.map((p) => (
                 <NavDropdown.Item
-                  key={p}
+                  key={p.code}
                   onClick={() => props.handleProjectChange(p)}
                 >
-                  {p}
+                  {p.name}
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
@@ -125,11 +137,12 @@ function Header(props: HeaderProps) {
                   <HeaderText
                     label="User"
                     value={
-                      isFetching
-                        ? "Loading..."
-                        : error
-                        ? "Failed to load"
-                        : profile.username
+                      <TextQueryHandler
+                        isFetching={isFetching}
+                        error={error as Error}
+                      >
+                        {profile.username}
+                      </TextQueryHandler>
                     }
                   />
                 </Nav.Link>
@@ -137,11 +150,12 @@ function Header(props: HeaderProps) {
                   <HeaderText
                     label="Site"
                     value={
-                      isFetching
-                        ? "Loading..."
-                        : error
-                        ? "Failed to load"
-                        : profile.site
+                      <TextQueryHandler
+                        isFetching={isFetching}
+                        error={error as Error}
+                      >
+                        {profile.site}
+                      </TextQueryHandler>
                     }
                   />
                 </Nav.Link>
