@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { useResultsQuery } from "../api";
@@ -34,15 +34,6 @@ function Results(props: ResultsProps) {
   );
 
   const { isFetching, error, data, refetch } = useResultsQuery(queryProps);
-
-  // Clear parameters when project changes
-  useLayoutEffect(() => {
-    setSearchInput("");
-    setFilterList([]);
-    setTransform("Summarise");
-    setTransformList([]);
-    setSearchParameters("");
-  }, [props.project]);
 
   const searchParams = useMemo(
     () =>

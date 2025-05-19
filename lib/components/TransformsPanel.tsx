@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
@@ -20,11 +20,6 @@ interface TransformsPanelProps extends DataProps {
 
 function TransformsPanel(props: TransformsPanelProps) {
   const [editMode, setEditMode] = useState(false);
-
-  // Clear parameters when project changes
-  useLayoutEffect(() => {
-    setEditMode(false);
-  }, [props.project]);
 
   const handleTransformsChange = (action: string) => {
     props.setTransform(action);

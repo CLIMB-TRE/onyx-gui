@@ -1,3 +1,8 @@
+export enum Theme {
+  LIGHT = "light",
+  DARK = "dark",
+}
+
 export enum OnyxTabKeys {
   USER = "user-tab",
   SITE = "site-tab",
@@ -64,6 +69,11 @@ export type FieldType =
 
 export type GraphType = "line" | "bar" | "pie" | "";
 
+export type Project = {
+  code: string;
+  name: string;
+};
+
 export type ProjectField = {
   type: FieldType;
   description: string;
@@ -119,6 +129,7 @@ export type SummaryType = Record<"count", number> &
 
 export type ProjectPermissionType = {
   project: string;
+  name: string;
   scope: string;
   actions: string[];
 };

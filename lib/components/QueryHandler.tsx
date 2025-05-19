@@ -1,22 +1,30 @@
-import React, { useEffect, useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Spinner from "react-bootstrap/Spinner";
 import Stack from "react-bootstrap/Stack";
 import { ErrorResponse, SuccessResponse } from "../types";
+import { useDelayedValue, useCyclicValue } from "../utils/hooks";
+
+function LoadingText() {
+  const ellipsisCount = useCyclicValue(0, 3);
+
+  return (
+    <span>
+      Loading
+      <pre style={{ display: "inline" }}>
+        {".".repeat(ellipsisCount) + " ".repeat(3 - ellipsisCount)}
+      </pre>
+    </span>
+  );
+}
 
 function LoadingSpinner() {
-  const [showAlert, setShowAlert] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowAlert(true), 500);
-    return () => clearTimeout(timer);
-  });
+  const showAlert = useDelayedValue();
 
   return showAlert ? (
-    <div className="d-flex justify-content-center">
+    <div className="h-100 d-flex justify-content-center align-items-center">
       <Stack direction="horizontal" gap={2}>
         <Spinner />
-        <span>Loading...</span>
+        <LoadingText />
       </Stack>
     </div>
   ) : (
@@ -45,6 +53,24 @@ function ErrorMessages(props: ErrorMessagesProps) {
         )
       )}
     </>
+  );
+}
+
+export function TextQueryHandler({
+  isFetching,
+  error,
+  children,
+}: {
+  isFetching: boolean;
+  error: Error | null;
+  children: React.ReactNode;
+}) {
+  return isFetching ? (
+    <LoadingText />
+  ) : error ? (
+    <span>Not Found</span>
+  ) : (
+    (children as JSX.Element)
   );
 }
 
