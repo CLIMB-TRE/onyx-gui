@@ -518,7 +518,10 @@ function Graphs(props: DataProps) {
         <Card.Header>
           <Stack direction="horizontal" gap={1}>
             <span className="me-auto">
-              <PageTitle {...props} title="Graphs" />
+              <PageTitle
+                title="Graphs"
+                description={props.projectDescription}
+              />
             </span>
             <Button
               size="sm"

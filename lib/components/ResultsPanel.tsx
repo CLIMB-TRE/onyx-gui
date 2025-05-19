@@ -70,7 +70,10 @@ function ResultsPanel(props: ResultsPanelProps) {
       <Card.Header>
         <Stack gap={2} direction="horizontal">
           <SidebarButton {...props} />
-          <PageTitle {...props} />
+          <PageTitle
+            title={props.title}
+            description={props.projectDescription}
+          />
         </Stack>
       </Card.Header>
       <Card.Body className="h-100 p-2 overflow-y-auto">
