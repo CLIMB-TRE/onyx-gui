@@ -25,15 +25,20 @@ function Results(props: ResultsProps) {
     .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
 
-  const queryProps = useMemo(
+  // Pagination page size
+  const pageSize = 100;
+
+  const paginatedQueryProps = useMemo(
     () => ({
       ...props,
       searchParameters,
+      pageSize,
     }),
     [props, searchParameters]
   );
 
-  const { isFetching, error, data, refetch } = useResultsQuery(queryProps);
+  const { isFetching, error, data, refetch } =
+    useResultsQuery(paginatedQueryProps);
 
   const searchParams = useMemo(
     () =>
@@ -107,6 +112,7 @@ function Results(props: ResultsProps) {
             <ResultsPanel
               {...props}
               searchParameters={searchParameters}
+              pageSize={pageSize}
               isFetching={isFetching}
               error={error as Error}
               data={data}
