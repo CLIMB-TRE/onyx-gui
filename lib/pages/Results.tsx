@@ -78,7 +78,7 @@ function Results(props: ResultsProps) {
         {!sidebarCollapsed && (
           <div className="h-100 left-col">
             <Container fluid className="h-100 g-0">
-              <Stack gap={2} className="h-100 pt-1">
+              <Stack gap={2} className="h-100">
                 <SearchBar
                   {...props}
                   placeholder={`Search ${props.title.toLowerCase()}...`}
