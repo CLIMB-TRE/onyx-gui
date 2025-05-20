@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { useResultsQuery } from "../api";
@@ -25,24 +25,20 @@ function Results(props: ResultsProps) {
     .filter(([, projectField]) => projectField.actions.includes("list"))
     .map(([field]) => field);
 
-  const queryProps = useMemo(
+  // Pagination page size
+  const pageSize = 100;
+
+  const paginatedQueryProps = useMemo(
     () => ({
       ...props,
       searchParameters,
+      pageSize,
     }),
     [props, searchParameters]
   );
 
-  const { isFetching, error, data, refetch } = useResultsQuery(queryProps);
-
-  // Clear parameters when project changes
-  useLayoutEffect(() => {
-    setSearchInput("");
-    setFilterList([]);
-    setTransform("Summarise");
-    setTransformList([]);
-    setSearchParameters("");
-  }, [props.project]);
+  const { isFetching, error, data, refetch } =
+    useResultsQuery(paginatedQueryProps);
 
   const searchParams = useMemo(
     () =>
@@ -82,7 +78,7 @@ function Results(props: ResultsProps) {
         {!sidebarCollapsed && (
           <div className="h-100 left-col">
             <Container fluid className="h-100 g-0">
-              <Stack gap={2} className="h-100 pt-1">
+              <Stack gap={2} className="h-100">
                 <SearchBar
                   {...props}
                   placeholder={`Search ${props.title.toLowerCase()}...`}
@@ -116,6 +112,7 @@ function Results(props: ResultsProps) {
             <ResultsPanel
               {...props}
               searchParameters={searchParameters}
+              pageSize={pageSize}
               isFetching={isFetching}
               error={error as Error}
               data={data}

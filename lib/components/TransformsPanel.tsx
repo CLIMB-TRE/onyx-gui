@@ -1,13 +1,14 @@
-import { useLayoutEffect, useState } from "react";
+import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Stack from "react-bootstrap/Stack";
-import { MdClear, MdCreate } from "react-icons/md";
+import { MdClear, MdCreate, MdDelete } from "react-icons/md";
 import { DataProps } from "../interfaces";
 import Transforms from "./Transforms";
+import RemoveAllModal from "./RemoveAllModal";
 
 interface TransformsPanelProps extends DataProps {
   transform: string;
@@ -20,11 +21,7 @@ interface TransformsPanelProps extends DataProps {
 
 function TransformsPanel(props: TransformsPanelProps) {
   const [editMode, setEditMode] = useState(false);
-
-  // Clear parameters when project changes
-  useLayoutEffect(() => {
-    setEditMode(false);
-  }, [props.project]);
+  const [removeAllModalShow, setRemoveAllModalShow] = useState(false);
 
   const handleTransformsChange = (action: string) => {
     props.setTransform(action);
@@ -37,8 +34,19 @@ function TransformsPanel(props: TransformsPanelProps) {
     props.setTransformList(list);
   };
 
+  const handleTransformRemoveAll = () => {
+    setEditMode(false);
+    props.setTransformList([]);
+  };
+
   return (
     <Card className="h-100 overflow-y-auto">
+      <RemoveAllModal
+        show={removeAllModalShow}
+        onHide={() => setRemoveAllModalShow(false)}
+        item={`${props.transform}d Fields`}
+        handleRemove={handleTransformRemoveAll}
+      />
       <Card.Header>
         <Stack direction="horizontal" gap={1}>
           <NavDropdown className="me-auto" title={props.transform}>
@@ -58,6 +66,14 @@ function TransformsPanel(props: TransformsPanelProps) {
             onClick={() => setEditMode(true)}
           >
             <MdCreate />
+          </Button>
+          <Button
+            size="sm"
+            variant="dark"
+            title="Remove All Fields"
+            onClick={() => setRemoveAllModalShow(true)}
+          >
+            <MdDelete />
           </Button>
         </Stack>
       </Card.Header>

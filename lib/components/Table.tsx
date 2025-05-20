@@ -91,6 +91,7 @@ interface ServerPaginatedTableProps extends TableProps {
   response: ListResponse;
   searchPath: string;
   searchParameters: string;
+  pageSize: number;
 }
 
 /** Converts InputData to TableData. All non-string/number values are converted to strings. */
@@ -538,7 +539,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   });
   const [order, setOrder] = useState("");
 
-  const resultsPageSize = 1000;
+  const resultsPageSize = props.pageSize;
   const userPageSize = 50;
 
   const { isFetching: countPending, data: countResponse } =
@@ -628,6 +629,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       setLoading(true);
       const search = new URLSearchParams(params);
       search.set("page", serverPage.toString());
+      search.set("page_size", resultsPageSize.toString());
       search.delete("cursor");
 
       props

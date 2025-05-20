@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
@@ -67,13 +67,6 @@ function FilterPanel(props: FilterPanelProps) {
   const [editFilter, setEditFilter] = useState({} as FilterConfig);
   const [editIndex, setEditIndex] = useState(0);
   const [removeAllModalShow, setRemoveAllModalShow] = useState(false);
-
-  // Clear parameters when project changes
-  useLayoutEffect(() => {
-    setEditMode(false);
-    setEditFilter({} as FilterConfig);
-    setEditIndex(0);
-  }, [props.project]);
 
   const handleEditMode = (filter: FilterConfig, index: number) => {
     setEditMode(true);
