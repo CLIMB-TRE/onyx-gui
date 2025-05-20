@@ -517,7 +517,7 @@ function Graphs(props: DataProps) {
       <Card className="h-100 overflow-y-auto">
         <Card.Header>
           <Stack direction="horizontal" gap={1}>
-            <span className="me-auto">
+            <span className="me-auto text-truncate">
               <PageTitle
                 title="Graphs"
                 description={props.projectDescription}
