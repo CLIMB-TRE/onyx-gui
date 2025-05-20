@@ -18,6 +18,7 @@ import Table, { ServerPaginatedTable } from "./Table";
 
 interface ResultsPanelProps extends ResultsProps {
   searchParameters: string;
+  pageSize: number;
   isFetching: boolean;
   error: Error | null;
   data: ListResponse | ErrorResponse;

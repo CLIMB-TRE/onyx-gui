@@ -26,6 +26,10 @@ interface QueryProps extends ProjectProps {
   searchParameters: string;
 }
 
+interface PaginatedQueryProps extends QueryProps {
+  pageSize?: number;
+}
+
 interface GraphQueryProps extends ProjectProps {
   graphConfig: GraphConfig;
 }
@@ -279,12 +283,16 @@ const useAnalysisDownstreamQuery = (
 };
 
 /** Fetch results from path and search parameters */
-const useResultsQuery = (props: QueryProps) => {
+const useResultsQuery = (props: PaginatedQueryProps) => {
   return useQuery({
     queryKey: ["results-list", props.searchPath, props.searchParameters],
     queryFn: async () => {
+      const searchParameters = new URLSearchParams(props.searchParameters);
+      if (props.pageSize)
+        searchParameters.set("page_size", props.pageSize.toString());
+
       return props
-        .httpPathHandler(`${props.searchPath}/?${props.searchParameters}`)
+        .httpPathHandler(`${props.searchPath}/?${searchParameters.toString()}`)
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.searchPath),
