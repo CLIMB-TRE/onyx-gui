@@ -7,6 +7,7 @@ import { DataProps } from "../interfaces";
 import { FilterConfig } from "../types";
 import { Choice, Dropdown, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput, RangeInput } from "./Inputs";
+import { useFieldDescriptions } from "../api/hooks";
 
 interface FilterProps extends DataProps {
   index: number;
@@ -162,6 +163,8 @@ function Filter(props: FilterProps) {
       f = <Input value={filter.value} onChange={handleValueChange} />;
   }
 
+  const fieldDescriptions = useFieldDescriptions(props.projectFields);
+
   return (
     <Stack gap={2} className="p-1">
       <Stack direction="horizontal">
@@ -177,7 +180,7 @@ function Filter(props: FilterProps) {
           <Form.Label>Field</Form.Label>
           <Dropdown
             options={props.fieldList}
-            titles={props.fieldDescriptions}
+            titles={fieldDescriptions}
             value={filter.field}
             placeholder="Select field..."
             onChange={handleFieldChange}

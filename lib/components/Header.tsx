@@ -7,17 +7,18 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import Stack from "react-bootstrap/Stack";
 import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
 import { useProfileQuery } from "../api";
-import { PageProps } from "../interfaces";
+import { OnyxProps } from "../interfaces";
 import { OnyxTabKeys, Project } from "../types";
 import { TextQueryHandler } from "./QueryHandler";
 
-interface HeaderProps extends PageProps {
-  projectObj?: Project;
-  projectList: Project[];
+interface HeaderProps extends OnyxProps {
+  darkMode: boolean;
+  handleThemeChange: () => void;
+  project?: Project;
+  projects: Project[];
   handleProjectChange: (p: Project) => void;
   tabKey: string;
   setTabKey: (k: string) => void;
-  handleThemeChange: () => void;
   handleProjectRecordHide: () => void;
   handleAnalysisHide: () => void;
 }
@@ -117,12 +118,12 @@ function Header(props: HeaderProps) {
               title={
                 <HeaderText
                   label="Project"
-                  value={props.projectObj?.name || "Not Selected"}
+                  value={props.project?.name || "Not Selected"}
                 />
               }
               style={{ color: "white" }}
             >
-              {props.projectList.map((p) => (
+              {props.projects.map((p) => (
                 <NavDropdown.Item
                   key={p.code}
                   onClick={() => props.handleProjectChange(p)}

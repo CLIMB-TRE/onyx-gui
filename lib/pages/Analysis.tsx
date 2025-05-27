@@ -225,7 +225,7 @@ function Analysis(props: IDProps) {
                 <History
                   {...props}
                   name="analysis"
-                  searchPath={`projects/${props.project}/analysis`}
+                  searchPath={`projects/${props.project.code}/analysis`}
                   ID={props.ID}
                 />
               </Tab.Pane>

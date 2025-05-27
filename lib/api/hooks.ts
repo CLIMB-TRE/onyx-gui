@@ -45,12 +45,20 @@ const useFieldsInfo = (fieldsResponse: FieldsResponse | ErrorResponse) => {
       Object.entries(flattenFields(fieldsResponse.data.fields))
     );
 
-    // A map of field names to their descriptions
-    const descriptions = new Map(
-      Array.from(fields, ([field, options]) => [field, options.description])
-    );
-    return { name, description, fields, descriptions };
+    return { name, description, fields };
   }, [fieldsResponse]);
+};
+
+const useFieldDescriptions = (projectFields: Map<string, ProjectField>) => {
+  return useMemo(() => {
+    // Get a map of field names to their descriptions
+    return new Map(
+      Array.from(projectFields, ([field, options]) => [
+        field,
+        options.description,
+      ])
+    );
+  }, [projectFields]);
 };
 
 const useChoiceDescriptions = (data: ChoicesResponse | ErrorResponse) => {
@@ -91,4 +99,9 @@ const useChoicesDescriptions = (
   }, [fields, data]);
 };
 
-export { useChoiceDescriptions, useChoicesDescriptions, useFieldsInfo };
+export {
+  useChoiceDescriptions,
+  useChoicesDescriptions,
+  useFieldsInfo,
+  useFieldDescriptions,
+};

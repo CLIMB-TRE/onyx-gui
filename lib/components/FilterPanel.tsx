@@ -53,13 +53,13 @@ function formatFilter(filter: FilterConfig) {
   }
 
   if (filter.lookup.endsWith("in") || filter.lookup.endsWith("range"))
-    return `${filter.field} ${formatLookup(filter.lookup)} [${formatValue(
-      filter.value
-    )}]`;
+    return `${filter.field.split("__").join(" ")} ${formatLookup(
+      filter.lookup
+    )} [${formatValue(filter.value)}]`;
   else
-    return `${filter.field} ${formatLookup(filter.lookup)} ${formatValue(
-      filter.value
-    )}`;
+    return `${filter.field.split("__").join(" ")} ${formatLookup(
+      filter.lookup
+    )} ${formatValue(filter.value)}`;
 }
 
 function FilterPanel(props: FilterPanelProps) {

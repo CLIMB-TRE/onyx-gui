@@ -112,7 +112,7 @@ function ProjectRecord(props: IDProps) {
                 <History
                   {...props}
                   name="record"
-                  searchPath={`projects/${props.project}`}
+                  searchPath={`projects/${props.project.code}`}
                   ID={props.ID}
                 />
               </Tab.Pane>
