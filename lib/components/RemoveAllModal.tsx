@@ -1,3 +1,4 @@
+import { Stack } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
@@ -20,9 +21,10 @@ function RemoveAllModal(props: RemoveAllModalProps) {
         <Modal.Title>{`Remove All ${props.item}`}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="text-center">
-        {`Are you sure you want to remove all ${props.item.toLowerCase()}?`}
-        <br />
-        <b>This action cannot be undone.</b>
+        <Stack gap={1}>
+          {`Are you sure you want to remove all ${props.item.toLowerCase()}?`}
+          <b>This action cannot be undone.</b>
+        </Stack>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="dark" onClick={props.onHide}>
