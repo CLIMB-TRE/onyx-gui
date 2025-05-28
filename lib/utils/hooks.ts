@@ -15,7 +15,10 @@ export const useDelayedValue = (delay?: number) => {
   const [showValue, setShowValue] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowValue(true), delay || 500);
+    const timer = setTimeout(
+      () => setShowValue(true),
+      delay === undefined ? 500 : delay
+    );
     return () => clearTimeout(timer);
   });
 
