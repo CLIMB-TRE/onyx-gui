@@ -153,6 +153,7 @@ function getColDefs(
         headerTooltip: props.headerTooltips?.get(
           (props.headerTooltipPrefix || "") + key
         ),
+        unSortIcon: true,
       };
 
       // Disable AGGrid sorting for server paginated tables
