@@ -184,3 +184,4 @@ function Details(props: DetailsProps) {
 }
 
 export default Details;
+export { Field };

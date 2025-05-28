@@ -7,7 +7,7 @@ import ResultsPanel from "../components/ResultsPanel";
 import SearchBar from "../components/SearchBar";
 import SummarisePanel from "../components/SummarisePanel";
 import { ResultsProps } from "../interfaces";
-import { FilterConfig } from "../types";
+import { FilterConfig, ProjectField } from "../types";
 import { formatFilters } from "../utils/functions";
 import { useDebouncedValue } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
@@ -17,15 +17,25 @@ function Results(props: ResultsProps) {
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
   const [summariseList, setSummariseList] = useState(new Array<string>());
-  const [columnList, setColumnList] = useState(new Array<string>());
+  const [columnList, setColumnList] = useState<ProjectField[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const filterFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, projectField]) => projectField.actions.includes("filter"))
-    .map(([field]) => field);
-  const listFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, projectField]) => projectField.actions.includes("list"))
-    .map(([field]) => field);
   const [columnsModalShow, setColumnsModalShow] = useState(false);
+
+  const filterOptions = useMemo(
+    () =>
+      Array.from(props.projectFields.entries())
+        .filter(([, projectField]) => projectField.actions.includes("filter"))
+        .map(([field]) => field),
+    [props.projectFields]
+  );
+
+  const columnOptions = useMemo(
+    () =>
+      Array.from(props.projectFields.entries())
+        .filter(([, projectField]) => projectField.actions.includes("list"))
+        .map(([, projectField]) => projectField),
+    [props.projectFields]
+  );
 
   // Pagination page size
   const pageSize = 100;
@@ -45,11 +55,11 @@ function Results(props: ResultsProps) {
   const searchParams = useMemo(() => {
     let columns;
     let columnOperator;
-    if (columnList.length <= listFieldOptions.length - columnList.length) {
+    if (columnList.length <= columnOptions.length - columnList.length) {
       columns = columnList;
       columnOperator = "include";
     } else {
-      columns = listFieldOptions.filter((field) => !columnList.includes(field));
+      columns = columnOptions.filter((field) => !columnList.includes(field));
       columnOperator = "exclude";
     }
 
@@ -60,7 +70,7 @@ function Results(props: ResultsProps) {
             .filter((field) => field)
             .map((field) => ["summarise", field])
         )
-        .concat(columns.map((field) => [columnOperator, field]))
+        .concat(columns.map((field) => [columnOperator, field.code]))
         .concat(
           [searchInput]
             .map((search) => search.trim())
@@ -68,7 +78,7 @@ function Results(props: ResultsProps) {
             .map((search) => ["search", search])
         )
     ).toString();
-  }, [filterList, summariseList, columnList, searchInput, listFieldOptions]);
+  }, [filterList, summariseList, columnList, searchInput, columnOptions]);
 
   const debouncedSearchParams = useDebouncedValue(searchParams, 1000);
 
@@ -89,9 +99,9 @@ function Results(props: ResultsProps) {
         {...props}
         show={columnsModalShow}
         onHide={() => setColumnsModalShow(false)}
-        columnOptions={listFieldOptions}
-        columnList={columnList}
-        setColumnList={setColumnList}
+        columns={columnOptions}
+        activeColumns={columnList}
+        setActiveColumns={setColumnList}
       />
       <Stack gap={2} direction="horizontal" className="h-100 parent">
         {!sidebarCollapsed && (
@@ -110,13 +120,13 @@ function Results(props: ResultsProps) {
                     {...props}
                     filterList={filterList}
                     setFilterList={setFilterList}
-                    filterFieldOptions={filterFieldOptions}
+                    filterFieldOptions={filterOptions}
                   />
                   <SummarisePanel
                     {...props}
                     summariseList={summariseList}
                     setSummariseList={setSummariseList}
-                    filterFieldOptions={filterFieldOptions}
+                    filterFieldOptions={filterOptions}
                   />
                 </Stack>
               </Stack>

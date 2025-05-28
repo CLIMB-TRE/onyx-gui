@@ -1,68 +1,78 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Stack from "react-bootstrap/Stack";
 import Modal from "react-bootstrap/Modal";
 import Card from "react-bootstrap/Card";
 import { DataProps } from "../interfaces";
+import { ProjectField } from "../types";
+import { Field } from "./Details";
+import { useDebouncedValue } from "../utils/hooks";
+import { Input } from "./Inputs";
 
 interface ColumnsModalProps extends DataProps {
   show: boolean;
   onHide: () => void;
-  columnOptions: string[];
-  columnList: string[];
-  setColumnList: (value: string[]) => void;
+  columns: ProjectField[];
+  activeColumns: ProjectField[];
+  setActiveColumns: (value: ProjectField[]) => void;
 }
-
-interface FieldProps extends DataProps {
-  field: string;
-}
-
-function Field(props: FieldProps) {
-  return (
-    <small>
-      <Stack gap={1}>
-        <b>{props.field}</b>
-        <div className="text-muted">
-          {props.projectFields.get(props.field)?.description}
-        </div>
-      </Stack>
-    </small>
-  );
-}
-
-// TODO: Mounted on enter ??
 
 function ColumnsModal(props: ColumnsModalProps) {
-  const [switchAll, setCheckedAll] = useState(false);
-  const [checkedList, setCheckedList] = useState(
-    props.columnOptions.map((field) => ({
-      field,
-      isChecked: props.columnList.includes(field),
-    }))
+  const [selectAll, setSelectAll] = useState<boolean>(false);
+  const [activeColumns, setActiveColumns] = useState<Set<string>>();
+  const [search, setSearch] = useState<string>("");
+  const debouncedSearch = useDebouncedValue(search.toLowerCase(), 200);
+  const filteredColumns = useMemo(
+    () =>
+      props.columns.filter(
+        (column) =>
+          column.code.toLowerCase().includes(debouncedSearch) ||
+          column.description.toLowerCase().includes(debouncedSearch)
+      ),
+    [props.columns, debouncedSearch]
   );
 
-  // Update checkedList when columnOptions or columnList changes
-  // TODO: Dont use an effect
+  // Update active columns when props.activeColumns changes
   useEffect(() => {
-    setCheckedList(
-      props.columnOptions.map((field) => ({
-        field,
-        isChecked: props.columnList.includes(field),
-      }))
-    );
-  }, [props.columnOptions, props.columnList]);
+    setActiveColumns(new Set(props.activeColumns.map((column) => column.code)));
+  }, [props.activeColumns]);
 
+  const handleSearchChange = (search: string) => {
+    setSearch(search);
+    setSelectAll(false); // Reset select all when search changes
+  };
+
+  // Handle checkbox changes for individual columns
+  const handleSelectChange = (code: string, selected: boolean) => {
+    const updatedColumns = new Set(activeColumns);
+    if (selected) updatedColumns.add(code);
+    else updatedColumns.delete(code);
+    setActiveColumns(updatedColumns);
+  };
+
+  // Handle checkbox for selecting all columns
+  const handleSelectAll = (selected: boolean) => {
+    setSelectAll(selected);
+    const updatedColumns = new Set(activeColumns);
+    if (selected)
+      filteredColumns.forEach((column) => updatedColumns.add(column.code));
+    else
+      filteredColumns.forEach((column) => updatedColumns.delete(column.code));
+    setActiveColumns(updatedColumns);
+  };
+
+  // Apply the changes to active columns, then close the modal
   const handleApply = () => {
-    const updatedColumnList = checkedList
-      .filter((item) => item.isChecked)
-      .map((item) => item.field);
-    props.setColumnList(updatedColumnList);
+    props.setActiveColumns(
+      props.columns.filter((column) => activeColumns?.has(column.code))
+    );
     props.onHide();
   };
 
   return (
     <Modal
+      size="lg"
       className="onyx-modal"
       centered
       show={props.show}
@@ -73,44 +83,42 @@ function ColumnsModal(props: ColumnsModalProps) {
       </Modal.Header>
       <Modal.Body>
         <Stack gap={2}>
-          <Stack direction="horizontal" gap={2}>
+          <Stack direction="horizontal" gap={3}>
             <Form.Check
+              className="me-auto"
               type="checkbox"
               id={`checkbox-select-all`}
-              label={switchAll ? "Unselect All" : "Select All"}
-              checked={switchAll}
-              onChange={(e) => {
-                setCheckedAll(e.target.checked);
-                const updatedCheckedList = checkedList.map((item) => ({
-                  ...item,
-                  isChecked: e.target.checked,
-                }));
-                setCheckedList(updatedCheckedList);
-              }}
+              label={`${selectAll ? "Unselect All" : "Select All"} (${
+                filteredColumns.length
+              })`}
+              checked={selectAll}
+              onChange={(e) => handleSelectAll(e.target.checked)}
             />
+            <div style={{ width: "300px" }}>
+              <Input
+                {...props}
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            </div>
           </Stack>
           <Card
             body
             className="h-100 overflow-auto"
-            style={{ maxHeight: "50vh" }}
+            style={{ minHeight: "50vh", maxHeight: "50vh" }}
           >
             <Form>
               <Stack gap={2}>
-                {checkedList.map((checked) => (
+                {filteredColumns.map((column) => (
                   <Form.Check
-                    key={checked.field}
+                    key={column.code}
                     type="checkbox"
-                    id={`checkbox-${checked.field}`}
-                    label={<Field {...props} field={checked.field} />}
-                    checked={checked.isChecked}
-                    onChange={(e) => {
-                      const updatedCheckedList = checkedList.map((item) =>
-                        item.field === checked.field
-                          ? { ...item, isChecked: e.target.checked }
-                          : item
-                      );
-                      setCheckedList(updatedCheckedList);
-                    }}
+                    id={`checkbox-${column.code}`}
+                    label={<Field {...props} field={column.code} />}
+                    checked={activeColumns?.has(column.code)}
+                    onChange={(e) =>
+                      handleSelectChange(column.code, e.target.checked)
+                    }
                   />
                 ))}
               </Stack>
