@@ -32,6 +32,13 @@ function ColumnsModal(props: ColumnsModalProps) {
       ),
     [props.columns, debouncedSearch]
   );
+  const activeColumnsMessage = useMemo(() => {
+    return `${activeColumns?.size || 0} column${
+      activeColumns?.size !== 1 ? "s" : ""
+    } selected. ${
+      !activeColumns?.size ? "All columns will be displayed." : ""
+    }`;
+  }, [activeColumns]);
 
   // Update active columns when props.activeColumns changes
   useEffect(() => {
@@ -83,7 +90,7 @@ function ColumnsModal(props: ColumnsModalProps) {
       </Modal.Header>
       <Modal.Body>
         <Stack gap={2}>
-          <Stack direction="horizontal" gap={3}>
+          <Stack direction="horizontal">
             <Form.Check
               className="me-auto"
               type="checkbox"
@@ -127,6 +134,7 @@ function ColumnsModal(props: ColumnsModalProps) {
         </Stack>
       </Modal.Body>
       <Modal.Footer>
+        <span className="text-muted px-2">{activeColumnsMessage}</span>
         <Button variant="dark" onClick={props.onHide}>
           Cancel
         </Button>
