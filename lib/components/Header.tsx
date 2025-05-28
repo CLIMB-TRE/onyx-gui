@@ -118,7 +118,7 @@ function Header(props: HeaderProps) {
               title={
                 <HeaderText
                   label="Project"
-                  value={props.project?.name || "Not Selected"}
+                  value={props.project?.name || "Not Found"}
                 />
               }
               style={{ color: "white" }}
@@ -132,9 +132,16 @@ function Header(props: HeaderProps) {
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
-            <Nav variant="underline" activeKey={props.tabKey}>
+            <Nav
+              variant="underline"
+              activeKey={props.project ? props.tabKey : undefined}
+            >
               <Stack direction="horizontal" gap={3}>
-                <Nav.Link eventKey={OnyxTabKeys.USER} className="fw-normal">
+                <Nav.Link
+                  eventKey={OnyxTabKeys.USER}
+                  className="fw-normal"
+                  disabled={!props.project}
+                >
                   <HeaderText
                     label="User"
                     value={
@@ -147,7 +154,11 @@ function Header(props: HeaderProps) {
                     }
                   />
                 </Nav.Link>
-                <Nav.Link eventKey={OnyxTabKeys.SITE} className="fw-normal">
+                <Nav.Link
+                  eventKey={OnyxTabKeys.SITE}
+                  className="fw-normal"
+                  disabled={!props.project}
+                >
                   <HeaderText
                     label="Site"
                     value={
@@ -160,21 +171,36 @@ function Header(props: HeaderProps) {
                     }
                   />
                 </Nav.Link>
-                <Nav.Link disabled className="fw-normal ">
+                <Nav.Link disabled className="fw-normal">
                   <HeaderVersion label="Version" version={props.extVersion} />
                 </Nav.Link>
               </Stack>
             </Nav>
           </Nav>
-          <Nav variant="underline" activeKey={props.tabKey}>
+          <Nav
+            variant="underline"
+            activeKey={props.project ? props.tabKey : undefined}
+          >
             <Stack direction="horizontal" gap={3}>
-              <Nav.Link eventKey={OnyxTabKeys.RECORDS} className="fw-normal">
+              <Nav.Link
+                eventKey={OnyxTabKeys.RECORDS}
+                className="fw-normal"
+                disabled={!props.project}
+              >
                 Records
               </Nav.Link>
-              <Nav.Link eventKey={OnyxTabKeys.ANALYSES} className="fw-normal">
+              <Nav.Link
+                eventKey={OnyxTabKeys.ANALYSES}
+                className="fw-normal"
+                disabled={!props.project}
+              >
                 Analyses
               </Nav.Link>
-              <Nav.Link eventKey={OnyxTabKeys.GRAPHS} className="fw-normal">
+              <Nav.Link
+                eventKey={OnyxTabKeys.GRAPHS}
+                className="fw-normal"
+                disabled={!props.project}
+              >
                 Graphs
               </Nav.Link>
               <Form.Check
