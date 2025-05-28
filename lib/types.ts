@@ -84,6 +84,7 @@ export type ProjectPermissionGroup = {
 
 export type ProjectField = {
   type: FieldType;
+  code: string;
   description: string;
   actions: string[];
   values?: string[];

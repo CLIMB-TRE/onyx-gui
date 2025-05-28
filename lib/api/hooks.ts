@@ -12,6 +12,9 @@ function flattenFields(fields: Record<string, ProjectField>) {
   // Loop over object and flatten nested fields
   const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
     for (const [field, fieldInfo] of Object.entries(obj)) {
+      // TODO: Shouldn't add code here
+      const code = prefix + field;
+      fieldInfo.code = code;
       flatFields[prefix + field] = fieldInfo;
       if (fieldInfo.type === "relation" && fieldInfo.fields) {
         flatten(fieldInfo.fields, prefix + field + "__");
