@@ -11,7 +11,7 @@ interface SearchBarProps {
 
 function SearchBar(props: SearchBarProps) {
   return (
-    <Stack direction="horizontal" gap={2}>
+    <Stack className="p-1" direction="horizontal" gap={2}>
       <Form.Control
         value={props.searchInput}
         placeholder={props.placeholder}

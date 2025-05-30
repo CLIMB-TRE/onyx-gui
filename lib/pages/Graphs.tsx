@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
@@ -402,11 +402,6 @@ function Graphs(props: DataProps) {
     setRefresh(refresh ? 0 : 1);
   };
 
-  // Reset graphs when project changes
-  useLayoutEffect(() => {
-    setGraphConfigList(defaultGraphConfig());
-  }, [props.project]);
-
   const handleGraphConfigTypeChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
     index: number
@@ -522,8 +517,11 @@ function Graphs(props: DataProps) {
       <Card className="h-100 overflow-y-auto">
         <Card.Header>
           <Stack direction="horizontal" gap={1}>
-            <span className="me-auto">
-              <PageTitle {...props} title="Graphs" />
+            <span className="me-auto text-truncate">
+              <PageTitle
+                title="Graphs"
+                description={props.projectDescription}
+              />
             </span>
             <Button
               size="sm"
