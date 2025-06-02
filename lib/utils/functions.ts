@@ -1,5 +1,6 @@
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
+  RecordType,
   DetailResponse,
   ErrorResponse,
   ExportStatus,
@@ -33,7 +34,7 @@ function getDefaultFileNamePrefix(project: string, searchParameters: string) {
 }
 
 interface DetailResponseProps extends OnyxProps {
-  response: DetailResponse | ErrorResponse | undefined;
+  response: DetailResponse<RecordType> | ErrorResponse | undefined;
 }
 
 /** Handler for converting JSON data to a string for file export. */

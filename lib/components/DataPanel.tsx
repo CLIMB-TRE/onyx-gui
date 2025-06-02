@@ -30,7 +30,7 @@ import { useFieldDescriptions } from "../api/hooks";
 interface DataPanelProps extends IDProps {
   queryHook: (
     props: IDProps
-  ) => UseQueryResult<DetailResponse | ErrorResponse, Error>;
+  ) => UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error>;
   setUnpublished: () => void;
   dataFields: Map<string, string>;
 }
@@ -88,11 +88,7 @@ function DataPanel(props: DataPanelProps) {
   const fieldDescriptions = useFieldDescriptions(props.projectFields);
 
   return (
-    <QueryHandler
-      isFetching={isFetching}
-      error={error}
-      data={data as DetailResponse}
-    >
+    <QueryHandler isFetching={isFetching} error={error} data={data}>
       <Tab.Container
         id="data-panel-tabs"
         activeKey={props.dataPanelTabKey}

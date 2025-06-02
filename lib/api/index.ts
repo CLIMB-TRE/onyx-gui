@@ -4,6 +4,7 @@ import {
   DetailResponse,
   ErrorResponse,
   GraphConfig,
+  RecordType,
   ListResponse,
 } from "../types";
 import { formatFilters } from "../utils/functions";
@@ -189,7 +190,7 @@ const useHistoryQuery = (props: IDProps) => {
 /** Fetch record from record ID */
 const useRecordQuery = (
   props: IDProps
-): UseQueryResult<DetailResponse | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["record-detail", props.project.code, props.ID],
     queryFn: async () => {
@@ -205,7 +206,7 @@ const useRecordQuery = (
 /** Fetch record analyses from record ID */
 const useRecordAnalysesQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["record-analysis-list", props.project.code, props.ID],
     queryFn: async () => {
@@ -221,7 +222,7 @@ const useRecordAnalysesQuery = (
 /** Fetch analysis from analysis ID */
 const useAnalysisQuery = (
   props: IDProps
-): UseQueryResult<DetailResponse | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-detail", props.project.code, props.ID],
     queryFn: async () => {
@@ -237,7 +238,7 @@ const useAnalysisQuery = (
 /** Fetch analysis records from analysis ID */
 const useAnalysisRecordsQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-record-list", props.project.code, props.ID],
     queryFn: async () => {
@@ -255,7 +256,7 @@ const useAnalysisRecordsQuery = (
 /** Fetch upstream analyses from analysis ID */
 const useAnalysisUpstreamQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-upstream-list", props.project.code, props.ID],
     queryFn: async () => {
@@ -273,7 +274,7 @@ const useAnalysisUpstreamQuery = (
 /** Fetch downstream analyses from analysis ID */
 const useAnalysisDownstreamQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-downstream-list", props.project.code, props.ID],
     queryFn: async () => {

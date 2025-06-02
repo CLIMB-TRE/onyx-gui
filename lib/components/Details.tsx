@@ -8,13 +8,13 @@ import Stack from "react-bootstrap/Stack";
 import { useChoicesQueries } from "../api";
 import { useChoicesDescriptions } from "../api/hooks";
 import { DataProps } from "../interfaces";
-import { DetailResponse, ErrorResponse } from "../types";
+import { RecordType, DetailResponse, ErrorResponse } from "../types";
 import { useDebouncedValue } from "../utils/hooks";
 import { CopyToClipboardButton } from "./Buttons";
 import { Input } from "./Inputs";
 
 interface DetailsProps extends DataProps {
-  data: DetailResponse | ErrorResponse | undefined;
+  data: DetailResponse<RecordType> | ErrorResponse | undefined;
   handleErrorModalShow: (error: Error) => void;
 }
 

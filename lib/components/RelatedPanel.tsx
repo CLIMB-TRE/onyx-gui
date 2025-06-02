@@ -9,13 +9,13 @@ import ErrorModal from "../components/ErrorModal";
 import QueryHandler from "../components/QueryHandler";
 import Table from "../components/Table";
 import { IDProps } from "../interfaces";
-import { ErrorResponse, ListResponse } from "../types";
+import { ErrorResponse, RecordType, ListResponse } from "../types";
 import { s3BucketsMessage } from "../utils/messages";
 
 interface RelatedPanelProps extends IDProps {
   queryHook: (
     props: IDProps
-  ) => UseQueryResult<ListResponse | ErrorResponse, Error>;
+  ) => UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error>;
   title: string;
   description: string;
   defaultFileNamePrefix: string;
@@ -49,7 +49,7 @@ function RelatedPanel(props: RelatedPanelProps) {
     <QueryHandler
       isFetching={isFetching}
       error={error}
-      data={data as ListResponse}
+      data={data as ListResponse<RecordType>}
     >
       <>
         <ErrorModal

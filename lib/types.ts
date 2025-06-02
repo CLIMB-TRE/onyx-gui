@@ -147,14 +147,14 @@ export interface SuccessResponse {
   code: number;
 }
 
-export interface ListResponse extends SuccessResponse {
-  data: RecordType[];
+export interface ListResponse<T> extends SuccessResponse {
+  data: T[];
   next: string | null;
   previous: string | null;
 }
 
-export interface DetailResponse extends SuccessResponse {
-  data: RecordType;
+export interface DetailResponse<T> extends SuccessResponse {
+  data: T;
 }
 
 export interface FieldsResponse extends SuccessResponse {
