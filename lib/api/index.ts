@@ -203,7 +203,9 @@ const useRecordQuery = (
 };
 
 /** Fetch record analyses from record ID */
-const useRecordAnalysesQuery = (props: IDProps) => {
+const useRecordAnalysesQuery = (
+  props: IDProps
+): UseQueryResult<ListResponse | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["record-analysis-list", props.project.code, props.ID],
     queryFn: async () => {
@@ -233,7 +235,9 @@ const useAnalysisQuery = (
 };
 
 /** Fetch analysis records from analysis ID */
-const useAnalysisRecordsQuery = (props: IDProps) => {
+const useAnalysisRecordsQuery = (
+  props: IDProps
+): UseQueryResult<ListResponse | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-record-list", props.project.code, props.ID],
     queryFn: async () => {
