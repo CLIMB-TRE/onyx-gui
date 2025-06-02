@@ -80,7 +80,7 @@ function Results(props: ResultsProps) {
     ).toString();
   }, [filterList, summariseList, columnList, searchInput, columnOptions]);
 
-  const debouncedSearchParams = useDebouncedValue(searchParams, 1000);
+  const debouncedSearchParams = useDebouncedValue(searchParams, 500);
 
   useEffect(
     () => setSearchParameters(debouncedSearchParams),
