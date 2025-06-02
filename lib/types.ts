@@ -69,10 +69,16 @@ export type FieldType =
 
 export type GraphType = "line" | "bar" | "pie" | "";
 
+export type Profile = {
+  username: string;
+  site: string;
+  email: string;
+};
+
+// TODO: Add description
 export type Project = {
   code: string;
   name: string;
-  description: string;
 };
 
 export type ProjectPermissionGroup = {

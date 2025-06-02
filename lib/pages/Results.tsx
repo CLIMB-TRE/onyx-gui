@@ -140,7 +140,7 @@ function Results(props: ResultsProps) {
               searchParameters={searchParameters}
               pageSize={pageSize}
               isFetching={isFetching}
-              error={error as Error}
+              error={error}
               data={data}
               sidebarCollapsed={sidebarCollapsed}
               setSidebarCollapsed={setSidebarCollapsed}

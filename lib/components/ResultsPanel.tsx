@@ -24,7 +24,7 @@ interface ResultsPanelProps extends ResultsProps {
   pageSize: number;
   isFetching: boolean;
   error: Error | null;
-  data: ListResponse<RecordType> | ErrorResponse;
+  data: ListResponse<RecordType> | ErrorResponse | undefined;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
   setColumnsModalShow: (show: boolean) => void;

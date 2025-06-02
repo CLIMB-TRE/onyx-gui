@@ -19,30 +19,33 @@ import DataField from "../components/DataField";
 import QueryHandler from "../components/QueryHandler";
 import Table from "../components/Table";
 import { PageProps } from "../interfaces";
-import { ProjectPermissionGroup, RecordType } from "../types";
 import { recentActivityMessage } from "../utils/messages";
+import { Profile } from "../types";
 
 function Details(props: PageProps) {
   const { isFetching, error, data } = useProfileQuery(props);
 
-  const details = useMemo(() => {
-    if (data?.status !== "success") return { username: "", site: "" };
-    return data.data as Record<string, string>;
+  // Get the user profile
+  const profile = useMemo(() => {
+    if (data?.status !== "success")
+      return {
+        username: "",
+        site: "",
+        email: "",
+      } as Profile;
+
+    return data.data;
   }, [data]);
 
   return (
     <Card className="h-100 overflow-y-auto">
       <Card.Header>Details</Card.Header>
       <Card.Body className="h-100 p-2 overflow-y-auto">
-        <QueryHandler
-          isFetching={isFetching}
-          error={error as Error}
-          data={data}
-        >
+        <QueryHandler isFetching={isFetching} error={error} data={data}>
           <Container>
-            <DataField name="Username" value={details.username} />
-            <DataField name="Site" value={details.site} />
-            <DataField name="Email" value={details.email} />
+            <DataField name="Username" value={profile.username} />
+            <DataField name="Site" value={profile.site} />
+            <DataField name="Email" value={profile.email} />
           </Container>
         </QueryHandler>
       </Card.Body>
@@ -62,30 +65,24 @@ function ProjectPermissions(props: PageProps) {
     <Card className="h-100 overflow-y-auto">
       <Card.Header>Project Permissions</Card.Header>
       <Card.Body className="h-100 p-2 overflow-y-auto">
-        <QueryHandler
-          isFetching={isFetching}
-          error={error as Error}
-          data={data}
-        >
+        <QueryHandler isFetching={isFetching} error={error} data={data}>
           <Stack gap={2}>
-            {projectPermissions.map(
-              (project: ProjectPermissionGroup, index: number) => (
-                <Card body key={index}>
-                  <DataField name="Project" value={project.project} />
-                  <DataField name="Scope" value={project.scope} />
-                  <DataField
-                    name="Actions"
-                    value={
-                      <ul>
-                        {project.actions?.map((action, i) => (
-                          <li key={i}>{action}</li>
-                        ))}
-                      </ul>
-                    }
-                  />
-                </Card>
-              )
-            )}
+            {projectPermissions.map((project, index: number) => (
+              <Card body key={index}>
+                <DataField name="Project" value={project.project} />
+                <DataField name="Scope" value={project.scope} />
+                <DataField
+                  name="Actions"
+                  value={
+                    <ul>
+                      {project.actions?.map((action, i) => (
+                        <li key={i}>{action}</li>
+                      ))}
+                    </ul>
+                  }
+                />
+              </Card>
+            ))}
           </Stack>
         </QueryHandler>
       </Card.Body>
@@ -98,18 +95,14 @@ function Activity(props: PageProps) {
 
   const activity = useMemo(() => {
     if (data?.status !== "success") return [];
-    return data.data as RecordType[];
+    return data.data;
   }, [data]);
 
   return (
     <Card className="h-100 overflow-y-auto">
       <Card.Header>Recent Activity</Card.Header>
       <Card.Body className="h-100 p-2 overflow-y-auto">
-        <QueryHandler
-          isFetching={isFetching}
-          error={error as Error}
-          data={data}
-        >
+        <QueryHandler isFetching={isFetching} error={error} data={data}>
           <Stack className="h-100">
             <Card.Text className="m-2">{recentActivityMessage}</Card.Text>
             <Table

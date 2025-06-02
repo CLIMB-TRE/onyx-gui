@@ -26,7 +26,7 @@ function HistoryPanel(props: HistoryPanelProps) {
   }, [data]);
 
   return (
-    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
+    <QueryHandler isFetching={isFetching} error={error} data={data}>
       <>
         <h5>History</h5>
         <Table

@@ -8,7 +8,7 @@ import Stack from "react-bootstrap/Stack";
 import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { OnyxProps } from "../interfaces";
-import { OnyxTabKeys, Project } from "../types";
+import { OnyxTabKeys, Profile, Project } from "../types";
 import { TextQueryHandler } from "./QueryHandler";
 
 interface HeaderProps extends OnyxProps {
@@ -63,14 +63,12 @@ function Header(props: HeaderProps) {
   const profile = useMemo(() => {
     if (data?.status !== "success")
       return {
-        username: "None",
-        site: "None",
-      };
+        username: "",
+        site: "",
+        email: "",
+      } as Profile;
 
-    return {
-      username: data.data.username,
-      site: data.data.site,
-    };
+    return data.data;
   }, [data]);
 
   const handleTabChange = (eventKey: string | null) => {
@@ -145,10 +143,7 @@ function Header(props: HeaderProps) {
                   <HeaderText
                     label="User"
                     value={
-                      <TextQueryHandler
-                        isFetching={isFetching}
-                        error={error as Error}
-                      >
+                      <TextQueryHandler isFetching={isFetching} error={error}>
                         {profile.username}
                       </TextQueryHandler>
                     }
@@ -162,10 +157,7 @@ function Header(props: HeaderProps) {
                   <HeaderText
                     label="Site"
                     value={
-                      <TextQueryHandler
-                        isFetching={isFetching}
-                        error={error as Error}
-                      >
+                      <TextQueryHandler isFetching={isFetching} error={error}>
                         {profile.site}
                       </TextQueryHandler>
                     }

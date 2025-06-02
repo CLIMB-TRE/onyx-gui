@@ -20,11 +20,7 @@ function SiteUsers(props: PageProps) {
     <Card className="h-100">
       <Card.Header>Site Users</Card.Header>
       <Card.Body className="p-2 h-100">
-        <QueryHandler
-          isFetching={isFetching}
-          error={error as Error}
-          data={data}
-        >
+        <QueryHandler isFetching={isFetching} error={error} data={data}>
           <Table
             {...props}
             data={siteUsers}

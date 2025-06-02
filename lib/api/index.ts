@@ -6,6 +6,8 @@ import {
   GraphConfig,
   RecordType,
   ListResponse,
+  ProjectPermissionGroup,
+  Profile,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
@@ -62,7 +64,9 @@ const useLookupsQuery = (props: OnyxProps) => {
 };
 
 /** Fetch user profile */
-const useProfileQuery = (props: OnyxProps) => {
+const useProfileQuery = (
+  props: OnyxProps
+): UseQueryResult<DetailResponse<Profile> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["profile-detail"],
     queryFn: async () => {
@@ -75,7 +79,12 @@ const useProfileQuery = (props: OnyxProps) => {
 };
 
 /** Fetch user project permissions */
-const useProjectPermissionsQuery = (props: OnyxProps) => {
+const useProjectPermissionsQuery = (
+  props: OnyxProps
+): UseQueryResult<
+  ListResponse<ProjectPermissionGroup> | ErrorResponse,
+  Error
+> => {
   return useQuery({
     queryKey: ["project-permission-list"],
     queryFn: async () => {
@@ -148,7 +157,9 @@ const useChoicesQueries = (props: ChoicesProps) => {
 };
 
 /** Fetch user activity */
-const useActivityQuery = (props: OnyxProps) => {
+const useActivityQuery = (
+  props: OnyxProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["activity-list"],
     queryFn: async () => {
@@ -161,7 +172,9 @@ const useActivityQuery = (props: OnyxProps) => {
 };
 
 /** Fetch site users */
-const useSiteUsersQuery = (props: OnyxProps) => {
+const useSiteUsersQuery = (
+  props: OnyxProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["site-user-list"],
     queryFn: async () => {
@@ -174,7 +187,9 @@ const useSiteUsersQuery = (props: OnyxProps) => {
 };
 
 /** Fetch history from ID */
-const useHistoryQuery = (props: IDProps) => {
+const useHistoryQuery = (
+  props: IDProps
+): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["history-detail", props.searchPath, props.ID],
     queryFn: async () => {
@@ -290,7 +305,9 @@ const useAnalysisDownstreamQuery = (
 };
 
 /** Fetch results from path and search parameters */
-const useResultsQuery = (props: PaginatedQueryProps) => {
+const useResultsQuery = (
+  props: PaginatedQueryProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["results-list", props.searchPath, props.searchParameters],
     queryFn: async () => {

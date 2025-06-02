@@ -46,11 +46,7 @@ function RelatedPanel(props: RelatedPanelProps) {
   }, [data]);
 
   return (
-    <QueryHandler
-      isFetching={isFetching}
-      error={error}
-      data={data as ListResponse<RecordType>}
-    >
+    <QueryHandler isFetching={isFetching} error={error} data={data}>
       <>
         <ErrorModal
           title="S3 Reports"
