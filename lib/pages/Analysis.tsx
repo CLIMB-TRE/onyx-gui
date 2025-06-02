@@ -149,4 +149,3 @@ function Analysis(props: IDProps) {
 }
 
 export default Analysis;
-export { RelatedPanel };
