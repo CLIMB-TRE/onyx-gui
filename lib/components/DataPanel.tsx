@@ -25,6 +25,7 @@ import ExportModal from "./ExportModal";
 import JsonSearch from "./JsonSearch";
 import QueryHandler from "./QueryHandler";
 import Table from "./Table";
+import { useFieldDescriptions } from "../api/hooks";
 
 interface DataPanelProps extends IDProps {
   queryHook: (
@@ -83,6 +84,8 @@ function DataPanel(props: DataPanelProps) {
     }),
     [props, data]
   );
+
+  const fieldDescriptions = useFieldDescriptions(props.projectFields);
 
   return (
     <QueryHandler
@@ -179,10 +182,11 @@ function DataPanel(props: DataPanelProps) {
                     {...props}
                     data={relation}
                     defaultFileNamePrefix={`${props.ID}_${key}`}
-                    headerTooltips={props.fieldDescriptions}
+                    headerTooltips={fieldDescriptions}
                     headerTooltipPrefix={key + "__"}
                     footer={
-                      props.fieldDescriptions.get(key) || "No Description."
+                      props.projectFields.get(key)?.description ||
+                      "No Description."
                     }
                   />
                 </Tab.Pane>
@@ -203,7 +207,8 @@ function DataPanel(props: DataPanelProps) {
                       {...props}
                       data={structure as JsonData}
                       description={
-                        props.fieldDescriptions.get(key) || "No Description."
+                        props.projectFields.get(key)?.description ||
+                        "No Description."
                       }
                     />
                   </Card>

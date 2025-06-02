@@ -15,7 +15,10 @@ export const useDelayedValue = (delay?: number) => {
   const [showValue, setShowValue] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowValue(true), delay || 500);
+    const timer = setTimeout(
+      () => setShowValue(true),
+      delay === undefined ? 500 : delay
+    );
     return () => clearTimeout(timer);
   });
 
@@ -28,7 +31,7 @@ export const useCyclicValue = (start: number, end: number, pause?: number) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setValue((v) => (v + 1) % (end + 1));
-    }, pause || 500);
+    }, pause || 200);
     return () => clearInterval(interval);
   });
 

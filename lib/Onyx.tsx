@@ -27,7 +27,7 @@ import {
   LookupObject,
   OnyxTabKeys,
   Project,
-  ProjectPermissionType,
+  ProjectPermissionGroup,
   RecordTabKeys,
   RecordDetailTabKeys,
   Theme,
@@ -65,16 +65,12 @@ interface ProjectPageProps extends PageProps {
 function ProjectPage(props: ProjectPageProps) {
   // Get project information
   const { data: projectFieldsResponse } = useProjectFieldsQuery(props);
-  const {
-    description: projectDescription,
-    fields: projectFields,
-    descriptions: fieldDescriptions,
-  } = useFieldsInfo(projectFieldsResponse);
+  const { description: projectDescription, fields: projectFields } =
+    useFieldsInfo(projectFieldsResponse);
 
   // Get project analyses information
   const { data: analysisFieldsResponse } = useAnalysisFieldsQuery(props);
-  const { fields: analysisFields, descriptions: analysisDescriptions } =
-    useFieldsInfo(analysisFieldsResponse);
+  const { fields: analysisFields } = useFieldsInfo(analysisFieldsResponse);
 
   return (
     <Tab.Container activeKey={props.tabKey} mountOnEnter transition={false}>
@@ -93,9 +89,8 @@ function ProjectPage(props: ProjectPageProps) {
                   {...props}
                   projectFields={projectFields}
                   projectDescription={projectDescription}
-                  fieldDescriptions={fieldDescriptions}
                   title="Records"
-                  searchPath={`projects/${props.project}`}
+                  searchPath={`projects/${props.project.code}`}
                 />
               </Tab.Pane>
               <Tab.Pane
@@ -107,7 +102,6 @@ function ProjectPage(props: ProjectPageProps) {
                   {...props}
                   projectFields={projectFields}
                   projectDescription={projectDescription}
-                  fieldDescriptions={fieldDescriptions}
                   ID={props.recordID}
                   tabKey={props.recordDetailTabKey}
                   setTabKey={props.setRecordDetailTabKey}
@@ -127,9 +121,8 @@ function ProjectPage(props: ProjectPageProps) {
                   {...props}
                   projectFields={analysisFields}
                   projectDescription={projectDescription}
-                  fieldDescriptions={analysisDescriptions}
                   title="Analyses"
-                  searchPath={`projects/${props.project}/analysis`}
+                  searchPath={`projects/${props.project.code}/analysis`}
                 />
               </Tab.Pane>
               <Tab.Pane
@@ -141,7 +134,6 @@ function ProjectPage(props: ProjectPageProps) {
                   {...props}
                   projectFields={analysisFields}
                   projectDescription={projectDescription}
-                  fieldDescriptions={analysisDescriptions}
                   ID={props.analysisID}
                   tabKey={props.analysisDetailTabKey}
                   setTabKey={props.setAnalysisDetailTabKey}
@@ -158,7 +150,6 @@ function ProjectPage(props: ProjectPageProps) {
             {...props}
             projectFields={projectFields}
             projectDescription={projectDescription}
-            fieldDescriptions={fieldDescriptions}
           />
         </Tab.Pane>
       </Tab.Content>
@@ -274,7 +265,7 @@ function App(props: OnyxProps) {
     // Map the project permissions to a list of projects
     // Each item in the list is an object with a code and name
     const ps = projectPermissionsResponse.data
-      .map((projectPermission: ProjectPermissionType) => ({
+      .map((projectPermission: ProjectPermissionGroup) => ({
         code: projectPermission.project,
         name: projectPermission.name,
       }))
@@ -324,9 +315,8 @@ function App(props: OnyxProps) {
     <div className="Onyx h-100">
       <Header
         {...props}
-        project={project?.code || ""}
-        projectObj={project}
-        projectList={projects}
+        project={project}
+        projects={projects}
         handleProjectChange={handleProjectChange}
         tabKey={tabKey}
         setTabKey={setTabKey}
@@ -354,7 +344,7 @@ function App(props: OnyxProps) {
                       darkMode={darkMode}
                       typeLookups={typeLookups}
                       lookupDescriptions={lookupDescriptions}
-                      project={p.code}
+                      project={p}
                       tabKey={tabKey}
                       recordTabKey={recordTabKey}
                       analysisTabKey={analysisTabKey}

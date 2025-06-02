@@ -35,7 +35,7 @@ function Field(props: FieldProps) {
       <Stack gap={1}>
         <b>{props.field}</b>
         <div className="text-muted">
-          {props.fieldDescriptions.get(props.field)}
+          {props.projectFields.get(props.field)?.description}
         </div>
       </Stack>
     </small>
@@ -146,9 +146,9 @@ function Details(props: DetailsProps) {
               (row) =>
                 row.Field.toLowerCase().includes(debouncedSearch) ||
                 row.Value.toLowerCase().includes(debouncedSearch) ||
-                props.fieldDescriptions
+                props.projectFields
                   .get(row.Field)
-                  ?.toLowerCase()
+                  ?.description.toLowerCase()
                   .includes(debouncedSearch) ||
                 (
                   choiceDescriptions
@@ -184,3 +184,4 @@ function Details(props: DetailsProps) {
 }
 
 export default Details;
+export { Field };

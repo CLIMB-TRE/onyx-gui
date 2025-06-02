@@ -19,7 +19,7 @@ import DataField from "../components/DataField";
 import QueryHandler from "../components/QueryHandler";
 import Table from "../components/Table";
 import { PageProps } from "../interfaces";
-import { ProjectPermissionType, RecordType } from "../types";
+import { ProjectPermissionGroup, RecordType } from "../types";
 import { recentActivityMessage } from "../utils/messages";
 
 function Details(props: PageProps) {
@@ -69,7 +69,7 @@ function ProjectPermissions(props: PageProps) {
         >
           <Stack gap={2}>
             {projectPermissions.map(
-              (project: ProjectPermissionType, index: number) => (
+              (project: ProjectPermissionGroup, index: number) => (
                 <Card body key={index}>
                   <DataField name="Project" value={project.project} />
                   <DataField name="Scope" value={project.scope} />

@@ -10,13 +10,13 @@ import {
 import QueryHandler from "./QueryHandler";
 import Table from "./Table";
 
-interface HistoryProps extends PageProps {
+interface HistoryPanelProps extends PageProps {
   name?: string;
   searchPath: string;
   ID: string;
 }
 
-function History(props: HistoryProps) {
+function HistoryPanel(props: HistoryPanelProps) {
   const { isFetching, error, data } = useHistoryQuery(props);
 
   // Get the history
@@ -59,4 +59,4 @@ function History(props: HistoryProps) {
   );
 }
 
-export default History;
+export default HistoryPanel;

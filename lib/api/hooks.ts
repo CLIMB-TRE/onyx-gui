@@ -12,6 +12,9 @@ function flattenFields(fields: Record<string, ProjectField>) {
   // Loop over object and flatten nested fields
   const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
     for (const [field, fieldInfo] of Object.entries(obj)) {
+      // TODO: Shouldn't add code here
+      const code = prefix + field;
+      fieldInfo.code = code;
       flatFields[prefix + field] = fieldInfo;
       if (fieldInfo.type === "relation" && fieldInfo.fields) {
         flatten(fieldInfo.fields, prefix + field + "__");
@@ -45,12 +48,20 @@ const useFieldsInfo = (fieldsResponse: FieldsResponse | ErrorResponse) => {
       Object.entries(flattenFields(fieldsResponse.data.fields))
     );
 
-    // A map of field names to their descriptions
-    const descriptions = new Map(
-      Array.from(fields, ([field, options]) => [field, options.description])
-    );
-    return { name, description, fields, descriptions };
+    return { name, description, fields };
   }, [fieldsResponse]);
+};
+
+const useFieldDescriptions = (projectFields: Map<string, ProjectField>) => {
+  return useMemo(() => {
+    // Get a map of field names to their descriptions
+    return new Map(
+      Array.from(projectFields, ([field, options]) => [
+        field,
+        options.description,
+      ])
+    );
+  }, [projectFields]);
 };
 
 const useChoiceDescriptions = (data: ChoicesResponse | ErrorResponse) => {
@@ -91,4 +102,9 @@ const useChoicesDescriptions = (
   }, [fields, data]);
 };
 
-export { useChoiceDescriptions, useChoicesDescriptions, useFieldsInfo };
+export {
+  useChoiceDescriptions,
+  useChoicesDescriptions,
+  useFieldsInfo,
+  useFieldDescriptions,
+};

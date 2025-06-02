@@ -42,6 +42,7 @@ import {
 } from "../types";
 import { generateKey } from "../utils/functions";
 import RemoveAllModal from "../components/RemoveAllModal";
+import { useFieldDescriptions } from "../api/hooks";
 
 interface GraphPanelProps extends DataProps {
   graphConfig: GraphConfig;
@@ -157,6 +158,8 @@ function GraphPanelOptions(props: GraphPanelProps) {
     )
     .map(([field]) => field);
 
+  const fieldDescriptions = useFieldDescriptions(props.projectFields);
+
   return (
     <Tabs
       defaultActiveKey={GraphPanelTabKeys.GRAPH}
@@ -183,7 +186,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
               <Dropdown
                 isClearable
                 options={fieldOptions}
-                titles={props.fieldDescriptions}
+                titles={fieldDescriptions}
                 value={props.graphConfig.field}
                 placeholder="Select field..."
                 onChange={props.handleGraphConfigFieldChange}
@@ -197,7 +200,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
               <Dropdown
                 isClearable
                 options={groupByOptions}
-                titles={props.fieldDescriptions}
+                titles={fieldDescriptions}
                 value={props.graphConfig.groupBy}
                 placeholder="Select field..."
                 onChange={props.handleGraphConfigGroupByChange}

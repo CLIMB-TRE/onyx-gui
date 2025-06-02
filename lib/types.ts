@@ -72,10 +72,19 @@ export type GraphType = "line" | "bar" | "pie" | "";
 export type Project = {
   code: string;
   name: string;
+  description: string;
+};
+
+export type ProjectPermissionGroup = {
+  project: string;
+  name: string;
+  scope: string;
+  actions: string[];
 };
 
 export type ProjectField = {
   type: FieldType;
+  code: string;
   description: string;
   actions: string[];
   values?: string[];
@@ -126,13 +135,6 @@ export type RecordType = Record<
 
 export type SummaryType = Record<"count", number> &
   Record<string, string | number | boolean | object | null>;
-
-export type ProjectPermissionType = {
-  project: string;
-  name: string;
-  scope: string;
-  actions: string[];
-};
 
 export interface ErrorResponse {
   status: "fail" | "error";

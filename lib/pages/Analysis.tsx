@@ -1,5 +1,4 @@
-import { UseQueryResult } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
@@ -14,135 +13,11 @@ import {
   useAnalysisUpstreamQuery,
 } from "../api";
 import { UnpublishedBadge } from "../components/Badges";
-import {
-  AnalysisIDCellRendererFactory,
-  ClimbIDCellRendererFactory,
-  S3ReportCellRendererFactory,
-} from "../components/CellRenderers";
 import DataPanel from "../components/DataPanel";
-import ErrorModal from "../components/ErrorModal";
-import History from "../components/History";
-import QueryHandler from "../components/QueryHandler";
-import Table from "../components/Table";
+import RelatedPanel from "../components/RelatedPanel";
+import HistoryPanel from "../components/HistoryPanel";
 import { IDProps } from "../interfaces";
-import { AnalysisDetailTabKeys, ErrorResponse, ListResponse } from "../types";
-import { s3BucketsMessage } from "../utils/messages";
-
-interface RelatedAnalysesProps extends IDProps {
-  queryHook: (
-    props: IDProps
-  ) => UseQueryResult<ListResponse | ErrorResponse, Error>;
-  title: string;
-  description: string;
-  defaultFileNamePrefix: string;
-}
-
-function Records(props: IDProps) {
-  const { isFetching, error, data } = useAnalysisRecordsQuery(props);
-
-  // Get the records
-  const records = useMemo(() => {
-    if (data?.status !== "success") return [];
-    return data.data;
-  }, [data]);
-
-  return (
-    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
-      <>
-        <h5>Records</h5>
-        <Table
-          {...props}
-          data={records}
-          defaultFileNamePrefix={`${props.ID}_records`}
-          footer="Table showing all records involved in the analysis."
-          cellRenderers={
-            new Map([["climb_id", ClimbIDCellRendererFactory(props)]])
-          }
-        />
-      </>
-    </QueryHandler>
-  );
-}
-
-function RelatedAnalyses(props: RelatedAnalysesProps) {
-  const [errorModalShow, setErrorModalShow] = useState(false);
-  const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
-  const { isFetching, error, data } = props.queryHook(props);
-
-  const handleErrorModalShow = useCallback((error: Error) => {
-    setS3ReportError(error);
-    setErrorModalShow(true);
-  }, []);
-
-  const errorModalProps = useMemo(
-    () => ({
-      ...props,
-      handleErrorModalShow,
-    }),
-    [props, handleErrorModalShow]
-  );
-
-  // Get the analyses
-  const analyses = useMemo(() => {
-    if (data?.status !== "success") return [];
-    return data.data;
-  }, [data]);
-
-  return (
-    <QueryHandler
-      isFetching={isFetching}
-      error={error}
-      data={data as ListResponse}
-    >
-      <>
-        <ErrorModal
-          title="S3 Reports"
-          message={s3BucketsMessage}
-          error={s3ReportError}
-          show={errorModalShow}
-          onHide={() => setErrorModalShow(false)}
-        />
-        <h5>{props.title}</h5>
-        <Table
-          {...props}
-          data={analyses}
-          defaultFileNamePrefix={props.defaultFileNamePrefix}
-          footer={props.description}
-          cellRenderers={
-            new Map([
-              ["analysis_id", AnalysisIDCellRendererFactory(props)],
-              ["report", S3ReportCellRendererFactory(errorModalProps)],
-            ])
-          }
-        />
-      </>
-    </QueryHandler>
-  );
-}
-
-function Upstream(props: IDProps) {
-  return (
-    <RelatedAnalyses
-      {...props}
-      queryHook={useAnalysisUpstreamQuery}
-      title="Upstream Analyses"
-      description="Table showing all analyses that were used for the analysis."
-      defaultFileNamePrefix={`${props.ID}_upstream`}
-    />
-  );
-}
-
-function Downstream(props: IDProps) {
-  return (
-    <RelatedAnalyses
-      {...props}
-      queryHook={useAnalysisDownstreamQuery}
-      title="Downstream Analyses"
-      description="Table showing all analyses that used the analysis."
-      defaultFileNamePrefix={`${props.ID}_downstream`}
-    />
-  );
-}
+import { AnalysisDetailTabKeys } from "../types";
 
 function Analysis(props: IDProps) {
   const [published, setPublished] = useState(true);
@@ -222,10 +97,10 @@ function Analysis(props: IDProps) {
                 eventKey={AnalysisDetailTabKeys.HISTORY}
                 className="h-100"
               >
-                <History
+                <HistoryPanel
                   {...props}
                   name="analysis"
-                  searchPath={`projects/${props.project}/analysis`}
+                  searchPath={`projects/${props.project.code}/analysis`}
                   ID={props.ID}
                 />
               </Tab.Pane>
@@ -233,19 +108,37 @@ function Analysis(props: IDProps) {
                 eventKey={AnalysisDetailTabKeys.RECORDS}
                 className="h-100"
               >
-                <Records {...props} />
+                <RelatedPanel
+                  {...props}
+                  queryHook={useAnalysisRecordsQuery}
+                  title="Records"
+                  description="Table showing all records involved in the analysis."
+                  defaultFileNamePrefix={`${props.ID}_records`}
+                />
               </Tab.Pane>
               <Tab.Pane
                 eventKey={AnalysisDetailTabKeys.UPSTREAM}
                 className="h-100"
               >
-                <Upstream {...props} />
+                <RelatedPanel
+                  {...props}
+                  queryHook={useAnalysisUpstreamQuery}
+                  title="Upstream Analyses"
+                  description="Table showing all analyses that were used for the analysis."
+                  defaultFileNamePrefix={`${props.ID}_upstream`}
+                />
               </Tab.Pane>
               <Tab.Pane
                 eventKey={AnalysisDetailTabKeys.DOWNSTREAM}
                 className="h-100"
               >
-                <Downstream {...props} />
+                <RelatedPanel
+                  {...props}
+                  queryHook={useAnalysisDownstreamQuery}
+                  title="Downstream Analyses"
+                  description="Table showing all analyses that used the analysis."
+                  defaultFileNamePrefix={`${props.ID}_downstream`}
+                />
               </Tab.Pane>
             </Tab.Content>
           </Tab.Container>

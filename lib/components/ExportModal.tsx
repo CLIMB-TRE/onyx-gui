@@ -6,9 +6,9 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import Modal from "react-bootstrap/Modal";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import Spinner from "react-bootstrap/Spinner";
 import Stack from "react-bootstrap/Stack";
 import { ExportHandlerProps } from "../interfaces";
+import { BaseSpinner } from "./QueryHandler";
 import { ExportStatus } from "../types";
 import { ErrorModalContents } from "./ErrorModal";
 import { defaultExportProgressMessage } from "../utils/messages";
@@ -177,8 +177,9 @@ function ExportModal(props: ExportModalProps) {
           <Form.Group className="mb-3">
             <Form.Label className="d-flex justify-content-center">
               <Stack direction="horizontal" gap={2}>
-                <Spinner />
-                <span>Writing File...</span>
+                <BaseSpinner delay={0}>
+                  <span>Writing File...</span>
+                </BaseSpinner>
               </Stack>
             </Form.Label>
           </Form.Group>

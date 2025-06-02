@@ -3,40 +3,31 @@ import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
-import NavDropdown from "react-bootstrap/NavDropdown";
 import Stack from "react-bootstrap/Stack";
 import { MdClear, MdCreate, MdDelete } from "react-icons/md";
 import { DataProps } from "../interfaces";
-import Transforms from "./Transforms";
+import Summarise from "./Summarise";
 import RemoveAllModal from "./RemoveAllModal";
 
-interface TransformsPanelProps extends DataProps {
-  transform: string;
-  setTransform: (value: string) => void;
-  transformList: string[];
-  setTransformList: (value: string[]) => void;
+interface SummarisePanelProps extends DataProps {
+  summariseList: string[];
+  setSummariseList: (value: string[]) => void;
   filterFieldOptions: string[];
-  listFieldOptions: string[];
 }
 
-function TransformsPanel(props: TransformsPanelProps) {
+function SummarisePanel(props: SummarisePanelProps) {
   const [editMode, setEditMode] = useState(false);
   const [removeAllModalShow, setRemoveAllModalShow] = useState(false);
 
-  const handleTransformsChange = (action: string) => {
-    props.setTransform(action);
-    props.setTransformList([]);
-  };
-
-  const handleTransformRemove = (index: number) => {
-    const list = [...props.transformList];
+  const handleSummariseRemove = (index: number) => {
+    const list = [...props.summariseList];
     list.splice(index, 1);
-    props.setTransformList(list);
+    props.setSummariseList(list);
   };
 
-  const handleTransformRemoveAll = () => {
+  const handleSummariseRemoveAll = () => {
     setEditMode(false);
-    props.setTransformList([]);
+    props.setSummariseList([]);
   };
 
   return (
@@ -44,21 +35,12 @@ function TransformsPanel(props: TransformsPanelProps) {
       <RemoveAllModal
         show={removeAllModalShow}
         onHide={() => setRemoveAllModalShow(false)}
-        item={`${props.transform}d Fields`}
-        handleRemove={handleTransformRemoveAll}
+        item={"Summarised Fields"}
+        handleRemove={handleSummariseRemoveAll}
       />
       <Card.Header>
         <Stack direction="horizontal" gap={1}>
-          <NavDropdown className="me-auto" title={props.transform}>
-            {["Summarise", "Include", "Exclude"].map((action) => (
-              <NavDropdown.Item
-                key={action}
-                onClick={() => handleTransformsChange(action)}
-              >
-                {action}
-              </NavDropdown.Item>
-            ))}
-          </NavDropdown>
+          <span className="me-auto">Summarise</span>
           <Button
             size="sm"
             variant="dark"
@@ -79,29 +61,27 @@ function TransformsPanel(props: TransformsPanelProps) {
       </Card.Header>
       <Card.Body className="h-100 p-2 overflow-y-auto">
         {editMode ? (
-          <Transforms
+          <Summarise
             {...props}
-            transform={props.transform}
-            transformList={props.transformList}
-            setTransformList={props.setTransformList}
+            summariseList={props.summariseList}
+            setSummariseList={props.setSummariseList}
             filterFieldOptions={props.filterFieldOptions}
-            listFieldOptions={props.listFieldOptions}
             setEditMode={setEditMode}
           />
         ) : (
           <Stack gap={2}>
-            {props.transformList.map((transform, index) => (
-              <Container key={transform} fluid className="g-0">
+            {props.summariseList.map((field, index) => (
+              <Container key={field} fluid className="g-0">
                 <ButtonGroup size="sm">
                   <Button variant="dark" onClick={() => setEditMode(true)}>
                     <span className="onyx-text-pink font-monospace">
-                      {transform}
+                      {field}
                     </span>
                   </Button>
                   <Button
                     variant="dark"
                     title="Remove Field"
-                    onClick={() => handleTransformRemove(index)}
+                    onClick={() => handleSummariseRemove(index)}
                   >
                     <MdClear />
                   </Button>
@@ -115,4 +95,4 @@ function TransformsPanel(props: TransformsPanelProps) {
   );
 }
 
-export default TransformsPanel;
+export default SummarisePanel;
