@@ -139,6 +139,11 @@ export type RecordType = Record<
   string | number | boolean | object | null | RecordType[]
 >;
 
+// TODO: Add more detailed object structure
+export type HistoryType = {
+  history: RecordType[];
+};
+
 export type SummaryType = Record<"count", number> &
   Record<string, string | number | boolean | object | null>;
 

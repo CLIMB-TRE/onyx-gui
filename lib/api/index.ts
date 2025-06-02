@@ -8,6 +8,7 @@ import {
   ListResponse,
   ProjectPermissionGroup,
   Profile,
+  HistoryType,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
@@ -189,7 +190,7 @@ const useSiteUsersQuery = (
 /** Fetch history from ID */
 const useHistoryQuery = (
   props: IDProps
-): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse<HistoryType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["history-detail", props.searchPath, props.ID],
     queryFn: async () => {

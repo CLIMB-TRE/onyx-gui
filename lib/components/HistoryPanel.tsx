@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useHistoryQuery } from "../api";
 import { PageProps } from "../interfaces";
-import { RecordType } from "../types";
 import {
   ActionCellRenderer,
   ChangeCellRenderer,
@@ -22,7 +21,7 @@ function HistoryPanel(props: HistoryPanelProps) {
   // Get the history
   const history = useMemo(() => {
     if (data?.status !== "success") return [];
-    return data.data?.history as RecordType[];
+    return data.data?.history;
   }, [data]);
 
   return (
