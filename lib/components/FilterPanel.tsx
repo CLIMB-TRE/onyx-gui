@@ -18,6 +18,10 @@ interface FilterPanelProps extends DataProps {
   disableLookups?: boolean;
 }
 
+function formatField(field: string) {
+  return field.split("__").join(" ");
+}
+
 function formatLookup(lookup: string) {
   switch (lookup) {
     case "exact":
@@ -37,14 +41,16 @@ function formatLookup(lookup: string) {
   }
 }
 
+// TODO: Issues arise if value contains commas
+// TODO: Would be better to have field-type-dependent formatting
 function formatValue(value: string) {
-  let valueSet = value.split(",").map((v) => `"${v}"`);
-  if (valueSet.length > 10) {
-    valueSet = valueSet
+  let values = value.split(",");
+  if (values.length > 10) {
+    values = values
       .slice(0, 10)
-      .concat([`... [${(valueSet.length - 10).toString()} more]`]);
+      .concat([`... [${(values.length - 10).toString()} more]`]);
   }
-  return valueSet.join(", ");
+  return values.join(", ");
 }
 
 function formatFilter(filter: FilterConfig) {
@@ -53,11 +59,11 @@ function formatFilter(filter: FilterConfig) {
   }
 
   if (filter.lookup.endsWith("in") || filter.lookup.endsWith("range"))
-    return `${filter.field.split("__").join(" ")} ${formatLookup(
+    return `${formatField(filter.field)} ${formatLookup(
       filter.lookup
     )} [${formatValue(filter.value)}]`;
   else
-    return `${filter.field.split("__").join(" ")} ${formatLookup(
+    return `${formatField(filter.field)} ${formatLookup(
       filter.lookup
     )} ${formatValue(filter.value)}`;
 }
