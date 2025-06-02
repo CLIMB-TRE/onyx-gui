@@ -121,6 +121,7 @@ function Header(props: HeaderProps) {
               }
               style={{ color: "white" }}
             >
+              <NavDropdown.Header>Projects</NavDropdown.Header>
               {props.projects.map((p) => (
                 <NavDropdown.Item
                   key={p.code}
