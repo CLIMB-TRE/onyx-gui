@@ -31,7 +31,7 @@ export const useCyclicValue = (start: number, end: number, pause?: number) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setValue((v) => (v + 1) % (end + 1));
-    }, pause || 500);
+    }, pause || 200);
     return () => clearInterval(interval);
   });
 
