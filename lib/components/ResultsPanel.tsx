@@ -70,7 +70,7 @@ function ResultsPanel(props: ResultsPanelProps) {
     ["report", S3ReportCellRendererFactory(errorModalProps)],
   ]);
 
-  const fieldDescriptions = useFieldDescriptions(props.projectFields);
+  const fieldDescriptions = useFieldDescriptions(props.fields);
 
   return (
     <Card className="h-100 overflow-y-auto">

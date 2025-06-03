@@ -18,11 +18,11 @@ import {
 import DataField from "../components/DataField";
 import QueryHandler from "../components/QueryHandler";
 import Table from "../components/Table";
-import { PageProps } from "../interfaces";
+import { ProjectProps } from "../interfaces";
 import { recentActivityMessage } from "../utils/messages";
 import { Profile } from "../types";
 
-function Details(props: PageProps) {
+function Details(props: ProjectProps) {
   const { isFetching, error, data } = useProfileQuery(props);
 
   // Get the user profile
@@ -53,7 +53,7 @@ function Details(props: PageProps) {
   );
 }
 
-function ProjectPermissions(props: PageProps) {
+function ProjectPermissions(props: ProjectProps) {
   const { isFetching, error, data } = useProjectPermissionsQuery(props);
 
   const projectPermissions = useMemo(() => {
@@ -90,7 +90,7 @@ function ProjectPermissions(props: PageProps) {
   );
 }
 
-function Activity(props: PageProps) {
+function Activity(props: ProjectProps) {
   const { isFetching, error, data } = useActivityQuery(props);
 
   const activity = useMemo(() => {
@@ -145,7 +145,7 @@ function Activity(props: PageProps) {
   );
 }
 
-function User(props: PageProps) {
+function User(props: ProjectProps) {
   return (
     <Container fluid className="g-0 h-100">
       <Row className="g-2 h-100">

@@ -22,7 +22,7 @@ import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 import { useCountQuery } from "../api";
-import { ExportHandlerProps, OnyxProps, PageProps } from "../interfaces";
+import { ExportHandlerProps, OnyxProps, ProjectProps } from "../interfaces";
 import { ExportStatus, RecordType, ListResponse } from "../types";
 import ExportModal from "./ExportModal";
 import { formatResponseStatus } from "../utils/functions";
@@ -86,7 +86,7 @@ interface ClientTableProps extends TableProps {
   data: InputData;
 }
 
-interface ServerPaginatedTableProps extends TableProps, PageProps {
+interface ServerPaginatedTableProps extends TableProps, ProjectProps {
   response: ListResponse<RecordType>;
   searchPath: string;
   searchParameters: string;

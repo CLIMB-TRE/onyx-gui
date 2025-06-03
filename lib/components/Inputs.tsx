@@ -3,7 +3,7 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Creatable from "react-select/creatable";
-import { OptionType } from "../types";
+import { SelectOption } from "../types";
 import { selectStyles } from "../utils/styles";
 
 function Input({
@@ -49,7 +49,9 @@ function MultiInput({
       onChange={(e) =>
         onChange({
           target: {
-            value: (e as OptionType[]).map((option) => option.value).join(","),
+            value: (e as SelectOption[])
+              .map((option) => option.value)
+              .join(","),
           },
         } as React.ChangeEvent<HTMLInputElement>)
       }

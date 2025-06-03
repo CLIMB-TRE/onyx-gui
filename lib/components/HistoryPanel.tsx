@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useHistoryQuery } from "../api";
-import { PageProps } from "../interfaces";
+import { ProjectProps } from "../interfaces";
 import {
   ActionCellRenderer,
   ChangeCellRenderer,
@@ -9,7 +9,7 @@ import {
 import QueryHandler from "./QueryHandler";
 import Table from "./Table";
 
-interface HistoryPanelProps extends PageProps {
+interface HistoryPanelProps extends ProjectProps {
   name?: string;
   searchPath: string;
   ID: string;

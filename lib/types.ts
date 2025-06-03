@@ -1,4 +1,4 @@
-export enum Theme {
+export enum Themes {
   LIGHT = "light",
   DARK = "dark",
 }
@@ -88,13 +88,19 @@ export type ProjectPermissionGroup = {
   actions: string[];
 };
 
-export type ProjectField = {
+export type Field = {
   type: FieldType;
   code: string;
   description: string;
   actions: string[];
   values?: string[];
-  fields?: Record<string, ProjectField>;
+  fields?: Record<string, Field>;
+};
+
+export type Fields = {
+  name: string;
+  description: string;
+  fields: Record<string, Field>;
 };
 
 export type FilterConfig = {
@@ -120,7 +126,7 @@ export type TypeObject = {
   lookups: string[];
 };
 
-export type LookupObject = {
+export type Lookup = {
   lookup: string;
   description: string;
 };
@@ -130,27 +136,35 @@ export type ChoiceDescription = {
   is_active: boolean;
 };
 
-export type OptionType = { label: string; value: string };
+export type Choices = Record<string, ChoiceDescription>;
 
-export type ErrorType = Record<string, string | string[]>;
+export type SelectOption = { label: string; value: string };
 
 export type RecordType = Record<
   string,
   string | number | boolean | object | null | RecordType[]
 >;
 
-// TODO: Add more detailed object structure
-export type HistoryType = {
-  history: RecordType[];
+export type HistoricalEntry = {
+  username?: string;
+  timestamp: string;
+  action: "add" | "change" | "delete";
+  changes: RecordType[];
 };
 
-export type SummaryType = Record<"count", number> &
+export type HistoricalEntries = {
+  history: HistoricalEntry[];
+};
+
+export type Summary = Record<"count", number> &
   Record<string, string | number | boolean | object | null>;
+
+export type ErrorMessages = Record<string, string | string[]>;
 
 export interface ErrorResponse {
   status: "fail" | "error";
   code: number;
-  messages: ErrorType;
+  messages: ErrorMessages;
 }
 
 export interface SuccessResponse {
@@ -166,16 +180,4 @@ export interface ListResponse<T> extends SuccessResponse {
 
 export interface DetailResponse<T> extends SuccessResponse {
   data: T;
-}
-
-export interface FieldsResponse extends SuccessResponse {
-  data: {
-    name: string;
-    description: string;
-    fields: Record<string, ProjectField>;
-  };
-}
-
-export interface ChoicesResponse extends SuccessResponse {
-  data: Record<string, ChoiceDescription>;
 }

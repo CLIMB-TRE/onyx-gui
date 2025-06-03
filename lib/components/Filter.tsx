@@ -27,7 +27,7 @@ function Filter(props: FilterProps) {
 
   const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const updatedFilter = { ...filter };
-    updatedFilter.type = props.projectFields.get(e.target.value)?.type || "";
+    updatedFilter.type = props.fields.get(e.target.value)?.type || "";
     updatedFilter.field = e.target.value;
     updatedFilter.lookup = props.typeLookups.get(updatedFilter.type)?.[0] || "";
 
@@ -104,7 +104,7 @@ function Filter(props: FilterProps) {
         <MultiChoice
           {...props}
           field={filter.field}
-          options={props.projectFields.get(filter.field)?.values || []}
+          options={props.fields.get(filter.field)?.values || []}
           value={getValueList(filter.value)}
           onChange={handleValueChange}
         />
@@ -117,7 +117,7 @@ function Filter(props: FilterProps) {
           {...props}
           isClearable
           field={filter.field}
-          options={props.projectFields.get(filter.field)?.values || []}
+          options={props.fields.get(filter.field)?.values || []}
           value={filter.value}
           onChange={handleValueChange}
         />
@@ -163,7 +163,7 @@ function Filter(props: FilterProps) {
       f = <Input value={filter.value} onChange={handleValueChange} />;
   }
 
-  const fieldDescriptions = useFieldDescriptions(props.projectFields);
+  const fieldDescriptions = useFieldDescriptions(props.fields);
 
   return (
     <Stack gap={2} className="p-1">

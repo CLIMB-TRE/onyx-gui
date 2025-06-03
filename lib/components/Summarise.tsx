@@ -27,7 +27,7 @@ function Summarise(props: SummariseProps) {
     props.setEditMode(false);
   };
 
-  const fieldDescriptions = useFieldDescriptions(props.projectFields);
+  const fieldDescriptions = useFieldDescriptions(props.fields);
 
   return (
     <Stack gap={2} className="p-1">

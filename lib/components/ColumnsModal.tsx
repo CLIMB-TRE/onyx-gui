@@ -5,17 +5,17 @@ import Stack from "react-bootstrap/Stack";
 import Modal from "react-bootstrap/Modal";
 import Card from "react-bootstrap/Card";
 import { DataProps } from "../interfaces";
-import { ProjectField } from "../types";
-import { Field } from "./Details";
+import { Field } from "../types";
+import { Field as FieldDetails } from "./Details";
 import { useDebouncedValue } from "../utils/hooks";
 import { Input } from "./Inputs";
 
 interface ColumnsModalProps extends DataProps {
   show: boolean;
   onHide: () => void;
-  columns: ProjectField[];
-  activeColumns: ProjectField[];
-  setActiveColumns: (value: ProjectField[]) => void;
+  columns: Field[];
+  activeColumns: Field[];
+  setActiveColumns: (value: Field[]) => void;
 }
 
 function ColumnsModal(props: ColumnsModalProps) {
@@ -121,7 +121,7 @@ function ColumnsModal(props: ColumnsModalProps) {
                     key={column.code}
                     type="checkbox"
                     id={`checkbox-${column.code}`}
-                    label={<Field {...props} field={column.code} />}
+                    label={<FieldDetails {...props} field={column.code} />}
                     checked={activeColumns?.has(column.code)}
                     onChange={(e) =>
                       handleSelectChange(column.code, e.target.checked)

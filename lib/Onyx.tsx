@@ -6,14 +6,14 @@ import { MdJoinInner } from "react-icons/md";
 import {
   useAnalysisFieldsQuery,
   useLookupsQuery,
-  useProjectFieldsQuery,
+  useFieldsQuery,
   useProjectPermissionsQuery,
   useTypesQuery,
 } from "./api";
 import Fade from "react-bootstrap/Fade";
 import { useFieldsInfo } from "./api/hooks";
 import Header from "./components/Header";
-import { OnyxProps, PageProps } from "./interfaces";
+import { OnyxProps, ProjectProps } from "./interfaces";
 import Analysis from "./pages/Analysis";
 import Graphs from "./pages/Graphs";
 import ProjectRecord from "./pages/ProjectRecord";
@@ -24,13 +24,13 @@ import {
   AnalysisTabKeys,
   AnalysisDetailTabKeys,
   DataPanelTabKeys,
-  LookupObject,
+  Lookup,
   OnyxTabKeys,
   Project,
   ProjectPermissionGroup,
   RecordTabKeys,
   RecordDetailTabKeys,
-  Theme,
+  Themes,
   TypeObject,
 } from "./types";
 import { useDelayedValue } from "./utils/hooks";
@@ -40,7 +40,7 @@ import "./Onyx.css";
 import "./bootstrap.css";
 import PageTitle from "./components/PageTitle";
 
-interface ProjectPageProps extends PageProps {
+interface ProjectProjectProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
   tabKey: string;
@@ -62,11 +62,11 @@ interface ProjectPageProps extends PageProps {
   setAnalysisDataPanelTabKey: (key: string) => void;
 }
 
-function ProjectPage(props: ProjectPageProps) {
+function ProjectPage(props: ProjectProjectProps) {
   // Get project information
-  const { data: projectFieldsResponse } = useProjectFieldsQuery(props);
-  const { description: projectDescription, fields: projectFields } =
-    useFieldsInfo(projectFieldsResponse);
+  const { data: fieldsResponse } = useFieldsQuery(props);
+  const { description: projectDescription, fields: recordFields } =
+    useFieldsInfo(fieldsResponse);
 
   // Get project analyses information
   const { data: analysisFieldsResponse } = useAnalysisFieldsQuery(props);
@@ -87,7 +87,7 @@ function ProjectPage(props: ProjectPageProps) {
               <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
                 <Results
                   {...props}
-                  projectFields={projectFields}
+                  fields={recordFields}
                   projectDescription={projectDescription}
                   title="Records"
                   searchPath={`projects/${props.project.code}`}
@@ -100,7 +100,7 @@ function ProjectPage(props: ProjectPageProps) {
               >
                 <ProjectRecord
                   {...props}
-                  projectFields={projectFields}
+                  fields={recordFields}
                   projectDescription={projectDescription}
                   ID={props.recordID}
                   tabKey={props.recordDetailTabKey}
@@ -119,7 +119,7 @@ function ProjectPage(props: ProjectPageProps) {
               <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
                 <Results
                   {...props}
-                  projectFields={analysisFields}
+                  fields={analysisFields}
                   projectDescription={projectDescription}
                   title="Analyses"
                   searchPath={`projects/${props.project.code}/analysis`}
@@ -132,7 +132,7 @@ function ProjectPage(props: ProjectPageProps) {
               >
                 <Analysis
                   {...props}
-                  projectFields={analysisFields}
+                  fields={analysisFields}
                   projectDescription={projectDescription}
                   ID={props.analysisID}
                   tabKey={props.analysisDetailTabKey}
@@ -148,7 +148,7 @@ function ProjectPage(props: ProjectPageProps) {
         <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
           <Graphs
             {...props}
-            projectFields={projectFields}
+            fields={recordFields}
             projectDescription={projectDescription}
           />
         </Tab.Pane>
@@ -177,7 +177,7 @@ function LandingPage() {
 function App(props: OnyxProps) {
   // Theme state
   const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("onyx-theme") === Theme.DARK
+    localStorage.getItem("onyx-theme") === Themes.DARK
   );
 
   // Set the theme based on darkMode
@@ -185,7 +185,7 @@ function App(props: OnyxProps) {
     const htmlElement = document.querySelector("html");
     htmlElement?.setAttribute(
       "data-bs-theme",
-      darkMode ? Theme.DARK : Theme.LIGHT
+      darkMode ? Themes.DARK : Themes.LIGHT
     );
   }, [darkMode]);
 
@@ -194,7 +194,7 @@ function App(props: OnyxProps) {
     setDarkMode(darkModeChange);
     localStorage.setItem(
       "onyx-theme",
-      darkModeChange ? Theme.DARK : Theme.LIGHT
+      darkModeChange ? Themes.DARK : Themes.LIGHT
     );
   };
 
@@ -251,7 +251,7 @@ function App(props: OnyxProps) {
   const lookupDescriptions = useMemo(() => {
     if (lookupsResponse?.status !== "success") return new Map<string, string>();
     return new Map<string, string>(
-      lookupsResponse.data.map((lookup: LookupObject) => [
+      lookupsResponse.data.map((lookup: Lookup) => [
         lookup.lookup,
         lookup.description,
       ])

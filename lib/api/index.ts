@@ -1,5 +1,5 @@
 import { useQueries, useQuery, UseQueryResult } from "@tanstack/react-query";
-import { OnyxProps, PageProps } from "../interfaces";
+import { OnyxProps, ProjectProps } from "../interfaces";
 import {
   DetailResponse,
   ErrorResponse,
@@ -8,24 +8,24 @@ import {
   ListResponse,
   ProjectPermissionGroup,
   Profile,
-  HistoryType,
+  HistoricalEntries,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
-interface ChoiceProps extends PageProps {
+interface ChoiceProps extends ProjectProps {
   field: string;
 }
 
-interface ChoicesProps extends PageProps {
+interface ChoicesProps extends ProjectProps {
   fields: string[];
 }
 
-interface IDProps extends PageProps {
+interface IDProps extends ProjectProps {
   searchPath?: string;
   ID: string;
 }
 
-interface QueryProps extends PageProps {
+interface QueryProps extends ProjectProps {
   searchPath: string;
   searchParameters: string;
 }
@@ -34,7 +34,7 @@ interface PaginatedQueryProps extends QueryProps {
   pageSize?: number;
 }
 
-interface GraphQueryProps extends PageProps {
+interface GraphQueryProps extends ProjectProps {
   graphConfig: GraphConfig;
 }
 
@@ -98,7 +98,7 @@ const useProjectPermissionsQuery = (
 };
 
 /** Fetch project fields */
-const useProjectFieldsQuery = (props: PageProps) => {
+const useFieldsQuery = (props: ProjectProps) => {
   return useQuery({
     queryKey: ["project-fields-detail", props.project.code],
     queryFn: async () => {
@@ -112,7 +112,7 @@ const useProjectFieldsQuery = (props: PageProps) => {
 };
 
 /** Fetch analysis fields */
-const useAnalysisFieldsQuery = (props: PageProps) => {
+const useAnalysisFieldsQuery = (props: ProjectProps) => {
   return useQuery({
     queryKey: ["analysis-fields-detail", props.project.code],
     queryFn: async () => {
@@ -190,7 +190,7 @@ const useSiteUsersQuery = (
 /** Fetch history from ID */
 const useHistoryQuery = (
   props: IDProps
-): UseQueryResult<DetailResponse<HistoryType> | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse<HistoricalEntries> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["history-detail", props.searchPath, props.ID],
     queryFn: async () => {
@@ -404,7 +404,7 @@ export {
   useHistoryQuery,
   useLookupsQuery,
   useProfileQuery,
-  useProjectFieldsQuery,
+  useFieldsQuery,
   useProjectPermissionsQuery,
   useRecordAnalysesQuery,
   useRecordQuery,
