@@ -40,7 +40,7 @@ import "./Onyx.css";
 import "./bootstrap.css";
 import PageTitle from "./components/PageTitle";
 
-interface ProjectProjectProps extends ProjectProps {
+interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
   tabKey: string;
@@ -62,11 +62,10 @@ interface ProjectProjectProps extends ProjectProps {
   setAnalysisDataPanelTabKey: (key: string) => void;
 }
 
-function ProjectPage(props: ProjectProjectProps) {
+function ProjectPage(props: ProjectPageProps) {
   // Get project information
   const { data: fieldsResponse } = useFieldsQuery(props);
-  const { description: projectDescription, fields: recordFields } =
-    useFieldsInfo(fieldsResponse);
+  const { description, fields } = useFieldsInfo(fieldsResponse);
 
   // Get project analyses information
   const { data: analysisFieldsResponse } = useAnalysisFieldsQuery(props);
@@ -87,8 +86,8 @@ function ProjectPage(props: ProjectProjectProps) {
               <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
                 <Results
                   {...props}
-                  fields={recordFields}
-                  projectDescription={projectDescription}
+                  fields={fields}
+                  projectDescription={description}
                   title="Records"
                   searchPath={`projects/${props.project.code}`}
                 />
@@ -100,8 +99,8 @@ function ProjectPage(props: ProjectProjectProps) {
               >
                 <ProjectRecord
                   {...props}
-                  fields={recordFields}
-                  projectDescription={projectDescription}
+                  fields={fields}
+                  projectDescription={description}
                   ID={props.recordID}
                   tabKey={props.recordDetailTabKey}
                   setTabKey={props.setRecordDetailTabKey}
@@ -120,7 +119,7 @@ function ProjectPage(props: ProjectProjectProps) {
                 <Results
                   {...props}
                   fields={analysisFields}
-                  projectDescription={projectDescription}
+                  projectDescription={description}
                   title="Analyses"
                   searchPath={`projects/${props.project.code}/analysis`}
                 />
@@ -133,7 +132,7 @@ function ProjectPage(props: ProjectProjectProps) {
                 <Analysis
                   {...props}
                   fields={analysisFields}
-                  projectDescription={projectDescription}
+                  projectDescription={description}
                   ID={props.analysisID}
                   tabKey={props.analysisDetailTabKey}
                   setTabKey={props.setAnalysisDetailTabKey}
@@ -146,11 +145,7 @@ function ProjectPage(props: ProjectProjectProps) {
           </Tab.Container>
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
-          <Graphs
-            {...props}
-            fields={recordFields}
-            projectDescription={projectDescription}
-          />
+          <Graphs {...props} fields={fields} projectDescription={description} />
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>
