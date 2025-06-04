@@ -66,6 +66,12 @@ export type TabState = {
   analysisID: string;
 };
 
+export type RecentlyViewed = {
+  ID: string;
+  timestamp: Date;
+  handleShowID: (id: string) => void;
+};
+
 export type FieldType =
   | "text"
   | "choice"

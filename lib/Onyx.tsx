@@ -34,6 +34,7 @@ import {
   TabState,
   Themes,
   TypeObject,
+  RecentlyViewed,
 } from "./types";
 import { useDelayedValue } from "./utils/hooks";
 
@@ -198,11 +199,13 @@ function App(props: OnyxProps) {
   // Project state
   const [project, setProject] = useState<Project>();
   const [tabState, setTabState] = useState<TabState>(defaultTabState);
+  const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewed[]>([]);
 
   // Clear parameters when project changes
   const handleProjectChange = (project: Project) => {
     setTabState(defaultTabState);
     setProject(project);
+    setRecentlyViewed([]);
   };
 
   // Query for types, lookups and project permissions
@@ -268,6 +271,25 @@ function App(props: OnyxProps) {
       recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
       recordID: climbID,
     }));
+    setRecentlyViewed((prevState) => {
+      const updatedList = [...prevState];
+
+      // Remove the item if it exists
+      const existingIndex = updatedList.findIndex(
+        (item) => item.ID === climbID
+      );
+      if (existingIndex !== -1) updatedList.splice(existingIndex, 1);
+
+      // Add new item to the front of the list
+      updatedList.unshift({
+        ID: climbID,
+        timestamp: new Date(),
+        handleShowID: handleProjectRecordShow,
+      });
+
+      // Limit to 10 recently viewed items
+      return updatedList.slice(0, 10);
+    });
   }, []);
 
   const handleProjectRecordHide = useCallback(() => {
@@ -287,6 +309,25 @@ function App(props: OnyxProps) {
       analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
       analysisID: analysisID,
     }));
+    setRecentlyViewed((prevState) => {
+      const updatedList = [...prevState];
+
+      // Remove the item if it exists
+      const existingIndex = updatedList.findIndex(
+        (item) => item.ID === analysisID
+      );
+      if (existingIndex !== -1) updatedList.splice(existingIndex, 1);
+
+      // Add new item to the front of the list
+      updatedList.unshift({
+        ID: analysisID,
+        timestamp: new Date(),
+        handleShowID: handleAnalysisShow,
+      });
+
+      // Limit to 10 recently viewed items
+      return updatedList.slice(0, 10);
+    });
   }, []);
 
   const handleAnalysisHide = useCallback(() => {
@@ -306,6 +347,7 @@ function App(props: OnyxProps) {
         setTabState={setTabState}
         project={project}
         projects={projects}
+        recentlyViewed={recentlyViewed}
         handleThemeChange={handleThemeChange}
         handleProjectChange={handleProjectChange}
         handleProjectRecordHide={handleProjectRecordHide}

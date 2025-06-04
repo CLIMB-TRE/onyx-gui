@@ -1,19 +1,27 @@
 import { useMemo } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
+import Dropdown from "react-bootstrap/Dropdown";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Stack from "react-bootstrap/Stack";
-import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
+import {
+  MdDarkMode,
+  MdJoinInner,
+  MdLightMode,
+  MdHistory,
+} from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
-import { OnyxTabKeys, Profile, Project } from "../types";
+import { OnyxTabKeys, Profile, Project, RecentlyViewed } from "../types";
+import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
 
 interface HeaderProps extends PageProps {
   project?: Project;
   projects: Project[];
+  recentlyViewed: RecentlyViewed[];
   handleThemeChange: () => void;
   handleProjectChange: (p: Project) => void;
   handleProjectRecordHide: () => void;
@@ -207,6 +215,30 @@ function Header(props: HeaderProps) {
                 checked={props.darkMode}
                 onChange={props.handleThemeChange}
               />
+              <Dropdown>
+                <Dropdown.Toggle
+                  id="recently-viewed-dropdown"
+                  size="sm"
+                  title="Recently Viewed"
+                >
+                  <MdHistory />
+                </Dropdown.Toggle>
+                <Dropdown.Menu align="end">
+                  <Dropdown.Header>Recently Viewed</Dropdown.Header>
+                  {props.recentlyViewed.map((item) => (
+                    <Dropdown.Item
+                      key={item.ID}
+                      title={item.ID + " - " + item.timestamp.toLocaleString()}
+                      onClick={() => item.handleShowID(item.ID)}
+                    >
+                      {item.ID} -{" "}
+                      <span className="text-muted">
+                        {formatTimeAgo(item.timestamp)}
+                      </span>
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
             </Stack>
           </Nav>
         </Navbar.Collapse>
