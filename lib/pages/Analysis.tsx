@@ -17,10 +17,24 @@ import DataPanel from "../components/DataPanel";
 import RelatedPanel from "../components/RelatedPanel";
 import HistoryPanel from "../components/HistoryPanel";
 import { IDProps } from "../interfaces";
-import { AnalysisDetailTabKeys } from "../types";
+import { AnalysisDetailTabKeys, DataPanelTabKeys } from "../types";
 
 function Analysis(props: IDProps) {
   const [published, setPublished] = useState(true);
+
+  const handleAnalysisDetailTabChange = (tabKey: string | null) => {
+    props.setTabState((prevState) => ({
+      ...prevState,
+      analysisDetailTabKey: tabKey as AnalysisDetailTabKeys,
+    }));
+  };
+
+  const handleDataPanelTabChange = (tabKey: string | null) => {
+    props.setTabState((prevState) => ({
+      ...prevState,
+      analysisDataPanelTabKey: tabKey as DataPanelTabKeys,
+    }));
+  };
 
   return (
     <Container fluid className="g-0 h-100">
@@ -43,10 +57,8 @@ function Analysis(props: IDProps) {
         </Card.Header>
         <Card.Body className="pt-2 overflow-y-auto">
           <Tab.Container
-            activeKey={props.tabKey}
-            onSelect={(key) =>
-              props.setTabKey(key || AnalysisDetailTabKeys.DATA)
-            }
+            activeKey={props.tabState.analysisDetailTabKey}
+            onSelect={handleAnalysisDetailTabChange}
             mountOnEnter
             transition={false}
           >
@@ -82,6 +94,8 @@ function Analysis(props: IDProps) {
               <Tab.Pane eventKey={AnalysisDetailTabKeys.DATA} className="h-100">
                 <DataPanel
                   {...props}
+                  dataPanelTabKey={props.tabState.analysisDataPanelTabKey}
+                  setDataPanelTabKey={handleDataPanelTabChange}
                   queryHook={useAnalysisQuery}
                   setUnpublished={() => setPublished(false)}
                   dataFields={

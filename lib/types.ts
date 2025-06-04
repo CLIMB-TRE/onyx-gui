@@ -54,6 +54,18 @@ export enum ExportStatus {
   ERROR,
 }
 
+export type TabState = {
+  tabKey: OnyxTabKeys;
+  recordTabKey: RecordTabKeys;
+  recordDetailTabKey: RecordDetailTabKeys;
+  recordDataPanelTabKey: DataPanelTabKeys;
+  recordID: string;
+  analysisTabKey: AnalysisTabKeys;
+  analysisDetailTabKey: AnalysisDetailTabKeys;
+  analysisDataPanelTabKey: DataPanelTabKeys;
+  analysisID: string;
+};
+
 export type FieldType =
   | "text"
   | "choice"

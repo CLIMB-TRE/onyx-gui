@@ -7,18 +7,15 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import Stack from "react-bootstrap/Stack";
 import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
 import { useProfileQuery } from "../api";
-import { OnyxProps } from "../interfaces";
+import { PageProps } from "../interfaces";
 import { OnyxTabKeys, Profile, Project } from "../types";
 import { TextQueryHandler } from "./QueryHandler";
 
-interface HeaderProps extends OnyxProps {
-  darkMode: boolean;
-  handleThemeChange: () => void;
+interface HeaderProps extends PageProps {
   project?: Project;
   projects: Project[];
+  handleThemeChange: () => void;
   handleProjectChange: (p: Project) => void;
-  tabKey: string;
-  setTabKey: (k: string) => void;
   handleProjectRecordHide: () => void;
   handleAnalysisHide: () => void;
 }
@@ -71,20 +68,23 @@ function Header(props: HeaderProps) {
     return data.data;
   }, [data]);
 
-  const handleTabChange = (eventKey: string | null) => {
+  const handleTabChange = (tabKey: string | null) => {
     if (
-      props.tabKey === OnyxTabKeys.RECORDS &&
-      eventKey === OnyxTabKeys.RECORDS
+      props.tabState.tabKey === OnyxTabKeys.RECORDS &&
+      tabKey === OnyxTabKeys.RECORDS
     )
       props.handleProjectRecordHide();
 
     if (
-      props.tabKey === OnyxTabKeys.ANALYSES &&
-      eventKey === OnyxTabKeys.ANALYSES
+      props.tabState.tabKey === OnyxTabKeys.ANALYSES &&
+      tabKey === OnyxTabKeys.ANALYSES
     )
       props.handleAnalysisHide();
 
-    props.setTabKey(eventKey || OnyxTabKeys.RECORDS);
+    props.setTabState((prevState) => ({
+      ...prevState,
+      tabKey: tabKey as OnyxTabKeys,
+    }));
   };
 
   return (
@@ -101,10 +101,7 @@ function Header(props: HeaderProps) {
       <Container fluid>
         <Navbar.Brand
           title="Onyx | API for Pathogen Metadata"
-          onClick={() => {
-            props.setTabKey(OnyxTabKeys.RECORDS);
-            props.handleProjectRecordHide();
-          }}
+          onClick={props.handleProjectRecordHide}
           style={{ cursor: "pointer" }}
         >
           <MdJoinInner color="var(--bs-pink)" size={30} /> Onyx
@@ -133,7 +130,7 @@ function Header(props: HeaderProps) {
             </NavDropdown>
             <Nav
               variant="underline"
-              activeKey={props.project ? props.tabKey : undefined}
+              activeKey={props.project ? props.tabState.tabKey : undefined}
             >
               <Stack direction="horizontal" gap={3}>
                 <Nav.Link
@@ -172,7 +169,7 @@ function Header(props: HeaderProps) {
           </Nav>
           <Nav
             variant="underline"
-            activeKey={props.project ? props.tabKey : undefined}
+            activeKey={props.project ? props.tabState.tabKey : undefined}
           >
             <Stack direction="horizontal" gap={3}>
               <Nav.Link

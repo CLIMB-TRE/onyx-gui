@@ -12,10 +12,24 @@ import DataPanel from "../components/DataPanel";
 import RelatedPanel from "../components/RelatedPanel";
 import HistoryPanel from "../components/HistoryPanel";
 import { IDProps } from "../interfaces";
-import { RecordDetailTabKeys } from "../types";
+import { DataPanelTabKeys, RecordDetailTabKeys } from "../types";
 
 function ProjectRecord(props: IDProps) {
   const [published, setPublished] = useState(true);
+
+  const handleRecordDetailTabChange = (tabKey: string | null) => {
+    props.setTabState((prevState) => ({
+      ...prevState,
+      recordDetailTabKey: tabKey as RecordDetailTabKeys,
+    }));
+  };
+
+  const handleDataPanelTabChange = (tabKey: string | null) => {
+    props.setTabState((prevState) => ({
+      ...prevState,
+      recordDataPanelTabKey: tabKey as DataPanelTabKeys,
+    }));
+  };
 
   return (
     <Container fluid className="g-0 h-100">
@@ -38,8 +52,8 @@ function ProjectRecord(props: IDProps) {
         </Card.Header>
         <Card.Body className="pt-2 overflow-y-auto">
           <Tab.Container
-            activeKey={props.tabKey}
-            onSelect={(key) => props.setTabKey(key || RecordDetailTabKeys.DATA)}
+            activeKey={props.tabState.recordDetailTabKey}
+            onSelect={handleRecordDetailTabChange}
             mountOnEnter
             transition={false}
           >
@@ -65,6 +79,8 @@ function ProjectRecord(props: IDProps) {
               <Tab.Pane eventKey={RecordDetailTabKeys.DATA} className="h-100">
                 <DataPanel
                   {...props}
+                  dataPanelTabKey={props.tabState.recordDataPanelTabKey}
+                  setDataPanelTabKey={handleDataPanelTabChange}
                   queryHook={useRecordQuery}
                   setUnpublished={() => setPublished(false)}
                   dataFields={

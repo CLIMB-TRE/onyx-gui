@@ -28,6 +28,8 @@ import Table from "./Table";
 import { useFieldDescriptions } from "../api/hooks";
 
 interface DataPanelProps extends IDProps {
+  dataPanelTabKey: string;
+  setDataPanelTabKey: (key: string) => void;
   queryHook: (
     props: IDProps
   ) => UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error>;
