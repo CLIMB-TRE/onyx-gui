@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useHistoryQuery } from "../api";
-import { PageProps } from "../interfaces";
-import { RecordType } from "../types";
+import { ProjectProps } from "../interfaces";
 import {
   ActionCellRenderer,
   ChangeCellRenderer,
@@ -10,7 +9,7 @@ import {
 import QueryHandler from "./QueryHandler";
 import Table from "./Table";
 
-interface HistoryPanelProps extends PageProps {
+interface HistoryPanelProps extends ProjectProps {
   name?: string;
   searchPath: string;
   ID: string;
@@ -22,11 +21,11 @@ function HistoryPanel(props: HistoryPanelProps) {
   // Get the history
   const history = useMemo(() => {
     if (data?.status !== "success") return [];
-    return data.data?.history as RecordType[];
+    return data.data?.history;
   }, [data]);
 
   return (
-    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
+    <QueryHandler isFetching={isFetching} error={error} data={data}>
       <>
         <h5>History</h5>
         <Table

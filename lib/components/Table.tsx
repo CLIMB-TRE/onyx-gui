@@ -22,8 +22,8 @@ import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 import { useCountQuery } from "../api";
-import { ExportHandlerProps, OnyxProps, PageProps } from "../interfaces";
-import { ExportStatus, ListResponse } from "../types";
+import { ExportHandlerProps, OnyxProps, ProjectProps } from "../interfaces";
+import { ExportStatus, RecordType, ListResponse } from "../types";
 import ExportModal from "./ExportModal";
 import { formatResponseStatus } from "../utils/functions";
 
@@ -86,8 +86,8 @@ interface ClientTableProps extends TableProps {
   data: InputData;
 }
 
-interface ServerPaginatedTableProps extends TableProps, PageProps {
-  response: ListResponse;
+interface ServerPaginatedTableProps extends TableProps, ProjectProps {
+  response: ListResponse<RecordType>;
   searchPath: string;
   searchParameters: string;
   pageSize: number;
@@ -287,7 +287,7 @@ function TableOptions(props: TableOptionsProps) {
           if (!response.ok) throw new Error(formatResponseStatus(response));
           return response.json();
         })
-        .then((response: ListResponse) => {
+        .then((response: ListResponse<RecordType>) => {
           if (exportProps.statusToken.status === ExportStatus.CANCELLED)
             throw new Error("export_cancelled");
 
@@ -584,7 +584,7 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
   };
 
   const handleResponse = (
-    response: ListResponse,
+    response: ListResponse<RecordType>,
     resultsPage: number,
     userPage: number
   ) => {

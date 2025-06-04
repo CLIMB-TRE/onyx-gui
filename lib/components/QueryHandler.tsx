@@ -96,14 +96,14 @@ function QueryHandler({
 }: {
   isFetching: boolean;
   error: Error | null;
-  data: SuccessResponse | ErrorResponse;
+  data: SuccessResponse | ErrorResponse | undefined;
   children: React.ReactNode;
 }) {
   return isFetching ? (
     <LoadingSpinner />
   ) : error ? (
     <Alert variant="danger">Error: {error.message}</Alert>
-  ) : data.status === "error" || data.status === "fail" ? (
+  ) : data?.status === "error" || data?.status === "fail" ? (
     <ErrorMessages error={data} />
   ) : (
     (children as JSX.Element)

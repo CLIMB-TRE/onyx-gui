@@ -24,7 +24,7 @@ interface ResultsPanelProps extends ResultsProps {
   pageSize: number;
   isFetching: boolean;
   error: Error | null;
-  data: ListResponse | ErrorResponse;
+  data: ListResponse<RecordType> | ErrorResponse | undefined;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
   setColumnsModalShow: (show: boolean) => void;
@@ -46,7 +46,7 @@ function ResultsPanel(props: ResultsPanelProps) {
   // Get the result data
   const results = useMemo(() => {
     if (props.data?.status !== "success")
-      return { data: [] as RecordType[] } as ListResponse;
+      return { data: [] as RecordType[] } as ListResponse<RecordType>;
     return props.data;
   }, [props.data]);
 
@@ -70,7 +70,7 @@ function ResultsPanel(props: ResultsPanelProps) {
     ["report", S3ReportCellRendererFactory(errorModalProps)],
   ]);
 
-  const fieldDescriptions = useFieldDescriptions(props.projectFields);
+  const fieldDescriptions = useFieldDescriptions(props.fields);
 
   return (
     <Card className="h-100 overflow-y-auto">

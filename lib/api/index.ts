@@ -1,27 +1,31 @@
 import { useQueries, useQuery, UseQueryResult } from "@tanstack/react-query";
-import { OnyxProps, PageProps } from "../interfaces";
+import { OnyxProps, ProjectProps } from "../interfaces";
 import {
   DetailResponse,
   ErrorResponse,
   GraphConfig,
+  RecordType,
   ListResponse,
+  ProjectPermissionGroup,
+  Profile,
+  HistoricalEntries,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
-interface ChoiceProps extends PageProps {
+interface ChoiceProps extends ProjectProps {
   field: string;
 }
 
-interface ChoicesProps extends PageProps {
+interface ChoicesProps extends ProjectProps {
   fields: string[];
 }
 
-interface IDProps extends PageProps {
+interface IDProps extends ProjectProps {
   searchPath?: string;
   ID: string;
 }
 
-interface QueryProps extends PageProps {
+interface QueryProps extends ProjectProps {
   searchPath: string;
   searchParameters: string;
 }
@@ -30,7 +34,7 @@ interface PaginatedQueryProps extends QueryProps {
   pageSize?: number;
 }
 
-interface GraphQueryProps extends PageProps {
+interface GraphQueryProps extends ProjectProps {
   graphConfig: GraphConfig;
 }
 
@@ -61,7 +65,9 @@ const useLookupsQuery = (props: OnyxProps) => {
 };
 
 /** Fetch user profile */
-const useProfileQuery = (props: OnyxProps) => {
+const useProfileQuery = (
+  props: OnyxProps
+): UseQueryResult<DetailResponse<Profile> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["profile-detail"],
     queryFn: async () => {
@@ -74,7 +80,12 @@ const useProfileQuery = (props: OnyxProps) => {
 };
 
 /** Fetch user project permissions */
-const useProjectPermissionsQuery = (props: OnyxProps) => {
+const useProjectPermissionsQuery = (
+  props: OnyxProps
+): UseQueryResult<
+  ListResponse<ProjectPermissionGroup> | ErrorResponse,
+  Error
+> => {
   return useQuery({
     queryKey: ["project-permission-list"],
     queryFn: async () => {
@@ -87,7 +98,7 @@ const useProjectPermissionsQuery = (props: OnyxProps) => {
 };
 
 /** Fetch project fields */
-const useProjectFieldsQuery = (props: PageProps) => {
+const useFieldsQuery = (props: ProjectProps) => {
   return useQuery({
     queryKey: ["project-fields-detail", props.project.code],
     queryFn: async () => {
@@ -101,7 +112,7 @@ const useProjectFieldsQuery = (props: PageProps) => {
 };
 
 /** Fetch analysis fields */
-const useAnalysisFieldsQuery = (props: PageProps) => {
+const useAnalysisFieldsQuery = (props: ProjectProps) => {
   return useQuery({
     queryKey: ["analysis-fields-detail", props.project.code],
     queryFn: async () => {
@@ -147,7 +158,9 @@ const useChoicesQueries = (props: ChoicesProps) => {
 };
 
 /** Fetch user activity */
-const useActivityQuery = (props: OnyxProps) => {
+const useActivityQuery = (
+  props: OnyxProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["activity-list"],
     queryFn: async () => {
@@ -160,7 +173,9 @@ const useActivityQuery = (props: OnyxProps) => {
 };
 
 /** Fetch site users */
-const useSiteUsersQuery = (props: OnyxProps) => {
+const useSiteUsersQuery = (
+  props: OnyxProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["site-user-list"],
     queryFn: async () => {
@@ -173,7 +188,9 @@ const useSiteUsersQuery = (props: OnyxProps) => {
 };
 
 /** Fetch history from ID */
-const useHistoryQuery = (props: IDProps) => {
+const useHistoryQuery = (
+  props: IDProps
+): UseQueryResult<DetailResponse<HistoricalEntries> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["history-detail", props.searchPath, props.ID],
     queryFn: async () => {
@@ -189,7 +206,7 @@ const useHistoryQuery = (props: IDProps) => {
 /** Fetch record from record ID */
 const useRecordQuery = (
   props: IDProps
-): UseQueryResult<DetailResponse | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["record-detail", props.project.code, props.ID],
     queryFn: async () => {
@@ -205,7 +222,7 @@ const useRecordQuery = (
 /** Fetch record analyses from record ID */
 const useRecordAnalysesQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["record-analysis-list", props.project.code, props.ID],
     queryFn: async () => {
@@ -221,7 +238,7 @@ const useRecordAnalysesQuery = (
 /** Fetch analysis from analysis ID */
 const useAnalysisQuery = (
   props: IDProps
-): UseQueryResult<DetailResponse | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-detail", props.project.code, props.ID],
     queryFn: async () => {
@@ -237,7 +254,7 @@ const useAnalysisQuery = (
 /** Fetch analysis records from analysis ID */
 const useAnalysisRecordsQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-record-list", props.project.code, props.ID],
     queryFn: async () => {
@@ -255,7 +272,7 @@ const useAnalysisRecordsQuery = (
 /** Fetch upstream analyses from analysis ID */
 const useAnalysisUpstreamQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-upstream-list", props.project.code, props.ID],
     queryFn: async () => {
@@ -273,7 +290,7 @@ const useAnalysisUpstreamQuery = (
 /** Fetch downstream analyses from analysis ID */
 const useAnalysisDownstreamQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-downstream-list", props.project.code, props.ID],
     queryFn: async () => {
@@ -289,7 +306,9 @@ const useAnalysisDownstreamQuery = (
 };
 
 /** Fetch results from path and search parameters */
-const useResultsQuery = (props: PaginatedQueryProps) => {
+const useResultsQuery = (
+  props: PaginatedQueryProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["results-list", props.searchPath, props.searchParameters],
     queryFn: async () => {
@@ -385,7 +404,7 @@ export {
   useHistoryQuery,
   useLookupsQuery,
   useProfileQuery,
-  useProjectFieldsQuery,
+  useFieldsQuery,
   useProjectPermissionsQuery,
   useRecordAnalysesQuery,
   useRecordQuery,

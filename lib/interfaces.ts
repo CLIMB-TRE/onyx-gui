@@ -1,4 +1,5 @@
-import { ExportStatus, Project, ProjectField } from "./types";
+import { Dispatch, SetStateAction } from "react";
+import { ExportStatus, Project, Field, TabState } from "./types";
 
 export interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
@@ -9,11 +10,16 @@ export interface OnyxProps {
 
 export interface PageProps extends OnyxProps {
   darkMode: boolean;
+  tabState: TabState;
+  setTabState: Dispatch<SetStateAction<TabState>>;
+}
+
+export interface ProjectProps extends PageProps {
   project: Project;
 }
 
-export interface DataProps extends PageProps {
-  projectFields: Map<string, ProjectField>;
+export interface DataProps extends ProjectProps {
+  fields: Map<string, Field>;
   projectDescription: string;
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
@@ -23,10 +29,6 @@ export interface DataProps extends PageProps {
 
 export interface IDProps extends DataProps {
   ID: string;
-  tabKey: string;
-  setTabKey: (key: string) => void;
-  dataPanelTabKey: string;
-  setDataPanelTabKey: (key: string) => void;
   onHide: () => void;
 }
 

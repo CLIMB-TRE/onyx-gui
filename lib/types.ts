@@ -1,4 +1,4 @@
-export enum Theme {
+export enum Themes {
   LIGHT = "light",
   DARK = "dark",
 }
@@ -54,6 +54,18 @@ export enum ExportStatus {
   ERROR,
 }
 
+export type TabState = {
+  tabKey: OnyxTabKeys;
+  recordTabKey: RecordTabKeys;
+  recordDetailTabKey: RecordDetailTabKeys;
+  recordDataPanelTabKey: DataPanelTabKeys;
+  recordID: string;
+  analysisTabKey: AnalysisTabKeys;
+  analysisDetailTabKey: AnalysisDetailTabKeys;
+  analysisDataPanelTabKey: DataPanelTabKeys;
+  analysisID: string;
+};
+
 export type FieldType =
   | "text"
   | "choice"
@@ -69,10 +81,16 @@ export type FieldType =
 
 export type GraphType = "line" | "bar" | "pie" | "";
 
+export type Profile = {
+  username: string;
+  site: string;
+  email: string;
+};
+
+// TODO: Add description
 export type Project = {
   code: string;
   name: string;
-  description: string;
 };
 
 export type ProjectPermissionGroup = {
@@ -82,13 +100,19 @@ export type ProjectPermissionGroup = {
   actions: string[];
 };
 
-export type ProjectField = {
+export type Field = {
   type: FieldType;
   code: string;
   description: string;
   actions: string[];
   values?: string[];
-  fields?: Record<string, ProjectField>;
+  fields?: Record<string, Field>;
+};
+
+export type Fields = {
+  name: string;
+  description: string;
+  fields: Record<string, Field>;
 };
 
 export type FilterConfig = {
@@ -114,7 +138,7 @@ export type TypeObject = {
   lookups: string[];
 };
 
-export type LookupObject = {
+export type Lookup = {
   lookup: string;
   description: string;
 };
@@ -124,22 +148,35 @@ export type ChoiceDescription = {
   is_active: boolean;
 };
 
-export type OptionType = { label: string; value: string };
+export type Choices = Record<string, ChoiceDescription>;
 
-export type ErrorType = Record<string, string | string[]>;
+export type SelectOption = { label: string; value: string };
 
 export type RecordType = Record<
   string,
   string | number | boolean | object | null | RecordType[]
 >;
 
-export type SummaryType = Record<"count", number> &
+export type HistoricalEntry = {
+  username?: string;
+  timestamp: string;
+  action: "add" | "change" | "delete";
+  changes: RecordType[];
+};
+
+export type HistoricalEntries = {
+  history: HistoricalEntry[];
+};
+
+export type Summary = Record<"count", number> &
   Record<string, string | number | boolean | object | null>;
+
+export type ErrorMessages = Record<string, string | string[]>;
 
 export interface ErrorResponse {
   status: "fail" | "error";
   code: number;
-  messages: ErrorType;
+  messages: ErrorMessages;
 }
 
 export interface SuccessResponse {
@@ -147,24 +184,12 @@ export interface SuccessResponse {
   code: number;
 }
 
-export interface ListResponse extends SuccessResponse {
-  data: RecordType[];
+export interface ListResponse<T> extends SuccessResponse {
+  data: T[];
   next: string | null;
   previous: string | null;
 }
 
-export interface DetailResponse extends SuccessResponse {
-  data: RecordType;
-}
-
-export interface FieldsResponse extends SuccessResponse {
-  data: {
-    name: string;
-    description: string;
-    fields: Record<string, ProjectField>;
-  };
-}
-
-export interface ChoicesResponse extends SuccessResponse {
-  data: Record<string, ChoiceDescription>;
+export interface DetailResponse<T> extends SuccessResponse {
+  data: T;
 }

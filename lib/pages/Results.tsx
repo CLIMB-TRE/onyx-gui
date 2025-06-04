@@ -7,7 +7,7 @@ import ResultsPanel from "../components/ResultsPanel";
 import SearchBar from "../components/SearchBar";
 import SummarisePanel from "../components/SummarisePanel";
 import { ResultsProps } from "../interfaces";
-import { FilterConfig, ProjectField } from "../types";
+import { FilterConfig, Field } from "../types";
 import { formatFilters } from "../utils/functions";
 import { useDebouncedValue } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
@@ -17,24 +17,24 @@ function Results(props: ResultsProps) {
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
   const [summariseList, setSummariseList] = useState(new Array<string>());
-  const [columnList, setColumnList] = useState<ProjectField[]>([]);
+  const [columnList, setColumnList] = useState<Field[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 
   const filterOptions = useMemo(
     () =>
-      Array.from(props.projectFields.entries())
-        .filter(([, projectField]) => projectField.actions.includes("filter"))
+      Array.from(props.fields.entries())
+        .filter(([, field]) => field.actions.includes("filter"))
         .map(([field]) => field),
-    [props.projectFields]
+    [props.fields]
   );
 
   const columnOptions = useMemo(
     () =>
-      Array.from(props.projectFields.entries())
-        .filter(([, projectField]) => projectField.actions.includes("list"))
-        .map(([, projectField]) => projectField),
-    [props.projectFields]
+      Array.from(props.fields.entries())
+        .filter(([, field]) => field.actions.includes("list"))
+        .map(([, field]) => field),
+    [props.fields]
   );
 
   // Pagination page size
@@ -140,7 +140,7 @@ function Results(props: ResultsProps) {
               searchParameters={searchParameters}
               pageSize={pageSize}
               isFetching={isFetching}
-              error={error as Error}
+              error={error}
               data={data}
               sidebarCollapsed={sidebarCollapsed}
               setSidebarCollapsed={setSidebarCollapsed}

@@ -28,9 +28,11 @@ import Table from "./Table";
 import { useFieldDescriptions } from "../api/hooks";
 
 interface DataPanelProps extends IDProps {
+  dataPanelTabKey: string;
+  setDataPanelTabKey: (key: string) => void;
   queryHook: (
     props: IDProps
-  ) => UseQueryResult<DetailResponse | ErrorResponse, Error>;
+  ) => UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error>;
   setUnpublished: () => void;
   dataFields: Map<string, string>;
 }
@@ -57,20 +59,20 @@ function DataPanel(props: DataPanelProps) {
   const relations = useMemo(() => {
     if (data?.status !== "success") return [];
     return Object.entries(data.data)
-      .filter(([key]) => props.projectFields.get(key)?.type === "relation")
+      .filter(([key]) => props.fields.get(key)?.type === "relation")
       .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1)) as [
       string,
       RecordType[]
     ][];
-  }, [data, props.projectFields]);
+  }, [data, props.fields]);
 
   // Get the structure details
   const structures = useMemo(() => {
     if (data?.status !== "success") return [];
     return Object.entries(data.data).filter(
-      ([key]) => props.projectFields.get(key)?.type === "structure"
+      ([key]) => props.fields.get(key)?.type === "structure"
     );
-  }, [data, props.projectFields]);
+  }, [data, props.fields]);
 
   useEffect(() => {
     if (data?.status === "success" && data.data.is_published === false)
@@ -85,14 +87,10 @@ function DataPanel(props: DataPanelProps) {
     [props, data]
   );
 
-  const fieldDescriptions = useFieldDescriptions(props.projectFields);
+  const fieldDescriptions = useFieldDescriptions(props.fields);
 
   return (
-    <QueryHandler
-      isFetching={isFetching}
-      error={error}
-      data={data as DetailResponse}
-    >
+    <QueryHandler isFetching={isFetching} error={error} data={data}>
       <Tab.Container
         id="data-panel-tabs"
         activeKey={props.dataPanelTabKey}
@@ -185,8 +183,7 @@ function DataPanel(props: DataPanelProps) {
                     headerTooltips={fieldDescriptions}
                     headerTooltipPrefix={key + "__"}
                     footer={
-                      props.projectFields.get(key)?.description ||
-                      "No Description."
+                      props.fields.get(key)?.description || "No Description."
                     }
                   />
                 </Tab.Pane>
@@ -207,8 +204,7 @@ function DataPanel(props: DataPanelProps) {
                       {...props}
                       data={structure as JsonData}
                       description={
-                        props.projectFields.get(key)?.description ||
-                        "No Description."
+                        props.fields.get(key)?.description || "No Description."
                       }
                     />
                   </Card>

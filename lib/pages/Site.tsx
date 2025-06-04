@@ -4,10 +4,10 @@ import Container from "react-bootstrap/Container";
 import { useSiteUsersQuery } from "../api";
 import QueryHandler from "../components/QueryHandler";
 import Table from "../components/Table";
-import { PageProps } from "../interfaces";
+import { ProjectProps } from "../interfaces";
 import { RecordType } from "../types";
 
-function SiteUsers(props: PageProps) {
+function SiteUsers(props: ProjectProps) {
   const { isFetching, error, data } = useSiteUsersQuery(props);
 
   // Get site users
@@ -20,11 +20,7 @@ function SiteUsers(props: PageProps) {
     <Card className="h-100">
       <Card.Header>Site Users</Card.Header>
       <Card.Body className="p-2 h-100">
-        <QueryHandler
-          isFetching={isFetching}
-          error={error as Error}
-          data={data}
-        >
+        <QueryHandler isFetching={isFetching} error={error} data={data}>
           <Table
             {...props}
             data={siteUsers}
@@ -44,7 +40,7 @@ function SiteUsers(props: PageProps) {
   );
 }
 
-function Site(props: PageProps) {
+function Site(props: ProjectProps) {
   return (
     <Container fluid className="g-0 h-100">
       <SiteUsers {...props} />

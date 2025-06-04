@@ -7,9 +7,9 @@ import {
 import { useState } from "react";
 import Stack from "react-bootstrap/Stack";
 import { Input } from "./Inputs";
-import { PageProps } from "../interfaces";
+import { ProjectProps } from "../interfaces";
 
-interface JsonProps extends PageProps {
+interface JsonProps extends ProjectProps {
   data: JsonData;
   description: string;
 }
