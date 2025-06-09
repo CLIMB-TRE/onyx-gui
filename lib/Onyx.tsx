@@ -259,38 +259,46 @@ function App(props: OnyxProps) {
     }
   }, [project, projects]);
 
+  const handleRecentlyViewed = useCallback(
+    (ID: string, handleShowID: (id: string) => void) => {
+      setRecentlyViewed((prevState) => {
+        const updatedList = [...prevState];
+
+        // Remove the item if it exists
+        const existingIndex = updatedList.findIndex((item) => item.ID === ID);
+        if (existingIndex !== -1) updatedList.splice(existingIndex, 1);
+
+        // Add new item to the front of the list
+        updatedList.unshift({
+          ID: ID,
+          timestamp: new Date(),
+          handleShowID: handleShowID,
+        });
+
+        // Limit to 10 recently viewed items
+        return updatedList.slice(0, 10);
+      });
+    },
+    []
+  );
+
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
-  const handleProjectRecordShow = useCallback((climbID: string) => {
-    setTabState((prevState) => ({
-      ...prevState,
-      tabKey: OnyxTabKeys.RECORDS,
-      recordTabKey: RecordTabKeys.DETAIL,
-      recordDetailTabKey: RecordDetailTabKeys.DATA,
-      recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
-      recordID: climbID,
-    }));
-    setRecentlyViewed((prevState) => {
-      const updatedList = [...prevState];
-
-      // Remove the item if it exists
-      const existingIndex = updatedList.findIndex(
-        (item) => item.ID === climbID
-      );
-      if (existingIndex !== -1) updatedList.splice(existingIndex, 1);
-
-      // Add new item to the front of the list
-      updatedList.unshift({
-        ID: climbID,
-        timestamp: new Date(),
-        handleShowID: handleProjectRecordShow,
-      });
-
-      // Limit to 10 recently viewed items
-      return updatedList.slice(0, 10);
-    });
-  }, []);
+  const handleProjectRecordShow = useCallback(
+    (climbID: string) => {
+      setTabState((prevState) => ({
+        ...prevState,
+        tabKey: OnyxTabKeys.RECORDS,
+        recordTabKey: RecordTabKeys.DETAIL,
+        recordDetailTabKey: RecordDetailTabKeys.DATA,
+        recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
+        recordID: climbID,
+      }));
+      handleRecentlyViewed(climbID, handleProjectRecordShow);
+    },
+    [handleRecentlyViewed]
+  );
 
   const handleProjectRecordHide = useCallback(() => {
     setTabState((prevState) => ({
@@ -300,35 +308,20 @@ function App(props: OnyxProps) {
     }));
   }, []);
 
-  const handleAnalysisShow = useCallback((analysisID: string) => {
-    setTabState((prevState) => ({
-      ...prevState,
-      tabKey: OnyxTabKeys.ANALYSES,
-      analysisTabKey: AnalysisTabKeys.DETAIL,
-      analysisDetailTabKey: AnalysisDetailTabKeys.DATA,
-      analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
-      analysisID: analysisID,
-    }));
-    setRecentlyViewed((prevState) => {
-      const updatedList = [...prevState];
-
-      // Remove the item if it exists
-      const existingIndex = updatedList.findIndex(
-        (item) => item.ID === analysisID
-      );
-      if (existingIndex !== -1) updatedList.splice(existingIndex, 1);
-
-      // Add new item to the front of the list
-      updatedList.unshift({
-        ID: analysisID,
-        timestamp: new Date(),
-        handleShowID: handleAnalysisShow,
-      });
-
-      // Limit to 10 recently viewed items
-      return updatedList.slice(0, 10);
-    });
-  }, []);
+  const handleAnalysisShow = useCallback(
+    (analysisID: string) => {
+      setTabState((prevState) => ({
+        ...prevState,
+        tabKey: OnyxTabKeys.ANALYSES,
+        analysisTabKey: AnalysisTabKeys.DETAIL,
+        analysisDetailTabKey: AnalysisDetailTabKeys.DATA,
+        analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
+        analysisID: analysisID,
+      }));
+      handleRecentlyViewed(analysisID, handleAnalysisShow);
+    },
+    [handleRecentlyViewed]
+  );
 
   const handleAnalysisHide = useCallback(() => {
     setTabState((prevState) => ({
