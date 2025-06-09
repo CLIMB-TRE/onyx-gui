@@ -1,4 +1,4 @@
-import Plotly, { AxisType, Template } from "plotly.js-basic-dist";
+import Plotly, { AxisType, Layout } from "plotly.js-basic-dist";
 import { useMemo } from "react";
 import createPlotlyComponent from "react-plotly.js/factory";
 import { useGroupedSummaryQuery, useSummaryQuery } from "../api";
@@ -9,6 +9,7 @@ import {
   Field,
   SuccessResponse,
   Summary,
+  DarkModeColours,
 } from "../types";
 import { useQueryRefresh } from "../utils/hooks";
 import { graphStyles } from "../utils/styles";
@@ -18,13 +19,14 @@ import QueryHandler from "./QueryHandler";
 const Plot = createPlotlyComponent(Plotly);
 
 interface BasePlotProps {
+  fields: Map<string, Field>;
   plotData: Plotly.Data[];
   title?: string;
   xTitle?: string;
   yTitle?: string;
   yAxisType?: string;
   legendTitle?: string;
-  layout?: Record<string, unknown>;
+  layout?: Partial<Layout>;
   darkMode: boolean;
   uirevision: string;
 }
@@ -192,43 +194,75 @@ function getGroupedNullCount(
 }
 
 function BasePlot(props: BasePlotProps) {
+  const layout: Partial<Layout> = {
+    ...props.layout,
+    autosize: true,
+    title: props.title,
+    titlefont: { size: 14, color: DarkModeColours.BS_GRAY_600 },
+    margin: {
+      l: 60,
+      r: 60,
+      b: 60,
+      t: 60,
+      pad: 4,
+    },
+    template: props.darkMode ? graphStyles : undefined,
+    xaxis: { title: props.xTitle },
+    yaxis: {
+      title: props.yTitle,
+      type: (props.yAxisType ? props.yAxisType : "linear") as AxisType,
+    },
+    legend: { title: { text: props.legendTitle } },
+    showlegend: props.legendTitle ? true : false,
+    colorway: [
+      "#00cc96",
+      "#636efa",
+      "#EF553B",
+      "#ab63fa",
+      "#FFA15A",
+      "#19d3f3",
+      "#FF6692",
+      "#B6E880",
+      "#FF97FF",
+      "#FECB52",
+    ],
+    uirevision: props.uirevision,
+  };
+
+  if (props.fields.get(props.xTitle || "")?.type.startsWith("date")) {
+    layout.xaxis = {
+      ...layout.xaxis,
+      rangeselector: {
+        buttons: [
+          {
+            count: 1,
+            label: "1m",
+            step: "month",
+            stepmode: "backward",
+          },
+          {
+            count: 6,
+            label: "6m",
+            step: "month",
+            stepmode: "backward",
+          },
+          {
+            count: 1,
+            label: "1y",
+            step: "year",
+            stepmode: "backward",
+          },
+          { step: "all" },
+        ],
+        bgcolor: props.darkMode ? DarkModeColours.BS_GRAY_900 : undefined,
+      },
+    };
+  }
+
   return (
     <Plot
       data={props.plotData}
-      layout={{
-        ...props.layout,
-        autosize: true,
-        title: props.title,
-        titlefont: { size: 14, color: "#6c757d" },
-        margin: {
-          l: 60,
-          r: 60,
-          b: 60,
-          t: 60,
-          pad: 4,
-        },
-        template: props.darkMode ? (graphStyles as Template) : undefined,
-        xaxis: { title: props.xTitle },
-        yaxis: {
-          title: props.yTitle,
-          type: (props.yAxisType ? props.yAxisType : "linear") as AxisType,
-        },
-        legend: { title: { text: props.legendTitle } },
-        showlegend: props.legendTitle ? true : false,
-        colorway: [
-          "#00cc96",
-          "#636efa",
-          "#EF553B",
-          "#ab63fa",
-          "#FFA15A",
-          "#19d3f3",
-          "#FF6692",
-          "#B6E880",
-          "#FF97FF",
-          "#FECB52",
-        ],
-        uirevision: props.uirevision,
-      }}
+      layout={layout}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
       config={{

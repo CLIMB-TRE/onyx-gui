@@ -14,7 +14,13 @@ import {
 } from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
-import { OnyxTabKeys, Profile, Project, RecentlyViewed } from "../types";
+import {
+  DarkModeColours,
+  OnyxTabKeys,
+  Profile,
+  Project,
+  RecentlyViewed,
+} from "../types";
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
 
@@ -98,7 +104,7 @@ function Header(props: HeaderProps) {
   return (
     <Navbar
       style={{
-        backgroundColor: "#121212",
+        backgroundColor: DarkModeColours.BS_BODY_BG,
       }}
       className="border-bottom onyx-border"
       variant="dark"
