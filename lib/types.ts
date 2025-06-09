@@ -3,6 +3,13 @@ export enum Themes {
   DARK = "dark",
 }
 
+export enum DarkModeColours {
+  BS_BODY_COLOR = "#dee2e6", // Bootstrap body text color for dark mode
+  BS_BODY_BG = "#121212", // Bootstrap body background color for dark mode
+  BS_GRAY_600 = "#6c757d", // Bootstrap gray-600 for dark mode
+  BS_GRAY_900 = "#212529", // Bootstrap gray-900 for dark mode
+}
+
 export enum OnyxTabKeys {
   USER = "user-tab",
   SITE = "site-tab",
@@ -64,6 +71,12 @@ export type TabState = {
   analysisDetailTabKey: AnalysisDetailTabKeys;
   analysisDataPanelTabKey: DataPanelTabKeys;
   analysisID: string;
+};
+
+export type RecentlyViewed = {
+  ID: string;
+  timestamp: Date;
+  handleShowID: (id: string) => void;
 };
 
 export type FieldType =

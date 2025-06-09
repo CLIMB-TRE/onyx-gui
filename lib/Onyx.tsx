@@ -34,6 +34,7 @@ import {
   TabState,
   Themes,
   TypeObject,
+  RecentlyViewed,
 } from "./types";
 import { useDelayedValue } from "./utils/hooks";
 
@@ -198,11 +199,13 @@ function App(props: OnyxProps) {
   // Project state
   const [project, setProject] = useState<Project>();
   const [tabState, setTabState] = useState<TabState>(defaultTabState);
+  const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewed[]>([]);
 
   // Clear parameters when project changes
   const handleProjectChange = (project: Project) => {
     setTabState(defaultTabState);
     setProject(project);
+    setRecentlyViewed([]);
   };
 
   // Query for types, lookups and project permissions
@@ -256,19 +259,46 @@ function App(props: OnyxProps) {
     }
   }, [project, projects]);
 
+  const handleRecentlyViewed = useCallback(
+    (ID: string, handleShowID: (id: string) => void) => {
+      setRecentlyViewed((prevState) => {
+        const updatedList = [...prevState];
+
+        // Remove the item if it exists
+        const existingIndex = updatedList.findIndex((item) => item.ID === ID);
+        if (existingIndex !== -1) updatedList.splice(existingIndex, 1);
+
+        // Add new item to the front of the list
+        updatedList.unshift({
+          ID: ID,
+          timestamp: new Date(),
+          handleShowID: handleShowID,
+        });
+
+        // Limit to 10 recently viewed items
+        return updatedList.slice(0, 10);
+      });
+    },
+    []
+  );
+
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
-  const handleProjectRecordShow = useCallback((climbID: string) => {
-    setTabState((prevState) => ({
-      ...prevState,
-      tabKey: OnyxTabKeys.RECORDS,
-      recordTabKey: RecordTabKeys.DETAIL,
-      recordDetailTabKey: RecordDetailTabKeys.DATA,
-      recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
-      recordID: climbID,
-    }));
-  }, []);
+  const handleProjectRecordShow = useCallback(
+    (climbID: string) => {
+      setTabState((prevState) => ({
+        ...prevState,
+        tabKey: OnyxTabKeys.RECORDS,
+        recordTabKey: RecordTabKeys.DETAIL,
+        recordDetailTabKey: RecordDetailTabKeys.DATA,
+        recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
+        recordID: climbID,
+      }));
+      handleRecentlyViewed(climbID, handleProjectRecordShow);
+    },
+    [handleRecentlyViewed]
+  );
 
   const handleProjectRecordHide = useCallback(() => {
     setTabState((prevState) => ({
@@ -278,16 +308,20 @@ function App(props: OnyxProps) {
     }));
   }, []);
 
-  const handleAnalysisShow = useCallback((analysisID: string) => {
-    setTabState((prevState) => ({
-      ...prevState,
-      tabKey: OnyxTabKeys.ANALYSES,
-      analysisTabKey: AnalysisTabKeys.DETAIL,
-      analysisDetailTabKey: AnalysisDetailTabKeys.DATA,
-      analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
-      analysisID: analysisID,
-    }));
-  }, []);
+  const handleAnalysisShow = useCallback(
+    (analysisID: string) => {
+      setTabState((prevState) => ({
+        ...prevState,
+        tabKey: OnyxTabKeys.ANALYSES,
+        analysisTabKey: AnalysisTabKeys.DETAIL,
+        analysisDetailTabKey: AnalysisDetailTabKeys.DATA,
+        analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
+        analysisID: analysisID,
+      }));
+      handleRecentlyViewed(analysisID, handleAnalysisShow);
+    },
+    [handleRecentlyViewed]
+  );
 
   const handleAnalysisHide = useCallback(() => {
     setTabState((prevState) => ({
@@ -306,10 +340,14 @@ function App(props: OnyxProps) {
         setTabState={setTabState}
         project={project}
         projects={projects}
+        recentlyViewed={recentlyViewed}
         handleThemeChange={handleThemeChange}
         handleProjectChange={handleProjectChange}
+        handleProjectRecordShow={handleProjectRecordShow}
+        handleAnalysisShow={handleAnalysisShow}
         handleProjectRecordHide={handleProjectRecordHide}
         handleAnalysisHide={handleAnalysisHide}
+        handleRecentlyViewed={handleRecentlyViewed}
       />
       <div className="h-100" style={{ paddingTop: "60px" }}>
         <Container fluid className="h-100 p-2">
