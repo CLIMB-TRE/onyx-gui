@@ -15,11 +15,13 @@ import {
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
 import {
+  AnalysisTabKeys,
   DarkModeColours,
   OnyxTabKeys,
   Profile,
   Project,
   RecentlyViewed,
+  RecordTabKeys,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
@@ -30,8 +32,14 @@ interface HeaderProps extends PageProps {
   recentlyViewed: RecentlyViewed[];
   handleThemeChange: () => void;
   handleProjectChange: (p: Project) => void;
+  handleProjectRecordShow: (recordID: string) => void;
+  handleAnalysisShow: (analysisID: string) => void;
   handleProjectRecordHide: () => void;
   handleAnalysisHide: () => void;
+  handleRecentlyViewed: (
+    ID: string,
+    handleShowID: (ID: string) => void
+  ) => void;
 }
 
 function HeaderText({
@@ -99,6 +107,26 @@ function Header(props: HeaderProps) {
       ...prevState,
       tabKey: tabKey as OnyxTabKeys,
     }));
+
+    if (
+      tabKey === OnyxTabKeys.RECORDS &&
+      props.tabState.recordTabKey === RecordTabKeys.DETAIL
+    ) {
+      props.handleRecentlyViewed(
+        props.tabState.recordID,
+        props.handleProjectRecordShow
+      );
+    }
+
+    if (
+      tabKey === OnyxTabKeys.ANALYSES &&
+      props.tabState.analysisTabKey === AnalysisTabKeys.DETAIL
+    ) {
+      props.handleRecentlyViewed(
+        props.tabState.analysisID,
+        props.handleAnalysisShow
+      );
+    }
   };
 
   return (

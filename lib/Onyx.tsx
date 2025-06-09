@@ -343,8 +343,11 @@ function App(props: OnyxProps) {
         recentlyViewed={recentlyViewed}
         handleThemeChange={handleThemeChange}
         handleProjectChange={handleProjectChange}
+        handleProjectRecordShow={handleProjectRecordShow}
+        handleAnalysisShow={handleAnalysisShow}
         handleProjectRecordHide={handleProjectRecordHide}
         handleAnalysisHide={handleAnalysisHide}
+        handleRecentlyViewed={handleRecentlyViewed}
       />
       <div className="h-100" style={{ paddingTop: "60px" }}>
         <Container fluid className="h-100 p-2">
