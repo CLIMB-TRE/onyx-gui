@@ -20,7 +20,7 @@ interface ColumnsModalProps extends DataProps {
 
 function ColumnsModal(props: ColumnsModalProps) {
   const [selectAll, setSelectAll] = useState<boolean>(false);
-  const [activeColumns, setActiveColumns] = useState<Set<string>>();
+  const [activeColumns, setActiveColumns] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState<string>("");
   const debouncedSearch = useDebouncedValue(search.toLowerCase(), 200);
   const filteredColumns = useMemo(
@@ -33,11 +33,9 @@ function ColumnsModal(props: ColumnsModalProps) {
     [props.columns, debouncedSearch]
   );
   const activeColumnsMessage = useMemo(() => {
-    return `${activeColumns?.size || 0} column${
-      activeColumns?.size !== 1 ? "s" : ""
-    } selected. ${
-      !activeColumns?.size ? "All columns will be displayed." : ""
-    }`;
+    return `${activeColumns.size} column${
+      activeColumns.size !== 1 ? "s" : ""
+    } selected. ${!activeColumns.size ? "All columns will be displayed." : ""}`;
   }, [activeColumns]);
 
   // Update active columns when props.activeColumns changes
@@ -72,7 +70,7 @@ function ColumnsModal(props: ColumnsModalProps) {
   // Apply the changes to active columns, then close the modal
   const handleApply = () => {
     props.setActiveColumns(
-      props.columns.filter((column) => activeColumns?.has(column.code))
+      props.columns.filter((column) => activeColumns.has(column.code))
     );
     props.onHide();
   };
@@ -122,7 +120,7 @@ function ColumnsModal(props: ColumnsModalProps) {
                     type="checkbox"
                     id={`checkbox-${column.code}`}
                     label={<FieldDetails {...props} field={column.code} />}
-                    checked={activeColumns?.has(column.code)}
+                    checked={activeColumns.has(column.code)}
                     onChange={(e) =>
                       handleSelectChange(column.code, e.target.checked)
                     }
