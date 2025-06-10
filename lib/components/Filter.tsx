@@ -143,8 +143,8 @@ function Filter(props: FilterProps) {
     case filter.lookup.endsWith("range"):
       f = (
         <RangeInput
-          from={getValueList(filter.value)[0]}
-          to={getValueList(filter.value)[1]}
+          from={getValueList(filter.value)[0] || ""}
+          to={getValueList(filter.value)[1] || ""}
           onChange={handleValueChange}
         />
       );

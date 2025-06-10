@@ -85,6 +85,7 @@ function ProjectPage(props: ProjectPageProps) {
                   fields={fields}
                   projectDescription={description}
                   title="Records"
+                  commandBase={`onyx filter ${props.project.code}`}
                   searchPath={`projects/${props.project.code}`}
                 />
               </Tab.Pane>
@@ -116,6 +117,7 @@ function ProjectPage(props: ProjectPageProps) {
                   fields={analysisFields}
                   projectDescription={description}
                   title="Analyses"
+                  commandBase={`onyx filter-analysis ${props.project.code}`}
                   searchPath={`projects/${props.project.code}/analysis`}
                 />
               </Tab.Pane>

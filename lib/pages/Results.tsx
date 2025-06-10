@@ -11,6 +11,7 @@ import { FilterConfig, Field } from "../types";
 import { formatFilters } from "../utils/functions";
 import { useDebouncedValue } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
+import { CopyToClipboardButton } from "../components/Buttons";
 
 function Results(props: ResultsProps) {
   const [searchParameters, setSearchParameters] = useState("");
@@ -93,6 +94,29 @@ function Results(props: ResultsProps) {
     if (!isFetching) refetch();
   };
 
+  const handleCopyCLICommand = () => {
+    // Format filters
+    const filters = formatFilters(filterList)
+      .map(
+        ([filter, value]) =>
+          `--field ${filter.replace("__exact", "")}=${
+            value.includes(" ") ? `"${value}"` : value
+          }`
+      )
+      .join(" ");
+
+    // Format summarise
+    let summarise = "";
+    const summariseFields = summariseList.filter((field) => field);
+    if (summariseFields.length > 0)
+      summarise = `--summarise ${summariseFields.join(",")}`;
+
+    // Assemble the command
+    const command = [props.commandBase, filters, summarise].join(" ").trim();
+
+    navigator.clipboard.writeText(command);
+  };
+
   return (
     <Container fluid className="g-0 h-100">
       <ColumnsModal
@@ -127,6 +151,13 @@ function Results(props: ResultsProps) {
                     summariseList={summariseList}
                     setSummariseList={setSummariseList}
                     filterFieldOptions={filterOptions}
+                  />
+                  <CopyToClipboardButton
+                    size="sm"
+                    variant="dark"
+                    title="Copy CLI Command"
+                    onClick={handleCopyCLICommand}
+                    showTitle
                   />
                 </Stack>
               </Stack>

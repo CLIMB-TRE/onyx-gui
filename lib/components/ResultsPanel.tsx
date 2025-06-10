@@ -86,7 +86,7 @@ function ResultsPanel(props: ResultsPanelProps) {
           <Button
             size="sm"
             variant="dark"
-            title="Customise Columns"
+            title="Edit Columns"
             onClick={() => props.setColumnsModalShow(true)}
           >
             <MdTableRows /> Edit Columns
