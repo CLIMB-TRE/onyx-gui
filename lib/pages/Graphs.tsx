@@ -42,6 +42,7 @@ import {
 } from "../types";
 import { generateKey } from "../utils/functions";
 import RemoveAllModal from "../components/RemoveAllModal";
+import { useFieldDescriptions } from "../api/hooks";
 
 interface GraphPanelProps extends DataProps {
   graphConfig: GraphConfig;
@@ -140,22 +141,24 @@ function GraphPanelOptions(props: GraphPanelProps) {
     fieldOptions = props.graphFieldOptions.filter((field) =>
       graphFieldTypes[
         props.graphConfig.type as keyof typeof graphFieldTypes
-      ].fields.includes(props.projectFields.get(field)?.type || "")
+      ].fields.includes(props.fields.get(field)?.type || "")
     );
     groupByOptions = props.graphFieldOptions.filter((field) =>
       graphFieldTypes[
         props.graphConfig.type as keyof typeof graphFieldTypes
-      ].groupBy.includes(props.projectFields.get(field)?.type || "")
+      ].groupBy.includes(props.fields.get(field)?.type || "")
     );
   }
 
-  const filterFieldOptions = Array.from(props.projectFields.entries())
+  const filterFieldOptions = Array.from(props.fields.entries())
     .filter(
-      ([, projectField]) =>
-        (props.typeLookups.get(projectField.type) || []).includes("exact") &&
-        projectField.actions.includes("filter")
+      ([, field]) =>
+        (props.typeLookups.get(field.type) || []).includes("exact") &&
+        field.actions.includes("filter")
     )
     .map(([field]) => field);
+
+  const fieldDescriptions = useFieldDescriptions(props.fields);
 
   return (
     <Tabs
@@ -183,7 +186,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
               <Dropdown
                 isClearable
                 options={fieldOptions}
-                titles={props.fieldDescriptions}
+                titles={fieldDescriptions}
                 value={props.graphConfig.field}
                 placeholder="Select field..."
                 onChange={props.handleGraphConfigFieldChange}
@@ -197,7 +200,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
               <Dropdown
                 isClearable
                 options={groupByOptions}
-                titles={props.fieldDescriptions}
+                titles={fieldDescriptions}
                 value={props.graphConfig.groupBy}
                 placeholder="Select field..."
                 onChange={props.handleGraphConfigGroupByChange}
@@ -390,8 +393,8 @@ function Graphs(props: DataProps) {
     ] as GraphConfig[];
 
   const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig());
-  const listFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, projectField]) => projectField.actions.includes("list"))
+  const listFieldOptions = Array.from(props.fields.entries())
+    .filter(([, field]) => field.actions.includes("list"))
     .map(([field]) => field);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showOptions, setShowOptions] = useState(true);

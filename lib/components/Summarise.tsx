@@ -4,29 +4,30 @@ import CloseButton from "react-bootstrap/CloseButton";
 import Stack from "react-bootstrap/Stack";
 import { DataProps } from "../interfaces";
 import { MultiDropdown } from "./Dropdowns";
+import { useFieldDescriptions } from "../api/hooks";
 
-interface TransformsProps extends DataProps {
-  transform: string;
-  transformList: string[];
-  setTransformList: (value: string[]) => void;
+interface SummariseProps extends DataProps {
+  summariseList: string[];
+  setSummariseList: (value: string[]) => void;
   filterFieldOptions: string[];
-  listFieldOptions: string[];
   setEditMode: (value: boolean) => void;
 }
 
-function Transforms(props: TransformsProps) {
-  const [transformList, setTransformList] = useState(props.transformList);
+function Summarise(props: SummariseProps) {
+  const [summariseList, setSummariseList] = useState(props.summariseList);
 
-  const handleTransformListChange = (
+  const handleSummariseListChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setTransformList(e.target.value ? e.target.value.split(",") : []);
+    setSummariseList(e.target.value ? e.target.value.split(",") : []);
   };
 
   const handleApply = () => {
-    props.setTransformList(transformList);
+    props.setSummariseList(summariseList);
     props.setEditMode(false);
   };
+
+  const fieldDescriptions = useFieldDescriptions(props.fields);
 
   return (
     <Stack gap={2} className="p-1">
@@ -39,15 +40,11 @@ function Transforms(props: TransformsProps) {
       </Stack>
       <hr className="m-0 mb-1" />
       <MultiDropdown
-        options={
-          props.transform === "Summarise"
-            ? props.filterFieldOptions
-            : props.listFieldOptions
-        }
-        titles={props.fieldDescriptions}
-        value={transformList}
-        placeholder={`${props.transform} fields...`}
-        onChange={handleTransformListChange}
+        options={props.filterFieldOptions}
+        titles={fieldDescriptions}
+        value={summariseList}
+        placeholder={"Summarise fields..."}
+        onChange={handleSummariseListChange}
       />
       <Stack className="mt-1" direction="horizontal" gap={1}>
         <div className="me-auto"></div>
@@ -66,4 +63,4 @@ function Transforms(props: TransformsProps) {
   );
 }
 
-export default Transforms;
+export default Summarise;

@@ -1,25 +1,45 @@
 import { useMemo } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
+import Dropdown from "react-bootstrap/Dropdown";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Stack from "react-bootstrap/Stack";
-import { MdDarkMode, MdJoinInner, MdLightMode } from "react-icons/md";
+import {
+  MdDarkMode,
+  MdJoinInner,
+  MdLightMode,
+  MdHistory,
+} from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
-import { OnyxTabKeys, Project } from "../types";
+import {
+  AnalysisTabKeys,
+  DarkModeColours,
+  OnyxTabKeys,
+  Profile,
+  Project,
+  RecentlyViewed,
+  RecordTabKeys,
+} from "../types";
+import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
 
 interface HeaderProps extends PageProps {
-  projectObj?: Project;
-  projectList: Project[];
-  handleProjectChange: (p: Project) => void;
-  tabKey: string;
-  setTabKey: (k: string) => void;
+  project?: Project;
+  projects: Project[];
+  recentlyViewed: RecentlyViewed[];
   handleThemeChange: () => void;
+  handleProjectChange: (p: Project) => void;
+  handleProjectRecordShow: (recordID: string) => void;
+  handleAnalysisShow: (analysisID: string) => void;
   handleProjectRecordHide: () => void;
   handleAnalysisHide: () => void;
+  handleRecentlyViewed: (
+    ID: string,
+    handleShowID: (ID: string) => void
+  ) => void;
 }
 
 function HeaderText({
@@ -62,36 +82,57 @@ function Header(props: HeaderProps) {
   const profile = useMemo(() => {
     if (data?.status !== "success")
       return {
-        username: "None",
-        site: "None",
-      };
+        username: "",
+        site: "",
+        email: "",
+      } as Profile;
 
-    return {
-      username: data.data.username,
-      site: data.data.site,
-    };
+    return data.data;
   }, [data]);
 
-  const handleTabChange = (eventKey: string | null) => {
+  const handleTabChange = (tabKey: string | null) => {
     if (
-      props.tabKey === OnyxTabKeys.RECORDS &&
-      eventKey === OnyxTabKeys.RECORDS
+      props.tabState.tabKey === OnyxTabKeys.RECORDS &&
+      tabKey === OnyxTabKeys.RECORDS
     )
       props.handleProjectRecordHide();
 
     if (
-      props.tabKey === OnyxTabKeys.ANALYSES &&
-      eventKey === OnyxTabKeys.ANALYSES
+      props.tabState.tabKey === OnyxTabKeys.ANALYSES &&
+      tabKey === OnyxTabKeys.ANALYSES
     )
       props.handleAnalysisHide();
 
-    props.setTabKey(eventKey || OnyxTabKeys.RECORDS);
+    props.setTabState((prevState) => ({
+      ...prevState,
+      tabKey: tabKey as OnyxTabKeys,
+    }));
+
+    if (
+      tabKey === OnyxTabKeys.RECORDS &&
+      props.tabState.recordTabKey === RecordTabKeys.DETAIL
+    ) {
+      props.handleRecentlyViewed(
+        props.tabState.recordID,
+        props.handleProjectRecordShow
+      );
+    }
+
+    if (
+      tabKey === OnyxTabKeys.ANALYSES &&
+      props.tabState.analysisTabKey === AnalysisTabKeys.DETAIL
+    ) {
+      props.handleRecentlyViewed(
+        props.tabState.analysisID,
+        props.handleAnalysisShow
+      );
+    }
   };
 
   return (
     <Navbar
       style={{
-        backgroundColor: "#121212",
+        backgroundColor: DarkModeColours.BS_BODY_BG,
       }}
       className="border-bottom onyx-border"
       variant="dark"
@@ -102,10 +143,7 @@ function Header(props: HeaderProps) {
       <Container fluid>
         <Navbar.Brand
           title="Onyx | API for Pathogen Metadata"
-          onClick={() => {
-            props.setTabKey(OnyxTabKeys.RECORDS);
-            props.handleProjectRecordHide();
-          }}
+          onClick={props.handleProjectRecordHide}
           style={{ cursor: "pointer" }}
         >
           <MdJoinInner color="var(--bs-pink)" size={30} /> Onyx
@@ -117,12 +155,13 @@ function Header(props: HeaderProps) {
               title={
                 <HeaderText
                   label="Project"
-                  value={props.projectObj?.name || "Not Selected"}
+                  value={props.project?.name || "Not Found"}
                 />
               }
               style={{ color: "white" }}
             >
-              {props.projectList.map((p) => (
+              <NavDropdown.Header>Projects</NavDropdown.Header>
+              {props.projects.map((p) => (
                 <NavDropdown.Item
                   key={p.code}
                   onClick={() => props.handleProjectChange(p)}
@@ -131,49 +170,69 @@ function Header(props: HeaderProps) {
                 </NavDropdown.Item>
               ))}
             </NavDropdown>
-            <Nav variant="underline" activeKey={props.tabKey}>
+            <Nav
+              variant="underline"
+              activeKey={props.project ? props.tabState.tabKey : undefined}
+            >
               <Stack direction="horizontal" gap={3}>
-                <Nav.Link eventKey={OnyxTabKeys.USER} className="fw-normal">
+                <Nav.Link
+                  eventKey={OnyxTabKeys.USER}
+                  className="fw-normal"
+                  disabled={!props.project}
+                >
                   <HeaderText
                     label="User"
                     value={
-                      <TextQueryHandler
-                        isFetching={isFetching}
-                        error={error as Error}
-                      >
+                      <TextQueryHandler isFetching={isFetching} error={error}>
                         {profile.username}
                       </TextQueryHandler>
                     }
                   />
                 </Nav.Link>
-                <Nav.Link eventKey={OnyxTabKeys.SITE} className="fw-normal">
+                <Nav.Link
+                  eventKey={OnyxTabKeys.SITE}
+                  className="fw-normal"
+                  disabled={!props.project}
+                >
                   <HeaderText
                     label="Site"
                     value={
-                      <TextQueryHandler
-                        isFetching={isFetching}
-                        error={error as Error}
-                      >
+                      <TextQueryHandler isFetching={isFetching} error={error}>
                         {profile.site}
                       </TextQueryHandler>
                     }
                   />
                 </Nav.Link>
-                <Nav.Link disabled className="fw-normal ">
+                <Nav.Link disabled className="fw-normal">
                   <HeaderVersion label="Version" version={props.extVersion} />
                 </Nav.Link>
               </Stack>
             </Nav>
           </Nav>
-          <Nav variant="underline" activeKey={props.tabKey}>
+          <Nav
+            variant="underline"
+            activeKey={props.project ? props.tabState.tabKey : undefined}
+          >
             <Stack direction="horizontal" gap={3}>
-              <Nav.Link eventKey={OnyxTabKeys.RECORDS} className="fw-normal">
+              <Nav.Link
+                eventKey={OnyxTabKeys.RECORDS}
+                className="fw-normal"
+                disabled={!props.project}
+              >
                 Records
               </Nav.Link>
-              <Nav.Link eventKey={OnyxTabKeys.ANALYSES} className="fw-normal">
+              <Nav.Link
+                eventKey={OnyxTabKeys.ANALYSES}
+                className="fw-normal"
+                disabled={!props.project}
+              >
                 Analyses
               </Nav.Link>
-              <Nav.Link eventKey={OnyxTabKeys.GRAPHS} className="fw-normal">
+              <Nav.Link
+                eventKey={OnyxTabKeys.GRAPHS}
+                className="fw-normal"
+                disabled={!props.project}
+              >
                 Graphs
               </Nav.Link>
               <Form.Check
@@ -190,6 +249,30 @@ function Header(props: HeaderProps) {
                 checked={props.darkMode}
                 onChange={props.handleThemeChange}
               />
+              <Dropdown>
+                <Dropdown.Toggle
+                  id="recently-viewed-dropdown"
+                  size="sm"
+                  title="Recently Viewed"
+                >
+                  <MdHistory />
+                </Dropdown.Toggle>
+                <Dropdown.Menu align="end">
+                  <Dropdown.Header>Recently Viewed</Dropdown.Header>
+                  {props.recentlyViewed.map((item) => (
+                    <Dropdown.Item
+                      key={item.ID}
+                      title={item.ID + " - " + item.timestamp.toLocaleString()}
+                      onClick={() => item.handleShowID(item.ID)}
+                    >
+                      {item.ID} -{" "}
+                      <span className="text-muted">
+                        {formatTimeAgo(item.timestamp)}
+                      </span>
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
             </Stack>
           </Nav>
         </Navbar.Collapse>

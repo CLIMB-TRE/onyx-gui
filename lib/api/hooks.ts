@@ -1,17 +1,21 @@
 import { useMemo } from "react";
 import {
-  ChoicesResponse,
   ErrorResponse,
-  FieldsResponse,
-  ProjectField,
+  DetailResponse,
+  Choices,
+  Field,
+  Fields,
 } from "../types";
 
-function flattenFields(fields: Record<string, ProjectField>) {
-  const flatFields: Record<string, ProjectField> = {};
+function flattenFields(fields: Record<string, Field>) {
+  const flatFields: Record<string, Field> = {};
 
   // Loop over object and flatten nested fields
-  const flatten = (obj: Record<string, ProjectField>, prefix = "") => {
+  const flatten = (obj: Record<string, Field>, prefix = "") => {
     for (const [field, fieldInfo] of Object.entries(obj)) {
+      // TODO: Shouldn't add code here
+      const code = prefix + field;
+      fieldInfo.code = code;
       flatFields[prefix + field] = fieldInfo;
       if (fieldInfo.type === "relation" && fieldInfo.fields) {
         flatten(fieldInfo.fields, prefix + field + "__");
@@ -23,37 +27,41 @@ function flattenFields(fields: Record<string, ProjectField>) {
   return flatFields;
 }
 
-const useFieldsInfo = (fieldsResponse: FieldsResponse | ErrorResponse) => {
+const useFieldsInfo = (data: DetailResponse<Fields> | ErrorResponse) => {
   return useMemo(() => {
-    if (fieldsResponse?.status !== "success") {
+    if (data?.status !== "success") {
       return {
-        name: "None",
-        description: "None",
-        fields: new Map<string, ProjectField>(),
-        descriptions: new Map<string, string>(),
+        name: "",
+        description: "",
+        fields: new Map<string, Field>(),
       };
     }
 
     // The name of the project
-    const name = fieldsResponse.data.name;
+    const name = data.data.name;
 
     // The description of the project
-    const description = fieldsResponse.data.description;
+    const description = data.data.description;
 
     // A map of field names to their type, description, actions, values and nested fields
-    const fields = new Map(
-      Object.entries(flattenFields(fieldsResponse.data.fields))
-    );
+    const fields = new Map(Object.entries(flattenFields(data.data.fields)));
 
-    // A map of field names to their descriptions
-    const descriptions = new Map(
-      Array.from(fields, ([field, options]) => [field, options.description])
-    );
-    return { name, description, fields, descriptions };
-  }, [fieldsResponse]);
+    return { name, description, fields };
+  }, [data]);
 };
 
-const useChoiceDescriptions = (data: ChoicesResponse | ErrorResponse) => {
+const useFieldDescriptions = (fields: Map<string, Field>) => {
+  return useMemo(() => {
+    // Get a map of field names to their descriptions
+    return new Map(
+      Array.from(fields, ([field, options]) => [field, options.description])
+    );
+  }, [fields]);
+};
+
+const useChoiceDescriptions = (
+  data: DetailResponse<Choices> | ErrorResponse
+) => {
   // Get a map of choices to their descriptions
   return useMemo(() => {
     if (data?.status !== "success") return new Map<string, string>();
@@ -68,14 +76,12 @@ const useChoiceDescriptions = (data: ChoicesResponse | ErrorResponse) => {
 
 const useChoicesDescriptions = (
   fields: string[],
-  data: (ChoicesResponse | ErrorResponse)[]
+  data: (DetailResponse<Choices> | ErrorResponse)[]
 ) => {
   // Get a map of fields to choices to their descriptions
   return useMemo(() => {
     // Make a map of fields to their response
-    const fieldsData = new Map<string, ChoicesResponse | ErrorResponse>(
-      fields.map((field, i) => [field, data[i]])
-    );
+    const fieldsData = new Map(fields.map((field, i) => [field, data[i]]));
 
     const descriptions = new Map<string, Map<string, string>>();
     for (const [field, response] of fieldsData) {
@@ -91,4 +97,9 @@ const useChoicesDescriptions = (
   }, [fields, data]);
 };
 
-export { useChoiceDescriptions, useChoicesDescriptions, useFieldsInfo };
+export {
+  useChoiceDescriptions,
+  useChoicesDescriptions,
+  useFieldsInfo,
+  useFieldDescriptions,
+};

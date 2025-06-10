@@ -17,18 +17,32 @@ function LoadingText() {
   );
 }
 
-function LoadingSpinner() {
-  const showAlert = useDelayedValue();
+export function BaseSpinner({
+  delay,
+  children,
+}: {
+  delay?: number;
+  children: React.ReactNode;
+}) {
+  const showAlert = useDelayedValue(delay);
 
   return showAlert ? (
     <div className="h-100 d-flex justify-content-center align-items-center">
       <Stack direction="horizontal" gap={2}>
         <Spinner />
-        <LoadingText />
+        {children}
       </Stack>
     </div>
   ) : (
     <></>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <BaseSpinner>
+      <LoadingText />
+    </BaseSpinner>
   );
 }
 
@@ -82,14 +96,14 @@ function QueryHandler({
 }: {
   isFetching: boolean;
   error: Error | null;
-  data: SuccessResponse | ErrorResponse;
+  data: SuccessResponse | ErrorResponse | undefined;
   children: React.ReactNode;
 }) {
   return isFetching ? (
     <LoadingSpinner />
   ) : error ? (
     <Alert variant="danger">Error: {error.message}</Alert>
-  ) : data.status === "error" || data.status === "fail" ? (
+  ) : data?.status === "error" || data?.status === "fail" ? (
     <ErrorMessages error={data} />
   ) : (
     (children as JSX.Element)

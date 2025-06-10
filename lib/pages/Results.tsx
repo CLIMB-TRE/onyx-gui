@@ -5,25 +5,37 @@ import { useResultsQuery } from "../api";
 import FilterPanel from "../components/FilterPanel";
 import ResultsPanel from "../components/ResultsPanel";
 import SearchBar from "../components/SearchBar";
-import TransformsPanel from "../components/TransformsPanel";
+import SummarisePanel from "../components/SummarisePanel";
 import { ResultsProps } from "../interfaces";
-import { FilterConfig } from "../types";
+import { FilterConfig, Field } from "../types";
 import { formatFilters } from "../utils/functions";
 import { useDebouncedValue } from "../utils/hooks";
+import ColumnsModal from "../components/ColumnsModal";
 
 function Results(props: ResultsProps) {
   const [searchParameters, setSearchParameters] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
-  const [transform, setTransform] = useState("Summarise");
-  const [transformList, setTransformList] = useState(new Array<string>());
+  const [summariseList, setSummariseList] = useState(new Array<string>());
+  const [columnList, setColumnList] = useState<Field[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const filterFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, projectField]) => projectField.actions.includes("filter"))
-    .map(([field]) => field);
-  const listFieldOptions = Array.from(props.projectFields.entries())
-    .filter(([, projectField]) => projectField.actions.includes("list"))
-    .map(([field]) => field);
+  const [columnsModalShow, setColumnsModalShow] = useState(false);
+
+  const filterOptions = useMemo(
+    () =>
+      Array.from(props.fields.entries())
+        .filter(([, field]) => field.actions.includes("filter"))
+        .map(([field]) => field),
+    [props.fields]
+  );
+
+  const columnOptions = useMemo(
+    () =>
+      Array.from(props.fields.entries())
+        .filter(([, field]) => field.actions.includes("list"))
+        .map(([, field]) => field),
+    [props.fields]
+  );
 
   // Pagination page size
   const pageSize = 100;
@@ -40,26 +52,35 @@ function Results(props: ResultsProps) {
   const { isFetching, error, data, refetch } =
     useResultsQuery(paginatedQueryProps);
 
-  const searchParams = useMemo(
-    () =>
-      new URLSearchParams(
-        formatFilters(filterList)
-          .concat(
-            transformList
-              .filter((field) => field)
-              .map((field) => [transform.toLowerCase(), field])
-          )
-          .concat(
-            [searchInput]
-              .map((search) => search.trim())
-              .filter((search) => search)
-              .map((search) => ["search", search])
-          )
-      ).toString(),
-    [filterList, transform, transformList, searchInput]
-  );
+  const searchParams = useMemo(() => {
+    let columns;
+    let columnOperator;
+    if (columnList.length <= columnOptions.length - columnList.length) {
+      columns = columnList;
+      columnOperator = "include";
+    } else {
+      columns = columnOptions.filter((field) => !columnList.includes(field));
+      columnOperator = "exclude";
+    }
 
-  const debouncedSearchParams = useDebouncedValue(searchParams, 1000);
+    return new URLSearchParams(
+      formatFilters(filterList)
+        .concat(
+          summariseList
+            .filter((field) => field)
+            .map((field) => ["summarise", field])
+        )
+        .concat(columns.map((field) => [columnOperator, field.code]))
+        .concat(
+          [searchInput]
+            .map((search) => search.trim())
+            .filter((search) => search)
+            .map((search) => ["search", search])
+        )
+    ).toString();
+  }, [filterList, summariseList, columnList, searchInput, columnOptions]);
+
+  const debouncedSearchParams = useDebouncedValue(searchParams, 500);
 
   useEffect(
     () => setSearchParameters(debouncedSearchParams),
@@ -74,6 +95,14 @@ function Results(props: ResultsProps) {
 
   return (
     <Container fluid className="g-0 h-100">
+      <ColumnsModal
+        {...props}
+        show={columnsModalShow}
+        onHide={() => setColumnsModalShow(false)}
+        columns={columnOptions}
+        activeColumns={columnList}
+        setActiveColumns={setColumnList}
+      />
       <Stack gap={2} direction="horizontal" className="h-100 parent">
         {!sidebarCollapsed && (
           <div className="h-100 left-col">
@@ -91,16 +120,13 @@ function Results(props: ResultsProps) {
                     {...props}
                     filterList={filterList}
                     setFilterList={setFilterList}
-                    filterFieldOptions={filterFieldOptions}
+                    filterFieldOptions={filterOptions}
                   />
-                  <TransformsPanel
+                  <SummarisePanel
                     {...props}
-                    transform={transform}
-                    setTransform={setTransform}
-                    transformList={transformList}
-                    setTransformList={setTransformList}
-                    filterFieldOptions={filterFieldOptions}
-                    listFieldOptions={listFieldOptions}
+                    summariseList={summariseList}
+                    setSummariseList={setSummariseList}
+                    filterFieldOptions={filterOptions}
                   />
                 </Stack>
               </Stack>
@@ -114,10 +140,11 @@ function Results(props: ResultsProps) {
               searchParameters={searchParameters}
               pageSize={pageSize}
               isFetching={isFetching}
-              error={error as Error}
+              error={error}
               data={data}
               sidebarCollapsed={sidebarCollapsed}
               setSidebarCollapsed={setSidebarCollapsed}
+              setColumnsModalShow={setColumnsModalShow}
             />
           </Container>
         </div>

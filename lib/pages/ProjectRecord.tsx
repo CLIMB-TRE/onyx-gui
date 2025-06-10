@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
@@ -8,43 +8,28 @@ import Tab from "react-bootstrap/Tab";
 import { MdArrowBackIosNew } from "react-icons/md";
 import { useRecordAnalysesQuery, useRecordQuery } from "../api";
 import { UnpublishedBadge } from "../components/Badges";
-import { AnalysisIDCellRendererFactory } from "../components/CellRenderers";
 import DataPanel from "../components/DataPanel";
-import History from "../components/History";
-import QueryHandler from "../components/QueryHandler";
-import Table from "../components/Table";
+import RelatedPanel from "../components/RelatedPanel";
+import HistoryPanel from "../components/HistoryPanel";
 import { IDProps } from "../interfaces";
-import { RecordDetailTabKeys } from "../types";
-
-function Analyses(props: IDProps) {
-  const { isFetching, error, data } = useRecordAnalysesQuery(props);
-
-  // Get the analyses
-  const analyses = useMemo(() => {
-    if (data?.status !== "success") return [];
-    return data.data;
-  }, [data]);
-
-  return (
-    <QueryHandler isFetching={isFetching} error={error as Error} data={data}>
-      <>
-        <h5>Analyses</h5>
-        <Table
-          {...props}
-          data={analyses}
-          defaultFileNamePrefix={`${props.ID}_analyses`}
-          footer="Table showing all analysis results for the record."
-          cellRenderers={
-            new Map([["analysis_id", AnalysisIDCellRendererFactory(props)]])
-          }
-        />
-      </>
-    </QueryHandler>
-  );
-}
+import { DataPanelTabKeys, RecordDetailTabKeys } from "../types";
 
 function ProjectRecord(props: IDProps) {
   const [published, setPublished] = useState(true);
+
+  const handleRecordDetailTabChange = (tabKey: string | null) => {
+    props.setTabState((prevState) => ({
+      ...prevState,
+      recordDetailTabKey: tabKey as RecordDetailTabKeys,
+    }));
+  };
+
+  const handleDataPanelTabChange = (tabKey: string | null) => {
+    props.setTabState((prevState) => ({
+      ...prevState,
+      recordDataPanelTabKey: tabKey as DataPanelTabKeys,
+    }));
+  };
 
   return (
     <Container fluid className="g-0 h-100">
@@ -67,8 +52,8 @@ function ProjectRecord(props: IDProps) {
         </Card.Header>
         <Card.Body className="pt-2 overflow-y-auto">
           <Tab.Container
-            activeKey={props.tabKey}
-            onSelect={(key) => props.setTabKey(key || RecordDetailTabKeys.DATA)}
+            activeKey={props.tabState.recordDetailTabKey}
+            onSelect={handleRecordDetailTabChange}
             mountOnEnter
             transition={false}
           >
@@ -94,6 +79,8 @@ function ProjectRecord(props: IDProps) {
               <Tab.Pane eventKey={RecordDetailTabKeys.DATA} className="h-100">
                 <DataPanel
                   {...props}
+                  dataPanelTabKey={props.tabState.recordDataPanelTabKey}
+                  setDataPanelTabKey={handleDataPanelTabChange}
                   queryHook={useRecordQuery}
                   setUnpublished={() => setPublished(false)}
                   dataFields={
@@ -109,10 +96,10 @@ function ProjectRecord(props: IDProps) {
                 eventKey={RecordDetailTabKeys.HISTORY}
                 className="h-100"
               >
-                <History
+                <HistoryPanel
                   {...props}
                   name="record"
-                  searchPath={`projects/${props.project}`}
+                  searchPath={`projects/${props.project.code}`}
                   ID={props.ID}
                 />
               </Tab.Pane>
@@ -120,7 +107,13 @@ function ProjectRecord(props: IDProps) {
                 eventKey={RecordDetailTabKeys.ANALYSES}
                 className="h-100"
               >
-                <Analyses {...props} />
+                <RelatedPanel
+                  {...props}
+                  queryHook={useRecordAnalysesQuery}
+                  title="Analyses"
+                  description="Table showing all analysis results for the record."
+                  defaultFileNamePrefix={`${props.ID}_analyses`}
+                />
               </Tab.Pane>
             </Tab.Content>
           </Tab.Container>

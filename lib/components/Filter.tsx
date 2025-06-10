@@ -7,6 +7,7 @@ import { DataProps } from "../interfaces";
 import { FilterConfig } from "../types";
 import { Choice, Dropdown, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput, RangeInput } from "./Inputs";
+import { useFieldDescriptions } from "../api/hooks";
 
 interface FilterProps extends DataProps {
   index: number;
@@ -26,7 +27,7 @@ function Filter(props: FilterProps) {
 
   const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const updatedFilter = { ...filter };
-    updatedFilter.type = props.projectFields.get(e.target.value)?.type || "";
+    updatedFilter.type = props.fields.get(e.target.value)?.type || "";
     updatedFilter.field = e.target.value;
     updatedFilter.lookup = props.typeLookups.get(updatedFilter.type)?.[0] || "";
 
@@ -103,7 +104,7 @@ function Filter(props: FilterProps) {
         <MultiChoice
           {...props}
           field={filter.field}
-          options={props.projectFields.get(filter.field)?.values || []}
+          options={props.fields.get(filter.field)?.values || []}
           value={getValueList(filter.value)}
           onChange={handleValueChange}
         />
@@ -116,7 +117,7 @@ function Filter(props: FilterProps) {
           {...props}
           isClearable
           field={filter.field}
-          options={props.projectFields.get(filter.field)?.values || []}
+          options={props.fields.get(filter.field)?.values || []}
           value={filter.value}
           onChange={handleValueChange}
         />
@@ -162,6 +163,8 @@ function Filter(props: FilterProps) {
       f = <Input value={filter.value} onChange={handleValueChange} />;
   }
 
+  const fieldDescriptions = useFieldDescriptions(props.fields);
+
   return (
     <Stack gap={2} className="p-1">
       <Stack direction="horizontal">
@@ -177,7 +180,7 @@ function Filter(props: FilterProps) {
           <Form.Label>Field</Form.Label>
           <Dropdown
             options={props.fieldList}
-            titles={props.fieldDescriptions}
+            titles={fieldDescriptions}
             value={filter.field}
             placeholder="Select field..."
             onChange={handleFieldChange}

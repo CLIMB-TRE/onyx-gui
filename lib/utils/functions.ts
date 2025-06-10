@@ -1,5 +1,6 @@
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
+  RecordType,
   DetailResponse,
   ErrorResponse,
   ExportStatus,
@@ -18,6 +19,7 @@ function getDefaultFileNamePrefix(project: string, searchParameters: string) {
   // removes special characters, and truncates to 50 characters
   return [["", project]]
     .concat(Array.from(new URLSearchParams(searchParameters).entries()))
+    .filter(([parameter]) => !["include", "exclude"].includes(parameter))
     .map(([, value]) =>
       value
         // Split on all groups of spaces and commas
@@ -32,7 +34,7 @@ function getDefaultFileNamePrefix(project: string, searchParameters: string) {
 }
 
 interface DetailResponseProps extends OnyxProps {
-  response: DetailResponse | ErrorResponse | undefined;
+  response: DetailResponse<RecordType> | ErrorResponse | undefined;
 }
 
 /** Handler for converting JSON data to a string for file export. */
@@ -66,6 +68,30 @@ function formatFilters(filters: FilterConfig[]) {
 /** Takes a Response object and returns its status code, formatted as a string. */
 function formatResponseStatus(response: Response) {
   return `${response.status} (${response.statusText})`;
+}
+
+export function formatTimeAgo(timestamp: Date): string {
+  const diffInMs = new Date().getTime() - timestamp.getTime();
+
+  const seconds = Math.floor(diffInMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
+
+  if (seconds < 1) {
+    return "Now";
+  } else if (seconds < 60) {
+    return seconds === 1 ? "1 second ago" : `${seconds} seconds ago`;
+  } else if (minutes < 60) {
+    return minutes === 1 ? "1 minute ago" : `${minutes} minutes ago`;
+  } else if (hours < 24) {
+    return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+  } else if (days < 7) {
+    return days === 1 ? "1 day ago" : `${days} days ago`;
+  } else {
+    return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+  }
 }
 
 export {

@@ -4,7 +4,11 @@ import {
   DetailResponse,
   ErrorResponse,
   GraphConfig,
+  RecordType,
   ListResponse,
+  ProjectPermissionGroup,
+  Profile,
+  HistoricalEntries,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
@@ -61,7 +65,9 @@ const useLookupsQuery = (props: OnyxProps) => {
 };
 
 /** Fetch user profile */
-const useProfileQuery = (props: OnyxProps) => {
+const useProfileQuery = (
+  props: OnyxProps
+): UseQueryResult<DetailResponse<Profile> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["profile-detail"],
     queryFn: async () => {
@@ -74,7 +80,12 @@ const useProfileQuery = (props: OnyxProps) => {
 };
 
 /** Fetch user project permissions */
-const useProjectPermissionsQuery = (props: OnyxProps) => {
+const useProjectPermissionsQuery = (
+  props: OnyxProps
+): UseQueryResult<
+  ListResponse<ProjectPermissionGroup> | ErrorResponse,
+  Error
+> => {
   return useQuery({
     queryKey: ["project-permission-list"],
     queryFn: async () => {
@@ -87,12 +98,12 @@ const useProjectPermissionsQuery = (props: OnyxProps) => {
 };
 
 /** Fetch project fields */
-const useProjectFieldsQuery = (props: ProjectProps) => {
+const useFieldsQuery = (props: ProjectProps) => {
   return useQuery({
-    queryKey: ["project-fields-detail", props.project],
+    queryKey: ["project-fields-detail", props.project.code],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/fields/`)
+        .httpPathHandler(`projects/${props.project.code}/fields/`)
         .then((response) => response.json());
     },
     enabled: !!props.project,
@@ -103,10 +114,10 @@ const useProjectFieldsQuery = (props: ProjectProps) => {
 /** Fetch analysis fields */
 const useAnalysisFieldsQuery = (props: ProjectProps) => {
   return useQuery({
-    queryKey: ["analysis-fields-detail", props.project],
+    queryKey: ["analysis-fields-detail", props.project.code],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/analysis/fields/`)
+        .httpPathHandler(`projects/${props.project.code}/analysis/fields/`)
         .then((response) => response.json());
     },
     enabled: !!props.project,
@@ -117,10 +128,12 @@ const useAnalysisFieldsQuery = (props: ProjectProps) => {
 /** Fetch choices for a field */
 const useChoicesQuery = (props: ChoiceProps) => {
   return useQuery({
-    queryKey: ["choices-detail", props.project, props.field],
+    queryKey: ["choices-detail", props.project.code, props.field],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/choices/${props.field}/`)
+        .httpPathHandler(
+          `projects/${props.project.code}/choices/${props.field}/`
+        )
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.field),
@@ -132,10 +145,10 @@ const useChoicesQuery = (props: ChoiceProps) => {
 const useChoicesQueries = (props: ChoicesProps) => {
   return useQueries({
     queries: props.fields.map((field) => ({
-      queryKey: ["choices-detail", props.project, field],
+      queryKey: ["choices-detail", props.project.code, field],
       queryFn: async () => {
         return props
-          .httpPathHandler(`projects/${props.project}/choices/${field}/`)
+          .httpPathHandler(`projects/${props.project.code}/choices/${field}/`)
           .then((response) => response.json());
       },
       enabled: !!(props.project && field),
@@ -145,7 +158,9 @@ const useChoicesQueries = (props: ChoicesProps) => {
 };
 
 /** Fetch user activity */
-const useActivityQuery = (props: OnyxProps) => {
+const useActivityQuery = (
+  props: OnyxProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["activity-list"],
     queryFn: async () => {
@@ -158,7 +173,9 @@ const useActivityQuery = (props: OnyxProps) => {
 };
 
 /** Fetch site users */
-const useSiteUsersQuery = (props: OnyxProps) => {
+const useSiteUsersQuery = (
+  props: OnyxProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["site-user-list"],
     queryFn: async () => {
@@ -171,7 +188,9 @@ const useSiteUsersQuery = (props: OnyxProps) => {
 };
 
 /** Fetch history from ID */
-const useHistoryQuery = (props: IDProps) => {
+const useHistoryQuery = (
+  props: IDProps
+): UseQueryResult<DetailResponse<HistoricalEntries> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["history-detail", props.searchPath, props.ID],
     queryFn: async () => {
@@ -187,12 +206,12 @@ const useHistoryQuery = (props: IDProps) => {
 /** Fetch record from record ID */
 const useRecordQuery = (
   props: IDProps
-): UseQueryResult<DetailResponse | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: ["record-detail", props.project, props.ID],
+    queryKey: ["record-detail", props.project.code, props.ID],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/${props.ID}/`)
+        .httpPathHandler(`projects/${props.project.code}/${props.ID}/`)
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.ID),
@@ -201,12 +220,14 @@ const useRecordQuery = (
 };
 
 /** Fetch record analyses from record ID */
-const useRecordAnalysesQuery = (props: IDProps) => {
+const useRecordAnalysesQuery = (
+  props: IDProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: ["record-analysis-list", props.project, props.ID],
+    queryKey: ["record-analysis-list", props.project.code, props.ID],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/analyses/${props.ID}/`)
+        .httpPathHandler(`projects/${props.project.code}/analyses/${props.ID}/`)
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.ID),
@@ -217,12 +238,12 @@ const useRecordAnalysesQuery = (props: IDProps) => {
 /** Fetch analysis from analysis ID */
 const useAnalysisQuery = (
   props: IDProps
-): UseQueryResult<DetailResponse | ErrorResponse, Error> => {
+): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: ["analysis-detail", props.project, props.ID],
+    queryKey: ["analysis-detail", props.project.code, props.ID],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/analysis/${props.ID}/`)
+        .httpPathHandler(`projects/${props.project.code}/analysis/${props.ID}/`)
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.ID),
@@ -231,13 +252,15 @@ const useAnalysisQuery = (
 };
 
 /** Fetch analysis records from analysis ID */
-const useAnalysisRecordsQuery = (props: IDProps) => {
+const useAnalysisRecordsQuery = (
+  props: IDProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: ["analysis-record-list", props.project, props.ID],
+    queryKey: ["analysis-record-list", props.project.code, props.ID],
     queryFn: async () => {
       return props
         .httpPathHandler(
-          `projects/${props.project}/analysis/records/${props.ID}/`
+          `projects/${props.project.code}/analysis/records/${props.ID}/`
         )
         .then((response) => response.json());
     },
@@ -249,13 +272,13 @@ const useAnalysisRecordsQuery = (props: IDProps) => {
 /** Fetch upstream analyses from analysis ID */
 const useAnalysisUpstreamQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: ["analysis-upstream-list", props.project, props.ID],
+    queryKey: ["analysis-upstream-list", props.project.code, props.ID],
     queryFn: async () => {
       return props
         .httpPathHandler(
-          `projects/${props.project}/analysis/?downstream_analyses__analysis_id=${props.ID}`
+          `projects/${props.project.code}/analysis/?downstream_analyses__analysis_id=${props.ID}`
         )
         .then((response) => response.json());
     },
@@ -267,13 +290,13 @@ const useAnalysisUpstreamQuery = (
 /** Fetch downstream analyses from analysis ID */
 const useAnalysisDownstreamQuery = (
   props: IDProps
-): UseQueryResult<ListResponse | ErrorResponse, Error> => {
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: ["analysis-downstream-list", props.project, props.ID],
+    queryKey: ["analysis-downstream-list", props.project.code, props.ID],
     queryFn: async () => {
       return props
         .httpPathHandler(
-          `projects/${props.project}/analysis/?upstream_analyses__analysis_id=${props.ID}`
+          `projects/${props.project.code}/analysis/?upstream_analyses__analysis_id=${props.ID}`
         )
         .then((response) => response.json());
     },
@@ -283,7 +306,9 @@ const useAnalysisDownstreamQuery = (
 };
 
 /** Fetch results from path and search parameters */
-const useResultsQuery = (props: PaginatedQueryProps) => {
+const useResultsQuery = (
+  props: PaginatedQueryProps
+): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["results-list", props.searchPath, props.searchParameters],
     queryFn: async () => {
@@ -322,10 +347,15 @@ const useSummaryQuery = (props: GraphQueryProps) => {
     search.append("summarise", props.graphConfig.field);
 
   return useQuery({
-    queryKey: ["summary-list", props.project, props.graphConfig.field, filters],
+    queryKey: [
+      "summary-list",
+      props.project.code,
+      props.graphConfig.field,
+      filters,
+    ],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
+        .httpPathHandler(`projects/${props.project.code}/?${search.toString()}`)
         .then((response) => response.json());
     },
     enabled: !!props.project,
@@ -345,14 +375,14 @@ const useGroupedSummaryQuery = (props: GraphQueryProps) => {
   return useQuery({
     queryKey: [
       "summary-list",
-      props.project,
+      props.project.code,
       props.graphConfig.field,
       props.graphConfig.groupBy,
       filters,
     ],
     queryFn: async () => {
       return props
-        .httpPathHandler(`projects/${props.project}/?${search.toString()}`)
+        .httpPathHandler(`projects/${props.project.code}/?${search.toString()}`)
         .then((response) => response.json());
     },
     enabled: !!props.project,
@@ -374,7 +404,7 @@ export {
   useHistoryQuery,
   useLookupsQuery,
   useProfileQuery,
-  useProjectFieldsQuery,
+  useFieldsQuery,
   useProjectPermissionsQuery,
   useRecordAnalysesQuery,
   useRecordQuery,

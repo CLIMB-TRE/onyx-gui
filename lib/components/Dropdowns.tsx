@@ -1,8 +1,8 @@
 import Select, { components, OptionProps } from "react-select";
 import { useChoicesQuery } from "../api";
 import { useChoiceDescriptions } from "../api/hooks";
-import { PageProps } from "../interfaces";
-import { OptionType } from "../types";
+import { ProjectProps } from "../interfaces";
+import { SelectOption } from "../types";
 import { selectStyles } from "../utils/styles";
 
 interface GenericDropdownProps {
@@ -22,7 +22,7 @@ interface MultiDropdownProps extends GenericDropdownProps {
   value: string[];
 }
 
-interface GenericChoiceProps extends PageProps {
+interface GenericChoiceProps extends ProjectProps {
   field: string;
 }
 
@@ -84,7 +84,7 @@ function Dropdown(props: DropdownProps) {
             } as React.ChangeEvent<HTMLSelectElement>)
           : props.onChange({
               target: {
-                value: (e as OptionType).value,
+                value: (e as SelectOption).value,
               },
             } as React.ChangeEvent<HTMLSelectElement>)
       }
@@ -114,7 +114,9 @@ function MultiDropdown(props: MultiDropdownProps) {
       onChange={(e) =>
         props.onChange({
           target: {
-            value: (e as OptionType[]).map((option) => option.value).join(","),
+            value: (e as SelectOption[])
+              .map((option) => option.value)
+              .join(","),
           },
         } as React.ChangeEvent<HTMLSelectElement>)
       }

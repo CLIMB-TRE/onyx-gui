@@ -1,4 +1,4 @@
-import Plotly, { AxisType, Template } from "plotly.js-basic-dist";
+import Plotly, { AxisType, Layout } from "plotly.js-basic-dist";
 import { useMemo } from "react";
 import createPlotlyComponent from "react-plotly.js/factory";
 import { useGroupedSummaryQuery, useSummaryQuery } from "../api";
@@ -6,9 +6,10 @@ import { DataProps } from "../interfaces";
 import {
   ErrorResponse,
   GraphConfig,
-  ProjectField,
+  Field,
   SuccessResponse,
-  SummaryType,
+  Summary,
+  DarkModeColours,
 } from "../types";
 import { useQueryRefresh } from "../utils/hooks";
 import { graphStyles } from "../utils/styles";
@@ -18,13 +19,14 @@ import QueryHandler from "./QueryHandler";
 const Plot = createPlotlyComponent(Plotly);
 
 interface BasePlotProps {
+  fields: Map<string, Field>;
   plotData: Plotly.Data[];
   title?: string;
   xTitle?: string;
   yTitle?: string;
   yAxisType?: string;
   legendTitle?: string;
-  layout?: Record<string, unknown>;
+  layout?: Partial<Layout>;
   darkMode: boolean;
   uirevision: string;
 }
@@ -42,7 +44,7 @@ interface GraphProps extends DataProps {
 }
 
 /** Get string value of a summary field. Converts null values to the empty string */
-function getStringValue(summary: SummaryType, field: string): string {
+function getStringValue(summary: Summary, field: string): string {
   const value = summary[field];
   return value === null ? "" : value.toString();
 }
@@ -73,12 +75,12 @@ const useSummaryData = (props: GraphProps) => {
       };
 
     // Convert null field value to empty string
-    const field_data = data.data.map((summary: SummaryType) =>
+    const field_data = data.data.map((summary: Summary) =>
       getStringValue(summary, props.graphConfig.field)
     );
     // Get count values
     const count_data = data.data.map(
-      (summary: SummaryType) => summary[count_field]
+      (summary: Summary) => summary[count_field]
     );
     return { field_data, count_data };
   }, [data, props.graphConfig.field]);
@@ -116,7 +118,7 @@ const useGroupedDataQuery = (props: GraphProps) => {
 
     if (!count_field) return groupedData;
 
-    data.data.forEach((summary: SummaryType) => {
+    data.data.forEach((summary: Summary) => {
       // Convert null field and group values to empty strings
       const field_value = getStringValue(summary, props.graphConfig.field);
       const group_by_value = getStringValue(summary, props.graphConfig.groupBy);
@@ -150,13 +152,13 @@ const useGroupedDataQuery = (props: GraphProps) => {
 };
 
 function getNullCount(
-  projectFields: Map<string, ProjectField>,
+  fields: Map<string, Field>,
   field: string,
   data: { field_data: string[]; count_data: number[] }
 ) {
   let title = "";
 
-  if (projectFields.get(field)?.type === "date") {
+  if (fields.get(field)?.type === "date") {
     const nullCount = data.count_data[data.field_data.indexOf("")] || 0;
 
     const recordText = nullCount === 1 ? "record" : "records";
@@ -169,13 +171,13 @@ function getNullCount(
 }
 
 function getGroupedNullCount(
-  projectFields: Map<string, ProjectField>,
+  fields: Map<string, Field>,
   field: string,
   data: Map<string, { field_data: string[]; count_data: number[] }>
 ) {
   let title = "";
 
-  if (projectFields.get(field)?.type === "date") {
+  if (fields.get(field)?.type === "date") {
     let nullCount = 0;
 
     data.forEach(({ field_data, count_data }) => {
@@ -192,43 +194,75 @@ function getGroupedNullCount(
 }
 
 function BasePlot(props: BasePlotProps) {
+  const layout: Partial<Layout> = {
+    ...props.layout,
+    autosize: true,
+    title: props.title,
+    titlefont: { size: 14, color: DarkModeColours.BS_GRAY_600 },
+    margin: {
+      l: 60,
+      r: 60,
+      b: 60,
+      t: 60,
+      pad: 4,
+    },
+    template: props.darkMode ? graphStyles : undefined,
+    xaxis: { title: props.xTitle },
+    yaxis: {
+      title: props.yTitle,
+      type: (props.yAxisType ? props.yAxisType : "linear") as AxisType,
+    },
+    legend: { title: { text: props.legendTitle } },
+    showlegend: props.legendTitle ? true : false,
+    colorway: [
+      "#00cc96",
+      "#636efa",
+      "#EF553B",
+      "#ab63fa",
+      "#FFA15A",
+      "#19d3f3",
+      "#FF6692",
+      "#B6E880",
+      "#FF97FF",
+      "#FECB52",
+    ],
+    uirevision: props.uirevision,
+  };
+
+  if (props.fields.get(props.xTitle || "")?.type.startsWith("date")) {
+    layout.xaxis = {
+      ...layout.xaxis,
+      rangeselector: {
+        buttons: [
+          {
+            count: 1,
+            label: "1m",
+            step: "month",
+            stepmode: "backward",
+          },
+          {
+            count: 6,
+            label: "6m",
+            step: "month",
+            stepmode: "backward",
+          },
+          {
+            count: 1,
+            label: "1y",
+            step: "year",
+            stepmode: "backward",
+          },
+          { step: "all" },
+        ],
+        bgcolor: props.darkMode ? DarkModeColours.BS_GRAY_900 : undefined,
+      },
+    };
+  }
+
   return (
     <Plot
       data={props.plotData}
-      layout={{
-        ...props.layout,
-        autosize: true,
-        title: props.title,
-        titlefont: { size: 14, color: "#6c757d" },
-        margin: {
-          l: 60,
-          r: 60,
-          b: 60,
-          t: 60,
-          pad: 4,
-        },
-        template: props.darkMode ? (graphStyles as Template) : undefined,
-        xaxis: { title: props.xTitle },
-        yaxis: {
-          title: props.yTitle,
-          type: (props.yAxisType ? props.yAxisType : "linear") as AxisType,
-        },
-        legend: { title: { text: props.legendTitle } },
-        showlegend: props.legendTitle ? true : false,
-        colorway: [
-          "#00cc96",
-          "#636efa",
-          "#EF553B",
-          "#ab63fa",
-          "#FFA15A",
-          "#19d3f3",
-          "#FF6692",
-          "#B6E880",
-          "#FF97FF",
-          "#FECB52",
-        ],
-        uirevision: props.uirevision,
-      }}
+      layout={layout}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
       config={{
@@ -272,11 +306,7 @@ function ScatterGraph(props: GraphProps) {
           mode: "lines+markers",
         },
       ]}
-      title={getNullCount(
-        props.projectFields,
-        props.graphConfig.field,
-        plotData
-      )}
+      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
       xTitle={props.graphConfig.field}
       yTitle="count"
       yAxisType={props.graphConfig.yAxisType}
@@ -312,11 +342,7 @@ function BarGraph(props: GraphProps) {
           type: "bar",
         },
       ]}
-      title={getNullCount(
-        props.projectFields,
-        props.graphConfig.field,
-        plotData
-      )}
+      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
       xTitle={props.graphConfig.field}
       yTitle={yTitle}
       yAxisType={props.graphConfig.yAxisType}
@@ -343,11 +369,7 @@ function PieGraph(props: GraphProps) {
           marker: { color: "#198754" },
         },
       ]}
-      title={getNullCount(
-        props.projectFields,
-        props.graphConfig.field,
-        plotData
-      )}
+      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
       legendTitle={props.graphConfig.field}
       uirevision={props.graphConfig.field}
     />
@@ -379,7 +401,7 @@ function GroupedScatterGraph(props: GraphProps) {
       data={data}
       plotData={scatterData}
       title={getGroupedNullCount(
-        props.projectFields,
+        props.fields,
         props.graphConfig.field,
         plotData
       )}
@@ -427,7 +449,7 @@ function GroupedBarGraph(props: GraphProps) {
       data={data}
       plotData={barData}
       title={getGroupedNullCount(
-        props.projectFields,
+        props.fields,
         props.graphConfig.field,
         plotData
       )}
