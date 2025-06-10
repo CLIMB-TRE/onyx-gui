@@ -100,7 +100,10 @@ function Results(props: ResultsProps) {
       formatFilters(filterList)
         .map(([filter, value]) => `--field ${filter}=${value}`)
         .join(" "),
-      `--summarise ${summariseList.filter((field) => field).join(",")}`,
+      summariseList
+        .filter((field) => field)
+        .map((field) => `--summarise ${field}`)
+        .join(" "),
     ]
       .join(" ")
       .trim();
