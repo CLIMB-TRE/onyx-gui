@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
+import Button from "react-bootstrap/Button";
+import { MdContentCopy } from "react-icons/md";
 import { useResultsQuery } from "../api";
 import FilterPanel from "../components/FilterPanel";
 import ResultsPanel from "../components/ResultsPanel";
@@ -93,6 +95,23 @@ function Results(props: ResultsProps) {
     if (!isFetching) refetch();
   };
 
+  const handleCopyCLICommand = () => {
+    const command = [
+      props.commandBase,
+      formatFilters(filterList)
+        .map(([filter, value]) => `--field ${filter}=${value}`)
+        .join(" "),
+      summariseList
+        .filter((field) => field)
+        .map((field) => `--summarise ${field}`)
+        .join(" "),
+    ]
+      .join(" ")
+      .trim();
+
+    navigator.clipboard.writeText(command);
+  };
+
   return (
     <Container fluid className="g-0 h-100">
       <ColumnsModal
@@ -128,6 +147,14 @@ function Results(props: ResultsProps) {
                     setSummariseList={setSummariseList}
                     filterFieldOptions={filterOptions}
                   />
+                  <Button
+                    size="sm"
+                    variant="dark"
+                    title="Copy CLI Command"
+                    onClick={handleCopyCLICommand}
+                  >
+                    <MdContentCopy /> Copy CLI Command
+                  </Button>
                 </Stack>
               </Stack>
             </Container>

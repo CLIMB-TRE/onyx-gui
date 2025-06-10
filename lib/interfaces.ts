@@ -34,6 +34,7 @@ export interface IDProps extends DataProps {
 
 export interface ResultsProps extends DataProps {
   title: string;
+  commandBase: string;
   searchPath: string;
 }
 
