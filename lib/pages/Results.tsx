@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import Button from "react-bootstrap/Button";
-import { MdContentCopy } from "react-icons/md";
 import { useResultsQuery } from "../api";
 import FilterPanel from "../components/FilterPanel";
 import ResultsPanel from "../components/ResultsPanel";
@@ -13,6 +11,7 @@ import { FilterConfig, Field } from "../types";
 import { formatFilters } from "../utils/functions";
 import { useDebouncedValue } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
+import { CopyToClipboardButton } from "../components/Buttons";
 
 function Results(props: ResultsProps) {
   const [searchParameters, setSearchParameters] = useState("");
@@ -101,10 +100,7 @@ function Results(props: ResultsProps) {
       formatFilters(filterList)
         .map(([filter, value]) => `--field ${filter}=${value}`)
         .join(" "),
-      summariseList
-        .filter((field) => field)
-        .map((field) => `--summarise ${field}`)
-        .join(" "),
+      `--summarise ${summariseList.filter((field) => field).join(",")}`,
     ]
       .join(" ")
       .trim();
@@ -147,14 +143,13 @@ function Results(props: ResultsProps) {
                     setSummariseList={setSummariseList}
                     filterFieldOptions={filterOptions}
                   />
-                  <Button
+                  <CopyToClipboardButton
                     size="sm"
                     variant="dark"
                     title="Copy CLI Command"
                     onClick={handleCopyCLICommand}
-                  >
-                    <MdContentCopy /> Copy CLI Command
-                  </Button>
+                    showTitle
+                  />
                 </Stack>
               </Stack>
             </Container>
