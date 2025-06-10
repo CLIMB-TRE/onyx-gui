@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 
 export const useDebouncedValue = (inputValue: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(inputValue);
@@ -63,15 +63,3 @@ export const useQueryRefresh = (
     );
   }, [dataUpdatedAt, errorUpdatedAt, setLastUpdated]);
 };
-
-// https://gist.github.com/jaydenseric/a67cfb1b809b1b789daa17dfe6f83daa?permalink_comment_id=3356735#gistcomment-3356735
-export function useIsMounted(): { current: boolean } {
-  const componentIsMounted = useRef(true);
-  useEffect(
-    () => () => {
-      componentIsMounted.current = false;
-    },
-    []
-  );
-  return componentIsMounted;
-}

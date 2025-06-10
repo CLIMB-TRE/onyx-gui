@@ -75,7 +75,9 @@ function Value(props: ValueProps) {
             </div>
           )}
         </Stack>
-        <CopyToClipboardButton>{props.value}</CopyToClipboardButton>
+        <CopyToClipboardButton key={props.field}>
+          {props.value}
+        </CopyToClipboardButton>
       </Stack>
     </small>
   );
