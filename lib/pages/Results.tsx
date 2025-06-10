@@ -95,18 +95,24 @@ function Results(props: ResultsProps) {
   };
 
   const handleCopyCLICommand = () => {
-    const command = [
-      props.commandBase,
-      formatFilters(filterList)
-        .map(([filter, value]) => `--field ${filter}=${value}`)
-        .join(" "),
-      summariseList
-        .filter((field) => field)
-        .map((field) => `--summarise ${field}`)
-        .join(" "),
-    ]
-      .join(" ")
-      .trim();
+    // Format filters
+    const filters = formatFilters(filterList)
+      .map(
+        ([filter, value]) =>
+          `--field ${filter.replace("__exact", "")}=${
+            value.includes(" ") ? `"${value}"` : value
+          }`
+      )
+      .join(" ");
+
+    // Format summarise
+    let summarise = "";
+    const summariseFields = summariseList.filter((field) => field);
+    if (summariseFields.length > 0)
+      summarise = `--summarise ${summariseFields.join(",")}`;
+
+    // Assemble the command
+    const command = [props.commandBase, filters, summarise].join(" ").trim();
 
     navigator.clipboard.writeText(command);
   };
