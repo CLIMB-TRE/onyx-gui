@@ -11,6 +11,7 @@ import { FilterConfig, Field } from "../types";
 import { formatFilters } from "../utils/functions";
 import { useDebouncedValue } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
+import { CopyToClipboardButton } from "../components/Buttons";
 
 function Results(props: ResultsProps) {
   const [searchParameters, setSearchParameters] = useState("");
@@ -93,6 +94,23 @@ function Results(props: ResultsProps) {
     if (!isFetching) refetch();
   };
 
+  const handleCopyCLICommand = () => {
+    const command = [
+      props.commandBase,
+      formatFilters(filterList)
+        .map(([filter, value]) => `--field ${filter}=${value}`)
+        .join(" "),
+      summariseList
+        .filter((field) => field)
+        .map((field) => `--summarise ${field}`)
+        .join(" "),
+    ]
+      .join(" ")
+      .trim();
+
+    navigator.clipboard.writeText(command);
+  };
+
   return (
     <Container fluid className="g-0 h-100">
       <ColumnsModal
@@ -127,6 +145,13 @@ function Results(props: ResultsProps) {
                     summariseList={summariseList}
                     setSummariseList={setSummariseList}
                     filterFieldOptions={filterOptions}
+                  />
+                  <CopyToClipboardButton
+                    size="sm"
+                    variant="dark"
+                    title="Copy CLI Command"
+                    onClick={handleCopyCLICommand}
+                    showTitle
                   />
                 </Stack>
               </Stack>
