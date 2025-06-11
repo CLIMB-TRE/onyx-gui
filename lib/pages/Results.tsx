@@ -191,55 +191,62 @@ function Results(props: ResultsProps) {
       />
       <Stack direction="horizontal" className="h-100">
         {!sidebarCollapsed && (
-          <div
-            className="h-100"
-            style={{
-              position: "relative",
-              width: sidebarWidth,
-              minWidth: sidebarWidth,
-              paddingRight: "10px",
-            }}
-          >
-            <Container fluid className="h-100 g-0">
-              <Stack gap={2} className="h-100">
-                <SearchBar
-                  {...props}
-                  placeholder={`Search ${props.title.toLowerCase()}...`}
-                  searchInput={searchInput}
-                  setSearchInput={setSearchInput}
-                  handleSearch={handleSearch}
-                />
-                <Stack gap={2} className="h-100 overflow-y-hidden">
-                  <FilterPanel
-                    {...props}
-                    filterList={filterList}
-                    setFilterList={setFilterList}
-                    filterFieldOptions={filterOptions}
-                  />
-                  <SummarisePanel
-                    {...props}
-                    summariseList={summariseList}
-                    setSummariseList={setSummariseList}
-                    filterFieldOptions={filterOptions}
-                  />
-                  <CopyToClipboardButton
-                    size="sm"
-                    variant="dark"
-                    title="Copy CLI Command"
-                    onClick={handleCopyCLICommand}
-                    showTitle
-                  />
-                </Stack>
-              </Stack>
-            </Container>
+          <>
             <div
-              className="resizer"
-              onMouseDown={handleMouseDown}
-              onDoubleClick={handleDoubleClick}
+              className="h-100"
+              style={{
+                position: "relative",
+                width: sidebarWidth,
+                minWidth: sidebarWidth,
+                paddingRight: "10px",
+              }}
+            >
+              <Container fluid className="h-100 g-0">
+                <Stack gap={2} className="h-100">
+                  <SearchBar
+                    {...props}
+                    placeholder={`Search ${props.title.toLowerCase()}...`}
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    handleSearch={handleSearch}
+                  />
+                  <Stack gap={2} className="h-100 overflow-y-hidden">
+                    <FilterPanel
+                      {...props}
+                      filterList={filterList}
+                      setFilterList={setFilterList}
+                      filterFieldOptions={filterOptions}
+                    />
+                    <SummarisePanel
+                      {...props}
+                      summariseList={summariseList}
+                      setSummariseList={setSummariseList}
+                      filterFieldOptions={filterOptions}
+                    />
+                    <CopyToClipboardButton
+                      size="sm"
+                      variant="dark"
+                      title="Copy CLI Command"
+                      onClick={handleCopyCLICommand}
+                      showTitle
+                    />
+                  </Stack>
+                </Stack>
+              </Container>
+              <div
+                className="resizer"
+                onMouseDown={handleMouseDown}
+                onDoubleClick={handleDoubleClick}
+              />
+            </div>
+            <div
+              style={{
+                paddingLeft: "10px",
+              }}
             />
-          </div>
+          </>
         )}
-        <div className="h-100" style={{ flex: 1, paddingLeft: "10px" }}>
+        <div className="h-100" style={{ flex: 1 }}>
           <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}
