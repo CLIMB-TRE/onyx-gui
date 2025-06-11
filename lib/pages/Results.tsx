@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { useResultsQuery } from "../api";
@@ -12,6 +12,7 @@ import { formatFilters } from "../utils/functions";
 import { useDebouncedValue } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
 import { CopyToClipboardButton } from "../components/Buttons";
+import Resizer from "../components/Resizer";
 
 function Results(props: ResultsProps) {
   // TODO: Currently duplicate queries made on initialisation
@@ -28,12 +29,9 @@ function Results(props: ResultsProps) {
   );
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 
-  const defaultWidth = 300; // Default sidebar width
-  const minWidth = 220; // Minimum width for the sidebar
-  const maxWidth = 600; // Maximum width for the sidebar
+  const defaultWidth = 300;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(defaultWidth);
-  const [isResizing, setIsResizing] = useState(false);
 
   const filterOptions = useMemo(
     () =>
@@ -130,55 +128,6 @@ function Results(props: ResultsProps) {
     navigator.clipboard.writeText(command);
   };
 
-  // Mouse handlers for resizing the sidebar
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-  };
-
-  const handleMouseUp = () => {
-    setIsResizing(false);
-  };
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!isResizing) return;
-
-      const newWidth = e.clientX;
-      if (newWidth >= minWidth && newWidth <= maxWidth) {
-        setSidebarWidth(newWidth);
-      }
-    },
-    [isResizing]
-  );
-
-  const handleDoubleClick = () => {
-    setSidebarWidth(defaultWidth); // Reset to default width
-  };
-
-  // Add/remove event listeners when user starts/stops resizing
-  useEffect(() => {
-    if (isResizing) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    } else {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    }
-
-    // Cleanup function runs when component unmounts or dependencies change
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-  }, [isResizing, handleMouseMove]);
-
   return (
     <Container fluid className="g-0 h-100">
       <ColumnsModal
@@ -233,10 +182,11 @@ function Results(props: ResultsProps) {
                   </Stack>
                 </Stack>
               </Container>
-              <div
-                className="resizer"
-                onMouseDown={handleMouseDown}
-                onDoubleClick={handleDoubleClick}
+              <Resizer
+                defaultWidth={defaultWidth}
+                minWidth={220}
+                maxWidth={600}
+                setWidth={setSidebarWidth}
               />
             </div>
             <div
