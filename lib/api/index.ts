@@ -13,7 +13,6 @@ import {
   Choices,
   Lookup,
   TypeObject,
-  Field,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
@@ -33,12 +32,6 @@ interface IDProps extends ProjectProps {
 interface QueryProps extends ProjectProps {
   searchPath: string;
   searchParameters: string;
-}
-
-interface PaginatedQueryProps extends QueryProps {
-  includeList: Field[];
-  columns: Field[];
-  pageSize: number;
 }
 
 interface GraphQueryProps extends ProjectProps {
@@ -324,44 +317,15 @@ const useAnalysisDownstreamQuery = (
 
 /** Fetch results from path and search parameters */
 const useResultsQuery = (
-  props: PaginatedQueryProps
+  props: QueryProps
 ): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
-    queryKey: [
-      "results-list",
-      props.searchPath,
-      props.searchParameters,
-      props.includeList,
-      props.pageSize,
-    ],
+    queryKey: ["results-list", props.searchPath, props.searchParameters],
     queryFn: async () => {
-      // Set search parameters
-      const searchParameters = new URLSearchParams(props.searchParameters);
-
-      // Set include/exclude columns based on includeList
-      let columns;
-      let columnOperator;
-      if (
-        props.includeList.length <=
-        props.columns.length - props.includeList.length
-      ) {
-        columnOperator = "include";
-        columns = props.includeList;
-      } else {
-        columnOperator = "exclude";
-        columns = props.columns.filter(
-          (field) => !props.includeList.includes(field)
-        );
-      }
-      columns.forEach((field) => {
-        searchParameters.append(columnOperator, field.code);
-      });
-
-      // Set page size
-      searchParameters.set("page_size", props.pageSize.toString());
-
       return props
-        .httpPathHandler(`${props.searchPath}/?${searchParameters.toString()}`)
+        .httpPathHandler(
+          `${props.searchPath}/?${props.searchParameters.toString()}`
+        )
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.searchPath),
@@ -374,8 +338,14 @@ const useCountQuery = (props: QueryProps) => {
   return useQuery({
     queryKey: ["count-detail", props.searchPath, props.searchParameters],
     queryFn: async () => {
+      // Remove include/exclude/page_size from search parameters
+      const searchParameters = new URLSearchParams(props.searchParameters);
+      searchParameters.delete("include");
+      searchParameters.delete("exclude");
+      searchParameters.delete("page_size");
+
       return props
-        .httpPathHandler(`${props.searchPath}/count/?${props.searchParameters}`)
+        .httpPathHandler(`${props.searchPath}/count/?${searchParameters}`)
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.searchPath),

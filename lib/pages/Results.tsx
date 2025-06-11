@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { useResultsQuery } from "../api";
@@ -15,7 +15,7 @@ import { CopyToClipboardButton } from "../components/Buttons";
 import Resizer from "../components/Resizer";
 
 function Results(props: ResultsProps) {
-  const [searchParameters, setSearchParameters] = useState("");
+  const pageSize = 100; // Pagination page size
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
   const [summariseList, setSummariseList] = useState(new Array<string>());
@@ -28,6 +28,7 @@ function Results(props: ResultsProps) {
   const defaultWidth = 300;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(defaultWidth);
+
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 
   const filterOptions = useMemo(
@@ -38,7 +39,7 @@ function Results(props: ResultsProps) {
     [props.fields]
   );
 
-  const columns = useMemo(
+  const columnOptions = useMemo(
     () =>
       Array.from(props.fields.entries())
         .filter(([, field]) => field.actions.includes("list"))
@@ -46,46 +47,48 @@ function Results(props: ResultsProps) {
     [props.fields]
   );
 
-  // Pagination page size
-  const pageSize = 100;
+  const searchParameters = useMemo(() => {
+    // Set include/exclude columns based on includeList
+    let columns;
+    let columnOperator;
+    if (includeList.length <= columnOptions.length - includeList.length) {
+      columnOperator = "include";
+      columns = includeList;
+    } else {
+      columnOperator = "exclude";
+      columns = columnOptions.filter((field) => !includeList.includes(field));
+    }
 
-  const paginatedQueryProps = useMemo(
-    () => ({
-      ...props,
-      searchParameters,
-      includeList,
-      columns,
-      pageSize,
-    }),
-    [props, searchParameters, includeList, columns]
-  );
-
-  const { isFetching, error, data, refetch } =
-    useResultsQuery(paginatedQueryProps);
-
-  const searchParams = useMemo(() => {
     return new URLSearchParams(
-      formatFilters(filterList)
-        .concat(
-          summariseList
-            .filter((field) => field)
-            .map((field) => ["summarise", field])
-        )
+      [["page_size", pageSize.toString()]]
         .concat(
           [searchInput]
             .map((search) => search.trim())
             .filter((search) => search)
             .map((search) => ["search", search])
         )
+        .concat(formatFilters(filterList))
+        .concat(
+          summariseList
+            .filter((field) => field)
+            .map((field) => ["summarise", field])
+        )
+        .concat(columns.map((field) => [columnOperator, field.code]))
     ).toString();
-  }, [filterList, summariseList, searchInput]);
+  }, [searchInput, filterList, summariseList, includeList, columnOptions]);
 
-  const debouncedSearchParams = useDebouncedValue(searchParams, 500);
+  const debouncedSearchParams = useDebouncedValue(searchParameters, 500);
 
-  useEffect(
-    () => setSearchParameters(debouncedSearchParams),
-    [debouncedSearchParams, setSearchParameters]
+  const paginatedQueryProps = useMemo(
+    () => ({
+      ...props,
+      searchParameters: debouncedSearchParams,
+    }),
+    [props, debouncedSearchParams]
   );
+
+  const { isFetching, error, data, refetch } =
+    useResultsQuery(paginatedQueryProps);
 
   // If search parameters have not changed and nothing is pending
   // Then trigger a refetch
@@ -122,7 +125,7 @@ function Results(props: ResultsProps) {
         {...props}
         show={columnsModalShow}
         onHide={() => setColumnsModalShow(false)}
-        columns={columns}
+        columns={columnOptions}
         activeColumns={includeList}
         setActiveColumns={setIncludeList}
       />
@@ -188,7 +191,7 @@ function Results(props: ResultsProps) {
           <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}
-              searchParameters={searchParameters}
+              searchParameters={debouncedSearchParams}
               pageSize={pageSize}
               isFetching={isFetching}
               error={error}

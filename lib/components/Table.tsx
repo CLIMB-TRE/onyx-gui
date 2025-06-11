@@ -629,7 +629,6 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       setLoading(true);
       const search = new URLSearchParams(params);
       search.set("page", serverPage.toString());
-      search.set("page_size", resultsPageSize.toString());
       search.delete("cursor");
 
       props
