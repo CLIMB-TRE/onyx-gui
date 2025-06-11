@@ -18,7 +18,11 @@ function Results(props: ResultsProps) {
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
   const [summariseList, setSummariseList] = useState(new Array<string>());
-  const [columnList, setColumnList] = useState<Field[]>([]);
+  const [columnList, setColumnList] = useState<Field[]>(
+    Array.from(props.fields.entries())
+      .filter(([, field]) => props.defaultFields.includes(field.code))
+      .map(([, field]) => field)
+  );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 

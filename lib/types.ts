@@ -126,6 +126,7 @@ export type Fields = {
   name: string;
   description: string;
   fields: Record<string, Field>;
+  default_gui_fields: string[];
 };
 
 export type FilterConfig = {

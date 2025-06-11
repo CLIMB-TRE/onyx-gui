@@ -14,6 +14,7 @@ import Fade from "react-bootstrap/Fade";
 import { useFieldsInfo } from "./api/hooks";
 import Header from "./components/Header";
 import PageTitle from "./components/PageTitle";
+import QueryHandler from "./components/QueryHandler";
 import { OnyxProps, ProjectProps } from "./interfaces";
 import Analysis from "./pages/Analysis";
 import Graphs from "./pages/Graphs";
@@ -25,7 +26,6 @@ import {
   AnalysisTabKeys,
   AnalysisDetailTabKeys,
   DataPanelTabKeys,
-  Lookup,
   OnyxTabKeys,
   Project,
   ProjectPermissionGroup,
@@ -33,7 +33,6 @@ import {
   RecordDetailTabKeys,
   TabState,
   Themes,
-  TypeObject,
   RecentlyViewed,
 } from "./types";
 import { useDelayedValue } from "./utils/hooks";
@@ -53,95 +52,104 @@ interface ProjectPageProps extends ProjectProps {
 
 function ProjectPage(props: ProjectPageProps) {
   // Get project information
-  const { data: fieldsResponse } = useFieldsQuery(props);
-  const { description, fields } = useFieldsInfo(fieldsResponse);
+  const { isFetching, error, data: fieldsResponse } = useFieldsQuery(props);
+  const { description, fields, defaultFields } = useFieldsInfo(fieldsResponse);
 
   // Get project analyses information
   const { data: analysisFieldsResponse } = useAnalysisFieldsQuery(props);
-  const { fields: analysisFields } = useFieldsInfo(analysisFieldsResponse);
+  const { fields: analysisFields, defaultFields: defaultAnalysisFields } =
+    useFieldsInfo(analysisFieldsResponse);
 
   return (
-    <Tab.Container
-      activeKey={props.tabState.tabKey}
-      mountOnEnter
-      transition={false}
-    >
-      <Tab.Content className="h-100">
-        <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
-          <User {...props} />
-        </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
-          <Site {...props} />
-        </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
-          <Tab.Container
-            activeKey={props.tabState.recordTabKey}
-            transition={false}
-          >
-            <Tab.Content className="h-100">
-              <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
-                <Results
-                  {...props}
-                  fields={fields}
-                  projectDescription={description}
-                  title="Records"
-                  commandBase={`onyx filter ${props.project.code}`}
-                  searchPath={`projects/${props.project.code}`}
-                />
-              </Tab.Pane>
-              <Tab.Pane
-                eventKey={RecordTabKeys.DETAIL}
-                className="h-100"
-                unmountOnExit
-              >
-                <ProjectRecord
-                  {...props}
-                  fields={fields}
-                  projectDescription={description}
-                  ID={props.tabState.recordID}
-                  onHide={props.handleProjectRecordHide}
-                />
-              </Tab.Pane>
-            </Tab.Content>
-          </Tab.Container>
-        </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
-          <Tab.Container
-            activeKey={props.tabState.analysisTabKey}
-            transition={false}
-          >
-            <Tab.Content className="h-100">
-              <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
-                <Results
-                  {...props}
-                  fields={analysisFields}
-                  projectDescription={description}
-                  title="Analyses"
-                  commandBase={`onyx filter-analysis ${props.project.code}`}
-                  searchPath={`projects/${props.project.code}/analysis`}
-                />
-              </Tab.Pane>
-              <Tab.Pane
-                eventKey={AnalysisTabKeys.DETAIL}
-                className="h-100"
-                unmountOnExit
-              >
-                <Analysis
-                  {...props}
-                  fields={analysisFields}
-                  projectDescription={description}
-                  ID={props.tabState.analysisID}
-                  onHide={props.handleAnalysisHide}
-                />
-              </Tab.Pane>
-            </Tab.Content>
-          </Tab.Container>
-        </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
-          <Graphs {...props} fields={fields} projectDescription={description} />
-        </Tab.Pane>
-      </Tab.Content>
-    </Tab.Container>
+    <QueryHandler isFetching={isFetching} error={error} data={fieldsResponse}>
+      <Tab.Container
+        activeKey={props.tabState.tabKey}
+        mountOnEnter
+        transition={false}
+      >
+        <Tab.Content className="h-100">
+          <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
+            <User {...props} />
+          </Tab.Pane>
+          <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
+            <Site {...props} />
+          </Tab.Pane>
+          <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
+            <Tab.Container
+              activeKey={props.tabState.recordTabKey}
+              transition={false}
+            >
+              <Tab.Content className="h-100">
+                <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
+                  <Results
+                    {...props}
+                    fields={fields}
+                    defaultFields={defaultFields}
+                    projectDescription={description}
+                    title="Records"
+                    commandBase={`onyx filter ${props.project.code}`}
+                    searchPath={`projects/${props.project.code}`}
+                  />
+                </Tab.Pane>
+                <Tab.Pane
+                  eventKey={RecordTabKeys.DETAIL}
+                  className="h-100"
+                  unmountOnExit
+                >
+                  <ProjectRecord
+                    {...props}
+                    fields={fields}
+                    projectDescription={description}
+                    ID={props.tabState.recordID}
+                    onHide={props.handleProjectRecordHide}
+                  />
+                </Tab.Pane>
+              </Tab.Content>
+            </Tab.Container>
+          </Tab.Pane>
+          <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
+            <Tab.Container
+              activeKey={props.tabState.analysisTabKey}
+              transition={false}
+            >
+              <Tab.Content className="h-100">
+                <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
+                  <Results
+                    {...props}
+                    fields={analysisFields}
+                    defaultFields={defaultAnalysisFields}
+                    projectDescription={description}
+                    title="Analyses"
+                    commandBase={`onyx filter-analysis ${props.project.code}`}
+                    searchPath={`projects/${props.project.code}/analysis`}
+                  />
+                </Tab.Pane>
+                <Tab.Pane
+                  eventKey={AnalysisTabKeys.DETAIL}
+                  className="h-100"
+                  unmountOnExit
+                >
+                  <Analysis
+                    {...props}
+                    fields={analysisFields}
+                    projectDescription={description}
+                    ID={props.tabState.analysisID}
+                    onHide={props.handleAnalysisHide}
+                  />
+                </Tab.Pane>
+              </Tab.Content>
+            </Tab.Container>
+          </Tab.Pane>
+          <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
+            <Graphs
+              {...props}
+              fields={fields}
+              projectDescription={description}
+            />
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
+    </QueryHandler>
   );
 }
 
@@ -220,7 +228,7 @@ function App(props: OnyxProps) {
   const typeLookups = useMemo(() => {
     if (typesResponse?.status !== "success") return new Map<string, string[]>();
     return new Map<string, string[]>(
-      typesResponse.data.map((type: TypeObject) => [type.type, type.lookups])
+      typesResponse.data.map((type) => [type.type, type.lookups])
     );
   }, [typesResponse]);
 
@@ -228,10 +236,7 @@ function App(props: OnyxProps) {
   const lookupDescriptions = useMemo(() => {
     if (lookupsResponse?.status !== "success") return new Map<string, string>();
     return new Map<string, string>(
-      lookupsResponse.data.map((lookup: Lookup) => [
-        lookup.lookup,
-        lookup.description,
-      ])
+      lookupsResponse.data.map((lookup) => [lookup.lookup, lookup.description])
     );
   }, [lookupsResponse]);
 

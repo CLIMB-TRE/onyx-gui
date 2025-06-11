@@ -27,13 +27,16 @@ function flattenFields(fields: Record<string, Field>) {
   return flatFields;
 }
 
-const useFieldsInfo = (data: DetailResponse<Fields> | ErrorResponse) => {
+const useFieldsInfo = (
+  data: DetailResponse<Fields> | ErrorResponse | undefined
+) => {
   return useMemo(() => {
     if (data?.status !== "success") {
       return {
         name: "",
         description: "",
         fields: new Map<string, Field>(),
+        defaultFields: [] as string[],
       };
     }
 
@@ -46,7 +49,10 @@ const useFieldsInfo = (data: DetailResponse<Fields> | ErrorResponse) => {
     // A map of field names to their type, description, actions, values and nested fields
     const fields = new Map(Object.entries(flattenFields(data.data.fields)));
 
-    return { name, description, fields };
+    // The default GUI fields for the project
+    const defaultFields = data.data.default_gui_fields;
+
+    return { name, description, fields, defaultFields };
   }, [data]);
 };
 
@@ -60,7 +66,7 @@ const useFieldDescriptions = (fields: Map<string, Field>) => {
 };
 
 const useChoiceDescriptions = (
-  data: DetailResponse<Choices> | ErrorResponse
+  data: DetailResponse<Choices> | ErrorResponse | undefined
 ) => {
   // Get a map of choices to their descriptions
   return useMemo(() => {

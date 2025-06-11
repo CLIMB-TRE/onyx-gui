@@ -9,6 +9,10 @@ import {
   ProjectPermissionGroup,
   Profile,
   HistoricalEntries,
+  Fields,
+  Choices,
+  Lookup,
+  TypeObject,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
@@ -39,7 +43,9 @@ interface GraphQueryProps extends ProjectProps {
 }
 
 /** Fetch types */
-const useTypesQuery = (props: OnyxProps) => {
+const useTypesQuery = (
+  props: OnyxProps
+): UseQueryResult<ListResponse<TypeObject> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["type-list"],
     queryFn: async () => {
@@ -52,7 +58,9 @@ const useTypesQuery = (props: OnyxProps) => {
 };
 
 /** Fetch lookups */
-const useLookupsQuery = (props: OnyxProps) => {
+const useLookupsQuery = (
+  props: OnyxProps
+): UseQueryResult<ListResponse<Lookup> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["lookup-list"],
     queryFn: async () => {
@@ -98,7 +106,9 @@ const useProjectPermissionsQuery = (
 };
 
 /** Fetch project fields */
-const useFieldsQuery = (props: ProjectProps) => {
+const useFieldsQuery = (
+  props: ProjectProps
+): UseQueryResult<DetailResponse<Fields> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["project-fields-detail", props.project.code],
     queryFn: async () => {
@@ -112,7 +122,9 @@ const useFieldsQuery = (props: ProjectProps) => {
 };
 
 /** Fetch analysis fields */
-const useAnalysisFieldsQuery = (props: ProjectProps) => {
+const useAnalysisFieldsQuery = (
+  props: ProjectProps
+): UseQueryResult<DetailResponse<Fields> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["analysis-fields-detail", props.project.code],
     queryFn: async () => {
@@ -126,7 +138,9 @@ const useAnalysisFieldsQuery = (props: ProjectProps) => {
 };
 
 /** Fetch choices for a field */
-const useChoicesQuery = (props: ChoiceProps) => {
+const useChoicesQuery = (
+  props: ChoiceProps
+): UseQueryResult<DetailResponse<Choices> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["choices-detail", props.project.code, props.field],
     queryFn: async () => {
