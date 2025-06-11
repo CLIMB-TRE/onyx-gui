@@ -50,7 +50,7 @@ const useFieldsInfo = (
     const fields = new Map(Object.entries(flattenFields(data.data.fields)));
 
     // The default GUI fields for the project
-    const defaultFields = data.data.default_gui_fields;
+    const defaultFields = data.data.default_fields;
 
     return { name, description, fields, defaultFields };
   }, [data]);
