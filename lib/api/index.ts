@@ -344,8 +344,13 @@ const useCountQuery = (props: QueryProps) => {
   return useQuery({
     queryKey: ["count-detail", props.searchPath, props.searchParameters],
     queryFn: async () => {
+      // Remove include and exclude parameters from searchParameters
+      const searchParameters = new URLSearchParams(props.searchParameters);
+      searchParameters.delete("include");
+      searchParameters.delete("exclude");
+
       return props
-        .httpPathHandler(`${props.searchPath}/count/?${props.searchParameters}`)
+        .httpPathHandler(`${props.searchPath}/count/?${searchParameters}`)
         .then((response) => response.json());
     },
     enabled: !!(props.project && props.searchPath),
