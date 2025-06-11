@@ -15,23 +15,20 @@ import { CopyToClipboardButton } from "../components/Buttons";
 import Resizer from "../components/Resizer";
 
 function Results(props: ResultsProps) {
-  // TODO: Currently duplicate queries made on initialisation
-  // One with default fields and one without
-  // Perhaps queries should be refactored to accept inputs directly rather than search parameter strings?
   const [searchParameters, setSearchParameters] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
   const [summariseList, setSummariseList] = useState(new Array<string>());
-  const [columnList, setColumnList] = useState<Field[]>(
+  const [includeList, setIncludeList] = useState<Field[]>(
     Array.from(props.fields.entries())
       .filter(([, field]) => props.defaultFields.includes(field.code))
       .map(([, field]) => field)
   );
-  const [columnsModalShow, setColumnsModalShow] = useState(false);
 
   const defaultWidth = 300;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(defaultWidth);
+  const [columnsModalShow, setColumnsModalShow] = useState(false);
 
   const filterOptions = useMemo(
     () =>
@@ -41,7 +38,7 @@ function Results(props: ResultsProps) {
     [props.fields]
   );
 
-  const columnOptions = useMemo(
+  const columns = useMemo(
     () =>
       Array.from(props.fields.entries())
         .filter(([, field]) => field.actions.includes("list"))
@@ -56,25 +53,17 @@ function Results(props: ResultsProps) {
     () => ({
       ...props,
       searchParameters,
+      includeList,
+      columns,
       pageSize,
     }),
-    [props, searchParameters]
+    [props, searchParameters, includeList, columns]
   );
 
   const { isFetching, error, data, refetch } =
     useResultsQuery(paginatedQueryProps);
 
   const searchParams = useMemo(() => {
-    let columns;
-    let columnOperator;
-    if (columnList.length <= columnOptions.length - columnList.length) {
-      columns = columnList;
-      columnOperator = "include";
-    } else {
-      columns = columnOptions.filter((field) => !columnList.includes(field));
-      columnOperator = "exclude";
-    }
-
     return new URLSearchParams(
       formatFilters(filterList)
         .concat(
@@ -82,7 +71,6 @@ function Results(props: ResultsProps) {
             .filter((field) => field)
             .map((field) => ["summarise", field])
         )
-        .concat(columns.map((field) => [columnOperator, field.code]))
         .concat(
           [searchInput]
             .map((search) => search.trim())
@@ -90,7 +78,7 @@ function Results(props: ResultsProps) {
             .map((search) => ["search", search])
         )
     ).toString();
-  }, [filterList, summariseList, columnList, searchInput, columnOptions]);
+  }, [filterList, summariseList, searchInput]);
 
   const debouncedSearchParams = useDebouncedValue(searchParams, 500);
 
@@ -134,9 +122,9 @@ function Results(props: ResultsProps) {
         {...props}
         show={columnsModalShow}
         onHide={() => setColumnsModalShow(false)}
-        columns={columnOptions}
-        activeColumns={columnList}
-        setActiveColumns={setColumnList}
+        columns={columns}
+        activeColumns={includeList}
+        setActiveColumns={setIncludeList}
       />
       <Stack direction="horizontal" className="h-100">
         {!sidebarCollapsed && (
