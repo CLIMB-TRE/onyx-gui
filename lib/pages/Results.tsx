@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { useResultsQuery } from "../api";
@@ -14,6 +14,9 @@ import ColumnsModal from "../components/ColumnsModal";
 import { CopyToClipboardButton } from "../components/Buttons";
 
 function Results(props: ResultsProps) {
+  // TODO: Currently duplicate queries made on initialisation
+  // One with default fields and one without
+  // Perhaps queries should be refactored to accept inputs directly rather than search parameter strings?
   const [searchParameters, setSearchParameters] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
@@ -23,8 +26,14 @@ function Results(props: ResultsProps) {
       .filter(([, field]) => props.defaultFields.includes(field.code))
       .map(([, field]) => field)
   );
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [columnsModalShow, setColumnsModalShow] = useState(false);
+
+  const defaultWidth = 300; // Default sidebar width
+  const minWidth = 220; // Minimum width for the sidebar
+  const maxWidth = 600; // Maximum width for the sidebar
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(defaultWidth);
+  const [isResizing, setIsResizing] = useState(false);
 
   const filterOptions = useMemo(
     () =>
@@ -121,6 +130,55 @@ function Results(props: ResultsProps) {
     navigator.clipboard.writeText(command);
   };
 
+  // Mouse handlers for resizing the sidebar
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const newWidth = e.clientX;
+      if (newWidth >= minWidth && newWidth <= maxWidth) {
+        setSidebarWidth(newWidth);
+      }
+    },
+    [isResizing]
+  );
+
+  const handleDoubleClick = () => {
+    setSidebarWidth(defaultWidth); // Reset to default width
+  };
+
+  // Add/remove event listeners when user starts/stops resizing
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    } else {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    }
+
+    // Cleanup function runs when component unmounts or dependencies change
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [isResizing, handleMouseMove]);
+
   return (
     <Container fluid className="g-0 h-100">
       <ColumnsModal
@@ -131,9 +189,17 @@ function Results(props: ResultsProps) {
         activeColumns={columnList}
         setActiveColumns={setColumnList}
       />
-      <Stack gap={2} direction="horizontal" className="h-100 parent">
+      <Stack direction="horizontal" className="h-100">
         {!sidebarCollapsed && (
-          <div className="h-100 left-col">
+          <div
+            className="h-100"
+            style={{
+              position: "relative",
+              width: sidebarWidth,
+              minWidth: sidebarWidth,
+              paddingRight: "10px",
+            }}
+          >
             <Container fluid className="h-100 g-0">
               <Stack gap={2} className="h-100">
                 <SearchBar
@@ -166,9 +232,14 @@ function Results(props: ResultsProps) {
                 </Stack>
               </Stack>
             </Container>
+            <div
+              className="resizer"
+              onMouseDown={handleMouseDown}
+              onDoubleClick={handleDoubleClick}
+            />
           </div>
         )}
-        <div className="h-100 right-col">
+        <div className="h-100" style={{ flex: 1, paddingLeft: "10px" }}>
           <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}

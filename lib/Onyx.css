@@ -70,21 +70,41 @@
   font-family: var(--bs-body-font-family);
 }
 
-.parent {
+.resizer {
+  cursor: col-resize;
+  height: 100%;
+  width: 14px;
+  position: absolute;
+  top: 0;
+  right: -7px;
   display: flex;
-  width: 100%;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 7px;
 }
 
-.left-col {
-  resize: horizontal;
-  overflow: auto;
-  min-width: 220px;
-  width: 300px;
+[data-bs-theme=light] .resizer {
+  background-color: var(--bs-gray-300);
 }
 
-.right-col {
-  flex-grow: 1;
-  min-width: 500px;
+[data-bs-theme=dark] .resizer {
+  background-color: var(--bs-gray-900);
+}
+
+.resizer::before {
+  content: "||";
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+[data-bs-theme=light] .resizer::before {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme=dark] .resizer::before {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 [data-bs-theme=light] .onyx-border {
