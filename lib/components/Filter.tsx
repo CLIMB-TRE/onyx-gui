@@ -1,4 +1,4 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import CloseButton from "react-bootstrap/CloseButton";
 import Form from "react-bootstrap/Form";
@@ -12,7 +12,8 @@ import { useFieldDescriptions } from "../api/hooks";
 interface FilterProps extends DataProps {
   filter: FilterConfig;
   index: number;
-  setFilterList: Dispatch<SetStateAction<FilterConfig[]>>;
+  filterList: FilterConfig[];
+  setFilterList: (filters: FilterConfig[]) => void;
   fieldList: string[];
   setEditMode: (value: boolean) => void;
   disableLookups?: boolean;
@@ -86,10 +87,10 @@ function Filter(props: FilterProps) {
       updatedFilter.value = updatedFilter.value.trim();
     }
 
-    props.setFilterList((prevState) => [
-      ...prevState.slice(0, props.index),
+    props.setFilterList([
+      ...props.filterList.slice(0, props.index),
       updatedFilter,
-      ...prevState.slice(props.index + 1),
+      ...props.filterList.slice(props.index + 1),
     ]);
     props.setEditMode(false);
   };

@@ -1,4 +1,4 @@
-import { useState, Dispatch, SetStateAction } from "react";
+import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Card from "react-bootstrap/Card";
@@ -13,7 +13,7 @@ import RemoveAllModal from "./RemoveAllModal";
 
 interface FilterPanelProps extends DataProps {
   filterList: FilterConfig[];
-  setFilterList: Dispatch<SetStateAction<FilterConfig[]>>;
+  setFilterList: (filters: FilterConfig[]) => void;
   filterFieldOptions: string[];
   disableLookups?: boolean;
 }
@@ -82,8 +82,8 @@ function FilterPanel(props: FilterPanelProps) {
 
   const handleFilterAdd = (index: number) => {
     setEditMode(false);
-    props.setFilterList((prevState) => [
-      ...prevState.slice(0, index),
+    props.setFilterList([
+      ...props.filterList.slice(0, index),
       {
         key: generateKey(),
         type: "",
@@ -91,16 +91,14 @@ function FilterPanel(props: FilterPanelProps) {
         lookup: "",
         value: "",
       },
-      ...prevState.slice(index),
+      ...props.filterList.slice(index),
     ]);
   };
 
   const handleFilterRemove = (index: number) => {
-    props.setFilterList((prevState) => {
-      const updatedList = [...prevState];
-      updatedList.splice(index, 1);
-      return updatedList;
-    });
+    const updatedList = [...props.filterList];
+    updatedList.splice(index, 1);
+    props.setFilterList(updatedList);
   };
 
   const handleFilterRemoveAll = () => {
