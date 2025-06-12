@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface ResizerProps {
   defaultWidth: number;
@@ -9,6 +9,7 @@ interface ResizerProps {
 
 export default function Resizer(props: ResizerProps) {
   const [isResizing, setIsResizing] = useState(false);
+  const resizerRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -21,7 +22,13 @@ export default function Resizer(props: ResizerProps) {
     (e: MouseEvent) => {
       if (!isResizing) return;
 
-      const newWidth = e.clientX;
+      // Get the sidebar container (parent of the resizer)
+      const sidebarContainer = resizerRef.current?.parentElement;
+      if (!sidebarContainer) return;
+
+      const containerRect = sidebarContainer.getBoundingClientRect();
+      const newWidth = e.clientX - containerRect.left;
+
       if (newWidth >= props.minWidth && newWidth <= props.maxWidth) {
         props.setWidth(newWidth);
       }
@@ -57,6 +64,7 @@ export default function Resizer(props: ResizerProps) {
 
   return (
     <div
+      ref={resizerRef}
       className="resizer"
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClick}
