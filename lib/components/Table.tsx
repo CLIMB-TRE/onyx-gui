@@ -278,6 +278,7 @@ function TableOptions(props: TableOptionsProps) {
     let search: URLSearchParams | null = new URLSearchParams(
       props.searchParameters
     );
+    search.delete("page_size"); // Remove page_size from search parameters
 
     // Fetch pages of data until the 'next' field is not present
     while (search instanceof URLSearchParams) {
@@ -629,7 +630,6 @@ function ServerPaginatedTable(props: ServerPaginatedTableProps) {
       setLoading(true);
       const search = new URLSearchParams(params);
       search.set("page", serverPage.toString());
-      search.set("page_size", resultsPageSize.toString());
       search.delete("cursor");
 
       props

@@ -13,7 +13,7 @@ import RemoveAllModal from "./RemoveAllModal";
 
 interface FilterPanelProps extends DataProps {
   filterList: FilterConfig[];
-  setFilterList: (value: FilterConfig[]) => void;
+  setFilterList: (filters: FilterConfig[]) => void;
   filterFieldOptions: string[];
   disableLookups?: boolean;
 }
@@ -96,9 +96,9 @@ function FilterPanel(props: FilterPanelProps) {
   };
 
   const handleFilterRemove = (index: number) => {
-    const list = [...props.filterList];
-    list.splice(index, 1);
-    props.setFilterList(list);
+    const updatedList = [...props.filterList];
+    updatedList.splice(index, 1);
+    props.setFilterList(updatedList);
   };
 
   const handleFilterRemoveAll = () => {
@@ -139,7 +139,7 @@ function FilterPanel(props: FilterPanelProps) {
         {editMode ? (
           <Filter
             {...props}
-            key={editFilter.key}
+            filter={editFilter}
             index={editIndex}
             fieldList={props.filterFieldOptions}
             setEditMode={setEditMode}

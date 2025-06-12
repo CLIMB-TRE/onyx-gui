@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { useResultsQuery } from "../api";
@@ -12,14 +12,23 @@ import { formatFilters } from "../utils/functions";
 import { useDebouncedValue } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
 import { CopyToClipboardButton } from "../components/Buttons";
+import Resizer from "../components/Resizer";
 
 function Results(props: ResultsProps) {
-  const [searchParameters, setSearchParameters] = useState("");
+  const pageSize = 100; // Pagination page size
   const [searchInput, setSearchInput] = useState("");
   const [filterList, setFilterList] = useState([] as FilterConfig[]);
   const [summariseList, setSummariseList] = useState(new Array<string>());
-  const [columnList, setColumnList] = useState<Field[]>([]);
+  const [includeList, setIncludeList] = useState<Field[]>(
+    Array.from(props.fields.entries())
+      .filter(([, field]) => props.defaultFields.includes(field.code))
+      .map(([, field]) => field)
+  );
+
+  const defaultWidth = 300;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(defaultWidth);
+
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 
   const filterOptions = useMemo(
@@ -38,55 +47,48 @@ function Results(props: ResultsProps) {
     [props.fields]
   );
 
-  // Pagination page size
-  const pageSize = 100;
-
-  const paginatedQueryProps = useMemo(
-    () => ({
-      ...props,
-      searchParameters,
-      pageSize,
-    }),
-    [props, searchParameters]
-  );
-
-  const { isFetching, error, data, refetch } =
-    useResultsQuery(paginatedQueryProps);
-
-  const searchParams = useMemo(() => {
+  const searchParameters = useMemo(() => {
+    // Set include/exclude columns based on includeList
     let columns;
     let columnOperator;
-    if (columnList.length <= columnOptions.length - columnList.length) {
-      columns = columnList;
+    if (includeList.length <= columnOptions.length - includeList.length) {
       columnOperator = "include";
+      columns = includeList;
     } else {
-      columns = columnOptions.filter((field) => !columnList.includes(field));
       columnOperator = "exclude";
+      columns = columnOptions.filter((field) => !includeList.includes(field));
     }
 
     return new URLSearchParams(
-      formatFilters(filterList)
-        .concat(
-          summariseList
-            .filter((field) => field)
-            .map((field) => ["summarise", field])
-        )
-        .concat(columns.map((field) => [columnOperator, field.code]))
+      [["page_size", pageSize.toString()]]
         .concat(
           [searchInput]
             .map((search) => search.trim())
             .filter((search) => search)
             .map((search) => ["search", search])
         )
+        .concat(formatFilters(filterList))
+        .concat(
+          summariseList
+            .filter((field) => field)
+            .map((field) => ["summarise", field])
+        )
+        .concat(columns.map((field) => [columnOperator, field.code]))
     ).toString();
-  }, [filterList, summariseList, columnList, searchInput, columnOptions]);
+  }, [searchInput, filterList, summariseList, includeList, columnOptions]);
 
-  const debouncedSearchParams = useDebouncedValue(searchParams, 500);
+  const debouncedSearchParams = useDebouncedValue(searchParameters, 500);
 
-  useEffect(
-    () => setSearchParameters(debouncedSearchParams),
-    [debouncedSearchParams, setSearchParameters]
+  const paginatedQueryProps = useMemo(
+    () => ({
+      ...props,
+      searchParameters: debouncedSearchParams,
+    }),
+    [props, debouncedSearchParams]
   );
+
+  const { isFetching, error, data, refetch } =
+    useResultsQuery(paginatedQueryProps);
 
   // If search parameters have not changed and nothing is pending
   // Then trigger a refetch
@@ -124,51 +126,72 @@ function Results(props: ResultsProps) {
         show={columnsModalShow}
         onHide={() => setColumnsModalShow(false)}
         columns={columnOptions}
-        activeColumns={columnList}
-        setActiveColumns={setColumnList}
+        activeColumns={includeList}
+        setActiveColumns={setIncludeList}
       />
-      <Stack gap={2} direction="horizontal" className="h-100 parent">
+      <Stack direction="horizontal" className="h-100">
         {!sidebarCollapsed && (
-          <div className="h-100 left-col">
-            <Container fluid className="h-100 g-0">
-              <Stack gap={2} className="h-100">
-                <SearchBar
-                  {...props}
-                  placeholder={`Search ${props.title.toLowerCase()}...`}
-                  searchInput={searchInput}
-                  setSearchInput={setSearchInput}
-                  handleSearch={handleSearch}
-                />
-                <Stack gap={2} className="h-100 overflow-y-hidden">
-                  <FilterPanel
+          <>
+            <div
+              className="h-100"
+              style={{
+                position: "relative",
+                width: sidebarWidth,
+                minWidth: sidebarWidth,
+                paddingRight: "10px",
+              }}
+            >
+              <Container fluid className="h-100 g-0">
+                <Stack gap={2} className="h-100">
+                  <SearchBar
                     {...props}
-                    filterList={filterList}
-                    setFilterList={setFilterList}
-                    filterFieldOptions={filterOptions}
+                    placeholder={`Search ${props.title.toLowerCase()}...`}
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    handleSearch={handleSearch}
                   />
-                  <SummarisePanel
-                    {...props}
-                    summariseList={summariseList}
-                    setSummariseList={setSummariseList}
-                    filterFieldOptions={filterOptions}
-                  />
-                  <CopyToClipboardButton
-                    size="sm"
-                    variant="dark"
-                    title="Copy CLI Command"
-                    onClick={handleCopyCLICommand}
-                    showTitle
-                  />
+                  <Stack gap={2} className="h-100 overflow-y-hidden">
+                    <FilterPanel
+                      {...props}
+                      filterList={filterList}
+                      setFilterList={setFilterList}
+                      filterFieldOptions={filterOptions}
+                    />
+                    <SummarisePanel
+                      {...props}
+                      summariseList={summariseList}
+                      setSummariseList={setSummariseList}
+                      filterFieldOptions={filterOptions}
+                    />
+                    <CopyToClipboardButton
+                      size="sm"
+                      variant="dark"
+                      title="Copy CLI Command"
+                      onClick={handleCopyCLICommand}
+                      showTitle
+                    />
+                  </Stack>
                 </Stack>
-              </Stack>
-            </Container>
-          </div>
+              </Container>
+              <Resizer
+                defaultWidth={defaultWidth}
+                minWidth={220}
+                maxWidth={600}
+                setWidth={setSidebarWidth}
+              />
+            </div>
+            <div
+              style={{
+                paddingLeft: "10px",
+              }}
+            />
+          </>
         )}
-        <div className="h-100 right-col">
+        <div className="h-100" style={{ flex: 1 }}>
           <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}
-              searchParameters={searchParameters}
+              searchParameters={debouncedSearchParams}
               pageSize={pageSize}
               isFetching={isFetching}
               error={error}
