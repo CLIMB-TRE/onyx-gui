@@ -33,6 +33,7 @@ export interface IDProps extends DataProps {
 }
 
 export interface ResultsProps extends DataProps {
+  defaultFields: string[];
   title: string;
   commandBase: string;
   searchPath: string;

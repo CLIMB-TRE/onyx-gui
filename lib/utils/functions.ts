@@ -19,7 +19,9 @@ function getDefaultFileNamePrefix(project: string, searchParameters: string) {
   // removes special characters, and truncates to 50 characters
   return [["", project]]
     .concat(Array.from(new URLSearchParams(searchParameters).entries()))
-    .filter(([parameter]) => !["include", "exclude"].includes(parameter))
+    .filter(
+      ([parameter]) => !["include", "exclude", "page_size"].includes(parameter)
+    )
     .map(([, value]) =>
       value
         // Split on all groups of spaces and commas

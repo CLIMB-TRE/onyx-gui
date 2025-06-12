@@ -10,9 +10,10 @@ import { Input, MultiInput, RangeInput } from "./Inputs";
 import { useFieldDescriptions } from "../api/hooks";
 
 interface FilterProps extends DataProps {
+  filter: FilterConfig;
   index: number;
   filterList: FilterConfig[];
-  setFilterList: (value: FilterConfig[]) => void;
+  setFilterList: (filters: FilterConfig[]) => void;
   fieldList: string[];
   setEditMode: (value: boolean) => void;
   disableLookups?: boolean;
@@ -23,41 +24,49 @@ function getValueList(v: string) {
 }
 
 function Filter(props: FilterProps) {
-  const [filter, setFilter] = useState(props.filterList[props.index]);
+  const [filter, setFilter] = useState(props.filter);
 
   const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const updatedFilter = { ...filter };
-    updatedFilter.type = props.fields.get(e.target.value)?.type || "";
-    updatedFilter.field = e.target.value;
-    updatedFilter.lookup = props.typeLookups.get(updatedFilter.type)?.[0] || "";
+    setFilter((prevState) => {
+      const updatedFilter = { ...prevState };
 
-    if (updatedFilter.lookup === "isnull") updatedFilter.value = "true";
-    else updatedFilter.value = "";
+      updatedFilter.type = props.fields.get(e.target.value)?.type || "";
+      updatedFilter.field = e.target.value;
+      updatedFilter.lookup =
+        props.typeLookups.get(updatedFilter.type)?.[0] || "";
 
-    setFilter(updatedFilter);
+      if (updatedFilter.lookup === "isnull") updatedFilter.value = "true";
+      else updatedFilter.value = "";
+
+      return updatedFilter;
+    });
   };
 
   const handleLookupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const updatedFilter = { ...filter };
-    updatedFilter.lookup = e.target.value;
+    setFilter((prevState) => {
+      const updatedFilter = { ...prevState };
 
-    if (updatedFilter.lookup === "isnull") updatedFilter.value = "true";
-    else if (updatedFilter.lookup.endsWith("range"))
-      updatedFilter.value = getValueList(updatedFilter.value)
-        .slice(0, 2)
-        .join(",");
-    else if (!updatedFilter.lookup.endsWith("in"))
-      updatedFilter.value = getValueList(updatedFilter.value)[0];
+      updatedFilter.lookup = e.target.value;
 
-    setFilter(updatedFilter);
+      if (updatedFilter.lookup === "isnull") updatedFilter.value = "true";
+      else if (updatedFilter.lookup.endsWith("range"))
+        updatedFilter.value = getValueList(updatedFilter.value)
+          .slice(0, 2)
+          .join(",");
+      else if (!updatedFilter.lookup.endsWith("in"))
+        updatedFilter.value = getValueList(updatedFilter.value)[0] || "";
+
+      return updatedFilter;
+    });
   };
 
   const handleValueChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const updatedFilter = { ...filter };
-    updatedFilter.value = e.target.value;
-    setFilter(updatedFilter);
+    setFilter((prevState) => ({
+      ...prevState,
+      value: e.target.value,
+    }));
   };
 
   const handleApply = () => {
