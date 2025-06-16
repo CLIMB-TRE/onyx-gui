@@ -7,7 +7,12 @@ import Stack from "react-bootstrap/Stack";
 import { MdClear, MdCreate, MdDelete } from "react-icons/md";
 import { DataProps } from "../interfaces";
 import { FilterConfig } from "../types";
-import { generateKey } from "../utils/functions";
+import {
+  formatField,
+  formatLookup,
+  formatValue,
+  generateKey,
+} from "../utils/functions";
 import Filter from "./Filter";
 import RemoveAllModal from "./RemoveAllModal";
 
@@ -16,41 +21,6 @@ interface FilterPanelProps extends DataProps {
   setFilterList: (filters: FilterConfig[]) => void;
   filterFieldOptions: string[];
   disableLookups?: boolean;
-}
-
-function formatField(field: string) {
-  return field.split("__").join(" ");
-}
-
-function formatLookup(lookup: string) {
-  switch (lookup) {
-    case "exact":
-      return "==";
-    case "ne":
-      return "!=";
-    case "lt":
-      return "<";
-    case "lte":
-      return "<=";
-    case "gt":
-      return ">";
-    case "gte":
-      return ">=";
-    default:
-      return lookup.toUpperCase();
-  }
-}
-
-// TODO: Issues arise if value contains commas
-// TODO: Would be better to have field-type-dependent formatting
-function formatValue(value: string) {
-  let values = value.split(",");
-  if (values.length > 10) {
-    values = values
-      .slice(0, 10)
-      .concat([`... [${(values.length - 10).toString()} more]`]);
-  }
-  return values.join(", ");
 }
 
 function formatFilter(filter: FilterConfig) {

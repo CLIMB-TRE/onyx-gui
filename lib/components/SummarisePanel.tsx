@@ -8,6 +8,7 @@ import { MdClear, MdCreate, MdDelete } from "react-icons/md";
 import { DataProps } from "../interfaces";
 import Summarise from "./Summarise";
 import RemoveAllModal from "./RemoveAllModal";
+import { formatField } from "../utils/functions";
 
 interface SummarisePanelProps extends DataProps {
   summariseList: string[];
@@ -75,7 +76,7 @@ function SummarisePanel(props: SummarisePanelProps) {
                 <ButtonGroup size="sm">
                   <Button variant="dark" onClick={() => setEditMode(true)}>
                     <span className="onyx-text-pink font-monospace">
-                      {field}
+                      {formatField(field)}
                     </span>
                   </Button>
                   <Button
