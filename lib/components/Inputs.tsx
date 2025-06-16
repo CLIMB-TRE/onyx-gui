@@ -7,16 +7,19 @@ import { SelectOption } from "../types";
 import { selectStyles } from "../utils/styles";
 
 function Input({
+  type,
   value,
   placeholder,
   onChange,
 }: {
+  type?: string;
   value: string;
   placeholder?: string;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
     <Form.Control
+      type={type}
       value={value}
       placeholder={placeholder || "Enter value..."}
       onChange={onChange}
@@ -63,11 +66,13 @@ function MultiInput({
 }
 
 function RangeInput({
+  type,
   from,
   to,
   placeholder,
   onChange,
 }: {
+  type?: string;
   from: string;
   to: string;
   placeholder?: string;
@@ -96,22 +101,28 @@ function RangeInput({
 
   return (
     <Row className="g-2">
-      <Form.Group className="mb-2" as={Col}>
-        <Form.Label>From</Form.Label>
-        <Form.Control
-          value={from}
-          placeholder={placeholder || "Enter value..."}
-          onChange={handleFromChange}
-        />
-      </Form.Group>
-      <Form.Group className="mb-2" as={Col}>
-        <Form.Label>To</Form.Label>
-        <Form.Control
-          value={to}
-          placeholder={placeholder || "Enter value..."}
-          onChange={handleToChange}
-        />
-      </Form.Group>
+      <Col className="mb-2">
+        <Form.Group>
+          <Form.Label>From</Form.Label>
+          <Form.Control
+            type={type}
+            value={from}
+            placeholder={placeholder || "Enter value..."}
+            onChange={handleFromChange}
+          />
+        </Form.Group>
+      </Col>
+      <Col className="mb-2">
+        <Form.Group>
+          <Form.Label>To</Form.Label>
+          <Form.Control
+            type={type}
+            value={to}
+            placeholder={placeholder || "Enter value..."}
+            onChange={handleToChange}
+          />
+        </Form.Group>
+      </Col>
     </Row>
   );
 }

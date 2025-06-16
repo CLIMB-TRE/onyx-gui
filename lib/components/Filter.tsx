@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import CloseButton from "react-bootstrap/CloseButton";
 import Form from "react-bootstrap/Form";
@@ -25,6 +25,28 @@ function getValueList(v: string) {
 
 function Filter(props: FilterProps) {
   const [filter, setFilter] = useState(props.filter);
+
+  const inputType = useMemo(() => {
+    if (
+      [
+        "length",
+        "length__in",
+        "length__range",
+        "iso_year",
+        "iso_year__in",
+        "iso_year__range",
+        "week",
+        "week__in",
+        "week__range",
+      ].includes(filter.lookup)
+    )
+      return "number";
+
+    if (filter.type === "date") return "date";
+    else if (filter.type === "integer" || filter.type === "decimal")
+      return "number";
+    else return "text";
+  }, [filter]);
 
   const handleFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFilter((prevState) => {
@@ -152,6 +174,7 @@ function Filter(props: FilterProps) {
     case filter.lookup.endsWith("range"):
       f = (
         <RangeInput
+          type={inputType}
           from={getValueList(filter.value)[0] || ""}
           to={getValueList(filter.value)[1] || ""}
           onChange={handleValueChange}
@@ -169,7 +192,13 @@ function Filter(props: FilterProps) {
       );
       break;
     default:
-      f = <Input value={filter.value} onChange={handleValueChange} />;
+      f = (
+        <Input
+          type={inputType}
+          value={filter.value}
+          onChange={handleValueChange}
+        />
+      );
   }
 
   const fieldDescriptions = useFieldDescriptions(props.fields);
