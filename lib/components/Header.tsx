@@ -137,7 +137,6 @@ function Header(props: HeaderProps) {
       className="border-bottom onyx-border"
       variant="dark"
       expand="lg"
-      fixed="top"
       onSelect={handleTabChange}
     >
       <Container fluid>
