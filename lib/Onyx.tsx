@@ -212,10 +212,12 @@ function App(props: OnyxProps) {
   const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewed[]>([]);
 
   // Clear parameters when project changes
-  const handleProjectChange = (project: Project) => {
-    setTabState(defaultTabState);
-    setProject(project);
-    setRecentlyViewed([]);
+  const handleProjectChange = (p: Project) => {
+    if (p !== project) {
+      setProject(p);
+      setTabState(defaultTabState);
+      setRecentlyViewed([]);
+    }
   };
 
   // Query for types, lookups and project permissions
