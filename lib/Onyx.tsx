@@ -212,10 +212,12 @@ function App(props: OnyxProps) {
   const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewed[]>([]);
 
   // Clear parameters when project changes
-  const handleProjectChange = (project: Project) => {
-    setTabState(defaultTabState);
-    setProject(project);
-    setRecentlyViewed([]);
+  const handleProjectChange = (p: Project) => {
+    if (p !== project) {
+      setProject(p);
+      setTabState(defaultTabState);
+      setRecentlyViewed([]);
+    }
   };
 
   // Query for types, lookups and project permissions
@@ -356,40 +358,38 @@ function App(props: OnyxProps) {
         handleAnalysisHide={handleAnalysisHide}
         handleRecentlyViewed={handleRecentlyViewed}
       />
-      <div className="h-100" style={{ paddingTop: "60px" }}>
-        <Container fluid className="h-100 p-2">
-          {!project ? (
-            <LandingPage />
-          ) : (
-            <Tab.Container
-              activeKey={project.code}
-              mountOnEnter
-              unmountOnExit
-              transition={false}
-            >
-              <Tab.Content className="h-100">
-                {projects.map((p) => (
-                  <Tab.Pane key={p.code} eventKey={p.code} className="h-100">
-                    <ProjectPage
-                      {...props}
-                      darkMode={darkMode}
-                      tabState={tabState}
-                      setTabState={setTabState}
-                      project={p}
-                      typeLookups={typeLookups}
-                      lookupDescriptions={lookupDescriptions}
-                      handleProjectRecordShow={handleProjectRecordShow}
-                      handleAnalysisShow={handleAnalysisShow}
-                      handleProjectRecordHide={handleProjectRecordHide}
-                      handleAnalysisHide={handleAnalysisHide}
-                    />
-                  </Tab.Pane>
-                ))}
-              </Tab.Content>
-            </Tab.Container>
-          )}
-        </Container>
-      </div>
+      <Container style={{ height: "calc(100% - 60px)" }} fluid className="p-2">
+        {!project ? (
+          <LandingPage />
+        ) : (
+          <Tab.Container
+            activeKey={project.code}
+            mountOnEnter
+            unmountOnExit
+            transition={false}
+          >
+            <Tab.Content className="h-100">
+              {projects.map((p) => (
+                <Tab.Pane key={p.code} eventKey={p.code} className="h-100">
+                  <ProjectPage
+                    {...props}
+                    darkMode={darkMode}
+                    tabState={tabState}
+                    setTabState={setTabState}
+                    project={p}
+                    typeLookups={typeLookups}
+                    lookupDescriptions={lookupDescriptions}
+                    handleProjectRecordShow={handleProjectRecordShow}
+                    handleAnalysisShow={handleAnalysisShow}
+                    handleProjectRecordHide={handleProjectRecordHide}
+                    handleAnalysisHide={handleAnalysisHide}
+                  />
+                </Tab.Pane>
+              ))}
+            </Tab.Content>
+          </Tab.Container>
+        )}
+      </Container>
     </div>
   );
 }

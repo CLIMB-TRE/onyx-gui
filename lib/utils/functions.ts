@@ -96,9 +96,47 @@ export function formatTimeAgo(timestamp: Date): string {
   }
 }
 
+function formatField(field: string) {
+  return field.split("__").join(" ");
+}
+
+function formatLookup(lookup: string) {
+  switch (lookup) {
+    case "exact":
+      return "==";
+    case "ne":
+      return "!=";
+    case "lt":
+      return "<";
+    case "lte":
+      return "<=";
+    case "gt":
+      return ">";
+    case "gte":
+      return ">=";
+    default:
+      return lookup.toUpperCase();
+  }
+}
+
+// TODO: Issues arise if value contains commas
+// TODO: Would be better to have field-type-dependent formatting
+function formatValue(value: string) {
+  let values = value.split(",");
+  if (values.length > 10) {
+    values = values
+      .slice(0, 10)
+      .concat([`... [${(values.length - 10).toString()} more]`]);
+  }
+  return values.join(", ");
+}
+
 export {
   formatFilters,
+  formatField,
+  formatLookup,
   formatResponseStatus,
+  formatValue,
   generateKey,
   getDefaultFileNamePrefix,
   handleJSONExport,
