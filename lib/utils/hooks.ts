@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { OnyxProps } from "../interfaces";
 
 export const useDebouncedValue = (inputValue: string, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(inputValue);
@@ -63,3 +64,20 @@ export const useQueryRefresh = (
     );
   }, [dataUpdatedAt, errorUpdatedAt, setLastUpdated]);
 };
+
+export function usePersistedState<T>(
+  props: OnyxProps,
+  key: string,
+  initialValue: T
+) {
+  const { getItem, setItem } = props;
+  const [state, setState] = useState<T>(() => {
+    return (getItem && (getItem(key) as T)) ?? initialValue;
+  });
+
+  useEffect(() => {
+    if (setItem) setItem(key, state);
+  }, [setItem, key, state]);
+
+  return [state, setState] as const;
+}
