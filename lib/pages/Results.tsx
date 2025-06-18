@@ -16,7 +16,11 @@ import Resizer from "../components/Resizer";
 
 function Results(props: ResultsProps) {
   const pageSize = 100; // Pagination page size
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = usePersistedState(
+    props,
+    `${props.objectType}SearchInput`,
+    ""
+  );
   const [filterList, setFilterList] = usePersistedState<FilterConfig[]>(
     props,
     `${props.objectType}FilterConfigs`,
