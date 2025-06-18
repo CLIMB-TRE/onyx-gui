@@ -395,15 +395,15 @@ function Graphs(props: DataProps) {
 
   const [graphConfigList, setGraphConfigList] = usePersistedState<
     GraphConfig[]
-  >(props, "graphConfigs", defaultGraphConfig());
+  >(props, `${props.project.code}GraphConfigs`, defaultGraphConfig());
   const [viewMode, setViewMode] = usePersistedState<"list" | "grid">(
     props,
-    "graphViewMode",
+    `${props.project.code}GraphViewMode`,
     "list"
   );
   const [showOptions, setShowOptions] = usePersistedState<boolean>(
     props,
-    "graphShowOptions",
+    `${props.project.code}GraphShowOptions`,
     true
   );
   const [refresh, setRefresh] = useState<number | null>(null);

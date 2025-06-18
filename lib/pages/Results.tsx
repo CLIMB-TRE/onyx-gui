@@ -18,22 +18,22 @@ function Results(props: ResultsProps) {
   const pageSize = 100; // Pagination page size
   const [searchInput, setSearchInput] = usePersistedState(
     props,
-    `${props.objectType}SearchInput`,
+    `${props.project.code}${props.title}SearchInput`,
     ""
   );
   const [filterList, setFilterList] = usePersistedState<FilterConfig[]>(
     props,
-    `${props.objectType}FilterConfigs`,
+    `${props.project.code}${props.title}FilterConfigs`,
     []
   );
   const [summariseList, setSummariseList] = usePersistedState<string[]>(
     props,
-    `${props.objectType}SummariseConfigs`,
+    `${props.project.code}${props.title}SummariseConfigs`,
     []
   );
   const [includeList, setIncludeList] = usePersistedState<string[]>(
     props,
-    `${props.objectType}IncludeList`,
+    `${props.project.code}${props.title}IncludeList`,
     props.defaultFields
   );
 
