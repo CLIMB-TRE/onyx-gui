@@ -6,6 +6,8 @@ export interface OnyxProps {
   s3PathHandler: (path: string) => Promise<void>;
   fileWriter: (path: string, content: string) => Promise<void>;
   extVersion: string;
+  getItem?: (key: string) => unknown;
+  setItem?: (key: string, value: unknown) => void;
 }
 
 export interface PageProps extends OnyxProps {
