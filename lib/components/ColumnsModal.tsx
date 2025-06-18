@@ -14,14 +14,16 @@ interface ColumnsModalProps extends DataProps {
   show: boolean;
   onHide: () => void;
   columns: Field[];
-  activeColumns: Field[];
-  setActiveColumns: (value: Field[]) => void;
+  defaultColumns: string[];
+  activeColumns: string[];
+  setActiveColumns: (value: string[]) => void;
 }
 
 function ColumnsModal(props: ColumnsModalProps) {
   const [selectAll, setSelectAll] = useState<boolean>(false);
   const [activeColumns, setActiveColumns] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState<string>("");
+
   const debouncedSearch = useDebouncedValue(search.toLowerCase(), 200);
   const filteredColumns = useMemo(
     () =>
@@ -32,6 +34,7 @@ function ColumnsModal(props: ColumnsModalProps) {
       ),
     [props.columns, debouncedSearch]
   );
+
   const activeColumnsMessage = useMemo(() => {
     return `${activeColumns.size} column${
       activeColumns.size !== 1 ? "s" : ""
@@ -40,7 +43,7 @@ function ColumnsModal(props: ColumnsModalProps) {
 
   // Update active columns when props.activeColumns changes
   useEffect(() => {
-    setActiveColumns(new Set(props.activeColumns.map((column) => column.code)));
+    setActiveColumns(new Set(props.activeColumns));
   }, [props.activeColumns]);
 
   const handleSearchChange = (search: string) => {
@@ -69,9 +72,7 @@ function ColumnsModal(props: ColumnsModalProps) {
 
   // Apply the changes to active columns, then close the modal
   const handleApply = () => {
-    props.setActiveColumns(
-      props.columns.filter((column) => activeColumns.has(column.code))
-    );
+    props.setActiveColumns(Array.from(activeColumns));
     props.onHide();
   };
 
@@ -132,6 +133,17 @@ function ColumnsModal(props: ColumnsModalProps) {
         </Stack>
       </Modal.Body>
       <Modal.Footer>
+        <Button
+          className="me-auto"
+          variant="dark"
+          onClick={() => {
+            setActiveColumns(new Set(props.defaultColumns));
+            setSelectAll(false);
+            setSearch("");
+          }}
+        >
+          Reset to Defaults
+        </Button>
         <span className="text-muted px-2">{activeColumnsMessage}</span>
         <Button variant="dark" onClick={props.onHide}>
           Cancel
