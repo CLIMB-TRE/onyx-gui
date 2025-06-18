@@ -396,8 +396,16 @@ function Graphs(props: DataProps) {
   const [graphConfigList, setGraphConfigList] = usePersistedState<
     GraphConfig[]
   >(props, "graphConfigs", defaultGraphConfig());
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-  const [showOptions, setShowOptions] = useState(true);
+  const [viewMode, setViewMode] = usePersistedState<"list" | "grid">(
+    props,
+    "graphViewMode",
+    "list"
+  );
+  const [showOptions, setShowOptions] = usePersistedState<boolean>(
+    props,
+    "graphShowOptions",
+    true
+  );
   const [refresh, setRefresh] = useState<number | null>(null);
   const [removeAllModalShow, setRemoveAllModalShow] = useState(false);
 
