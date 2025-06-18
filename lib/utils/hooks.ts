@@ -71,6 +71,8 @@ export function usePersistedState<T>(
   initialValue: T
 ) {
   const { getItem, setItem } = props;
+
+  // Initialise state with the persisted value or the initial value
   const [state, setState] = useState<T>(() => {
     return (getItem && (getItem(key) as T)) ?? initialValue;
   });
@@ -78,9 +80,17 @@ export function usePersistedState<T>(
   // Use a debounced value to avoid excessive writes
   const debouncedState = useDebouncedValue(state, 500);
 
+  // Update the persisted state when the debounced state changes
   useEffect(() => {
     if (setItem) setItem(key, debouncedState);
   }, [setItem, key, debouncedState]);
+
+  // Clear the persisted state when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (setItem) setItem(key, null);
+    };
+  }, [setItem, key]);
 
   return [state, setState] as const;
 }
