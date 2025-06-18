@@ -9,7 +9,7 @@ import SummarisePanel from "../components/SummarisePanel";
 import { ResultsProps } from "../interfaces";
 import { FilterConfig, Field } from "../types";
 import { formatFilters } from "../utils/functions";
-import { useDebouncedValue } from "../utils/hooks";
+import { useDebouncedValue, usePersistedState } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
 import { CopyToClipboardButton } from "../components/Buttons";
 import Resizer from "../components/Resizer";
@@ -17,8 +17,16 @@ import Resizer from "../components/Resizer";
 function Results(props: ResultsProps) {
   const pageSize = 100; // Pagination page size
   const [searchInput, setSearchInput] = useState("");
-  const [filterList, setFilterList] = useState([] as FilterConfig[]);
-  const [summariseList, setSummariseList] = useState(new Array<string>());
+  const [filterList, setFilterList] = usePersistedState<FilterConfig[]>(
+    props,
+    `${props.objectType}FilterConfigs`,
+    []
+  );
+  const [summariseList, setSummariseList] = usePersistedState<Array<string>>(
+    props,
+    `${props.objectType}SummariseConfigs`,
+    []
+  );
   const [includeList, setIncludeList] = useState<Field[]>(
     Array.from(props.fields.entries())
       .filter(([, field]) => props.defaultFields.includes(field.code))

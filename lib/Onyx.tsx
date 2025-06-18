@@ -87,6 +87,7 @@ function ProjectPage(props: ProjectPageProps) {
                     fields={fields}
                     defaultFields={defaultFields}
                     projectDescription={description}
+                    objectType="record"
                     title="Records"
                     commandBase={`onyx filter ${props.project.code}`}
                     searchPath={`projects/${props.project.code}`}
@@ -120,6 +121,7 @@ function ProjectPage(props: ProjectPageProps) {
                     fields={analysisFields}
                     defaultFields={defaultAnalysisFields}
                     projectDescription={description}
+                    objectType="analysis"
                     title="Analyses"
                     commandBase={`onyx filter-analysis ${props.project.code}`}
                     searchPath={`projects/${props.project.code}/analysis`}
