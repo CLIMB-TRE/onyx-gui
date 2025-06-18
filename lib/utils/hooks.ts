@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { OnyxProps } from "../interfaces";
 
-export const useDebouncedValue = (inputValue: string, delay: number) => {
+export function useDebouncedValue<T>(inputValue: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(inputValue);
 
   useEffect(() => {
@@ -10,7 +10,7 @@ export const useDebouncedValue = (inputValue: string, delay: number) => {
   }, [inputValue, delay]);
 
   return debouncedValue;
-};
+}
 
 export const useDelayedValue = (delay?: number) => {
   const [showValue, setShowValue] = useState(false);
@@ -75,9 +75,12 @@ export function usePersistedState<T>(
     return (getItem && (getItem(key) as T)) ?? initialValue;
   });
 
+  // Use a debounced value to avoid excessive writes
+  const debouncedState = useDebouncedValue(state, 500);
+
   useEffect(() => {
-    if (setItem) setItem(key, state);
-  }, [setItem, key, state]);
+    if (setItem) setItem(key, debouncedState);
+  }, [setItem, key, debouncedState]);
 
   return [state, setState] as const;
 }
