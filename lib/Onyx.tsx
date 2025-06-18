@@ -34,8 +34,9 @@ import {
   TabState,
   Themes,
   RecentlyViewed,
+  ObjectType,
 } from "./types";
-import { useDelayedValue } from "./utils/hooks";
+import { useDelayedValue, usePersistedState } from "./utils/hooks";
 
 import "@fontsource/ibm-plex-sans";
 import "./Onyx.css";
@@ -207,9 +208,19 @@ function App(props: OnyxProps) {
   };
 
   // Project state
-  const [project, setProject] = useState<Project>();
-  const [tabState, setTabState] = useState<TabState>(defaultTabState);
-  const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewed[]>([]);
+  const [project, setProject] = usePersistedState<Project | undefined>(
+    props,
+    "project",
+    undefined
+  );
+  const [tabState, setTabState] = usePersistedState<TabState>(
+    props,
+    "tabState",
+    defaultTabState
+  );
+  const [recentlyViewed, setRecentlyViewed] = usePersistedState<
+    RecentlyViewed[]
+  >(props, "recentlyViewed", []);
 
   // Clear parameters when project changes
   const handleProjectChange = (p: Project) => {
@@ -266,10 +277,10 @@ function App(props: OnyxProps) {
     if (!project && projects.length > 0) {
       setProject(projects[0]);
     }
-  }, [project, projects]);
+  }, [project, projects, setProject]);
 
   const handleRecentlyViewed = useCallback(
-    (ID: string, handleShowID: (id: string) => void) => {
+    (objectType: ObjectType, ID: string) => {
       setRecentlyViewed((prevState) => {
         const updatedList = [...prevState];
 
@@ -279,16 +290,16 @@ function App(props: OnyxProps) {
 
         // Add new item to the front of the list
         updatedList.unshift({
+          objectType: objectType,
           ID: ID,
-          timestamp: new Date(),
-          handleShowID: handleShowID,
+          timestamp: new Date().toString(),
         });
 
         // Limit to 10 recently viewed items
         return updatedList.slice(0, 10);
       });
     },
-    []
+    [setRecentlyViewed]
   );
 
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
@@ -304,9 +315,9 @@ function App(props: OnyxProps) {
         recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
         recordID: climbID,
       }));
-      handleRecentlyViewed(climbID, handleProjectRecordShow);
+      handleRecentlyViewed("record", climbID);
     },
-    [handleRecentlyViewed]
+    [handleRecentlyViewed, setTabState]
   );
 
   const handleProjectRecordHide = useCallback(() => {
@@ -315,7 +326,7 @@ function App(props: OnyxProps) {
       tabKey: OnyxTabKeys.RECORDS,
       recordTabKey: RecordTabKeys.LIST,
     }));
-  }, []);
+  }, [setTabState]);
 
   const handleAnalysisShow = useCallback(
     (analysisID: string) => {
@@ -327,9 +338,9 @@ function App(props: OnyxProps) {
         analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
         analysisID: analysisID,
       }));
-      handleRecentlyViewed(analysisID, handleAnalysisShow);
+      handleRecentlyViewed("analysis", analysisID);
     },
-    [handleRecentlyViewed]
+    [handleRecentlyViewed, setTabState]
   );
 
   const handleAnalysisHide = useCallback(() => {
@@ -338,7 +349,7 @@ function App(props: OnyxProps) {
       tabKey: OnyxTabKeys.ANALYSES,
       analysisTabKey: AnalysisTabKeys.LIST,
     }));
-  }, []);
+  }, [setTabState]);
 
   return (
     <div className="Onyx h-100">

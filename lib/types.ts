@@ -61,6 +61,8 @@ export enum ExportStatus {
   ERROR,
 }
 
+export type ObjectType = "record" | "analysis";
+
 export type TabState = {
   tabKey: OnyxTabKeys;
   recordTabKey: RecordTabKeys;
@@ -74,9 +76,9 @@ export type TabState = {
 };
 
 export type RecentlyViewed = {
+  objectType: ObjectType;
   ID: string;
-  timestamp: Date;
-  handleShowID: (id: string) => void;
+  timestamp: string;
 };
 
 export type FieldType =
