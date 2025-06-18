@@ -7,7 +7,7 @@ import ResultsPanel from "../components/ResultsPanel";
 import SearchBar from "../components/SearchBar";
 import SummarisePanel from "../components/SummarisePanel";
 import { ResultsProps } from "../interfaces";
-import { FilterConfig, Field } from "../types";
+import { FilterConfig } from "../types";
 import { formatFilters } from "../utils/functions";
 import { useDebouncedValue, usePersistedState } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
@@ -22,21 +22,20 @@ function Results(props: ResultsProps) {
     `${props.objectType}FilterConfigs`,
     []
   );
-  const [summariseList, setSummariseList] = usePersistedState<Array<string>>(
+  const [summariseList, setSummariseList] = usePersistedState<string[]>(
     props,
     `${props.objectType}SummariseConfigs`,
     []
   );
-  const [includeList, setIncludeList] = useState<Field[]>(
-    Array.from(props.fields.entries())
-      .filter(([, field]) => props.defaultFields.includes(field.code))
-      .map(([, field]) => field)
+  const [includeList, setIncludeList] = usePersistedState<string[]>(
+    props,
+    `${props.objectType}IncludeList`,
+    props.defaultFields
   );
 
   const defaultWidth = 300;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(defaultWidth);
-
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 
   const filterOptions = useMemo(
@@ -64,7 +63,9 @@ function Results(props: ResultsProps) {
       columns = includeList;
     } else {
       columnOperator = "exclude";
-      columns = columnOptions.filter((field) => !includeList.includes(field));
+      columns = columnOptions
+        .filter((field) => !includeList.includes(field.code))
+        .map((field) => field.code);
     }
 
     return new URLSearchParams(
@@ -81,7 +82,7 @@ function Results(props: ResultsProps) {
             .filter((field) => field)
             .map((field) => ["summarise", field])
         )
-        .concat(columns.map((field) => [columnOperator, field.code]))
+        .concat(columns.map((field) => [columnOperator, field]))
     ).toString();
   }, [searchInput, filterList, summariseList, includeList, columnOptions]);
 
@@ -134,6 +135,7 @@ function Results(props: ResultsProps) {
         show={columnsModalShow}
         onHide={() => setColumnsModalShow(false)}
         columns={columnOptions}
+        defaultColumns={props.defaultFields}
         activeColumns={includeList}
         setActiveColumns={setIncludeList}
       />
