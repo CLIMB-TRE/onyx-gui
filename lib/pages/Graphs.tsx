@@ -43,6 +43,7 @@ import {
 import { generateKey } from "../utils/functions";
 import RemoveAllModal from "../components/RemoveAllModal";
 import { useFieldDescriptions } from "../api/hooks";
+import { usePersistedState } from "../utils/hooks";
 
 interface GraphPanelProps extends DataProps {
   graphConfig: GraphConfig;
@@ -104,7 +105,7 @@ function GraphPanelTitle(props: GraphPanelProps) {
             props.graphConfig.filters
               .filter((filter) => filter.field)
               .map((filter) => (
-                <span>
+                <span key={filter.key}>
                   , filtered by {filter.field}:{" "}
                   <span className="onyx-text-pink font-monospace">
                     {filter.value}
@@ -392,14 +393,17 @@ function Graphs(props: DataProps) {
       },
     ] as GraphConfig[];
 
-  const [graphConfigList, setGraphConfigList] = useState(defaultGraphConfig());
-  const listFieldOptions = Array.from(props.fields.entries())
-    .filter(([, field]) => field.actions.includes("list"))
-    .map(([field]) => field);
+  const [graphConfigList, setGraphConfigList] = usePersistedState<
+    GraphConfig[]
+  >(props, "graphConfigs", defaultGraphConfig());
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showOptions, setShowOptions] = useState(true);
   const [refresh, setRefresh] = useState<number | null>(null);
   const [removeAllModalShow, setRemoveAllModalShow] = useState(false);
+
+  const listFieldOptions = Array.from(props.fields.entries())
+    .filter(([, field]) => field.actions.includes("list"))
+    .map(([field]) => field);
 
   const handleRefresh = () => {
     setRefresh(refresh ? 0 : 1);
