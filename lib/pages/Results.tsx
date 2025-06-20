@@ -7,28 +7,39 @@ import ResultsPanel from "../components/ResultsPanel";
 import SearchBar from "../components/SearchBar";
 import SummarisePanel from "../components/SummarisePanel";
 import { ResultsProps } from "../interfaces";
-import { FilterConfig, Field } from "../types";
+import { FilterConfig } from "../types";
 import { formatFilters } from "../utils/functions";
-import { useDebouncedValue } from "../utils/hooks";
+import { useDebouncedValue, usePersistedState } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
 import { CopyToClipboardButton } from "../components/Buttons";
 import Resizer from "../components/Resizer";
 
 function Results(props: ResultsProps) {
   const pageSize = 100; // Pagination page size
-  const [searchInput, setSearchInput] = useState("");
-  const [filterList, setFilterList] = useState([] as FilterConfig[]);
-  const [summariseList, setSummariseList] = useState(new Array<string>());
-  const [includeList, setIncludeList] = useState<Field[]>(
-    Array.from(props.fields.entries())
-      .filter(([, field]) => props.defaultFields.includes(field.code))
-      .map(([, field]) => field)
+  const [searchInput, setSearchInput] = usePersistedState(
+    props,
+    `${props.project.code}${props.title}SearchInput`,
+    ""
+  );
+  const [filterList, setFilterList] = usePersistedState<FilterConfig[]>(
+    props,
+    `${props.project.code}${props.title}FilterConfigs`,
+    []
+  );
+  const [summariseList, setSummariseList] = usePersistedState<string[]>(
+    props,
+    `${props.project.code}${props.title}SummariseConfigs`,
+    []
+  );
+  const [includeList, setIncludeList] = usePersistedState<string[]>(
+    props,
+    `${props.project.code}${props.title}IncludeList`,
+    props.defaultFields
   );
 
   const defaultWidth = 300;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(defaultWidth);
-
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 
   const filterOptions = useMemo(
@@ -56,7 +67,9 @@ function Results(props: ResultsProps) {
       columns = includeList;
     } else {
       columnOperator = "exclude";
-      columns = columnOptions.filter((field) => !includeList.includes(field));
+      columns = columnOptions
+        .filter((field) => !includeList.includes(field.code))
+        .map((field) => field.code);
     }
 
     return new URLSearchParams(
@@ -73,7 +86,7 @@ function Results(props: ResultsProps) {
             .filter((field) => field)
             .map((field) => ["summarise", field])
         )
-        .concat(columns.map((field) => [columnOperator, field.code]))
+        .concat(columns.map((field) => [columnOperator, field]))
     ).toString();
   }, [searchInput, filterList, summariseList, includeList, columnOptions]);
 
@@ -126,6 +139,7 @@ function Results(props: ResultsProps) {
         show={columnsModalShow}
         onHide={() => setColumnsModalShow(false)}
         columns={columnOptions}
+        defaultColumns={props.defaultFields}
         activeColumns={includeList}
         setActiveColumns={setIncludeList}
       />
