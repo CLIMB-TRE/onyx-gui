@@ -72,8 +72,8 @@ function formatResponseStatus(response: Response) {
   return `${response.status} (${response.statusText})`;
 }
 
-export function formatTimeAgo(timestamp: Date): string {
-  const diffInMs = new Date().getTime() - timestamp.getTime();
+export function formatTimeAgo(timestamp: string): string {
+  const diffInMs = new Date().getTime() - new Date(timestamp).getTime();
 
   const seconds = Math.floor(diffInMs / 1000);
   const minutes = Math.floor(seconds / 60);

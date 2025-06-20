@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { OnyxProps } from "../interfaces";
 
-export const useDebouncedValue = (inputValue: string, delay: number) => {
+export function useDebouncedValue<T>(inputValue: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(inputValue);
 
   useEffect(() => {
@@ -9,7 +10,7 @@ export const useDebouncedValue = (inputValue: string, delay: number) => {
   }, [inputValue, delay]);
 
   return debouncedValue;
-};
+}
 
 export const useDelayedValue = (delay?: number) => {
   const [showValue, setShowValue] = useState(false);
@@ -63,3 +64,33 @@ export const useQueryRefresh = (
     );
   }, [dataUpdatedAt, errorUpdatedAt, setLastUpdated]);
 };
+
+export function usePersistedState<T>(
+  props: OnyxProps,
+  key: string,
+  initialValue: T
+) {
+  const { getItem, setItem } = props;
+
+  // Initialise state with the persisted value or the initial value
+  const [state, setState] = useState<T>(() => {
+    return (getItem && (getItem(key) as T)) ?? initialValue;
+  });
+
+  // Use a debounced value to avoid excessive writes
+  const debouncedState = useDebouncedValue(state, 500);
+
+  // Update the persisted state when the debounced state changes
+  useEffect(() => {
+    if (setItem) setItem(key, debouncedState);
+  }, [setItem, key, debouncedState]);
+
+  // Clear the persisted state when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (setItem) setItem(key, null);
+    };
+  }, [setItem, key]);
+
+  return [state, setState] as const;
+}

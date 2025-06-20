@@ -6,6 +6,8 @@ import {
   httpPathHandler,
   s3PathHandler,
   extVersion,
+  getItem,
+  setItem,
 } from "./handlers.tsx";
 
 import "./font.css";
@@ -17,6 +19,8 @@ ReactDOM.render(
       s3PathHandler={s3PathHandler}
       fileWriter={fileWriter}
       extVersion={extVersion}
+      getItem={getItem}
+      setItem={setItem}
     />
   </React.StrictMode>,
   document.getElementById("root")
