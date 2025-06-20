@@ -57,25 +57,33 @@ function ProjectPage(props: ProjectPageProps) {
   const { description, fields, defaultFields } = useFieldsInfo(fieldsResponse);
 
   // Get project analyses information
-  const { data: analysisFieldsResponse } = useAnalysisFieldsQuery(props);
+  const {
+    isFetching: isAnalysisFetching,
+    error: analysisError,
+    data: analysisFieldsResponse,
+  } = useAnalysisFieldsQuery(props);
   const { fields: analysisFields, defaultFields: defaultAnalysisFields } =
     useFieldsInfo(analysisFieldsResponse);
 
   return (
-    <QueryHandler isFetching={isFetching} error={error} data={fieldsResponse}>
-      <Tab.Container
-        activeKey={props.tabState.tabKey}
-        mountOnEnter
-        transition={false}
-      >
-        <Tab.Content className="h-100">
-          <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
-            <User {...props} />
-          </Tab.Pane>
-          <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
-            <Site {...props} />
-          </Tab.Pane>
-          <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
+    <Tab.Container
+      activeKey={props.tabState.tabKey}
+      mountOnEnter
+      transition={false}
+    >
+      <Tab.Content className="h-100">
+        <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
+          <User {...props} />
+        </Tab.Pane>
+        <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
+          <Site {...props} />
+        </Tab.Pane>
+        <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
+          <QueryHandler
+            isFetching={isFetching}
+            error={error}
+            data={fieldsResponse}
+          >
             <Tab.Container
               activeKey={props.tabState.recordTabKey}
               transition={false}
@@ -107,8 +115,14 @@ function ProjectPage(props: ProjectPageProps) {
                 </Tab.Pane>
               </Tab.Content>
             </Tab.Container>
-          </Tab.Pane>
-          <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
+          </QueryHandler>
+        </Tab.Pane>
+        <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
+          <QueryHandler
+            isFetching={isAnalysisFetching}
+            error={analysisError}
+            data={analysisFieldsResponse}
+          >
             <Tab.Container
               activeKey={props.tabState.analysisTabKey}
               transition={false}
@@ -140,17 +154,13 @@ function ProjectPage(props: ProjectPageProps) {
                 </Tab.Pane>
               </Tab.Content>
             </Tab.Container>
-          </Tab.Pane>
-          <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
-            <Graphs
-              {...props}
-              fields={fields}
-              projectDescription={description}
-            />
-          </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
-    </QueryHandler>
+          </QueryHandler>
+        </Tab.Pane>
+        <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
+          <Graphs {...props} fields={fields} projectDescription={description} />
+        </Tab.Pane>
+      </Tab.Content>
+    </Tab.Container>
   );
 }
 
