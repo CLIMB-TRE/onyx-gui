@@ -47,3 +47,7 @@ export function setItem(key: string, value: unknown) {
     console.error("Error saving to sessionStorage", error);
   }
 }
+
+export function setTitle(title: string) {
+  document.title = `${title.trim()} | Onyx`;
+}

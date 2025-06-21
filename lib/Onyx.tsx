@@ -241,6 +241,42 @@ function App(props: OnyxProps) {
     }
   };
 
+  // Update app title based on the tab state
+  const { setTitle } = props;
+  useEffect(() => {
+    if (!setTitle || !project) return;
+
+    switch (true) {
+      case tabState.tabKey === OnyxTabKeys.USER:
+        setTitle("Profile");
+        break;
+      case tabState.tabKey === OnyxTabKeys.SITE:
+        setTitle("Site");
+        break;
+      case tabState.tabKey === OnyxTabKeys.RECORDS &&
+        tabState.recordTabKey === RecordTabKeys.LIST:
+        setTitle(`Records | ${project.name}`);
+        break;
+      case tabState.tabKey === OnyxTabKeys.RECORDS &&
+        tabState.recordTabKey === RecordTabKeys.DETAIL:
+        setTitle(`${tabState.recordID} | ${project.name}`);
+        break;
+      case tabState.tabKey === OnyxTabKeys.ANALYSES &&
+        tabState.analysisTabKey === AnalysisTabKeys.LIST:
+        setTitle(`Analyses | ${project.name}`);
+        break;
+      case tabState.tabKey === OnyxTabKeys.ANALYSES &&
+        tabState.analysisTabKey === AnalysisTabKeys.DETAIL:
+        setTitle(`${tabState.analysisID} | ${project.name}`);
+        break;
+      case tabState.tabKey === OnyxTabKeys.GRAPHS:
+        setTitle(`Graphs | ${project.name}`);
+        break;
+      default:
+        setTitle(project.name);
+    }
+  }, [tabState, project, setTitle]);
+
   // Query for types, lookups and project permissions
   const { data: typesResponse } = useTypesQuery(props);
   const { data: lookupsResponse } = useLookupsQuery(props);

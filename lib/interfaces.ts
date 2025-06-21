@@ -8,6 +8,7 @@ export interface OnyxProps {
   extVersion: string;
   getItem?: (key: string) => unknown;
   setItem?: (key: string, value: unknown) => void;
+  setTitle?: (title: string) => void;
 }
 
 export interface PageProps extends OnyxProps {
