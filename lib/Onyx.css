@@ -7,7 +7,7 @@
   --onyx-dropdown-option-background-color: var(--bs-white);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
   --onyx-dropdown-option-description-color: var(--bs-secondary);
-  --onyx-body-bg: var(--bs-white);
+  --onyx-body-bg: var(--bs-gray-100);
 }
 
 [data-bs-theme=dark] {
@@ -85,11 +85,11 @@
 }
 
 [data-bs-theme=light] .resizer {
-  background-color: var(--bs-gray-300);
+  background-color: var(--onyx-body-bg);
 }
 
 [data-bs-theme=dark] .resizer {
-  background-color: var(--bs-gray-900);
+  background-color: var(--onyx-body-bg);
 }
 
 .resizer::before {
