@@ -73,38 +73,10 @@
 .resizer {
   cursor: col-resize;
   height: 100%;
-  width: 14px;
+  width: 10px;
   position: absolute;
   top: 0;
-  right: -7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  border-radius: 7px;
-}
-
-[data-bs-theme=light] .resizer {
-  background-color: var(--onyx-body-bg);
-}
-
-[data-bs-theme=dark] .resizer {
-  background-color: var(--onyx-body-bg);
-}
-
-.resizer::before {
-  content: "||";
-  font-size: 12px;
-  font-weight: bold;
-  line-height: 1;
-}
-
-[data-bs-theme=light] .resizer::before {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-[data-bs-theme=dark] .resizer::before {
-  color: rgba(255, 255, 255, 0.7);
+  right: -10px;
 }
 
 [data-bs-theme=light] .onyx-border {
