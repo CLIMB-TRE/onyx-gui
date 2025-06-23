@@ -143,63 +143,55 @@ function Results(props: ResultsProps) {
         activeColumns={includeList}
         setActiveColumns={setIncludeList}
       />
-      <Stack direction="horizontal" className="h-100">
+      <Stack gap={2} direction="horizontal" className="h-100">
         {!sidebarCollapsed && (
-          <>
-            <div
-              className="h-100"
-              style={{
-                position: "relative",
-                width: sidebarWidth,
-                minWidth: sidebarWidth,
-                paddingRight: "10px",
-              }}
-            >
-              <Container fluid className="h-100 g-0">
-                <Stack gap={2} className="h-100">
-                  <SearchBar
+          <div
+            className="h-100"
+            style={{
+              position: "relative",
+              width: sidebarWidth,
+              minWidth: sidebarWidth,
+            }}
+          >
+            <Container fluid className="h-100 g-0">
+              <Stack gap={2} className="h-100">
+                <SearchBar
+                  {...props}
+                  placeholder={`Search ${props.title.toLowerCase()}...`}
+                  searchInput={searchInput}
+                  setSearchInput={setSearchInput}
+                  handleSearch={handleSearch}
+                />
+                <Stack gap={2} className="h-100 overflow-y-hidden">
+                  <FilterPanel
                     {...props}
-                    placeholder={`Search ${props.title.toLowerCase()}...`}
-                    searchInput={searchInput}
-                    setSearchInput={setSearchInput}
-                    handleSearch={handleSearch}
+                    filterList={filterList}
+                    setFilterList={setFilterList}
+                    filterFieldOptions={filterOptions}
                   />
-                  <Stack gap={2} className="h-100 overflow-y-hidden">
-                    <FilterPanel
-                      {...props}
-                      filterList={filterList}
-                      setFilterList={setFilterList}
-                      filterFieldOptions={filterOptions}
-                    />
-                    <SummarisePanel
-                      {...props}
-                      summariseList={summariseList}
-                      setSummariseList={setSummariseList}
-                      filterFieldOptions={filterOptions}
-                    />
-                    <CopyToClipboardButton
-                      size="sm"
-                      variant="dark"
-                      title="Copy CLI Command"
-                      onClick={handleCopyCLICommand}
-                      showTitle
-                    />
-                  </Stack>
+                  <SummarisePanel
+                    {...props}
+                    summariseList={summariseList}
+                    setSummariseList={setSummariseList}
+                    filterFieldOptions={filterOptions}
+                  />
+                  <CopyToClipboardButton
+                    size="sm"
+                    variant="dark"
+                    title="Copy CLI Command"
+                    onClick={handleCopyCLICommand}
+                    showTitle
+                  />
                 </Stack>
-              </Container>
-              <Resizer
-                defaultWidth={defaultWidth}
-                minWidth={220}
-                maxWidth={600}
-                setWidth={setSidebarWidth}
-              />
-            </div>
-            <div
-              style={{
-                paddingLeft: "10px",
-              }}
+              </Stack>
+            </Container>
+            <Resizer
+              defaultWidth={defaultWidth}
+              minWidth={220}
+              maxWidth={600}
+              setWidth={setSidebarWidth}
             />
-          </>
+          </div>
         )}
         <div className="h-100" style={{ flex: 1 }}>
           <Container fluid className="h-100 g-0">

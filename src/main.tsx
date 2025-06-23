@@ -8,6 +8,7 @@ import {
   extVersion,
   getItem,
   setItem,
+  setTitle,
 } from "./handlers.tsx";
 
 import "./font.css";
@@ -21,6 +22,7 @@ ReactDOM.render(
       extVersion={extVersion}
       getItem={getItem}
       setItem={setItem}
+      setTitle={setTitle}
     />
   </React.StrictMode>,
   document.getElementById("root")
