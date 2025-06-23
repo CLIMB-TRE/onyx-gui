@@ -49,5 +49,5 @@ export function setItem(key: string, value: unknown) {
 }
 
 export function setTitle(title: string) {
-  document.title = `${title.trim()} | Onyx`;
+  document.title = title;
 }

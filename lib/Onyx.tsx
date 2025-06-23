@@ -248,32 +248,32 @@ function App(props: OnyxProps) {
 
     switch (true) {
       case tabState.tabKey === OnyxTabKeys.USER:
-        setTitle("Profile");
+        setTitle("Onyx | Profile");
         break;
       case tabState.tabKey === OnyxTabKeys.SITE:
-        setTitle("Site");
+        setTitle("Onyx | Site");
         break;
       case tabState.tabKey === OnyxTabKeys.RECORDS &&
         tabState.recordTabKey === RecordTabKeys.LIST:
-        setTitle(`Records | ${project.name}`);
+        setTitle(`${project.name} | Records`);
         break;
       case tabState.tabKey === OnyxTabKeys.RECORDS &&
         tabState.recordTabKey === RecordTabKeys.DETAIL:
-        setTitle(`${tabState.recordID} | ${project.name}`);
+        setTitle(`${project.name} | ${tabState.recordID}`);
         break;
       case tabState.tabKey === OnyxTabKeys.ANALYSES &&
         tabState.analysisTabKey === AnalysisTabKeys.LIST:
-        setTitle(`Analyses | ${project.name}`);
+        setTitle(`${project.name} | Analyses`);
         break;
       case tabState.tabKey === OnyxTabKeys.ANALYSES &&
         tabState.analysisTabKey === AnalysisTabKeys.DETAIL:
-        setTitle(`${tabState.analysisID} | ${project.name}`);
+        setTitle(`${project.name} | ${tabState.analysisID}`);
         break;
       case tabState.tabKey === OnyxTabKeys.GRAPHS:
-        setTitle(`Graphs | ${project.name}`);
+        setTitle(`${project.name} | Graphs`);
         break;
       default:
-        setTitle(project.name);
+        setTitle(`Onyx | ${project.name}`);
     }
   }, [tabState, project, setTitle]);
 
