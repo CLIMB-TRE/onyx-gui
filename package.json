@@ -49,7 +49,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "^32.2.0",
+    "@ag-grid-community/client-side-row-model": "^32.3.3",
     "@ag-grid-community/core": "^32.2.0",
     "@ag-grid-community/csv-export": "^32.2.0",
     "@ag-grid-community/react": "^32.2.0",
