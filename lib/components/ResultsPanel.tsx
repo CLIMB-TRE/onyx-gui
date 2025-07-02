@@ -72,6 +72,10 @@ function ResultsPanel(props: ResultsPanelProps) {
 
   const fieldDescriptions = useFieldDescriptions(props.fields);
 
+  const isSummarise = useMemo(() => {
+    return props.searchParameters.includes("summarise=");
+  }, [props.searchParameters]);
+
   return (
     <Card className="h-100 overflow-y-auto">
       <Card.Header>
@@ -83,14 +87,23 @@ function ResultsPanel(props: ResultsPanelProps) {
               description={props.projectDescription}
             />
           </span>
-          <Button
-            size="sm"
-            variant="dark"
-            title="Edit Columns"
-            onClick={() => props.setColumnsModalShow(true)}
+          <div
+            title={
+              isSummarise
+                ? "Columns cannot be edited in summarised results"
+                : "Edit Columns"
+            }
           >
-            <MdTableRows /> Edit Columns
-          </Button>
+            <Button
+              disabled={isSummarise}
+              size="sm"
+              variant="dark"
+              title="Edit Columns"
+              onClick={() => props.setColumnsModalShow(true)}
+            >
+              <MdTableRows /> Edit Columns
+            </Button>
+          </div>
         </Stack>
       </Card.Header>
       <Card.Body className="h-100 p-2 overflow-y-auto">
