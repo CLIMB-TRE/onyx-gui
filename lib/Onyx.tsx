@@ -39,8 +39,8 @@ import {
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
 
 import "@fontsource/ibm-plex-sans";
+import "./Onyx.scss";
 import "./Onyx.css";
-import "./bootstrap.css";
 
 interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
