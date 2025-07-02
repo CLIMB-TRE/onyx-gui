@@ -7,7 +7,7 @@
   --onyx-dropdown-option-background-color: var(--bs-white);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
   --onyx-dropdown-option-description-color: var(--bs-secondary);
-  --onyx-body-bg: var(--bs-body-bg);
+  --onyx-body-bg: var(--bs-gray-100);
 }
 
 [data-bs-theme=dark] {
@@ -24,9 +24,9 @@
   --onyx-body-bg: var(--bs-body-bg);
 }
 
-[data-bs-theme=light] .card-header {
+/* [data-bs-theme=light] .card-header {
   --bs-card-cap-bg: var(--bs-secondary-bg);
-}
+} */
 
 [data-bs-theme=light] .btn-dark {
   --bs-btn-color: var(--bs-black);
