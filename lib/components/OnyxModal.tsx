@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback } from "react";
 import { Modal, ModalProps } from "react-bootstrap";
 
 interface OnyxModalProps extends Omit<ModalProps, "container"> {
@@ -10,17 +10,13 @@ interface OnyxModalProps extends Omit<ModalProps, "container"> {
  * to ensure Bootstrap styles are properly applied when scoped.
  */
 export function OnyxModal({ children, ...props }: OnyxModalProps) {
-  const [container, setContainer] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const onyxElement = document.querySelector(".Onyx");
-    if (onyxElement instanceof HTMLElement) {
-      setContainer(onyxElement);
-    }
+  const getOnyxContainer = useCallback((): HTMLElement | undefined => {
+    const element = document.querySelector(".onyx");
+    return element instanceof HTMLElement ? element : undefined;
   }, []);
 
   return (
-    <Modal {...props} container={container || undefined} centered>
+    <Modal {...props} container={getOnyxContainer()} centered>
       {children}
     </Modal>
   );
