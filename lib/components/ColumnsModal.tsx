@@ -135,7 +135,7 @@ function ColumnsModal(props: ColumnsModalProps) {
       <Modal.Footer>
         <Button
           className="me-auto"
-          variant="dark"
+          variant="secondary"
           onClick={() => {
             setActiveColumns(new Set(props.defaultColumns));
             setSelectAll(false);
@@ -145,7 +145,7 @@ function ColumnsModal(props: ColumnsModalProps) {
           Reset to Defaults
         </Button>
         <span className="text-muted px-2">{activeColumnsMessage}</span>
-        <Button variant="dark" onClick={props.onHide}>
+        <Button variant="secondary" onClick={props.onHide}>
           Cancel
         </Button>
         <Button onClick={handleApply}>Apply</Button>

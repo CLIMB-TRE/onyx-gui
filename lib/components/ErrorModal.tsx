@@ -62,7 +62,7 @@ function ErrorModal(props: ErrorModalProps) {
         <ErrorModalContents {...props} />
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={props.onHide}>
+        <Button variant="secondary" onClick={props.onHide}>
           Close
         </Button>
       </Modal.Footer>

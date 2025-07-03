@@ -38,7 +38,7 @@ function ProjectRecord(props: IDProps) {
           <Stack direction="horizontal" gap={2}>
             <Button
               size="sm"
-              variant="dark"
+              variant="secondary"
               title="Back to Records"
               onClick={props.onHide}
             >

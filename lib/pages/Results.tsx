@@ -177,7 +177,7 @@ function Results(props: ResultsProps) {
                   />
                   <CopyToClipboardButton
                     size="sm"
-                    variant="dark"
+                    variant="secondary"
                     title="Copy CLI Command"
                     onClick={handleCopyCLICommand}
                     showTitle

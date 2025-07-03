@@ -13,7 +13,7 @@
   --onyx-dropdown-option-description-color: var(--bs-secondary);
   --onyx-body-bg: var(--bs-gray-100);
 
-  .btn-dark {
+  .btn-secondary {
     --bs-btn-color: var(--bs-black);
     --bs-btn-bg: var(--bs-gray-300);
     --bs-btn-border-color: var(--bs-gray-500);
@@ -49,7 +49,7 @@
   --onyx-dropdown-option-description-color: var(--bs-gray-500);
   --onyx-body-bg: var(--bs-body-bg);
 
-  .btn-dark {
+  .btn-secondary {
     --bs-btn-bg:  var(--bs-gray-900);
     --bs-btn-border-color: var(--bs-gray-700);
     --bs-btn-disabled-bg: var(--bs-gray-900);

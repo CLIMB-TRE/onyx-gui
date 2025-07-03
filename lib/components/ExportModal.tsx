@@ -129,7 +129,7 @@ function ExportModal(props: ExportModalProps) {
               isInvalid={fileNameIsInvalid}
             />
             {props.fileExtensions ? (
-              <DropdownButton variant="dark" title={fileExtension}>
+              <DropdownButton variant="secondary" title={fileExtension}>
                 {props.fileExtensions?.map((ext) => (
                   <Dropdown.Item
                     key={ext}
@@ -203,7 +203,7 @@ function ExportModal(props: ExportModalProps) {
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={props.onHide}>
+        <Button variant="secondary" onClick={props.onHide}>
           Close
         </Button>
         {exportStatus === ExportStatus.READY && (

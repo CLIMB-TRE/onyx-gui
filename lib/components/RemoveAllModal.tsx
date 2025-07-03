@@ -27,7 +27,7 @@ function RemoveAllModal(props: RemoveAllModalProps) {
         </Stack>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={props.onHide}>
+        <Button variant="secondary" onClick={props.onHide}>
           Cancel
         </Button>
         <Button

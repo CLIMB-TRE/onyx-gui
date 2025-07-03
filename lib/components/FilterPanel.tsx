@@ -89,7 +89,7 @@ function FilterPanel(props: FilterPanelProps) {
           <span className="me-auto">Filter</span>
           <Button
             size="sm"
-            variant="dark"
+            variant="secondary"
             title="Add Filter"
             onClick={() => handleFilterAdd(props.filterList.length)}
           >
@@ -97,7 +97,7 @@ function FilterPanel(props: FilterPanelProps) {
           </Button>
           <Button
             size="sm"
-            variant="dark"
+            variant="secondary"
             title="Remove All Filters"
             onClick={() => setRemoveAllModalShow(true)}
           >
@@ -120,7 +120,7 @@ function FilterPanel(props: FilterPanelProps) {
               <Container key={filter.key} fluid className="g-0">
                 <ButtonGroup size="sm">
                   <Button
-                    variant="dark"
+                    variant="secondary"
                     onClick={() => handleEditMode(filter, index)}
                   >
                     <span className="onyx-text-pink font-monospace">
@@ -128,7 +128,7 @@ function FilterPanel(props: FilterPanelProps) {
                     </span>
                   </Button>
                   <Button
-                    variant="dark"
+                    variant="secondary"
                     title="Remove Filter"
                     onClick={() => handleFilterRemove(index)}
                   >
