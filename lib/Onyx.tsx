@@ -398,7 +398,7 @@ function App(props: OnyxProps) {
   }, [setTabState]);
 
   return (
-    <div className="Onyx h-100">
+    <div className="onyx h-100">
       <Header
         {...props}
         darkMode={darkMode}
