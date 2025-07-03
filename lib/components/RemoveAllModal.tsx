@@ -1,6 +1,7 @@
 import { Stack } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import OnyxModal from "./OnyxModal";
 
 interface RemoveAllModalProps {
   show: boolean;
@@ -11,12 +12,7 @@ interface RemoveAllModalProps {
 
 function RemoveAllModal(props: RemoveAllModalProps) {
   return (
-    <Modal
-      className="onyx-modal"
-      centered
-      show={props.show}
-      onHide={props.onHide}
-    >
+    <OnyxModal show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
         <Modal.Title>{`Remove All ${props.item}`}</Modal.Title>
       </Modal.Header>
@@ -40,7 +36,7 @@ function RemoveAllModal(props: RemoveAllModalProps) {
           Remove All
         </Button>
       </Modal.Footer>
-    </Modal>
+    </OnyxModal>
   );
 }
 

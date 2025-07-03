@@ -9,6 +9,7 @@ import { Field } from "../types";
 import { Field as FieldDetails } from "./Details";
 import { useDebouncedValue } from "../utils/hooks";
 import { Input } from "./Inputs";
+import OnyxModal from "./OnyxModal";
 
 interface ColumnsModalProps extends DataProps {
   show: boolean;
@@ -77,13 +78,7 @@ function ColumnsModal(props: ColumnsModalProps) {
   };
 
   return (
-    <Modal
-      size="lg"
-      className="onyx-modal"
-      centered
-      show={props.show}
-      onHide={props.onHide}
-    >
+    <OnyxModal size="lg" show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
         <Modal.Title>Edit Columns</Modal.Title>
       </Modal.Header>
@@ -150,7 +145,7 @@ function ColumnsModal(props: ColumnsModalProps) {
         </Button>
         <Button onClick={handleApply}>Apply</Button>
       </Modal.Footer>
-    </Modal>
+    </OnyxModal>
   );
 }
 
