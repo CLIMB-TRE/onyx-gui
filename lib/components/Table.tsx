@@ -380,7 +380,7 @@ function TableOptions(props: TableOptionsProps) {
         id="table-options"
         title="Options"
         size="sm"
-        variant="dark"
+        variant="secondary"
       >
         <Dropdown.Header>Column Controls</Dropdown.Header>
         <Dropdown.Item key="resetAllColumns" onClick={resetAllColumns}>

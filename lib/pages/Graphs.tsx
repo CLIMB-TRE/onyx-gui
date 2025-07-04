@@ -295,7 +295,7 @@ function GraphPanel(props: GraphPanelProps) {
           )}
           <Button
             size="sm"
-            variant="dark"
+            variant="secondary"
             disabled={props.firstGraph}
             title={
               props.viewMode === "list" ? "Move Graph Up" : "Move Graph Left"
@@ -306,7 +306,7 @@ function GraphPanel(props: GraphPanelProps) {
           </Button>
           <Button
             size="sm"
-            variant="dark"
+            variant="secondary"
             disabled={props.lastGraph}
             title={
               props.viewMode === "list" ? "Move Graph Down" : "Move Graph Right"
@@ -321,7 +321,7 @@ function GraphPanel(props: GraphPanelProps) {
           </Button>
           <Button
             size="sm"
-            variant="dark"
+            variant="secondary"
             title="Remove Graph"
             onClick={props.handleGraphConfigRemove}
           >
@@ -540,7 +540,7 @@ function Graphs(props: DataProps) {
             </span>
             <Button
               size="sm"
-              variant="dark"
+              variant="secondary"
               title="Add Graph"
               onClick={() => handleGraphConfigAdd(0)}
             >
@@ -548,7 +548,7 @@ function Graphs(props: DataProps) {
             </Button>
             <Button
               size="sm"
-              variant="dark"
+              variant="secondary"
               title="Refresh Graphs"
               onClick={handleRefresh}
             >
@@ -556,7 +556,7 @@ function Graphs(props: DataProps) {
             </Button>
             <Button
               size="sm"
-              variant="dark"
+              variant="secondary"
               title="Remove All Graphs"
               onClick={() => setRemoveAllModalShow(true)}
             >
@@ -564,7 +564,7 @@ function Graphs(props: DataProps) {
             </Button>
             <Button
               size="sm"
-              variant="dark"
+              variant="secondary"
               title={`Switch to ${viewMode === "grid" ? "List" : "Grid"} View`}
               onClick={() =>
                 viewMode === "grid" ? setViewMode("list") : setViewMode("grid")
@@ -574,7 +574,7 @@ function Graphs(props: DataProps) {
             </Button>
             <Button
               size="sm"
-              variant="dark"
+              variant="secondary"
               title={`${showOptions ? "Hide" : "Show"} Graph Options`}
               onClick={() => setShowOptions(!showOptions)}
             >

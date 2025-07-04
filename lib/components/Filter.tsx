@@ -249,7 +249,7 @@ function Filter(props: FilterProps) {
         <div className="me-auto"></div>
         <Button
           size="sm"
-          variant="dark"
+          variant="secondary"
           onClick={() => props.setEditMode(false)}
         >
           Cancel

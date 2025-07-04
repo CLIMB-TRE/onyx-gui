@@ -34,20 +34,18 @@ const Option = (props: OptionProps) => {
   const splitLabel = props.label.split("|", 2);
 
   return (
-    <div className="onyx-modal">
-      <small>
-        <components.Option {...props}>
-          {splitLabel.length > 0 && <div>{splitLabel[0]}</div>}
-          {splitLabel.length > 1 && (
-            <div
-              style={{ color: "var(--onyx-dropdown-option-description-color)" }}
-            >
-              {splitLabel[1]}
-            </div>
-          )}
-        </components.Option>
-      </small>
-    </div>
+    <small>
+      <components.Option {...props}>
+        {splitLabel.length > 0 && <div>{splitLabel[0]}</div>}
+        {splitLabel.length > 1 && (
+          <div
+            style={{ color: "var(--onyx-dropdown-option-description-color)" }}
+          >
+            {splitLabel[1]}
+          </div>
+        )}
+      </components.Option>
+    </small>
   );
 };
 

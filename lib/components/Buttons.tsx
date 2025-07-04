@@ -16,7 +16,7 @@ function SidebarButton(props: SidebarButtonProps) {
   return (
     <Button
       size="sm"
-      variant="dark"
+      variant="secondary"
       title={props.sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
       onClick={() => props.setSidebarCollapsed(!props.sidebarCollapsed)}
     >
@@ -52,7 +52,7 @@ function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
   return (
     <Button
       size="sm"
-      variant="dark"
+      variant="secondary"
       title={props.title || "Copy to Clipboard"}
       onClick={handleCopy}
     >

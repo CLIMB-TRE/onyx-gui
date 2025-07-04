@@ -97,7 +97,7 @@ function ResultsPanel(props: ResultsPanelProps) {
             <Button
               disabled={isSummarise}
               size="sm"
-              variant="dark"
+              variant="secondary"
               title="Edit Columns"
               onClick={() => props.setColumnsModalShow(true)}
             >
