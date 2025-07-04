@@ -12,7 +12,7 @@ import { BaseSpinner } from "./QueryHandler";
 import { ExportStatus } from "../types";
 import { ErrorModalContents } from "./ErrorModal";
 import { defaultExportProgressMessage } from "../utils/messages";
-import OnyxModal from "./OnyxModal";
+import ContainerModal from "./ContainerModal";
 
 interface ExportModalProps {
   show: boolean;
@@ -96,7 +96,7 @@ function ExportModal(props: ExportModalProps) {
   };
 
   return (
-    <OnyxModal
+    <ContainerModal
       show={props.show}
       onHide={props.onHide}
       onExited={() => {
@@ -231,7 +231,7 @@ function ExportModal(props: ExportModalProps) {
           </Button>
         )}
       </Modal.Footer>
-    </OnyxModal>
+    </ContainerModal>
   );
 }
 

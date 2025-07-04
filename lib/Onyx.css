@@ -79,7 +79,7 @@
   font-size: var(--bs-body-font-size);
   font-family: var(--bs-body-font-family);
   font-weight: var(--bs-body-font-weight);
-  /* line-height: var(--bs-body-line-height); */
+  line-height: var(--bs-body-line-height);
   color: var(--bs-body-color);
   text-align: var(--bs-body-text-align);
   background-color: var(--onyx-body-bg);
