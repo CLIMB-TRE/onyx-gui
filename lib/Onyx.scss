@@ -43,6 +43,14 @@
     @import "../node_modules/bootstrap/scss/spinners";
     // @import "../node_modules/bootstrap/scss/offcanvas";
     // @import "../node_modules/bootstrap/scss/placeholders";
+
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 // Helpers
