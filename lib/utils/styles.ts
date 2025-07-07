@@ -8,7 +8,12 @@ const selectStyles: StylesConfig = {
     borderColor: "var(--onyx-dropdown-control-border-color)",
     backgroundColor: "var(--onyx-dropdown-control-background-color)",
   }),
-  menuPortal: (styles) => ({ ...styles, zIndex: 9999 }),
+  menuPortal: (styles) => ({
+    ...styles,
+    zIndex: 9999,
+    fontSize: "var(--bs-body-font-size)",
+    fontFamily: "var(--onyx-body-font-family)",
+  }),
   menu: (styles) => ({
     ...styles,
     width: "100%",

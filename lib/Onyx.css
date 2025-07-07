@@ -11,6 +11,7 @@
   --onyx-dropdown-option-background-color: var(--bs-white);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
   --onyx-dropdown-option-description-color: var(--bs-secondary);
+  --onyx-body-font-family: var(--bs-font-sans-serif);
   --onyx-body-bg: var(--bs-gray-100);
 
   .btn-secondary {
@@ -47,6 +48,7 @@
   --onyx-dropdown-option-background-color: var(--bs-body-bg);
   --onyx-dropdown-option-hover-background-color: var(--bs-gray-800);
   --onyx-dropdown-option-description-color: var(--bs-gray-500);
+  --onyx-body-font-family: var(--bs-font-sans-serif);
   --onyx-body-bg: var(--bs-body-bg);
 
   .btn-secondary {
@@ -77,7 +79,7 @@
 
 .onyx {
   font-size: var(--bs-body-font-size);
-  font-family: var(--bs-body-font-family);
+  font-family: var(--onyx-body-font-family);
   font-weight: var(--bs-body-font-weight);
   line-height: var(--bs-body-line-height);
   color: var(--bs-body-color);
