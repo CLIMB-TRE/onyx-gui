@@ -415,7 +415,7 @@ function App(props: OnyxProps) {
         handleAnalysisHide={handleAnalysisHide}
         handleRecentlyViewed={handleRecentlyViewed}
       />
-      <Container style={{ height: "calc(100% - 60px)" }} fluid className="p-2">
+      <Container fluid className="onyx-content p-2">
         {!project ? (
           <LandingPage />
         ) : (
