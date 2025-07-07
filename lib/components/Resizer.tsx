@@ -4,12 +4,13 @@ interface ResizerProps {
   defaultWidth: number;
   minWidth: number;
   maxWidth: number;
-  setWidth: (width: number) => void;
+  children?: React.ReactNode;
 }
 
 export default function Resizer(props: ResizerProps) {
   const [isResizing, setIsResizing] = useState(false);
   const resizerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(props.defaultWidth);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -30,14 +31,14 @@ export default function Resizer(props: ResizerProps) {
       const newWidth = e.clientX - containerRect.left;
 
       if (newWidth >= props.minWidth && newWidth <= props.maxWidth) {
-        props.setWidth(newWidth);
+        setWidth(newWidth);
       }
     },
     [isResizing, props]
   );
 
   // Reset to default width
-  const handleDoubleClick = () => props.setWidth(props.defaultWidth);
+  const handleDoubleClick = () => setWidth(props.defaultWidth);
 
   // Add/remove event listeners when user starts/stops resizing
   useEffect(() => {
@@ -64,10 +65,20 @@ export default function Resizer(props: ResizerProps) {
 
   return (
     <div
-      ref={resizerRef}
-      className="resizer"
-      onMouseDown={handleMouseDown}
-      onDoubleClick={handleDoubleClick}
-    />
+      className="h-100"
+      style={{
+        position: "relative",
+        width: width,
+        minWidth: width,
+      }}
+    >
+      {props.children}
+      <div
+        ref={resizerRef}
+        className="resizer"
+        onMouseDown={handleMouseDown}
+        onDoubleClick={handleDoubleClick}
+      />
+    </div>
   );
 }
