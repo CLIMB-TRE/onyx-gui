@@ -149,7 +149,7 @@ function User(props: ProjectProps) {
   return (
     <Container fluid className="g-0 h-100">
       <Row className="g-2 h-100">
-        <Col xs={5} sm={3} xl={2} className="h-100">
+        <Col md={4} lg={3} xl={2} className="h-100">
           <Stack gap={2} className="h-100">
             <div className="h-25">
               <Details {...props} />
@@ -159,7 +159,7 @@ function User(props: ProjectProps) {
             </div>
           </Stack>
         </Col>
-        <Col xs={7} sm={9} xl={10} className="h-100">
+        <Col md={8} lg={9} xl={10} className="h-100">
           <Activity {...props} />
         </Col>
       </Row>
