@@ -39,7 +39,6 @@ function Results(props: ResultsProps) {
 
   const defaultWidth = 300;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(defaultWidth);
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 
   const filterOptions = useMemo(
@@ -145,14 +144,7 @@ function Results(props: ResultsProps) {
       />
       <Stack gap={2} direction="horizontal" className="h-100">
         {!sidebarCollapsed && (
-          <div
-            className="h-100"
-            style={{
-              position: "relative",
-              width: sidebarWidth,
-              minWidth: sidebarWidth,
-            }}
-          >
+          <Resizer defaultWidth={defaultWidth} minWidth={220} maxWidth={600}>
             <Container fluid className="h-100 g-0">
               <Stack gap={2} className="h-100">
                 <SearchBar
@@ -177,7 +169,7 @@ function Results(props: ResultsProps) {
                   />
                   <CopyToClipboardButton
                     size="sm"
-                    variant="dark"
+                    variant="secondary"
                     title="Copy CLI Command"
                     onClick={handleCopyCLICommand}
                     showTitle
@@ -185,13 +177,7 @@ function Results(props: ResultsProps) {
                 </Stack>
               </Stack>
             </Container>
-            <Resizer
-              defaultWidth={defaultWidth}
-              minWidth={220}
-              maxWidth={600}
-              setWidth={setSidebarWidth}
-            />
-          </div>
+          </Resizer>
         )}
         <div className="h-100" style={{ flex: 1 }}>
           <Container fluid className="h-100 g-0">

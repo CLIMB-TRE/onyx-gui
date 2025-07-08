@@ -11,7 +11,7 @@ import {
   setTitle,
 } from "./handlers.tsx";
 
-import "./font.css";
+import "./main.css";
 
 ReactDOM.render(
   <React.StrictMode>

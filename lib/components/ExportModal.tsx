@@ -12,6 +12,7 @@ import { BaseSpinner } from "./QueryHandler";
 import { ExportStatus } from "../types";
 import { ErrorModalContents } from "./ErrorModal";
 import { defaultExportProgressMessage } from "../utils/messages";
+import ContainerModal from "./ContainerModal";
 
 interface ExportModalProps {
   show: boolean;
@@ -95,9 +96,7 @@ function ExportModal(props: ExportModalProps) {
   };
 
   return (
-    <Modal
-      className="onyx-modal"
-      centered
+    <ContainerModal
       show={props.show}
       onHide={props.onHide}
       onExited={() => {
@@ -129,7 +128,7 @@ function ExportModal(props: ExportModalProps) {
               isInvalid={fileNameIsInvalid}
             />
             {props.fileExtensions ? (
-              <DropdownButton variant="dark" title={fileExtension}>
+              <DropdownButton variant="secondary" title={fileExtension}>
                 {props.fileExtensions?.map((ext) => (
                   <Dropdown.Item
                     key={ext}
@@ -203,7 +202,7 @@ function ExportModal(props: ExportModalProps) {
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={props.onHide}>
+        <Button variant="secondary" onClick={props.onHide}>
           Close
         </Button>
         {exportStatus === ExportStatus.READY && (
@@ -232,7 +231,7 @@ function ExportModal(props: ExportModalProps) {
           </Button>
         )}
       </Modal.Footer>
-    </Modal>
+    </ContainerModal>
   );
 }
 

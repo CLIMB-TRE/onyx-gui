@@ -169,8 +169,6 @@ function HTTPMethodCellRenderer(props: CustomCellRendererProps) {
       );
     case "POST":
       return <Badge bg="success">{method}</Badge>;
-    case "PUT":
-      return <Badge bg="primary">{method}</Badge>;
     case "PATCH":
       return (
         <Badge bg="warning" text="dark">
