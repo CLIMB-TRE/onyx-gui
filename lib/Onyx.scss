@@ -42,6 +42,14 @@ $theme-colors: map-merge($theme-colors, $custom-theme);
     @import "../node_modules/bootstrap/scss/modal";
     @import "../node_modules/bootstrap/scss/spinners";
 
+ // Fix pagination disabled state
+  .page-item.disabled .page-link {
+      color: var(--bs-pagination-disabled-color) !important;
+      pointer-events: none !important;
+      background-color: var(--bs-pagination-disabled-bg) !important;
+      border-color: var(--bs-pagination-disabled-border-color) !important;
+  }
+
   .modal-backdrop {
     position: fixed;
     top: 0;
