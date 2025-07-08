@@ -1,7 +1,3 @@
-:root {
-  --bs-font-sans-serif: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-}
-
 [data-bs-theme=light] {
   --onyx-dropdown-control-border-color: var(--bs-gray-300);
   --onyx-dropdown-control-background-color: var(--bs-white);
@@ -75,18 +71,6 @@
 .ag-theme-quartz {
   --ag-background-color: var(--bs-body-bg);
   --ag-foreground-color: var(--bs-body-color);
-}
-
-.onyx {
-  font-size: var(--bs-body-font-size);
-  font-family: var(--onyx-body-font-family);
-  font-weight: var(--bs-body-font-weight);
-  line-height: var(--bs-body-line-height);
-  color: var(--bs-body-color);
-  text-align: var(--bs-body-text-align);
-  background-color: var(--onyx-body-bg);
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 .onyx-text-pink {
