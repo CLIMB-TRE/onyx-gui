@@ -12,7 +12,7 @@ const selectStyles: StylesConfig = {
     ...styles,
     zIndex: 9999,
     fontSize: "var(--bs-body-font-size)",
-    fontFamily: "var(--onyx-body-font-family)",
+    fontFamily: "var(--bs-body-font-family)",
   }),
   menu: (styles) => ({
     ...styles,
