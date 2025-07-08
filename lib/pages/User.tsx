@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import Badge from "react-bootstrap/Badge";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -43,7 +44,7 @@ function Details(props: ProjectProps) {
       <Card.Body className="h-100 p-2 overflow-y-auto">
         <QueryHandler isFetching={isFetching} error={error} data={data}>
           <Container>
-            <DataField name="Username" value={profile.username} />
+            <DataField name="User" value={profile.username} />
             <DataField name="Site" value={profile.site} />
             <DataField name="Email" value={profile.email} />
           </Container>
@@ -69,16 +70,18 @@ function ProjectPermissions(props: ProjectProps) {
           <Stack gap={2}>
             {projectPermissions.map((project, index: number) => (
               <Card body key={index}>
-                <DataField name="Project" value={project.project} />
+                <DataField name="Project" value={project.name} />
                 <DataField name="Scope" value={project.scope} />
                 <DataField
                   name="Actions"
                   value={
-                    <ul>
+                    <div className="d-flex flex-wrap gap-1">
                       {project.actions?.map((action, i) => (
-                        <li key={i}>{action}</li>
+                        <Badge key={i} bg="info" text="dark">
+                          {action}
+                        </Badge>
                       ))}
-                    </ul>
+                    </div>
                   }
                 />
               </Card>
@@ -149,7 +152,7 @@ function User(props: ProjectProps) {
   return (
     <Container fluid className="g-0 h-100">
       <Row className="g-2 h-100">
-        <Col xs={5} sm={3} xl={2} className="h-100">
+        <Col md={4} lg={3} xl={2} className="h-100">
           <Stack gap={2} className="h-100">
             <div className="h-25">
               <Details {...props} />
@@ -159,7 +162,7 @@ function User(props: ProjectProps) {
             </div>
           </Stack>
         </Col>
-        <Col xs={7} sm={9} xl={10} className="h-100">
+        <Col md={8} lg={9} xl={10} className="h-100">
           <Activity {...props} />
         </Col>
       </Row>

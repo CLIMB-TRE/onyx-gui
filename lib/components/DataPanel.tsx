@@ -153,7 +153,7 @@ function DataPanel(props: DataPanelProps) {
               <hr />
               <Button
                 size="sm"
-                variant="dark"
+                variant="secondary"
                 onClick={() => setExportModalShow(true)}
               >
                 Export to JSON

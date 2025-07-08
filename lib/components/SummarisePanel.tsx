@@ -44,7 +44,7 @@ function SummarisePanel(props: SummarisePanelProps) {
           <span className="me-auto">Summarise</span>
           <Button
             size="sm"
-            variant="dark"
+            variant="secondary"
             title="Edit Fields"
             onClick={() => setEditMode(true)}
           >
@@ -52,7 +52,7 @@ function SummarisePanel(props: SummarisePanelProps) {
           </Button>
           <Button
             size="sm"
-            variant="dark"
+            variant="secondary"
             title="Remove All Fields"
             onClick={() => setRemoveAllModalShow(true)}
           >
@@ -74,13 +74,13 @@ function SummarisePanel(props: SummarisePanelProps) {
             {props.summariseList.map((field, index) => (
               <Container key={field} fluid className="g-0">
                 <ButtonGroup size="sm">
-                  <Button variant="dark" onClick={() => setEditMode(true)}>
+                  <Button variant="secondary" onClick={() => setEditMode(true)}>
                     <span className="onyx-text-pink font-monospace">
                       {formatField(field)}
                     </span>
                   </Button>
                   <Button
-                    variant="dark"
+                    variant="secondary"
                     title="Remove Field"
                     onClick={() => handleSummariseRemove(index)}
                   >

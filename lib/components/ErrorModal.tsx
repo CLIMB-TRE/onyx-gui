@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import { errorModalMessage } from "../utils/messages";
+import ContainerModal from "./ContainerModal";
 
 interface ErrorModalContentsProps {
   error: Error | null;
@@ -49,12 +50,7 @@ function ErrorModalContents(props: ErrorModalContentsProps) {
 
 function ErrorModal(props: ErrorModalProps) {
   return (
-    <Modal
-      className="onyx-modal"
-      centered
-      show={props.show}
-      onHide={props.onHide}
-    >
+    <ContainerModal show={props.show} onHide={props.onHide}>
       <Modal.Header closeButton>
         <Modal.Title>{props.title}</Modal.Title>
       </Modal.Header>
@@ -62,11 +58,11 @@ function ErrorModal(props: ErrorModalProps) {
         <ErrorModalContents {...props} />
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={props.onHide}>
+        <Button variant="secondary" onClick={props.onHide}>
           Close
         </Button>
       </Modal.Footer>
-    </Modal>
+    </ContainerModal>
   );
 }
 

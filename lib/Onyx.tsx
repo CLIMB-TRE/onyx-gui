@@ -39,8 +39,8 @@ import {
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
 
 import "@fontsource/ibm-plex-sans";
+import "./Onyx.scss";
 import "./Onyx.css";
-import "./bootstrap.css";
 
 interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
@@ -398,7 +398,7 @@ function App(props: OnyxProps) {
   }, [setTabState]);
 
   return (
-    <div className="Onyx h-100">
+    <div className="onyx h-100">
       <Header
         {...props}
         darkMode={darkMode}
@@ -415,7 +415,7 @@ function App(props: OnyxProps) {
         handleAnalysisHide={handleAnalysisHide}
         handleRecentlyViewed={handleRecentlyViewed}
       />
-      <Container style={{ height: "calc(100% - 60px)" }} fluid className="p-2">
+      <Container fluid className="onyx-content p-2">
         {!project ? (
           <LandingPage />
         ) : (
