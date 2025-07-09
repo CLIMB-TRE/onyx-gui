@@ -367,7 +367,7 @@ function TableOptions(props: TableOptionsProps) {
   };
 
   return (
-    <Pagination size="sm">
+    <>
       <ExportModal
         {...props}
         defaultFileExtension=".csv"
@@ -407,7 +407,7 @@ function TableOptions(props: TableOptionsProps) {
           Export to CSV/TSV
         </Dropdown.Item>
       </DropdownButton>
-    </Pagination>
+    </>
   );
 }
 
