@@ -51,7 +51,7 @@ function ErrorModalContents(props: ErrorModalContentsProps) {
 function ErrorModal(props: ErrorModalProps) {
   return (
     <ContainerModal show={props.show} onHide={props.onHide}>
-      <Modal.Header closeButton>
+      <Modal.Header closeButton className="px-4">
         <Modal.Title>{props.title}</Modal.Title>
       </Modal.Header>
       <Modal.Body>

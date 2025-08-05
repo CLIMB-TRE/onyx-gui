@@ -79,7 +79,7 @@ function ColumnsModal(props: ColumnsModalProps) {
 
   return (
     <ContainerModal size="lg" show={props.show} onHide={props.onHide}>
-      <Modal.Header closeButton>
+      <Modal.Header closeButton className="px-4">
         <Modal.Title>Edit Columns</Modal.Title>
       </Modal.Header>
       <Modal.Body>

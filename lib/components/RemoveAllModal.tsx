@@ -13,7 +13,7 @@ interface RemoveAllModalProps {
 function RemoveAllModal(props: RemoveAllModalProps) {
   return (
     <ContainerModal show={props.show} onHide={props.onHide}>
-      <Modal.Header closeButton>
+      <Modal.Header closeButton className="px-4">
         <Modal.Title>{`Remove All ${props.item}`}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="text-center">
