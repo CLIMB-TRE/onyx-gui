@@ -59,6 +59,8 @@ function Dropdown(props: DropdownProps) {
     <Select
       menuPosition="fixed"
       isClearable={props.isClearable}
+      menuShouldBlockScroll
+      minMenuHeight={250}
       isDisabled={props.isDisabled}
       components={{ Option }}
       menuPortalTarget={document.body}
@@ -98,6 +100,8 @@ function MultiDropdown(props: MultiDropdownProps) {
     <Select
       isMulti
       menuPosition="fixed"
+      menuShouldBlockScroll
+      minMenuHeight={250}
       closeMenuOnSelect={false}
       components={{ Option }}
       menuPortalTarget={document.body}
