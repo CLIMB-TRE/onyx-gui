@@ -107,7 +107,7 @@ function ExportModal(props: ExportModalProps) {
           setExportStatus(ExportStatus.READY);
       }}
     >
-      <Modal.Header closeButton>
+      <Modal.Header closeButton className="px-4">
         <Modal.Title>Export Data</Modal.Title>
       </Modal.Header>
       <Modal.Body>
