@@ -1,3 +1,5 @@
+![Onyx Banner Image](images/onyx.png)
+
 # Onyx Graphical User Interface
 
 ## Overview
