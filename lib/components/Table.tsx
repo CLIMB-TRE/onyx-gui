@@ -23,7 +23,7 @@ import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 import { useCountQuery } from "../api";
 import { ExportHandlerProps, OnyxProps, ProjectProps } from "../interfaces";
-import { ExportStatus, RecordType, ListResponse } from "../types";
+import { ExportStatus, RecordType, ListResponse, Field } from "../types";
 import ExportModal from "./ExportModal";
 import { formatResponseStatus } from "../utils/functions";
 
@@ -80,6 +80,7 @@ interface TableProps extends OnyxProps {
   defaultSort?: Map<string, SortDirection>;
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
+  fields?: Map<string, Field>;
 }
 
 interface ClientTableProps extends TableProps {
@@ -163,9 +164,8 @@ function getColDefs(
       if (props.cellRenderers?.get(key))
         colDef.cellRenderer = props.cellRenderers.get(key);
 
-      if (key === "climb_id" || key === "analysis_id") {
-        // 'climb_id' and 'analysis_id' fields are a special case
-        // where we want them pinned to the left
+      if (props.fields?.get(key)?.type === "id") {
+        // ID fields pinned to the left
         colDef.pinned = "left";
       } else if (key === "changes" || key === "error_messages") {
         // History 'changes' field is a special case

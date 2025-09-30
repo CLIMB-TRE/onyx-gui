@@ -127,6 +127,7 @@ function ResultsPanel(props: ResultsPanelProps) {
               defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={fieldDescriptions}
               cellRenderers={cellRenderers}
+              fields={props.fields}
             />
           ) : (
             <Table
@@ -135,6 +136,7 @@ function ResultsPanel(props: ResultsPanelProps) {
               defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={fieldDescriptions}
               cellRenderers={cellRenderers}
+              fields={props.fields}
             />
           )}
         </QueryHandler>
