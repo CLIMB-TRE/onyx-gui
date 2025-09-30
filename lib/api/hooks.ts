@@ -27,7 +27,7 @@ function flattenFields(fields: Record<string, Field>) {
   return flatFields;
 }
 
-const useFieldsInfo = (
+export const useFieldsInfo = (
   data: DetailResponse<Fields> | ErrorResponse | undefined
 ) => {
   return useMemo(() => {
@@ -56,7 +56,7 @@ const useFieldsInfo = (
   }, [data]);
 };
 
-const useFieldDescriptions = (fields: Map<string, Field>) => {
+export const useFieldDescriptions = (fields: Map<string, Field>) => {
   return useMemo(() => {
     // Get a map of field names to their descriptions
     return new Map(
@@ -65,7 +65,7 @@ const useFieldDescriptions = (fields: Map<string, Field>) => {
   }, [fields]);
 };
 
-const useChoiceDescriptions = (
+export const useChoiceDescriptions = (
   data: DetailResponse<Choices> | ErrorResponse | undefined
 ) => {
   // Get a map of choices to their descriptions
@@ -80,7 +80,7 @@ const useChoiceDescriptions = (
   }, [data]);
 };
 
-const useChoicesDescriptions = (
+export const useChoicesDescriptions = (
   fields: string[],
   data: (DetailResponse<Choices> | ErrorResponse)[]
 ) => {
@@ -103,9 +103,16 @@ const useChoicesDescriptions = (
   }, [fields, data]);
 };
 
-export {
-  useChoiceDescriptions,
-  useChoicesDescriptions,
-  useFieldsInfo,
-  useFieldDescriptions,
+export const useIDFields = (fields: Map<string, Field>) => {
+  return useMemo(() => {
+    // TODO: Not the best way of doing this but works for now with minimal changes
+    let recordIDField = "climb_id";
+    const analysisIDField = "analysis_id";
+
+    for (const [fieldName, field] of fields) {
+      if (field.type === "id" && field.code !== analysisIDField)
+        recordIDField = fieldName;
+    }
+    return [recordIDField, analysisIDField];
+  }, [fields]);
 };

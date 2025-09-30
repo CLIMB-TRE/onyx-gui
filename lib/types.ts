@@ -82,6 +82,7 @@ export type RecentlyViewed = {
 };
 
 export type FieldType =
+  | "id"
   | "text"
   | "choice"
   | "integer"

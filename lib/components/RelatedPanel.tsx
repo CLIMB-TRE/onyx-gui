@@ -11,6 +11,7 @@ import Table from "../components/Table";
 import { IDProps } from "../interfaces";
 import { ErrorResponse, RecordType, ListResponse } from "../types";
 import { s3BucketsMessage } from "../utils/messages";
+import { useIDFields } from "../api/hooks";
 
 interface RelatedPanelProps extends IDProps {
   queryHook: (
@@ -45,6 +46,8 @@ function RelatedPanel(props: RelatedPanelProps) {
     return data.data;
   }, [data]);
 
+  const [recordIDField, analysisIDField] = useIDFields(props.fields);
+
   return (
     <QueryHandler isFetching={isFetching} error={error} data={data}>
       <>
@@ -63,8 +66,8 @@ function RelatedPanel(props: RelatedPanelProps) {
           footer={props.description}
           cellRenderers={
             new Map([
-              ["climb_id", RecordIDCellRendererFactory(props)],
-              ["analysis_id", AnalysisIDCellRendererFactory(props)],
+              [recordIDField, RecordIDCellRendererFactory(props)],
+              [analysisIDField, AnalysisIDCellRendererFactory(props)],
               ["report", S3ReportCellRendererFactory(errorModalProps)],
             ])
           }
