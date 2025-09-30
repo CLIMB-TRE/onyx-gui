@@ -10,7 +10,7 @@ import { s3BucketsMessage } from "../utils/messages";
 import { SidebarButton } from "./Buttons";
 import {
   AnalysisIDCellRendererFactory,
-  ClimbIDCellRendererFactory,
+  RecordIDCellRendererFactory,
   S3ReportCellRendererFactory,
 } from "./CellRenderers";
 import ErrorModal from "./ErrorModal";
@@ -64,7 +64,7 @@ function ResultsPanel(props: ResultsPanelProps) {
   );
 
   const cellRenderers = new Map([
-    ["climb_id", ClimbIDCellRendererFactory(props)],
+    ["climb_id", RecordIDCellRendererFactory(props)],
     ["analysis_id", AnalysisIDCellRendererFactory(props)],
     ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
     ["report", S3ReportCellRendererFactory(errorModalProps)],

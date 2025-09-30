@@ -15,7 +15,7 @@ interface IDModalProps {
   handleAnalysisShow: (analysisID: string) => void;
 }
 
-function ClimbIDCellRendererFactory(props: IDModalProps) {
+export function RecordIDCellRendererFactory(props: IDModalProps) {
   return (cellRendererProps: CustomCellRendererProps) => {
     return (
       <Button
@@ -30,7 +30,7 @@ function ClimbIDCellRendererFactory(props: IDModalProps) {
   };
 }
 
-function AnalysisIDCellRendererFactory(props: IDModalProps) {
+export function AnalysisIDCellRendererFactory(props: IDModalProps) {
   return (cellRendererProps: CustomCellRendererProps) => {
     return (
       <Button
@@ -45,7 +45,7 @@ function AnalysisIDCellRendererFactory(props: IDModalProps) {
   };
 }
 
-function S3ReportCellRendererFactory(props: ErrorModalProps) {
+export function S3ReportCellRendererFactory(props: ErrorModalProps) {
   return (cellRendererProps: CustomCellRendererProps) => {
     return (
       <Button
@@ -64,12 +64,12 @@ function S3ReportCellRendererFactory(props: ErrorModalProps) {
   };
 }
 
-function TimestampCellRenderer(props: CustomCellRendererProps) {
+export function TimestampCellRenderer(props: CustomCellRendererProps) {
   const date = new Date(props.value.toString());
   return <span>{date.toUTCString()}</span>;
 }
 
-function ActionCellRenderer(props: CustomCellRendererProps) {
+export function ActionCellRenderer(props: CustomCellRendererProps) {
   const action = props.value.toString().toLowerCase();
 
   // Change text colour based on action type
@@ -88,7 +88,7 @@ function ActionCellRenderer(props: CustomCellRendererProps) {
   }
 }
 
-function ChangeCellRenderer(props: CustomCellRendererProps) {
+export function ChangeCellRenderer(props: CustomCellRendererProps) {
   const changes = JSON.parse(props.value);
 
   return (
@@ -131,7 +131,7 @@ function ChangeCellRenderer(props: CustomCellRendererProps) {
   );
 }
 
-function HTTPStatusCellRenderer(props: CustomCellRendererProps) {
+export function HTTPStatusCellRenderer(props: CustomCellRendererProps) {
   const status = Number(props.value.toString());
   const statusString = `${status} (${getReasonPhrase(status)})`;
 
@@ -157,7 +157,7 @@ function HTTPStatusCellRenderer(props: CustomCellRendererProps) {
   }
 }
 
-function HTTPMethodCellRenderer(props: CustomCellRendererProps) {
+export function HTTPMethodCellRenderer(props: CustomCellRendererProps) {
   const method = props.value.toString().toUpperCase();
 
   switch (method) {
@@ -182,7 +182,7 @@ function HTTPMethodCellRenderer(props: CustomCellRendererProps) {
   }
 }
 
-function JSONCellRenderer(props: CustomCellRendererProps) {
+export function JSONCellRenderer(props: CustomCellRendererProps) {
   if (props.value) {
     const value = props.value.slice(2, -1);
 
@@ -201,15 +201,3 @@ function JSONCellRenderer(props: CustomCellRendererProps) {
     );
   } else return <></>;
 }
-
-export {
-  ActionCellRenderer,
-  AnalysisIDCellRendererFactory,
-  ChangeCellRenderer,
-  ClimbIDCellRendererFactory,
-  HTTPMethodCellRenderer,
-  HTTPStatusCellRenderer,
-  JSONCellRenderer,
-  S3ReportCellRendererFactory,
-  TimestampCellRenderer,
-};

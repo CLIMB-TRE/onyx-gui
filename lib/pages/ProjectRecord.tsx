@@ -45,7 +45,7 @@ function ProjectRecord(props: IDProps) {
               <MdArrowBackIosNew />
             </Button>
             <big className="me-auto">
-              CLIMB ID: <span className="onyx-text-pink">{props.ID}</span>
+              Record ID: <span className="onyx-text-pink">{props.ID}</span>
             </big>
             {!published && <UnpublishedBadge />}
           </Stack>

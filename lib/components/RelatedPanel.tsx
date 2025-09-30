@@ -2,7 +2,7 @@ import { UseQueryResult } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import {
   AnalysisIDCellRendererFactory,
-  ClimbIDCellRendererFactory,
+  RecordIDCellRendererFactory,
   S3ReportCellRendererFactory,
 } from "../components/CellRenderers";
 import ErrorModal from "../components/ErrorModal";
@@ -63,7 +63,7 @@ function RelatedPanel(props: RelatedPanelProps) {
           footer={props.description}
           cellRenderers={
             new Map([
-              ["climb_id", ClimbIDCellRendererFactory(props)],
+              ["climb_id", RecordIDCellRendererFactory(props)],
               ["analysis_id", AnalysisIDCellRendererFactory(props)],
               ["report", S3ReportCellRendererFactory(errorModalProps)],
             ])

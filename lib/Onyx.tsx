@@ -352,16 +352,16 @@ function App(props: OnyxProps) {
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
   const handleProjectRecordShow = useCallback(
-    (climbID: string) => {
+    (recordID: string) => {
       setTabState((prevState) => ({
         ...prevState,
         tabKey: OnyxTabKeys.RECORDS,
         recordTabKey: RecordTabKeys.DETAIL,
         recordDetailTabKey: RecordDetailTabKeys.DATA,
         recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
-        recordID: climbID,
+        recordID: recordID,
       }));
-      handleRecentlyViewed("record", climbID);
+      handleRecentlyViewed("record", recordID);
     },
     [handleRecentlyViewed, setTabState]
   );
