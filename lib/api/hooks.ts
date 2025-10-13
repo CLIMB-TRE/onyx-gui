@@ -5,6 +5,7 @@ import {
   Choices,
   Field,
   Fields,
+  FieldTypes,
 } from "../types";
 
 function flattenFields(fields: Record<string, Field>) {
@@ -110,7 +111,10 @@ export const useIDFields = (fields: Map<string, Field>) => {
     const analysisIDField = "analysis_id";
 
     for (const [fieldName, field] of fields) {
-      if (field.type === "id" && field.code !== analysisIDField)
+      if (
+        (field.type === FieldTypes.ID || field.type === FieldTypes.ID_INT) &&
+        field.code !== analysisIDField
+      )
         recordIDField = fieldName;
     }
     return [recordIDField, analysisIDField];

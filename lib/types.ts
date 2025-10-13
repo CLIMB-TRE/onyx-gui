@@ -61,7 +61,33 @@ export enum ExportStatus {
   ERROR,
 }
 
-export type ObjectType = "record" | "analysis";
+export enum ObjectTypes {
+  RECORD = "record",
+  ANALYSIS = "analysis",
+}
+
+export enum FieldTypes {
+  ID = "id",
+  ID_INT = "id (int)",
+  TEXT = "text",
+  CHOICE = "choice",
+  INTEGER = "integer",
+  DECIMAL = "decimal",
+  DATE = "date",
+  DATETIME = "datetime",
+  BOOL = "bool",
+  RELATION = "relation",
+  ARRAY = "array",
+  STRUCTURE = "structure",
+  NONE = "",
+}
+
+export enum GraphTypes {
+  LINE = "line",
+  BAR = "bar",
+  PIE = "pie",
+  NONE = "",
+}
 
 export type TabState = {
   tabKey: OnyxTabKeys;
@@ -76,26 +102,10 @@ export type TabState = {
 };
 
 export type RecentlyViewed = {
-  objectType: ObjectType;
+  objectType: ObjectTypes;
   ID: string;
   timestamp: string;
 };
-
-export type FieldType =
-  | "id"
-  | "text"
-  | "choice"
-  | "integer"
-  | "decimal"
-  | "date"
-  | "datetime"
-  | "bool"
-  | "relation"
-  | "array"
-  | "structure"
-  | "";
-
-export type GraphType = "line" | "bar" | "pie" | "";
 
 export type Profile = {
   username: string;
@@ -117,7 +127,7 @@ export type ProjectPermissionGroup = {
 };
 
 export type Field = {
-  type: FieldType;
+  type: FieldTypes;
   code: string;
   description: string;
   actions: string[];
@@ -134,7 +144,7 @@ export type Fields = {
 
 export type FilterConfig = {
   key: string;
-  type: FieldType;
+  type: FieldTypes;
   field: string;
   lookup: string;
   value: string;
@@ -142,7 +152,7 @@ export type FilterConfig = {
 
 export type GraphConfig = {
   key: string;
-  type: GraphType;
+  type: GraphTypes;
   field: string;
   groupBy: string;
   groupMode: string;
@@ -151,7 +161,7 @@ export type GraphConfig = {
 };
 
 export type TypeObject = {
-  type: FieldType;
+  type: FieldTypes;
   lookups: string[];
 };
 

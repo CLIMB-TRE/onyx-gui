@@ -12,7 +12,7 @@ import DataPanel from "../components/DataPanel";
 import RelatedPanel from "../components/RelatedPanel";
 import HistoryPanel from "../components/HistoryPanel";
 import { IDProps } from "../interfaces";
-import { DataPanelTabKeys, RecordDetailTabKeys } from "../types";
+import { DataPanelTabKeys, ObjectTypes, RecordDetailTabKeys } from "../types";
 
 function ProjectRecord(props: IDProps) {
   const [published, setPublished] = useState(true);
@@ -98,7 +98,7 @@ function ProjectRecord(props: IDProps) {
               >
                 <HistoryPanel
                   {...props}
-                  name="record"
+                  name={ObjectTypes.RECORD}
                   searchPath={`projects/${props.project.code}`}
                   ID={props.ID}
                 />

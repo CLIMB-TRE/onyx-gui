@@ -17,7 +17,7 @@ import DataPanel from "../components/DataPanel";
 import RelatedPanel from "../components/RelatedPanel";
 import HistoryPanel from "../components/HistoryPanel";
 import { IDProps } from "../interfaces";
-import { AnalysisDetailTabKeys, DataPanelTabKeys } from "../types";
+import { AnalysisDetailTabKeys, DataPanelTabKeys, ObjectTypes } from "../types";
 
 function Analysis(props: IDProps) {
   const [published, setPublished] = useState(true);
@@ -113,7 +113,7 @@ function Analysis(props: IDProps) {
               >
                 <HistoryPanel
                   {...props}
-                  name="analysis"
+                  name={ObjectTypes.ANALYSIS}
                   searchPath={`projects/${props.project.code}/analysis`}
                   ID={props.ID}
                 />

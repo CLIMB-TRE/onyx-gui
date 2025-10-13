@@ -34,7 +34,7 @@ import {
   TabState,
   Themes,
   RecentlyViewed,
-  ObjectType,
+  ObjectTypes,
 } from "./types";
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
 
@@ -326,7 +326,7 @@ function App(props: OnyxProps) {
   }, [project, projects, setProject]);
 
   const handleRecentlyViewed = useCallback(
-    (objectType: ObjectType, ID: string) => {
+    (objectType: ObjectTypes, ID: string) => {
       setRecentlyViewed((prevState) => {
         const updatedList = [...prevState];
 
@@ -361,7 +361,7 @@ function App(props: OnyxProps) {
         recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
         recordID: recordID,
       }));
-      handleRecentlyViewed("record", recordID);
+      handleRecentlyViewed(ObjectTypes.RECORD, recordID);
     },
     [handleRecentlyViewed, setTabState]
   );
@@ -384,7 +384,7 @@ function App(props: OnyxProps) {
         analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
         analysisID: analysisID,
       }));
-      handleRecentlyViewed("analysis", analysisID);
+      handleRecentlyViewed(ObjectTypes.ANALYSIS, analysisID);
     },
     [handleRecentlyViewed, setTabState]
   );

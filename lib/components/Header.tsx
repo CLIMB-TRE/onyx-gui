@@ -17,7 +17,7 @@ import { PageProps } from "../interfaces";
 import {
   AnalysisTabKeys,
   DarkModeColours,
-  ObjectType,
+  ObjectTypes,
   OnyxTabKeys,
   Profile,
   Project,
@@ -37,7 +37,7 @@ interface HeaderProps extends PageProps {
   handleAnalysisShow: (analysisID: string) => void;
   handleProjectRecordHide: () => void;
   handleAnalysisHide: () => void;
-  handleRecentlyViewed: (objectType: ObjectType, ID: string) => void;
+  handleRecentlyViewed: (objectType: ObjectTypes, ID: string) => void;
 }
 
 function HeaderText({
@@ -110,14 +110,17 @@ function Header(props: HeaderProps) {
       tabKey === OnyxTabKeys.RECORDS &&
       props.tabState.recordTabKey === RecordTabKeys.DETAIL
     ) {
-      props.handleRecentlyViewed("record", props.tabState.recordID);
+      props.handleRecentlyViewed(ObjectTypes.RECORD, props.tabState.recordID);
     }
 
     if (
       tabKey === OnyxTabKeys.ANALYSES &&
       props.tabState.analysisTabKey === AnalysisTabKeys.DETAIL
     ) {
-      props.handleRecentlyViewed("analysis", props.tabState.analysisID);
+      props.handleRecentlyViewed(
+        ObjectTypes.ANALYSIS,
+        props.tabState.analysisID
+      );
     }
   };
 
@@ -255,9 +258,9 @@ function Header(props: HeaderProps) {
                       key={item.ID}
                       title={item.ID + " - " + item.timestamp.toLocaleString()}
                       onClick={() => {
-                        if (item.objectType === "record")
+                        if (item.objectType === ObjectTypes.RECORD)
                           props.handleProjectRecordShow(item.ID);
-                        else if (item.objectType === "analysis")
+                        else if (item.objectType === ObjectTypes.ANALYSIS)
                           props.handleAnalysisShow(item.ID);
                       }}
                     >
