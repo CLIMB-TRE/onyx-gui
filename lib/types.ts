@@ -67,8 +67,6 @@ export enum ObjectTypes {
 }
 
 export enum FieldTypes {
-  ID = "id",
-  ID_INT = "id (int)",
   TEXT = "text",
   CHOICE = "choice",
   INTEGER = "integer",
