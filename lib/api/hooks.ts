@@ -31,8 +31,10 @@ export const useFields = (
   data: DetailResponse<Fields> | ErrorResponse | undefined
 ) => {
   return useMemo(() => {
+    let fields: Fields;
+
     if (data?.status !== "success") {
-      return {
+      fields = {
         name: "",
         description: "",
         object_type: "",
@@ -40,17 +42,13 @@ export const useFields = (
         version: "",
         fields: {},
         fields_map: new Map<string, Field>(),
-        defaultFields: [] as string[],
-      } as Fields;
+        default_fields: [],
+      };
+    } else {
+      fields = data.data;
+      fields.fields_map = new Map(Object.entries(flattenFields(fields.fields)));
+      fields.default_fields = fields.default_fields || [];
     }
-
-    const fields = data.data;
-
-    // Add a map of fields for easy access
-    fields.fields_map = new Map(
-      Object.entries(flattenFields(data.data.fields))
-    );
-    fields.default_fields = fields.default_fields || [];
 
     return fields;
   }, [data]);
