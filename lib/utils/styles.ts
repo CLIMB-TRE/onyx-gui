@@ -1,6 +1,6 @@
 import { StylesConfig } from "react-select";
 import { Template } from "plotly.js-basic-dist";
-import { DarkModeColours } from "../types";
+import { DarkModeColour } from "../types";
 
 const selectStyles: StylesConfig = {
   control: (styles) => ({
@@ -57,17 +57,17 @@ const selectStyles: StylesConfig = {
 const graphStyles: Template = {
   layout: {
     font: {
-      color: DarkModeColours.BS_BODY_COLOR,
+      color: DarkModeColour.BS_BODY_COLOR,
     },
-    paper_bgcolor: DarkModeColours.BS_BODY_BG,
-    plot_bgcolor: DarkModeColours.BS_BODY_BG,
+    paper_bgcolor: DarkModeColour.BS_BODY_BG,
+    plot_bgcolor: DarkModeColour.BS_BODY_BG,
     xaxis: {
-      gridcolor: DarkModeColours.BS_GRAY_900,
-      zerolinecolor: DarkModeColours.BS_GRAY_600,
+      gridcolor: DarkModeColour.BS_GRAY_900,
+      zerolinecolor: DarkModeColour.BS_GRAY_600,
     },
     yaxis: {
-      gridcolor: DarkModeColours.BS_GRAY_900,
-      zerolinecolor: DarkModeColours.BS_GRAY_600,
+      gridcolor: DarkModeColour.BS_GRAY_900,
+      zerolinecolor: DarkModeColour.BS_GRAY_600,
     },
   },
 };

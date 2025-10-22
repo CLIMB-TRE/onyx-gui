@@ -10,7 +10,7 @@ import {
   Fields,
   SuccessResponse,
   Summary,
-  DarkModeColours,
+  DarkModeColour,
 } from "../types";
 import { useQueryRefresh } from "../utils/hooks";
 import { graphStyles } from "../utils/styles";
@@ -199,7 +199,7 @@ function BasePlot(props: BasePlotProps) {
     ...props.layout,
     autosize: true,
     title: props.title,
-    titlefont: { size: 14, color: DarkModeColours.BS_GRAY_600 },
+    titlefont: { size: 14, color: DarkModeColour.BS_GRAY_600 },
     margin: {
       l: 60,
       r: 60,
@@ -257,7 +257,7 @@ function BasePlot(props: BasePlotProps) {
           },
           { step: "all" },
         ],
-        bgcolor: props.darkMode ? DarkModeColours.BS_GRAY_900 : undefined,
+        bgcolor: props.darkMode ? DarkModeColour.BS_GRAY_900 : undefined,
       },
     };
   }

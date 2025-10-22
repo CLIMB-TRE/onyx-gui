@@ -11,7 +11,7 @@ import Stack from "react-bootstrap/Stack";
 import Tab from "react-bootstrap/Tab";
 import { IDProps } from "../interfaces";
 import {
-  DataPanelTabKeys,
+  DataPanelTabKey,
   DetailResponse,
   ErrorResponse,
   RecordType,
@@ -95,7 +95,7 @@ function DataPanel(props: DataPanelProps) {
         id="data-panel-tabs"
         activeKey={props.dataPanelTabKey}
         onSelect={(key) =>
-          props.setDataPanelTabKey(key || DataPanelTabKeys.DETAILS)
+          props.setDataPanelTabKey(key || DataPanelTabKey.DETAILS)
         }
         transition={false}
       >
@@ -131,7 +131,7 @@ function DataPanel(props: DataPanelProps) {
               <hr />
               <Nav variant="pills" className="flex-column">
                 <Nav.Item>
-                  <Nav.Link eventKey={DataPanelTabKeys.DETAILS}>
+                  <Nav.Link eventKey={DataPanelTabKey.DETAILS}>
                     Details
                   </Nav.Link>
                 </Nav.Item>
@@ -162,7 +162,7 @@ function DataPanel(props: DataPanelProps) {
           </Col>
           <Col xs={9} xl={10} className="h-100">
             <Tab.Content className="h-100">
-              <Tab.Pane eventKey={DataPanelTabKeys.DETAILS} className="h-100">
+              <Tab.Pane eventKey={DataPanelTabKey.DETAILS} className="h-100">
                 <Details
                   {...props}
                   data={data}

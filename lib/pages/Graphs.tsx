@@ -37,8 +37,8 @@ import { DataProps } from "../interfaces";
 import {
   FilterConfig,
   GraphConfig,
-  GraphTypes,
-  GraphPanelTabKeys,
+  GraphType,
+  GraphPanelTabKey,
 } from "../types";
 import { generateKey } from "../utils/functions";
 import RemoveAllModal from "../components/RemoveAllModal";
@@ -121,7 +121,7 @@ function GraphPanelTitle(props: GraphPanelProps) {
 }
 
 function GraphPanelOptions(props: GraphPanelProps) {
-  const graphFieldTypes = {
+  const graphFieldType = {
     line: {
       fields: ["date"],
       groupBy: ["choice", "bool"],
@@ -140,13 +140,13 @@ function GraphPanelOptions(props: GraphPanelProps) {
   let groupByOptions: string[] = [];
   if (props.graphConfig.type) {
     fieldOptions = props.graphFieldOptions.filter((field) =>
-      graphFieldTypes[
-        props.graphConfig.type as keyof typeof graphFieldTypes
+      graphFieldType[
+        props.graphConfig.type as keyof typeof graphFieldType
       ].fields.includes(props.fields.fields_map.get(field)?.type || "")
     );
     groupByOptions = props.graphFieldOptions.filter((field) =>
-      graphFieldTypes[
-        props.graphConfig.type as keyof typeof graphFieldTypes
+      graphFieldType[
+        props.graphConfig.type as keyof typeof graphFieldType
       ].groupBy.includes(props.fields.fields_map.get(field)?.type || "")
     );
   }
@@ -163,20 +163,20 @@ function GraphPanelOptions(props: GraphPanelProps) {
 
   return (
     <Tabs
-      defaultActiveKey={GraphPanelTabKeys.GRAPH}
+      defaultActiveKey={GraphPanelTabKey.GRAPH}
       id="uncontrolled-tab-example"
       className="mb-3"
       justify
       transition={false}
     >
-      <Tab eventKey={GraphPanelTabKeys.GRAPH} title="Graph">
+      <Tab eventKey={GraphPanelTabKey.GRAPH} title="Graph">
         <Form>
           <Form.Group className="mb-3">
             <Form.Label>Graph Type</Form.Label>
             <Dropdown
               isClearable
-              options={Object.values(GraphTypes).filter(
-                (v) => v !== GraphTypes.NONE
+              options={Object.values(GraphType).filter(
+                (v) => v !== GraphType.NONE
               )}
               value={props.graphConfig.type}
               placeholder="Select graph type..."
@@ -196,8 +196,8 @@ function GraphPanelOptions(props: GraphPanelProps) {
               />
             </Form.Group>
           )}
-          {(props.graphConfig.type === GraphTypes.LINE ||
-            props.graphConfig.type === GraphTypes.BAR) && (
+          {(props.graphConfig.type === GraphType.LINE ||
+            props.graphConfig.type === GraphType.BAR) && (
             <Form.Group className="mb-3">
               <Form.Label>Group By</Form.Label>
               <Dropdown
@@ -210,7 +210,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
               />
             </Form.Group>
           )}
-          {props.graphConfig.type === GraphTypes.BAR && (
+          {props.graphConfig.type === GraphType.BAR && (
             <Form.Group className="mb-3">
               <Form.Label>Group Mode</Form.Label>
               <Dropdown
@@ -222,7 +222,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
           )}
         </Form>
       </Tab>
-      <Tab eventKey={GraphPanelTabKeys.FILTERS} title="Filters">
+      <Tab eventKey={GraphPanelTabKey.FILTERS} title="Filters">
         {props.graphConfig.type && (
           <FilterPanel
             {...props}
@@ -233,9 +233,9 @@ function GraphPanelOptions(props: GraphPanelProps) {
           />
         )}
       </Tab>
-      <Tab eventKey={GraphPanelTabKeys.DISPLAY} title="Display">
-        {(props.graphConfig.type === GraphTypes.LINE ||
-          props.graphConfig.type === GraphTypes.BAR) && (
+      <Tab eventKey={GraphPanelTabKey.DISPLAY} title="Display">
+        {(props.graphConfig.type === GraphType.LINE ||
+          props.graphConfig.type === GraphType.BAR) && (
           <Form.Group className="mb-3">
             <Form.Label>Y Axis</Form.Label>
             <Form.Check
@@ -254,24 +254,23 @@ function GraphPanelGraph(props: GraphPanelGraphProps) {
   let g: JSX.Element;
 
   switch (true) {
-    case props.graphConfig.type === GraphTypes.LINE &&
+    case props.graphConfig.type === GraphType.LINE &&
       !!props.graphConfig.field &&
       !!props.graphConfig.groupBy:
       g = <GroupedScatterGraph {...props} />;
       break;
-    case props.graphConfig.type === GraphTypes.LINE &&
-      !!props.graphConfig.field:
+    case props.graphConfig.type === GraphType.LINE && !!props.graphConfig.field:
       g = <ScatterGraph {...props} />;
       break;
-    case props.graphConfig.type === GraphTypes.BAR &&
+    case props.graphConfig.type === GraphType.BAR &&
       !!props.graphConfig.field &&
       !!props.graphConfig.groupBy:
       g = <GroupedBarGraph {...props} />;
       break;
-    case props.graphConfig.type === GraphTypes.BAR && !!props.graphConfig.field:
+    case props.graphConfig.type === GraphType.BAR && !!props.graphConfig.field:
       g = <BarGraph {...props} />;
       break;
-    case props.graphConfig.type === GraphTypes.PIE && !!props.graphConfig.field:
+    case props.graphConfig.type === GraphType.PIE && !!props.graphConfig.field:
       g = <PieGraph {...props} />;
       break;
     default:
@@ -360,7 +359,7 @@ function Graphs(props: DataProps) {
     [
       {
         key: generateKey(),
-        type: GraphTypes.BAR,
+        type: GraphType.BAR,
         field: "published_date",
         groupBy: "",
         groupMode: "stack",
@@ -369,7 +368,7 @@ function Graphs(props: DataProps) {
       },
       {
         key: generateKey(),
-        type: GraphTypes.BAR,
+        type: GraphType.BAR,
         field: "published_date",
         groupBy: "site",
         groupMode: "stack",
@@ -378,7 +377,7 @@ function Graphs(props: DataProps) {
       },
       {
         key: generateKey(),
-        type: GraphTypes.PIE,
+        type: GraphType.PIE,
         field: "site",
         groupBy: "",
         groupMode: "",
@@ -387,7 +386,7 @@ function Graphs(props: DataProps) {
       },
       {
         key: generateKey(),
-        type: GraphTypes.LINE,
+        type: GraphType.LINE,
         field: "published_date",
         groupBy: "site",
         groupMode: "",
@@ -428,14 +427,14 @@ function Graphs(props: DataProps) {
     if (list[index].type !== e.target.value) {
       list[index].field = "";
       list[index].groupBy = "";
-      if (e.target.value === GraphTypes.BAR) {
+      if (e.target.value === GraphType.BAR) {
         list[index].groupMode = "stack";
       } else {
         list[index].groupMode = "";
       }
     }
 
-    list[index].type = e.target.value as GraphTypes;
+    list[index].type = e.target.value as GraphType;
     setGraphConfigList(list);
   };
 
@@ -489,7 +488,7 @@ function Graphs(props: DataProps) {
       ...graphConfigList.slice(0, index),
       {
         key: generateKey(),
-        type: GraphTypes.NONE,
+        type: GraphType.NONE,
         field: "",
         groupBy: "",
         groupMode: "",

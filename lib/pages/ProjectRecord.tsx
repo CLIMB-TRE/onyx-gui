@@ -12,7 +12,7 @@ import DataPanel from "../components/DataPanel";
 import RelatedPanel from "../components/RelatedPanel";
 import HistoryPanel from "../components/HistoryPanel";
 import { IDProps } from "../interfaces";
-import { DataPanelTabKeys, ObjectTypes, RecordDetailTabKeys } from "../types";
+import { DataPanelTabKey, ObjectType, RecordDetailTabKey } from "../types";
 
 function ProjectRecord(props: IDProps) {
   const [published, setPublished] = useState(true);
@@ -20,14 +20,14 @@ function ProjectRecord(props: IDProps) {
   const handleRecordDetailTabChange = (tabKey: string | null) => {
     props.setTabState((prevState) => ({
       ...prevState,
-      recordDetailTabKey: tabKey as RecordDetailTabKeys,
+      recordDetailTabKey: tabKey as RecordDetailTabKey,
     }));
   };
 
   const handleDataPanelTabChange = (tabKey: string | null) => {
     props.setTabState((prevState) => ({
       ...prevState,
-      recordDataPanelTabKey: tabKey as DataPanelTabKeys,
+      recordDataPanelTabKey: tabKey as DataPanelTabKey,
     }));
   };
 
@@ -59,15 +59,15 @@ function ProjectRecord(props: IDProps) {
           >
             <Nav variant="tabs">
               <Nav.Item>
-                <Nav.Link eventKey={RecordDetailTabKeys.DATA}>Data</Nav.Link>
+                <Nav.Link eventKey={RecordDetailTabKey.DATA}>Data</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey={RecordDetailTabKeys.HISTORY}>
+                <Nav.Link eventKey={RecordDetailTabKey.HISTORY}>
                   History
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey={RecordDetailTabKeys.ANALYSES}>
+                <Nav.Link eventKey={RecordDetailTabKey.ANALYSES}>
                   Analyses
                 </Nav.Link>
               </Nav.Item>
@@ -76,7 +76,7 @@ function ProjectRecord(props: IDProps) {
               className="p-3"
               style={{ height: "calc(100% - 60px)" }}
             >
-              <Tab.Pane eventKey={RecordDetailTabKeys.DATA} className="h-100">
+              <Tab.Pane eventKey={RecordDetailTabKey.DATA} className="h-100">
                 <DataPanel
                   {...props}
                   dataPanelTabKey={props.tabState.recordDataPanelTabKey}
@@ -92,19 +92,16 @@ function ProjectRecord(props: IDProps) {
                   }
                 />
               </Tab.Pane>
-              <Tab.Pane
-                eventKey={RecordDetailTabKeys.HISTORY}
-                className="h-100"
-              >
+              <Tab.Pane eventKey={RecordDetailTabKey.HISTORY} className="h-100">
                 <HistoryPanel
                   {...props}
-                  name={ObjectTypes.RECORD}
+                  name={ObjectType.RECORD}
                   searchPath={`projects/${props.project.code}`}
                   ID={props.ID}
                 />
               </Tab.Pane>
               <Tab.Pane
-                eventKey={RecordDetailTabKeys.ANALYSES}
+                eventKey={RecordDetailTabKey.ANALYSES}
                 className="h-100"
               >
                 <RelatedPanel

@@ -17,7 +17,7 @@ import DataPanel from "../components/DataPanel";
 import RelatedPanel from "../components/RelatedPanel";
 import HistoryPanel from "../components/HistoryPanel";
 import { IDProps } from "../interfaces";
-import { AnalysisDetailTabKeys, DataPanelTabKeys, ObjectTypes } from "../types";
+import { AnalysisDetailTabKey, DataPanelTabKey, ObjectType } from "../types";
 
 function Analysis(props: IDProps) {
   const [published, setPublished] = useState(true);
@@ -25,14 +25,14 @@ function Analysis(props: IDProps) {
   const handleAnalysisDetailTabChange = (tabKey: string | null) => {
     props.setTabState((prevState) => ({
       ...prevState,
-      analysisDetailTabKey: tabKey as AnalysisDetailTabKeys,
+      analysisDetailTabKey: tabKey as AnalysisDetailTabKey,
     }));
   };
 
   const handleDataPanelTabChange = (tabKey: string | null) => {
     props.setTabState((prevState) => ({
       ...prevState,
-      analysisDataPanelTabKey: tabKey as DataPanelTabKeys,
+      analysisDataPanelTabKey: tabKey as DataPanelTabKey,
     }));
   };
 
@@ -64,25 +64,25 @@ function Analysis(props: IDProps) {
           >
             <Nav variant="tabs">
               <Nav.Item>
-                <Nav.Link eventKey={AnalysisDetailTabKeys.DATA}>Data</Nav.Link>
+                <Nav.Link eventKey={AnalysisDetailTabKey.DATA}>Data</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey={AnalysisDetailTabKeys.HISTORY}>
+                <Nav.Link eventKey={AnalysisDetailTabKey.HISTORY}>
                   History
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey={AnalysisDetailTabKeys.RECORDS}>
+                <Nav.Link eventKey={AnalysisDetailTabKey.RECORDS}>
                   Records
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey={AnalysisDetailTabKeys.UPSTREAM}>
+                <Nav.Link eventKey={AnalysisDetailTabKey.UPSTREAM}>
                   Upstream
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey={AnalysisDetailTabKeys.DOWNSTREAM}>
+                <Nav.Link eventKey={AnalysisDetailTabKey.DOWNSTREAM}>
                   Downstream
                 </Nav.Link>
               </Nav.Item>
@@ -91,7 +91,7 @@ function Analysis(props: IDProps) {
               className="p-3"
               style={{ height: "calc(100% - 60px)" }}
             >
-              <Tab.Pane eventKey={AnalysisDetailTabKeys.DATA} className="h-100">
+              <Tab.Pane eventKey={AnalysisDetailTabKey.DATA} className="h-100">
                 <DataPanel
                   {...props}
                   dataPanelTabKey={props.tabState.analysisDataPanelTabKey}
@@ -108,18 +108,18 @@ function Analysis(props: IDProps) {
                 />
               </Tab.Pane>
               <Tab.Pane
-                eventKey={AnalysisDetailTabKeys.HISTORY}
+                eventKey={AnalysisDetailTabKey.HISTORY}
                 className="h-100"
               >
                 <HistoryPanel
                   {...props}
-                  name={ObjectTypes.ANALYSIS}
+                  name={ObjectType.ANALYSIS}
                   searchPath={`projects/${props.project.code}/analysis`}
                   ID={props.ID}
                 />
               </Tab.Pane>
               <Tab.Pane
-                eventKey={AnalysisDetailTabKeys.RECORDS}
+                eventKey={AnalysisDetailTabKey.RECORDS}
                 className="h-100"
               >
                 <RelatedPanel
@@ -131,7 +131,7 @@ function Analysis(props: IDProps) {
                 />
               </Tab.Pane>
               <Tab.Pane
-                eventKey={AnalysisDetailTabKeys.UPSTREAM}
+                eventKey={AnalysisDetailTabKey.UPSTREAM}
                 className="h-100"
               >
                 <RelatedPanel
@@ -143,7 +143,7 @@ function Analysis(props: IDProps) {
                 />
               </Tab.Pane>
               <Tab.Pane
-                eventKey={AnalysisDetailTabKeys.DOWNSTREAM}
+                eventKey={AnalysisDetailTabKey.DOWNSTREAM}
                 className="h-100"
               >
                 <RelatedPanel

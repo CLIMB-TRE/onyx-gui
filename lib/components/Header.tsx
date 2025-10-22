@@ -15,14 +15,14 @@ import {
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
 import {
-  AnalysisTabKeys,
-  DarkModeColours,
-  ObjectTypes,
-  OnyxTabKeys,
+  AnalysisTabKey,
+  DarkModeColour,
+  ObjectType,
+  OnyxTabKey,
   Profile,
   Project,
   RecentlyViewed,
-  RecordTabKeys,
+  RecordTabKey,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
@@ -37,7 +37,7 @@ interface HeaderProps extends PageProps {
   handleAnalysisShow: (analysisID: string) => void;
   handleProjectRecordHide: () => void;
   handleAnalysisHide: () => void;
-  handleRecentlyViewed: (objectType: ObjectTypes, ID: string) => void;
+  handleRecentlyViewed: (objectType: ObjectType, ID: string) => void;
 }
 
 function HeaderText({
@@ -90,35 +90,35 @@ function Header(props: HeaderProps) {
 
   const handleTabChange = (tabKey: string | null) => {
     if (
-      props.tabState.tabKey === OnyxTabKeys.RECORDS &&
-      tabKey === OnyxTabKeys.RECORDS
+      props.tabState.tabKey === OnyxTabKey.RECORDS &&
+      tabKey === OnyxTabKey.RECORDS
     )
       props.handleProjectRecordHide();
 
     if (
-      props.tabState.tabKey === OnyxTabKeys.ANALYSES &&
-      tabKey === OnyxTabKeys.ANALYSES
+      props.tabState.tabKey === OnyxTabKey.ANALYSES &&
+      tabKey === OnyxTabKey.ANALYSES
     )
       props.handleAnalysisHide();
 
     props.setTabState((prevState) => ({
       ...prevState,
-      tabKey: tabKey as OnyxTabKeys,
+      tabKey: tabKey as OnyxTabKey,
     }));
 
     if (
-      tabKey === OnyxTabKeys.RECORDS &&
-      props.tabState.recordTabKey === RecordTabKeys.DETAIL
+      tabKey === OnyxTabKey.RECORDS &&
+      props.tabState.recordTabKey === RecordTabKey.DETAIL
     ) {
-      props.handleRecentlyViewed(ObjectTypes.RECORD, props.tabState.recordID);
+      props.handleRecentlyViewed(ObjectType.RECORD, props.tabState.recordID);
     }
 
     if (
-      tabKey === OnyxTabKeys.ANALYSES &&
-      props.tabState.analysisTabKey === AnalysisTabKeys.DETAIL
+      tabKey === OnyxTabKey.ANALYSES &&
+      props.tabState.analysisTabKey === AnalysisTabKey.DETAIL
     ) {
       props.handleRecentlyViewed(
-        ObjectTypes.ANALYSIS,
+        ObjectType.ANALYSIS,
         props.tabState.analysisID
       );
     }
@@ -127,7 +127,7 @@ function Header(props: HeaderProps) {
   return (
     <Navbar
       style={{
-        backgroundColor: DarkModeColours.BS_BODY_BG,
+        backgroundColor: DarkModeColour.BS_BODY_BG,
       }}
       className="border-bottom onyx-border"
       variant="dark"
@@ -170,7 +170,7 @@ function Header(props: HeaderProps) {
             >
               <Stack direction="horizontal" gap={3}>
                 <Nav.Link
-                  eventKey={OnyxTabKeys.USER}
+                  eventKey={OnyxTabKey.USER}
                   className="fw-normal"
                   disabled={!props.project}
                 >
@@ -184,7 +184,7 @@ function Header(props: HeaderProps) {
                   />
                 </Nav.Link>
                 <Nav.Link
-                  eventKey={OnyxTabKeys.SITE}
+                  eventKey={OnyxTabKey.SITE}
                   className="fw-normal"
                   disabled={!props.project}
                 >
@@ -209,21 +209,21 @@ function Header(props: HeaderProps) {
           >
             <Stack direction="horizontal" gap={3}>
               <Nav.Link
-                eventKey={OnyxTabKeys.RECORDS}
+                eventKey={OnyxTabKey.RECORDS}
                 className="fw-normal"
                 disabled={!props.project}
               >
                 Records
               </Nav.Link>
               <Nav.Link
-                eventKey={OnyxTabKeys.ANALYSES}
+                eventKey={OnyxTabKey.ANALYSES}
                 className="fw-normal"
                 disabled={!props.project}
               >
                 Analyses
               </Nav.Link>
               <Nav.Link
-                eventKey={OnyxTabKeys.GRAPHS}
+                eventKey={OnyxTabKey.GRAPHS}
                 className="fw-normal"
                 disabled={!props.project}
               >
@@ -258,9 +258,9 @@ function Header(props: HeaderProps) {
                       key={item.ID}
                       title={item.ID + " - " + item.timestamp.toLocaleString()}
                       onClick={() => {
-                        if (item.objectType === ObjectTypes.RECORD)
+                        if (item.objectType === ObjectType.RECORD)
                           props.handleProjectRecordShow(item.ID);
-                        else if (item.objectType === ObjectTypes.ANALYSIS)
+                        else if (item.objectType === ObjectType.ANALYSIS)
                           props.handleAnalysisShow(item.ID);
                       }}
                     >

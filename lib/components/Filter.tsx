@@ -4,7 +4,7 @@ import CloseButton from "react-bootstrap/CloseButton";
 import Form from "react-bootstrap/Form";
 import Stack from "react-bootstrap/Stack";
 import { DataProps } from "../interfaces";
-import { FieldTypes, FilterConfig } from "../types";
+import { FieldType, FilterConfig } from "../types";
 import { Choice, Dropdown, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput, RangeInput } from "./Inputs";
 import { useFieldDescriptions } from "../api/hooks";
@@ -53,7 +53,7 @@ function Filter(props: FilterProps) {
       const updatedFilter = { ...prevState };
 
       updatedFilter.type =
-        props.fields.fields_map.get(e.target.value)?.type || FieldTypes.NONE;
+        props.fields.fields_map.get(e.target.value)?.type || FieldType.NONE;
       updatedFilter.field = e.target.value;
       updatedFilter.lookup =
         props.typeLookups.get(updatedFilter.type)?.[0] || "";
