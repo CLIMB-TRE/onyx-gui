@@ -50,6 +50,7 @@ function RelatedPanel(props: RelatedPanelProps) {
       ["climb_id", RecordIDCellRendererFactory(props)],
       ["analysis_id", AnalysisIDCellRendererFactory(props)],
       ["report", S3ReportCellRendererFactory(errorModalProps)],
+      // TODO: Support different primary ID fields
     ]);
   }, [props, errorModalProps]);
 

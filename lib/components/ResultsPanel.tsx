@@ -4,7 +4,7 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import { MdTableRows } from "react-icons/md";
 import { ResultsProps } from "../interfaces";
-import { ErrorResponse, ListResponse, RecordType } from "../types";
+import { ErrorResponse, ListResponse, ObjectTypes, RecordType } from "../types";
 import { getDefaultFileNamePrefix } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { SidebarButton } from "./Buttons";
@@ -69,6 +69,12 @@ function ResultsPanel(props: ResultsPanelProps) {
       ["analysis_id", AnalysisIDCellRendererFactory(props)],
       ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
       ["report", S3ReportCellRendererFactory(errorModalProps)],
+      [
+        props.fields.primary_id,
+        props.objectType === ObjectTypes.RECORD
+          ? RecordIDCellRendererFactory(props)
+          : AnalysisIDCellRendererFactory(props),
+      ],
     ]);
   }, [props, errorModalProps]);
 

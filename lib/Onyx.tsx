@@ -95,6 +95,7 @@ function ProjectPage(props: ProjectPageProps) {
                 <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
                   <Results
                     {...props}
+                    objectType={ObjectTypes.RECORD}
                     fields={recordFields}
                     title="Records"
                     commandBase={`onyx filter ${props.project.code}`}
@@ -108,6 +109,7 @@ function ProjectPage(props: ProjectPageProps) {
                 >
                   <ProjectRecord
                     {...props}
+                    objectType={ObjectTypes.RECORD}
                     fields={recordFields}
                     ID={props.tabState.recordID}
                     onHide={props.handleProjectRecordHide}
@@ -131,6 +133,7 @@ function ProjectPage(props: ProjectPageProps) {
                 <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
                   <Results
                     {...props}
+                    objectType={ObjectTypes.ANALYSIS}
                     fields={analysisFields}
                     title="Analyses"
                     commandBase={`onyx filter-analysis ${props.project.code}`}
@@ -144,6 +147,7 @@ function ProjectPage(props: ProjectPageProps) {
                 >
                   <Analysis
                     {...props}
+                    objectType={ObjectTypes.ANALYSIS}
                     fields={analysisFields}
                     ID={props.tabState.analysisID}
                     onHide={props.handleAnalysisHide}
@@ -154,7 +158,11 @@ function ProjectPage(props: ProjectPageProps) {
           </QueryHandler>
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
-          <Graphs {...props} fields={recordFields} />
+          <Graphs
+            {...props}
+            objectType={ObjectTypes.RECORD}
+            fields={recordFields}
+          />
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>
