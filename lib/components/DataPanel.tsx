@@ -59,20 +59,20 @@ function DataPanel(props: DataPanelProps) {
   const relations = useMemo(() => {
     if (data?.status !== "success") return [];
     return Object.entries(data.data)
-      .filter(([key]) => props.fields.get(key)?.type === "relation")
+      .filter(([key]) => props.fields.fields_map.get(key)?.type === "relation")
       .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1)) as [
       string,
       RecordType[]
     ][];
-  }, [data, props.fields]);
+  }, [data, props.fields.fields_map]);
 
   // Get the structure details
   const structures = useMemo(() => {
     if (data?.status !== "success") return [];
     return Object.entries(data.data).filter(
-      ([key]) => props.fields.get(key)?.type === "structure"
+      ([key]) => props.fields.fields_map.get(key)?.type === "structure"
     );
-  }, [data, props.fields]);
+  }, [data, props.fields.fields_map]);
 
   useEffect(() => {
     if (data?.status === "success" && data.data.is_published === false)
@@ -87,7 +87,7 @@ function DataPanel(props: DataPanelProps) {
     [props, data]
   );
 
-  const fieldDescriptions = useFieldDescriptions(props.fields);
+  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
 
   return (
     <QueryHandler isFetching={isFetching} error={error} data={data}>
@@ -183,7 +183,8 @@ function DataPanel(props: DataPanelProps) {
                     headerTooltips={fieldDescriptions}
                     headerTooltipPrefix={key + "__"}
                     footer={
-                      props.fields.get(key)?.description || "No Description."
+                      props.fields.fields_map.get(key)?.description ||
+                      "No Description."
                     }
                   />
                 </Tab.Pane>
@@ -204,7 +205,8 @@ function DataPanel(props: DataPanelProps) {
                       {...props}
                       data={structure as JsonData}
                       description={
-                        props.fields.get(key)?.description || "No Description."
+                        props.fields.fields_map.get(key)?.description ||
+                        "No Description."
                       }
                     />
                   </Card>

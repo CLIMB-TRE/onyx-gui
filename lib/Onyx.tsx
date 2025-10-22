@@ -11,7 +11,7 @@ import {
   useTypesQuery,
 } from "./api";
 import Fade from "react-bootstrap/Fade";
-import { useFieldsInfo } from "./api/hooks";
+import { useFields } from "./api/hooks";
 import Header from "./components/Header";
 import PageTitle from "./components/PageTitle";
 import QueryHandler from "./components/QueryHandler";
@@ -52,18 +52,21 @@ interface ProjectPageProps extends ProjectProps {
 }
 
 function ProjectPage(props: ProjectPageProps) {
-  // Get project information
-  const { isFetching, error, data: fieldsResponse } = useFieldsQuery(props);
-  const { description, fields, defaultFields } = useFieldsInfo(fieldsResponse);
-
-  // Get project analyses information
+  // Get record fields for the project
   const {
-    isFetching: isAnalysisFetching,
-    error: analysisError,
+    isFetching: isRecordFieldsFetching,
+    error: recordFieldsError,
+    data: recordFieldsResponse,
+  } = useFieldsQuery(props);
+  const recordFields = useFields(recordFieldsResponse);
+
+  // Get analyses fields for the project
+  const {
+    isFetching: isAnalysisFieldsFetching,
+    error: analysisFieldsError,
     data: analysisFieldsResponse,
   } = useAnalysisFieldsQuery(props);
-  const { fields: analysisFields, defaultFields: defaultAnalysisFields } =
-    useFieldsInfo(analysisFieldsResponse);
+  const analysisFields = useFields(analysisFieldsResponse);
 
   return (
     <Tab.Container
@@ -80,9 +83,9 @@ function ProjectPage(props: ProjectPageProps) {
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
           <QueryHandler
-            isFetching={isFetching}
-            error={error}
-            data={fieldsResponse}
+            isFetching={isRecordFieldsFetching}
+            error={recordFieldsError}
+            data={recordFieldsResponse}
           >
             <Tab.Container
               activeKey={props.tabState.recordTabKey}
@@ -92,9 +95,7 @@ function ProjectPage(props: ProjectPageProps) {
                 <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
                   <Results
                     {...props}
-                    fields={fields}
-                    defaultFields={defaultFields}
-                    projectDescription={description}
+                    fields={recordFields}
                     title="Records"
                     commandBase={`onyx filter ${props.project.code}`}
                     searchPath={`projects/${props.project.code}`}
@@ -107,8 +108,7 @@ function ProjectPage(props: ProjectPageProps) {
                 >
                   <ProjectRecord
                     {...props}
-                    fields={fields}
-                    projectDescription={description}
+                    fields={recordFields}
                     ID={props.tabState.recordID}
                     onHide={props.handleProjectRecordHide}
                   />
@@ -119,8 +119,8 @@ function ProjectPage(props: ProjectPageProps) {
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
           <QueryHandler
-            isFetching={isAnalysisFetching}
-            error={analysisError}
+            isFetching={isAnalysisFieldsFetching}
+            error={analysisFieldsError}
             data={analysisFieldsResponse}
           >
             <Tab.Container
@@ -132,8 +132,6 @@ function ProjectPage(props: ProjectPageProps) {
                   <Results
                     {...props}
                     fields={analysisFields}
-                    defaultFields={defaultAnalysisFields}
-                    projectDescription={description}
                     title="Analyses"
                     commandBase={`onyx filter-analysis ${props.project.code}`}
                     searchPath={`projects/${props.project.code}/analysis`}
@@ -147,7 +145,6 @@ function ProjectPage(props: ProjectPageProps) {
                   <Analysis
                     {...props}
                     fields={analysisFields}
-                    projectDescription={description}
                     ID={props.tabState.analysisID}
                     onHide={props.handleAnalysisHide}
                   />
@@ -157,7 +154,7 @@ function ProjectPage(props: ProjectPageProps) {
           </QueryHandler>
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
-          <Graphs {...props} fields={fields} projectDescription={description} />
+          <Graphs {...props} fields={recordFields} />
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>

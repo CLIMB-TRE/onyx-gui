@@ -142,16 +142,16 @@ function GraphPanelOptions(props: GraphPanelProps) {
     fieldOptions = props.graphFieldOptions.filter((field) =>
       graphFieldTypes[
         props.graphConfig.type as keyof typeof graphFieldTypes
-      ].fields.includes(props.fields.get(field)?.type || "")
+      ].fields.includes(props.fields.fields_map.get(field)?.type || "")
     );
     groupByOptions = props.graphFieldOptions.filter((field) =>
       graphFieldTypes[
         props.graphConfig.type as keyof typeof graphFieldTypes
-      ].groupBy.includes(props.fields.get(field)?.type || "")
+      ].groupBy.includes(props.fields.fields_map.get(field)?.type || "")
     );
   }
 
-  const filterFieldOptions = Array.from(props.fields.entries())
+  const filterFieldOptions = Array.from(props.fields.fields_map.entries())
     .filter(
       ([, field]) =>
         (props.typeLookups.get(field.type) || []).includes("exact") &&
@@ -159,7 +159,7 @@ function GraphPanelOptions(props: GraphPanelProps) {
     )
     .map(([field]) => field);
 
-  const fieldDescriptions = useFieldDescriptions(props.fields);
+  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
 
   return (
     <Tabs
@@ -412,7 +412,7 @@ function Graphs(props: DataProps) {
   const [refresh, setRefresh] = useState<number | null>(null);
   const [removeAllModalShow, setRemoveAllModalShow] = useState(false);
 
-  const listFieldOptions = Array.from(props.fields.entries())
+  const listFieldOptions = Array.from(props.fields.fields_map.entries())
     .filter(([, field]) => field.actions.includes("list"))
     .map(([field]) => field);
 
@@ -538,7 +538,7 @@ function Graphs(props: DataProps) {
             <span className="me-auto text-truncate">
               <PageTitle
                 title="Graphs"
-                description={props.projectDescription}
+                description={props.fields.description}
               />
             </span>
             <Button

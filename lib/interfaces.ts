@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import { ExportStatus, TabState, Project, Field } from "./types";
+import { ExportStatus, TabState, Project, Fields } from "./types";
 
 export interface OnyxProps {
   httpPathHandler: (path: string) => Promise<Response>;
@@ -22,8 +22,7 @@ export interface ProjectProps extends PageProps {
 }
 
 export interface DataProps extends ProjectProps {
-  fields: Map<string, Field>;
-  projectDescription: string;
+  fields: Fields;
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
   handleProjectRecordShow: (recordID: string) => void;
@@ -36,7 +35,6 @@ export interface IDProps extends DataProps {
 }
 
 export interface ResultsProps extends DataProps {
-  defaultFields: string[];
   title: string;
   commandBase: string;
   searchPath: string;

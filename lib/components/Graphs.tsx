@@ -7,6 +7,7 @@ import {
   ErrorResponse,
   GraphConfig,
   Field,
+  Fields,
   SuccessResponse,
   Summary,
   DarkModeColours,
@@ -19,7 +20,7 @@ import QueryHandler from "./QueryHandler";
 const Plot = createPlotlyComponent(Plotly);
 
 interface BasePlotProps {
-  fields: Map<string, Field>;
+  fields: Fields;
   plotData: Plotly.Data[];
   title?: string;
   xTitle?: string;
@@ -229,7 +230,9 @@ function BasePlot(props: BasePlotProps) {
     uirevision: props.uirevision,
   };
 
-  if (props.fields.get(props.xTitle || "")?.type.startsWith("date")) {
+  if (
+    props.fields.fields_map.get(props.xTitle || "")?.type.startsWith("date")
+  ) {
     layout.xaxis = {
       ...layout.xaxis,
       rangeselector: {
@@ -306,7 +309,11 @@ function ScatterGraph(props: GraphProps) {
           mode: "lines+markers",
         },
       ]}
-      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
+      title={getNullCount(
+        props.fields.fields_map,
+        props.graphConfig.field,
+        plotData
+      )}
       xTitle={props.graphConfig.field}
       yTitle="count"
       yAxisType={props.graphConfig.yAxisType}
@@ -342,7 +349,11 @@ function BarGraph(props: GraphProps) {
           type: "bar",
         },
       ]}
-      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
+      title={getNullCount(
+        props.fields.fields_map,
+        props.graphConfig.field,
+        plotData
+      )}
       xTitle={props.graphConfig.field}
       yTitle={yTitle}
       yAxisType={props.graphConfig.yAxisType}
@@ -369,7 +380,11 @@ function PieGraph(props: GraphProps) {
           marker: { color: "#198754" },
         },
       ]}
-      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
+      title={getNullCount(
+        props.fields.fields_map,
+        props.graphConfig.field,
+        plotData
+      )}
       legendTitle={props.graphConfig.field}
       uirevision={props.graphConfig.field}
     />
@@ -401,7 +416,7 @@ function GroupedScatterGraph(props: GraphProps) {
       data={data}
       plotData={scatterData}
       title={getGroupedNullCount(
-        props.fields,
+        props.fields.fields_map,
         props.graphConfig.field,
         plotData
       )}
@@ -449,7 +464,7 @@ function GroupedBarGraph(props: GraphProps) {
       data={data}
       plotData={barData}
       title={getGroupedNullCount(
-        props.fields,
+        props.fields.fields_map,
         props.graphConfig.field,
         plotData
       )}

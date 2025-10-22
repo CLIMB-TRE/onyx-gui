@@ -72,7 +72,7 @@ function ResultsPanel(props: ResultsPanelProps) {
     ]);
   }, [props, errorModalProps]);
 
-  const fieldDescriptions = useFieldDescriptions(props.fields);
+  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
 
   const isSummarise = useMemo(() => {
     return props.searchParameters.includes("summarise=");
@@ -86,7 +86,7 @@ function ResultsPanel(props: ResultsPanelProps) {
           <span className="me-auto text-truncate">
             <PageTitle
               title={props.title}
-              description={props.projectDescription}
+              description={props.fields.description}
             />
           </span>
           <div

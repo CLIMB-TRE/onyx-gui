@@ -140,6 +140,7 @@ export type Fields = {
   primary_id: string;
   version: string;
   fields: Record<string, Field>;
+  fields_map: Map<string, Field>;
   default_fields?: string[];
 };
 

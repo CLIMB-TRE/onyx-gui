@@ -53,7 +53,7 @@ function Filter(props: FilterProps) {
       const updatedFilter = { ...prevState };
 
       updatedFilter.type =
-        props.fields.get(e.target.value)?.type || FieldTypes.NONE;
+        props.fields.fields_map.get(e.target.value)?.type || FieldTypes.NONE;
       updatedFilter.field = e.target.value;
       updatedFilter.lookup =
         props.typeLookups.get(updatedFilter.type)?.[0] || "";
@@ -136,7 +136,7 @@ function Filter(props: FilterProps) {
         <MultiChoice
           {...props}
           field={filter.field}
-          options={props.fields.get(filter.field)?.values || []}
+          options={props.fields.fields_map.get(filter.field)?.values || []}
           value={getValueList(filter.value)}
           onChange={handleValueChange}
         />
@@ -149,7 +149,7 @@ function Filter(props: FilterProps) {
           {...props}
           isClearable
           field={filter.field}
-          options={props.fields.get(filter.field)?.values || []}
+          options={props.fields.fields_map.get(filter.field)?.values || []}
           value={filter.value}
           onChange={handleValueChange}
         />
@@ -202,7 +202,7 @@ function Filter(props: FilterProps) {
       );
   }
 
-  const fieldDescriptions = useFieldDescriptions(props.fields);
+  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
 
   return (
     <Stack gap={2} className="p-1">

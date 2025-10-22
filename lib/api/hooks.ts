@@ -27,7 +27,7 @@ function flattenFields(fields: Record<string, Field>) {
   return flatFields;
 }
 
-export const useFieldsInfo = (
+export const useFields = (
   data: DetailResponse<Fields> | ErrorResponse | undefined
 ) => {
   return useMemo(() => {
@@ -35,24 +35,24 @@ export const useFieldsInfo = (
       return {
         name: "",
         description: "",
-        fields: new Map<string, Field>(),
+        object_type: "",
+        primary_id: "",
+        version: "",
+        fields: {},
+        fields_map: new Map<string, Field>(),
         defaultFields: [] as string[],
-      };
+      } as Fields;
     }
 
-    // The name of the project
-    const name = data.data.name;
+    const fields = data.data;
 
-    // The description of the project
-    const description = data.data.description;
+    // Add a map of fields for easy access
+    fields.fields_map = new Map(
+      Object.entries(flattenFields(data.data.fields))
+    );
+    fields.default_fields = fields.default_fields || [];
 
-    // A map of field names to their type, description, actions, values and nested fields
-    const fields = new Map(Object.entries(flattenFields(data.data.fields)));
-
-    // The default GUI fields for the project
-    const defaultFields = data.data.default_fields || [];
-
-    return { name, description, fields, defaultFields };
+    return fields;
   }, [data]);
 };
 
