@@ -211,7 +211,7 @@ function ExportModal(props: ExportModalProps) {
           </Button>
         )}
         {exportStatus === ExportStatus.RUNNING && (
-          <Button variant="danger" onClick={handleExportCancel}>
+          <Button variant="primary" onClick={handleExportCancel}>
             Cancel
           </Button>
         )}
