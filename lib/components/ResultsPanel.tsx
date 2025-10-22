@@ -17,7 +17,7 @@ import ErrorModal from "./ErrorModal";
 import PageTitle from "./PageTitle";
 import QueryHandler from "./QueryHandler";
 import Table, { ServerPaginatedTable } from "./Table";
-import { useFieldDescriptions, useIDFields } from "../api/hooks";
+import { useFieldDescriptions } from "../api/hooks";
 
 interface ResultsPanelProps extends ResultsProps {
   searchParameters: string;
@@ -63,13 +63,14 @@ function ResultsPanel(props: ResultsPanelProps) {
     [props, handleErrorModalShow]
   );
 
-  const [recordIDField, analysisIDField] = useIDFields(props.fields);
-  const cellRenderers = new Map([
-    [recordIDField, RecordIDCellRendererFactory(props)],
-    [analysisIDField, AnalysisIDCellRendererFactory(props)],
-    ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
-    ["report", S3ReportCellRendererFactory(errorModalProps)],
-  ]);
+  const cellRenderers = useMemo(() => {
+    return new Map([
+      ["climb_id", RecordIDCellRendererFactory(props)],
+      ["analysis_id", AnalysisIDCellRendererFactory(props)],
+      ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
+      ["report", S3ReportCellRendererFactory(errorModalProps)],
+    ]);
+  }, [props, errorModalProps]);
 
   const fieldDescriptions = useFieldDescriptions(props.fields);
 

@@ -138,6 +138,9 @@ export type Field = {
 export type Fields = {
   name: string;
   description: string;
+  object_type: string; // TODO: Should be ObjectTypes
+  primary_id: string;
+  version: string;
   fields: Record<string, Field>;
   default_fields?: string[];
 };
