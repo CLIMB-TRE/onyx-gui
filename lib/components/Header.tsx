@@ -23,6 +23,7 @@ import {
   Project,
   RecentlyViewed,
   RecordTabKeys,
+  Themes,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
@@ -226,20 +227,26 @@ function Header(props: HeaderProps) {
               >
                 Graphs
               </Nav.Link>
-              <Form.Check
-                type="switch"
-                id="theme-switch"
-                label={
-                  <span className="text-light">
-                    {props.darkMode ? <MdDarkMode /> : <MdLightMode />}{" "}
-                  </span>
-                }
-                title={`Switch to ${
-                  props.darkMode ? "light mode" : "dark mode"
-                }`}
-                checked={props.darkMode}
-                onChange={props.handleThemeChange}
-              />
+              {!props.extTheme && (
+                <Form.Check
+                  type="switch"
+                  id="theme-switch"
+                  label={
+                    <span className="text-light">
+                      {props.theme === Themes.DARK ? (
+                        <MdDarkMode />
+                      ) : (
+                        <MdLightMode />
+                      )}{" "}
+                    </span>
+                  }
+                  title={`Switch to ${
+                    props.theme === Themes.DARK ? "light mode" : "dark mode"
+                  }`}
+                  checked={props.theme === Themes.DARK}
+                  onChange={props.handleThemeChange}
+                />
+              )}
               <Dropdown>
                 <Dropdown.Toggle
                   id="recently-viewed-dropdown"
