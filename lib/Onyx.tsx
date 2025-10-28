@@ -37,6 +37,7 @@ import {
   ObjectType,
 } from "./types";
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
+import { getTheme } from "./utils/functions";
 
 import "@fontsource/ibm-plex-sans";
 import "./Onyx.scss";
@@ -183,11 +184,9 @@ function LandingPage() {
 
 function App(props: OnyxProps) {
   // Theme state
-  const [theme, setTheme] = useState(
-    (props.extTheme ??
-      localStorage.getItem("onyx-theme") ??
-      Themes.LIGHT) as Themes
-  );
+  const extTheme = getTheme(props.extTheme);
+  const localTheme = getTheme(localStorage.getItem("onyx-theme"));
+  const [theme, setTheme] = useState(extTheme ?? localTheme ?? Themes.LIGHT);
 
   // Set the theme
   useEffect(() => {
@@ -397,7 +396,7 @@ function App(props: OnyxProps) {
     <div className="onyx h-100">
       <Header
         {...props}
-        theme={(props.extTheme ?? theme) as Themes}
+        theme={extTheme ?? theme}
         tabState={tabState}
         setTabState={setTabState}
         project={project}
@@ -426,7 +425,7 @@ function App(props: OnyxProps) {
                 <Tab.Pane key={p.code} eventKey={p.code} className="h-100">
                   <ProjectPage
                     {...props}
-                    theme={(props.extTheme ?? theme) as Themes}
+                    theme={extTheme ?? theme}
                     tabState={tabState}
                     setTabState={setTabState}
                     project={p}

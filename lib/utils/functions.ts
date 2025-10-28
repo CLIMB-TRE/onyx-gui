@@ -5,15 +5,19 @@ import {
   ErrorResponse,
   ExportStatus,
   FilterConfig,
+  Themes,
 } from "../types";
 
 /** Returns a random hexadecimal string. */
-function generateKey() {
+export function generateKey() {
   return Math.random().toString(16).slice(2);
 }
 
 /** Generate a default file name prefix based on the project code and search parameters. */
-function getDefaultFileNamePrefix(project: string, searchParameters: string) {
+export function getDefaultFileNamePrefix(
+  project: string,
+  searchParameters: string
+) {
   // Create the default file name prefix based on the project and search parameters
   // Uses filter/search values only, replaces commas and spaces with underscores,
   // removes special characters, and truncates to 50 characters
@@ -40,7 +44,7 @@ interface DetailResponseProps extends OnyxProps {
 }
 
 /** Handler for converting JSON data to a string for file export. */
-function handleJSONExport(props: DetailResponseProps) {
+export function handleJSONExport(props: DetailResponseProps) {
   return (exportProps: ExportHandlerProps) => {
     if (props.response?.status !== "success") return;
     const jsonData = JSON.stringify(props.response.data);
@@ -57,7 +61,7 @@ function handleJSONExport(props: DetailResponseProps) {
 }
 
 /** Takes an array of FilterConfig objects and formats into an array of field (+lookup), value pairs. */
-function formatFilters(filters: FilterConfig[]) {
+export function formatFilters(filters: FilterConfig[]) {
   return filters
     .filter((filter) => filter.field)
     .map((filter) => {
@@ -68,7 +72,7 @@ function formatFilters(filters: FilterConfig[]) {
 }
 
 /** Takes a Response object and returns its status code, formatted as a string. */
-function formatResponseStatus(response: Response) {
+export function formatResponseStatus(response: Response) {
   return `${response.status} (${response.statusText})`;
 }
 
@@ -96,11 +100,11 @@ export function formatTimeAgo(timestamp: string): string {
   }
 }
 
-function formatField(field: string) {
+export function formatField(field: string) {
   return field.split("__").join(" ");
 }
 
-function formatLookup(lookup: string) {
+export function formatLookup(lookup: string) {
   switch (lookup) {
     case "exact":
       return "==";
@@ -121,7 +125,7 @@ function formatLookup(lookup: string) {
 
 // TODO: Issues arise if value contains commas
 // TODO: Would be better to have field-type-dependent formatting
-function formatValue(value: string) {
+export function formatValue(value: string) {
   let values = value.split(",");
   if (values.length > 10) {
     values = values
@@ -131,13 +135,9 @@ function formatValue(value: string) {
   return values.join(", ");
 }
 
-export {
-  formatFilters,
-  formatField,
-  formatLookup,
-  formatResponseStatus,
-  formatValue,
-  generateKey,
-  getDefaultFileNamePrefix,
-  handleJSONExport,
-};
+/** Converts a string theme value to a Themes enum value, or null if invalid. */
+export function getTheme(theme: string | null | undefined): Themes | null {
+  if (theme === Themes.LIGHT) return Themes.LIGHT;
+  else if (theme === Themes.DARK) return Themes.DARK;
+  else return null;
+}
