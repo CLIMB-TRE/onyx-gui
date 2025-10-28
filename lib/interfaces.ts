@@ -1,5 +1,12 @@
 import { Dispatch, SetStateAction } from "react";
-import { ExportStatus, TabState, Project, Fields, ObjectType, Themes } from "./types";
+import {
+  ExportStatus,
+  TabState,
+  Project,
+  Fields,
+  ObjectType,
+  Theme,
+} from "./types";
 
 export interface OnyxProps {
   enabled: boolean;
@@ -14,7 +21,7 @@ export interface OnyxProps {
 }
 
 export interface PageProps extends OnyxProps {
-  theme: Themes;
+  theme: Theme;
   tabState: TabState;
   setTabState: Dispatch<SetStateAction<TabState>>;
 }

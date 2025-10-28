@@ -5,7 +5,7 @@ import {
   ErrorResponse,
   ExportStatus,
   FilterConfig,
-  Themes,
+  Theme,
 } from "../types";
 
 /** Returns a random hexadecimal string. */
@@ -135,9 +135,9 @@ export function formatValue(value: string) {
   return values.join(", ");
 }
 
-/** Converts a string theme value to a Themes enum value, or null if invalid. */
-export function getTheme(theme: string | null | undefined): Themes | null {
-  if (theme === Themes.LIGHT) return Themes.LIGHT;
-  else if (theme === Themes.DARK) return Themes.DARK;
+/** Converts a string theme value to a Theme enum value, or null if invalid. */
+export function getTheme(theme: string | null | undefined): Theme | null {
+  if (theme === Theme.LIGHT) return Theme.LIGHT;
+  else if (theme === Theme.DARK) return Theme.DARK;
   else return null;
 }

@@ -191,7 +191,7 @@ function App(props: OnyxProps) {
   // Theme state
   const extTheme = getTheme(props.extTheme);
   const localTheme = getTheme(localStorage.getItem("onyx-theme"));
-  const [theme, setTheme] = useState(extTheme ?? localTheme ?? Themes.LIGHT);
+  const [theme, setTheme] = useState(extTheme ?? localTheme ?? Theme.LIGHT);
 
   // Set the theme
   useEffect(() => {
@@ -200,7 +200,7 @@ function App(props: OnyxProps) {
   }, [theme]);
 
   const handleThemeChange = () => {
-    const updatedTheme = theme === Themes.LIGHT ? Themes.DARK : Themes.LIGHT;
+    const updatedTheme = theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT;
     setTheme(updatedTheme);
     localStorage.setItem("onyx-theme", updatedTheme);
   };

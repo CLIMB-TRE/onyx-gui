@@ -22,8 +22,8 @@ import {
   Profile,
   Project,
   RecentlyViewed,
-  RecordTabKeys,
-  Themes,
+  RecordTabKey,
+  Theme,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
@@ -236,7 +236,7 @@ function Header(props: HeaderProps) {
                   id="theme-switch"
                   label={
                     <span className="text-light">
-                      {props.theme === Themes.DARK ? (
+                      {props.theme === Theme.DARK ? (
                         <MdDarkMode />
                       ) : (
                         <MdLightMode />
@@ -244,9 +244,9 @@ function Header(props: HeaderProps) {
                     </span>
                   }
                   title={`Switch to ${
-                    props.theme === Themes.DARK ? "light mode" : "dark mode"
+                    props.theme === Theme.DARK ? "light mode" : "dark mode"
                   }`}
-                  checked={props.theme === Themes.DARK}
+                  checked={props.theme === Theme.DARK}
                   onChange={props.handleThemeChange}
                 />
               )}
