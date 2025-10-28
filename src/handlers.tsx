@@ -2,6 +2,8 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export const enabled = true;
+
 export async function httpPathHandler(path: string) {
   const domain = import.meta.env.VITE_ONYX_DOMAIN || "";
   const token = import.meta.env.VITE_ONYX_TOKEN || "";
