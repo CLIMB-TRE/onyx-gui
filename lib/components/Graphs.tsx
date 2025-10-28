@@ -28,7 +28,7 @@ interface BasePlotProps {
   yAxisType?: string;
   legendTitle?: string;
   layout?: Partial<Layout>;
-  theme: string;
+  theme: Themes;
   uirevision: string;
 }
 
