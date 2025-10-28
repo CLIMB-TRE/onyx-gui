@@ -49,6 +49,7 @@ const useTypesQuery = (
         .httpPathHandler("projects/types/")
         .then((response) => response.json());
     },
+    enabled: props.enabled,
     placeholderData: { data: [] },
   });
 };
@@ -64,6 +65,7 @@ const useLookupsQuery = (
         .httpPathHandler("projects/lookups/")
         .then((response) => response.json());
     },
+    enabled: props.enabled,
     placeholderData: { data: [] },
   });
 };
@@ -79,6 +81,7 @@ const useProfileQuery = (
         .httpPathHandler("accounts/profile/")
         .then((response) => response.json());
     },
+    enabled: props.enabled,
     placeholderData: { data: {} },
   });
 };
@@ -97,6 +100,7 @@ const useProjectPermissionsQuery = (
         .httpPathHandler("projects/")
         .then((response) => response.json());
     },
+    enabled: props.enabled,
     placeholderData: { data: [] },
   });
 };
@@ -112,7 +116,7 @@ const useFieldsQuery = (
         .httpPathHandler(`projects/${props.project.code}/fields/`)
         .then((response) => response.json());
     },
-    enabled: !!props.project,
+    enabled: !!(props.enabled && props.project),
     placeholderData: { data: {} },
   });
 };
@@ -128,7 +132,7 @@ const useAnalysisFieldsQuery = (
         .httpPathHandler(`projects/${props.project.code}/analysis/fields/`)
         .then((response) => response.json());
     },
-    enabled: !!props.project,
+    enabled: !!(props.enabled && props.project),
     placeholderData: { data: {} },
   });
 };
@@ -146,7 +150,7 @@ const useChoicesQuery = (
         )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.field),
+    enabled: !!(props.enabled && props.project && props.field),
     placeholderData: { data: {} },
   });
 };
@@ -161,7 +165,7 @@ const useChoicesQueries = (props: ChoicesProps) => {
           .httpPathHandler(`projects/${props.project.code}/choices/${field}/`)
           .then((response) => response.json());
       },
-      enabled: !!(props.project && field),
+      enabled: !!(props.enabled && props.project && field),
       placeholderData: { data: {} },
     })),
   });
@@ -178,6 +182,7 @@ const useActivityQuery = (
         .httpPathHandler("accounts/activity/")
         .then((response) => response.json());
     },
+    enabled: props.enabled,
     placeholderData: { data: [] },
   });
 };
@@ -193,6 +198,7 @@ const useSiteUsersQuery = (
         .httpPathHandler("accounts/site/")
         .then((response) => response.json());
     },
+    enabled: props.enabled,
     placeholderData: { data: [] },
   });
 };
@@ -208,7 +214,7 @@ const useHistoryQuery = (
         .httpPathHandler(`${props.searchPath}/history/${props.ID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.searchPath && props.ID),
+    enabled: !!(props.enabled && props.project && props.searchPath && props.ID),
     placeholderData: { data: {} },
   });
 };
@@ -224,7 +230,7 @@ const useRecordQuery = (
         .httpPathHandler(`projects/${props.project.code}/${props.ID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.ID),
+    enabled: !!(props.enabled && props.project && props.ID),
     placeholderData: { data: {} },
   });
 };
@@ -240,7 +246,7 @@ const useRecordAnalysesQuery = (
         .httpPathHandler(`projects/${props.project.code}/analyses/${props.ID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.ID),
+    enabled: !!(props.enabled && props.project && props.ID),
     placeholderData: { data: [] },
   });
 };
@@ -256,7 +262,7 @@ const useAnalysisQuery = (
         .httpPathHandler(`projects/${props.project.code}/analysis/${props.ID}/`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.ID),
+    enabled: !!(props.enabled && props.project && props.ID),
     placeholderData: { data: {} },
   });
 };
@@ -274,7 +280,7 @@ const useAnalysisRecordsQuery = (
         )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.ID),
+    enabled: !!(props.enabled && props.project && props.ID),
     placeholderData: { data: [] },
   });
 };
@@ -292,7 +298,7 @@ const useAnalysisUpstreamQuery = (
         )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.ID),
+    enabled: !!(props.enabled && props.project && props.ID),
     placeholderData: { data: [] },
   });
 };
@@ -310,7 +316,7 @@ const useAnalysisDownstreamQuery = (
         )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.ID),
+    enabled: !!(props.enabled && props.project && props.ID),
     placeholderData: { data: [] },
   });
 };
@@ -328,7 +334,7 @@ const useResultsQuery = (
         )
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.searchPath),
+    enabled: !!(props.enabled && props.project && props.searchPath),
     placeholderData: { data: [] },
   });
 };
@@ -348,7 +354,7 @@ const useCountQuery = (props: QueryProps) => {
         .httpPathHandler(`${props.searchPath}/count/?${searchParameters}`)
         .then((response) => response.json());
     },
-    enabled: !!(props.project && props.searchPath),
+    enabled: !!(props.enabled && props.project && props.searchPath),
     placeholderData: { data: {} },
   });
 };
@@ -372,7 +378,7 @@ const useSummaryQuery = (props: GraphQueryProps) => {
         .httpPathHandler(`projects/${props.project.code}/?${search.toString()}`)
         .then((response) => response.json());
     },
-    enabled: !!props.project,
+    enabled: !!(props.enabled && props.project),
     placeholderData: { data: [] },
   });
 };
@@ -399,7 +405,7 @@ const useGroupedSummaryQuery = (props: GraphQueryProps) => {
         .httpPathHandler(`projects/${props.project.code}/?${search.toString()}`)
         .then((response) => response.json());
     },
-    enabled: !!props.project,
+    enabled: !!(props.enabled && props.project),
     placeholderData: { data: [] },
   });
 };

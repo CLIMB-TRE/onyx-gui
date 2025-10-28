@@ -8,6 +8,7 @@ import { useState } from "react";
 import Stack from "react-bootstrap/Stack";
 import { Input } from "./Inputs";
 import { ProjectProps } from "../interfaces";
+import { Themes } from "../types";
 
 interface JsonProps extends ProjectProps {
   data: JsonData;
@@ -32,7 +33,7 @@ function JsonSearch(props: JsonProps) {
       <JsonEditor
         data={props.data}
         theme={
-          props.darkMode
+          props.theme === Themes.DARK
             ? [
                 githubDarkTheme,
                 {

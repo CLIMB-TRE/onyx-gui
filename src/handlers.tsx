@@ -2,6 +2,11 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export const enabled =
+  typeof import.meta.env.VITE_ONYX_ENABLED !== "undefined"
+    ? import.meta.env.VITE_ONYX_ENABLED === "true"
+    : true;
+
 export async function httpPathHandler(path: string) {
   const domain = import.meta.env.VITE_ONYX_DOMAIN || "";
   const token = import.meta.env.VITE_ONYX_TOKEN || "";
@@ -24,6 +29,8 @@ export async function fileWriter(path: string, content: string) {
     console.log("Content:", content);
   });
 }
+
+export const extTheme = import.meta.env.VITE_ONYX_THEME ?? null;
 
 export const extVersion = import.meta.env.VITE_ONYX_VERSION || "";
 
