@@ -6,6 +6,7 @@ import {
   fileWriter,
   httpPathHandler,
   s3PathHandler,
+  extTheme,
   extVersion,
   getItem,
   setItem,
@@ -21,6 +22,7 @@ ReactDOM.render(
       httpPathHandler={httpPathHandler}
       s3PathHandler={s3PathHandler}
       fileWriter={fileWriter}
+      extTheme={extTheme}
       extVersion={extVersion}
       getItem={getItem}
       setItem={setItem}

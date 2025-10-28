@@ -30,6 +30,8 @@ export async function fileWriter(path: string, content: string) {
   });
 }
 
+export const extTheme = import.meta.env.VITE_ONYX_THEME ?? null;
+
 export const extVersion = import.meta.env.VITE_ONYX_VERSION || "";
 
 export function getItem(key: string) {
