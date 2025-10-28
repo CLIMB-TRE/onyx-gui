@@ -4,13 +4,13 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import { MdTableRows } from "react-icons/md";
 import { ResultsProps } from "../interfaces";
-import { ErrorResponse, ListResponse, RecordType } from "../types";
+import { ErrorResponse, ListResponse, ObjectType, RecordType } from "../types";
 import { getDefaultFileNamePrefix } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { SidebarButton } from "./Buttons";
 import {
   AnalysisIDCellRendererFactory,
-  ClimbIDCellRendererFactory,
+  RecordIDCellRendererFactory,
   S3ReportCellRendererFactory,
 } from "./CellRenderers";
 import ErrorModal from "./ErrorModal";
@@ -63,14 +63,22 @@ function ResultsPanel(props: ResultsPanelProps) {
     [props, handleErrorModalShow]
   );
 
-  const cellRenderers = new Map([
-    ["climb_id", ClimbIDCellRendererFactory(props)],
-    ["analysis_id", AnalysisIDCellRendererFactory(props)],
-    ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
-    ["report", S3ReportCellRendererFactory(errorModalProps)],
-  ]);
+  const cellRenderers = useMemo(() => {
+    return new Map([
+      ["climb_id", RecordIDCellRendererFactory(props)],
+      ["analysis_id", AnalysisIDCellRendererFactory(props)],
+      ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
+      ["report", S3ReportCellRendererFactory(errorModalProps)],
+      [
+        props.fields.primary_id,
+        props.objectType === ObjectType.RECORD
+          ? RecordIDCellRendererFactory(props)
+          : AnalysisIDCellRendererFactory(props),
+      ],
+    ]);
+  }, [props, errorModalProps]);
 
-  const fieldDescriptions = useFieldDescriptions(props.fields);
+  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
 
   const isSummarise = useMemo(() => {
     return props.searchParameters.includes("summarise=");
@@ -84,7 +92,7 @@ function ResultsPanel(props: ResultsPanelProps) {
           <span className="me-auto text-truncate">
             <PageTitle
               title={props.title}
-              description={props.projectDescription}
+              description={props.fields.description}
             />
           </span>
           <div
@@ -126,6 +134,7 @@ function ResultsPanel(props: ResultsPanelProps) {
               defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={fieldDescriptions}
               cellRenderers={cellRenderers}
+              fields={props.fields}
             />
           ) : (
             <Table
@@ -134,6 +143,7 @@ function ResultsPanel(props: ResultsPanelProps) {
               defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={fieldDescriptions}
               cellRenderers={cellRenderers}
+              fields={props.fields}
             />
           )}
         </QueryHandler>

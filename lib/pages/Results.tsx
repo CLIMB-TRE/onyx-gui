@@ -34,7 +34,7 @@ function Results(props: ResultsProps) {
   const [includeList, setIncludeList] = usePersistedState<string[]>(
     props,
     `${props.project.code}${props.title}IncludeList`,
-    props.defaultFields
+    props.fields.default_fields || []
   );
 
   const defaultWidth = 300;
@@ -43,18 +43,18 @@ function Results(props: ResultsProps) {
 
   const filterOptions = useMemo(
     () =>
-      Array.from(props.fields.entries())
+      Array.from(props.fields.fields_map.entries())
         .filter(([, field]) => field.actions.includes("filter"))
         .map(([field]) => field),
-    [props.fields]
+    [props.fields.fields_map]
   );
 
   const columnOptions = useMemo(
     () =>
-      Array.from(props.fields.entries())
+      Array.from(props.fields.fields_map.entries())
         .filter(([, field]) => field.actions.includes("list"))
         .map(([, field]) => field),
-    [props.fields]
+    [props.fields.fields_map]
   );
 
   const searchParameters = useMemo(() => {
@@ -138,7 +138,6 @@ function Results(props: ResultsProps) {
         show={columnsModalShow}
         onHide={() => setColumnsModalShow(false)}
         columns={columnOptions}
-        defaultColumns={props.defaultFields}
         activeColumns={includeList}
         setActiveColumns={setIncludeList}
       />
