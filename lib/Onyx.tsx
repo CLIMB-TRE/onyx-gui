@@ -37,6 +37,7 @@ import {
   ObjectType,
 } from "./types";
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
+import { getTheme } from "./utils/functions";
 
 import "@fontsource/ibm-plex-sans";
 import "./Onyx.scss";
@@ -188,26 +189,20 @@ function LandingPage() {
 
 function App(props: OnyxProps) {
   // Theme state
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("onyx-theme") === Theme.DARK
-  );
+  const extTheme = getTheme(props.extTheme);
+  const localTheme = getTheme(localStorage.getItem("onyx-theme"));
+  const [theme, setTheme] = useState(extTheme ?? localTheme ?? Themes.LIGHT);
 
-  // Set the theme based on darkMode
+  // Set the theme
   useEffect(() => {
     const htmlElement = document.querySelector("html");
-    htmlElement?.setAttribute(
-      "data-bs-theme",
-      darkMode ? Theme.DARK : Theme.LIGHT
-    );
-  }, [darkMode]);
+    htmlElement?.setAttribute("data-bs-theme", theme);
+  }, [theme]);
 
   const handleThemeChange = () => {
-    const darkModeChange = !darkMode;
-    setDarkMode(darkModeChange);
-    localStorage.setItem(
-      "onyx-theme",
-      darkModeChange ? Theme.DARK : Theme.LIGHT
-    );
+    const updatedTheme = theme === Themes.LIGHT ? Themes.DARK : Themes.LIGHT;
+    setTheme(updatedTheme);
+    localStorage.setItem("onyx-theme", updatedTheme);
   };
 
   const defaultTabState = {
@@ -406,7 +401,7 @@ function App(props: OnyxProps) {
     <div className="onyx h-100">
       <Header
         {...props}
-        darkMode={darkMode}
+        theme={extTheme ?? theme}
         tabState={tabState}
         setTabState={setTabState}
         project={project}
@@ -421,7 +416,7 @@ function App(props: OnyxProps) {
         handleRecentlyViewed={handleRecentlyViewed}
       />
       <Container fluid className="onyx-content p-2">
-        {!project ? (
+        {!(props.enabled && project) ? (
           <LandingPage />
         ) : (
           <Tab.Container
@@ -435,7 +430,7 @@ function App(props: OnyxProps) {
                 <Tab.Pane key={p.code} eventKey={p.code} className="h-100">
                   <ProjectPage
                     {...props}
-                    darkMode={darkMode}
+                    theme={extTheme ?? theme}
                     tabState={tabState}
                     setTabState={setTabState}
                     project={p}

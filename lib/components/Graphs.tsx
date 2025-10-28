@@ -4,6 +4,7 @@ import createPlotlyComponent from "react-plotly.js/factory";
 import { useGroupedSummaryQuery, useSummaryQuery } from "../api";
 import { DataProps } from "../interfaces";
 import {
+  Themes,
   ErrorResponse,
   GraphConfig,
   Field,
@@ -28,7 +29,7 @@ interface BasePlotProps {
   yAxisType?: string;
   legendTitle?: string;
   layout?: Partial<Layout>;
-  darkMode: boolean;
+  theme: Themes;
   uirevision: string;
 }
 
@@ -207,7 +208,7 @@ function BasePlot(props: BasePlotProps) {
       t: 60,
       pad: 4,
     },
-    template: props.darkMode ? graphStyles : undefined,
+    template: props.theme === Themes.DARK ? graphStyles : undefined,
     xaxis: { title: props.xTitle },
     yaxis: {
       title: props.yTitle,
@@ -257,7 +258,8 @@ function BasePlot(props: BasePlotProps) {
           },
           { step: "all" },
         ],
-        bgcolor: props.darkMode ? DarkModeColour.BS_GRAY_900 : undefined,
+        bgcolor:
+          props.theme === Themes.DARK ? DarkModeColours.BS_GRAY_900 : undefined,
       },
     };
   }
