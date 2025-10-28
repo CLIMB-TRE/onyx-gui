@@ -397,7 +397,7 @@ function App(props: OnyxProps) {
     <div className="onyx h-100">
       <Header
         {...props}
-        theme={theme}
+        theme={(props.extTheme ?? theme) as Themes}
         tabState={tabState}
         setTabState={setTabState}
         project={project}
@@ -426,7 +426,7 @@ function App(props: OnyxProps) {
                 <Tab.Pane key={p.code} eventKey={p.code} className="h-100">
                   <ProjectPage
                     {...props}
-                    theme={theme}
+                    theme={(props.extTheme ?? theme) as Themes}
                     tabState={tabState}
                     setTabState={setTabState}
                     project={p}
