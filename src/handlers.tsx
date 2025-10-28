@@ -2,7 +2,10 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const enabled = true;
+export const enabled =
+  typeof import.meta.env.VITE_ONYX_ENABLED !== "undefined"
+    ? import.meta.env.VITE_ONYX_ENABLED === "true"
+    : true;
 
 export async function httpPathHandler(path: string) {
   const domain = import.meta.env.VITE_ONYX_DOMAIN || "";
