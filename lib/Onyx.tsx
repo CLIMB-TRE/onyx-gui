@@ -411,7 +411,7 @@ function App(props: OnyxProps) {
         handleRecentlyViewed={handleRecentlyViewed}
       />
       <Container fluid className="onyx-content p-2">
-        {!project ? (
+        {!(props.enabled && project) ? (
           <LandingPage />
         ) : (
           <Tab.Container
