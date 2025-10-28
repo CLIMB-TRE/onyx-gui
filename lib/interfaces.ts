@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 import { ExportStatus, TabState, Project, Field } from "./types";
 
 export interface OnyxProps {
+  enabled: boolean;
   httpPathHandler: (path: string) => Promise<Response>;
   s3PathHandler: (path: string) => Promise<void>;
   fileWriter: (path: string, content: string) => Promise<void>;
