@@ -17,6 +17,9 @@ jobs:
           node-version: 24
           registry-url: "https://registry.npmjs.org"
 
+      - name: Install npm 11.5
+        run: npm install -g npm@11.5
+
       - name: Display node and npm versions
         run: |
           node -v
