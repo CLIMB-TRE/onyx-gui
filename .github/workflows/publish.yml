@@ -1,4 +1,5 @@
 name: Publish
+
 on:
   release:
     types: [published]
@@ -7,11 +8,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
-      # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -28,7 +28,10 @@ jobs:
       - name: Run a clean install of the project
         run: npm ci
 
+      - name: Build and test the project
+        run: |
+          npm run build --if-present
+          npm test
+
       - name: Publish the package to npm
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
