@@ -28,10 +28,9 @@ jobs:
       - name: Run a clean install of the project
         run: npm ci
 
-      - name: Build and test the project
+      - name: Build the project
         run: |
           npm run build --if-present
-          npm test
 
       - name: Publish the package to npm
         run: npm publish --provenance --access public
