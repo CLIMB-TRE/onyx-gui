@@ -1,77 +1,82 @@
-@import "../node_modules/bootstrap/scss/mixins/banner";
-@include bsBanner("");
+[data-bs-theme=light] {
+  .onyx {
+    --onyx-body-bg: var(--bs-gray-100);
+    --onyx-dropdown-control-border-color: var(--bs-gray-300);
+    --onyx-dropdown-control-background-color: var(--bs-white);
+    --onyx-dropdown-menu-background-color: var(--bs-white);
+    --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-300);
+    --onyx-dropdown-label-color: var(--bs-black);
+    --onyx-dropdown-option-background-color: var(--bs-white);
+    --onyx-dropdown-option-hover-background-color: var(--bs-gray-300);
+    --onyx-dropdown-option-description-color: var(--bs-secondary);
 
-// Configuration
-@import "../node_modules/bootstrap/scss/functions";
-@import "../node_modules/bootstrap/scss/variables";
+    .btn-secondary {
+      --bs-btn-color: var(--bs-black);
+      --bs-btn-bg: var(--bs-gray-300);
+      --bs-btn-border-color: var(--bs-gray-500);
+      --bs-btn-hover-color: var(--bs-black);
+      --bs-btn-hover-bg: #d3d4d5;
+      --bs-btn-hover-border-color: #c6c7c8;
+      --bs-btn-focus-shadow-rgb: 211, 212, 213;
+      --bs-btn-active-color: var(--bs-black);
+      --bs-btn-active-bg: #c6c7c8;
+      --bs-btn-active-border-color: #babbbc;
+      --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+      --bs-btn-disabled-color: var(--bs-black);
+      --bs-btn-disabled-bg: var(--bs-gray-300);
+      --bs-btn-disabled-border-color: var(--bs-gray-300);
+    }
 
-// Variable Overrides
-$font-family-sans-serif: join(("IBM Plex Sans",), $font-family-sans-serif, comma);
-$custom-theme: (
-   primary: $pink,
-);
-$theme-colors: map-merge($theme-colors, $custom-theme);
+    .onyx-border {
+      --bs-border-opacity: 1;
+      border-color: var(--bs-white) !important;
+    }
+  }
+}
 
-@import "../node_modules/bootstrap/scss/variables-dark";
-@import "../node_modules/bootstrap/scss/maps";
-@import "../node_modules/bootstrap/scss/mixins";
-@import "../node_modules/bootstrap/scss/utilities";
+[data-bs-theme=dark] {
+  .onyx { 
+    --bs-body-bg: #121212 !important;
+    --onyx-body-bg: var(--bs-body-bg);
+    --onyx-dropdown-control-border-color: var(--bs-gray-800);
+    --onyx-dropdown-control-background-color: var(--bs-body-bg);
+    --onyx-dropdown-menu-background-color: var(--bs-body-bg);
+    --onyx-dropdown-multivalue-label-background-color: var(--bs-gray-800);
+    --onyx-dropdown-label-color: var(--bs-white);
+    --onyx-dropdown-option-background-color: var(--bs-body-bg);
+    --onyx-dropdown-option-hover-background-color: var(--bs-gray-800);
+    --onyx-dropdown-option-description-color: var(--bs-gray-500);
 
-// Layout & components
-@import "../node_modules/bootstrap/scss/root";
-@import "../node_modules/bootstrap/scss/close";
+    .btn-secondary {
+      --bs-btn-bg:  var(--bs-gray-900);
+      --bs-btn-border-color: var(--bs-gray-700);
+      --bs-btn-disabled-bg: var(--bs-gray-900);
+      --bs-btn-disabled-border-color: var(--bs-gray-900);
+    }
 
-.onyx {
-    @import "../node_modules/bootstrap/scss/reboot";
-    @import "../node_modules/bootstrap/scss/type";
-    @import "../node_modules/bootstrap/scss/containers";
-    @import "../node_modules/bootstrap/scss/grid";
-    @import "../node_modules/bootstrap/scss/forms";
-    @import "../node_modules/bootstrap/scss/buttons";
-    @import "../node_modules/bootstrap/scss/transitions";
-    @import "../node_modules/bootstrap/scss/dropdown";
-    @import "../node_modules/bootstrap/scss/button-group";
-    @import "../node_modules/bootstrap/scss/nav";
-    @import "../node_modules/bootstrap/scss/navbar";
-    @import "../node_modules/bootstrap/scss/card";
-    @import "../node_modules/bootstrap/scss/accordion";
-    @import "../node_modules/bootstrap/scss/pagination";
-    @import "../node_modules/bootstrap/scss/badge";
-    @import "../node_modules/bootstrap/scss/alert";
-    @import "../node_modules/bootstrap/scss/progress";
-    @import "../node_modules/bootstrap/scss/modal";
-    @import "../node_modules/bootstrap/scss/spinners";
+    .onyx-border {
+      --bs-border-opacity: 1;
+      border-color: var(--bs-border-color-translucent) !important;
+    }
+  }
+}
 
- // Fix pagination disabled state
-  .page-item.disabled .page-link {
-      color: var(--bs-pagination-disabled-color) !important;
-      pointer-events: none !important;
-      background-color: var(--bs-pagination-disabled-bg) !important;
-      border-color: var(--bs-pagination-disabled-border-color) !important;
+.onyx { 
+  .btn-link {
+    text-decoration: none !important;
   }
 
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  .btn-link:hover {
+    text-decoration: underline !important;
   }
 
-  & {
-    font-family: $font-family-sans-serif;
-    font-size: var(--bs-body-font-size);
-    font-weight: var(--bs-body-font-weight);
-    line-height: var(--bs-body-line-height);
-    color: var(--bs-body-color);
-    text-align: var(--bs-body-text-align);
-    background-color: var(--onyx-body-bg);
-    -webkit-text-size-adjust: 100%;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  .ag-theme-quartz {
+    --ag-background-color: var(--bs-body-bg);
+    --ag-foreground-color: var(--bs-body-color);
+  }
 
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  .onyx-text-pink {
+    color: var(--bs-pink);
   }
 
   .onyx-content {
@@ -80,8 +85,13 @@ $theme-colors: map-merge($theme-colors, $custom-theme);
     overflow-y: auto;
     min-height: 0;
   }
-}
 
-// Helpers and utilities
-@import "../node_modules/bootstrap/scss/helpers";
-@import "../node_modules/bootstrap/scss/utilities/api";
+  .resizer {
+    cursor: col-resize;
+    height: 100%;
+    width: 10px;
+    position: absolute;
+    top: 0;
+    right: -10px;
+  }
+}

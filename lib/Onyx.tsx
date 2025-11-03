@@ -39,9 +39,7 @@ import {
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
 import { getTheme } from "./utils/functions";
 
-import "@fontsource/ibm-plex-sans";
 import "./Onyx.scss";
-import "./Onyx.css";
 
 interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
@@ -393,7 +391,7 @@ function App(props: OnyxProps) {
   }, [setTabState]);
 
   return (
-    <div className="onyx h-100">
+    <div className="climb-jupyter onyx h-100">
       <Header
         {...props}
         theme={extTheme ?? theme}
