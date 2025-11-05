@@ -1,6 +1,5 @@
 [data-bs-theme=light] {
   .onyx {
-    --onyx-body-bg: var(--bs-gray-100);
     --onyx-dropdown-control-border-color: var(--bs-gray-300);
     --onyx-dropdown-control-background-color: var(--bs-white);
     --onyx-dropdown-menu-background-color: var(--bs-white);
@@ -31,13 +30,16 @@
       --bs-border-opacity: 1;
       border-color: var(--bs-white) !important;
     }
+
+    .onyx-content {
+      background: var(--bs-gray-100);
+    }
   }
 }
 
 [data-bs-theme=dark] {
   .onyx { 
     --bs-body-bg: #121212 !important;
-    --onyx-body-bg: var(--bs-body-bg);
     --onyx-dropdown-control-border-color: var(--bs-gray-800);
     --onyx-dropdown-control-background-color: var(--bs-body-bg);
     --onyx-dropdown-menu-background-color: var(--bs-body-bg);
@@ -57,6 +59,10 @@
     .onyx-border {
       --bs-border-opacity: 1;
       border-color: var(--bs-border-color-translucent) !important;
+    }
+
+    .onyx-content {
+      background: var(--bs-body-bg);
     }
   }
 }
