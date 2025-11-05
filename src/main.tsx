@@ -13,6 +13,7 @@ import {
   setTitle,
 } from "./handlers.tsx";
 
+import "climb-jupyter-base-component/dist/style.css";
 import "./main.css";
 
 ReactDOM.render(
