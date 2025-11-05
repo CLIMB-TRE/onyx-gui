@@ -75,7 +75,7 @@ export default function Resizer(props: ResizerProps) {
       {props.children}
       <div
         ref={resizerRef}
-        className="resizer"
+        className="onyx-resizer"
         onMouseDown={handleMouseDown}
         onDoubleClick={handleDoubleClick}
       />
