@@ -4,7 +4,7 @@ import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import { MdTableRows } from "react-icons/md";
 import { ResultsProps } from "../interfaces";
-import { ErrorResponse, ListResponse, ObjectType, RecordType } from "../types";
+import { ErrorResponse, ListResponse, RecordType } from "../types";
 import { getDefaultFileNamePrefix } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { SidebarButton } from "./Buttons";
@@ -65,16 +65,10 @@ function ResultsPanel(props: ResultsPanelProps) {
 
   const cellRenderers = useMemo(() => {
     return new Map([
-      ["climb_id", RecordIDCellRendererFactory(props)],
-      ["analysis_id", AnalysisIDCellRendererFactory(props)],
+      [props.recordPrimaryID, RecordIDCellRendererFactory(props)],
+      [props.analysisPrimaryID, AnalysisIDCellRendererFactory(props)],
       ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
       ["report", S3ReportCellRendererFactory(errorModalProps)],
-      [
-        props.fields.primary_id,
-        props.objectType === ObjectType.RECORD
-          ? RecordIDCellRendererFactory(props)
-          : AnalysisIDCellRendererFactory(props),
-      ],
     ]);
   }, [props, errorModalProps]);
 

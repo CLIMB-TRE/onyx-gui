@@ -35,6 +35,7 @@ import {
   Theme,
   RecentlyViewed,
   ObjectType,
+  DefaultPrimaryID,
 } from "./types";
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
 import { getTheme } from "./utils/functions";
@@ -58,6 +59,9 @@ function ProjectPage(props: ProjectPageProps) {
     data: recordFieldsResponse,
   } = useFieldsQuery(props);
   const recordFields = useFields(recordFieldsResponse);
+  const recordPrimaryID = useMemo(() => {
+    return recordFields.primary_id ?? DefaultPrimaryID.RECORD;
+  }, [recordFields]);
 
   // Get analyses fields for the project
   const {
@@ -66,6 +70,9 @@ function ProjectPage(props: ProjectPageProps) {
     data: analysisFieldsResponse,
   } = useAnalysisFieldsQuery(props);
   const analysisFields = useFields(analysisFieldsResponse);
+  const analysisPrimaryID = useMemo(() => {
+    return analysisFields.primary_id ?? DefaultPrimaryID.ANALYSIS;
+  }, [analysisFields]);
 
   return (
     <Tab.Container
@@ -94,8 +101,9 @@ function ProjectPage(props: ProjectPageProps) {
                 <Tab.Pane eventKey={RecordTabKey.LIST} className="h-100">
                   <Results
                     {...props}
-                    objectType={ObjectType.RECORD}
                     fields={recordFields}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     title="Records"
                     commandBase={`onyx filter ${props.project.code}`}
                     searchPath={`projects/${props.project.code}`}
@@ -108,8 +116,9 @@ function ProjectPage(props: ProjectPageProps) {
                 >
                   <ProjectRecord
                     {...props}
-                    objectType={ObjectType.RECORD}
                     fields={recordFields}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     ID={props.tabState.recordID}
                     onHide={props.handleProjectRecordHide}
                   />
@@ -132,8 +141,9 @@ function ProjectPage(props: ProjectPageProps) {
                 <Tab.Pane eventKey={AnalysisTabKey.LIST} className="h-100">
                   <Results
                     {...props}
-                    objectType={ObjectType.ANALYSIS}
                     fields={analysisFields}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     title="Analyses"
                     commandBase={`onyx filter-analysis ${props.project.code}`}
                     searchPath={`projects/${props.project.code}/analysis`}
@@ -146,8 +156,9 @@ function ProjectPage(props: ProjectPageProps) {
                 >
                   <Analysis
                     {...props}
-                    objectType={ObjectType.ANALYSIS}
                     fields={analysisFields}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     ID={props.tabState.analysisID}
                     onHide={props.handleAnalysisHide}
                   />
@@ -159,8 +170,9 @@ function ProjectPage(props: ProjectPageProps) {
         <Tab.Pane eventKey={OnyxTabKey.GRAPHS} className="h-100">
           <Graphs
             {...props}
-            objectType={ObjectType.RECORD}
             fields={recordFields}
+            recordPrimaryID={recordPrimaryID}
+            analysisPrimaryID={analysisPrimaryID}
           />
         </Tab.Pane>
       </Tab.Content>

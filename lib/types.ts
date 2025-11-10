@@ -66,6 +66,11 @@ export enum ObjectType {
   ANALYSIS = "analysis",
 }
 
+export enum DefaultPrimaryID {
+  RECORD = "climb_id",
+  ANALYSIS = "analysis_id",
+}
+
 export enum FieldType {
   TEXT = "text",
   CHOICE = "choice",
@@ -137,7 +142,7 @@ export type Fields = {
   name: string;
   description: string;
   object_type: string; // TODO: Should be ObjectType
-  primary_id: string;
+  primary_id?: string;
   version: string;
   fields: Record<string, Field>;
   fields_map: Map<string, Field>;

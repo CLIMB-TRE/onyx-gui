@@ -1,12 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import {
-  ExportStatus,
-  TabState,
-  Project,
-  Fields,
-  ObjectType,
-  Theme,
-} from "./types";
+import { ExportStatus, TabState, Project, Fields, Theme } from "./types";
 
 export interface OnyxProps {
   enabled: boolean;
@@ -31,8 +24,9 @@ export interface ProjectProps extends PageProps {
 }
 
 export interface DataProps extends ProjectProps {
-  objectType: ObjectType;
   fields: Fields;
+  recordPrimaryID: string;
+  analysisPrimaryID: string;
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
   handleProjectRecordShow: (recordID: string) => void;

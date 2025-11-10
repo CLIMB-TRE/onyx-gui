@@ -23,7 +23,13 @@ import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 import { useCountQuery } from "../api";
 import { ExportHandlerProps, OnyxProps, ProjectProps } from "../interfaces";
-import { ExportStatus, RecordType, ListResponse, Fields } from "../types";
+import {
+  ExportStatus,
+  RecordType,
+  ListResponse,
+  Fields,
+  DefaultPrimaryID,
+} from "../types";
 import ExportModal from "./ExportModal";
 import { formatResponseStatus } from "../utils/functions";
 
@@ -166,8 +172,8 @@ function getColDefs(
 
       if (
         key === props.fields?.primary_id ||
-        key === "climb_id" ||
-        key === "analysis_id"
+        key === DefaultPrimaryID.RECORD ||
+        key === DefaultPrimaryID.ANALYSIS
       ) {
         // ID fields pinned to the left
         colDef.pinned = "left";

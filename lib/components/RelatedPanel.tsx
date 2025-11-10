@@ -47,10 +47,10 @@ function RelatedPanel(props: RelatedPanelProps) {
 
   const cellRenderers = useMemo(() => {
     return new Map([
-      ["climb_id", RecordIDCellRendererFactory(props)],
-      ["analysis_id", AnalysisIDCellRendererFactory(props)],
+      [props.recordPrimaryID, RecordIDCellRendererFactory(props)],
+      [props.analysisPrimaryID, AnalysisIDCellRendererFactory(props)],
+      ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
       ["report", S3ReportCellRendererFactory(errorModalProps)],
-      // TODO: Support different primary ID fields
     ]);
   }, [props, errorModalProps]);
 
