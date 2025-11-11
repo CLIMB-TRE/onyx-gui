@@ -27,7 +27,6 @@ import {
   ExportStatus,
   RecordType,
   ListResponse,
-  Fields,
   DefaultPrimaryID,
 } from "../types";
 import ExportModal from "./ExportModal";
@@ -86,7 +85,8 @@ interface TableProps extends OnyxProps {
   defaultSort?: Map<string, SortDirection>;
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
-  fields?: Fields;
+  recordPrimaryID?: string;
+  analysisPrimaryID?: string;
 }
 
 interface ClientTableProps extends TableProps {
@@ -171,9 +171,10 @@ function getColDefs(
         colDef.cellRenderer = props.cellRenderers.get(key);
 
       if (
-        key === props.fields?.primary_id ||
         key === DefaultPrimaryID.RECORD ||
-        key === DefaultPrimaryID.ANALYSIS
+        key === DefaultPrimaryID.ANALYSIS ||
+        key === props.recordPrimaryID ||
+        key === props.analysisPrimaryID
       ) {
         // ID fields pinned to the left
         colDef.pinned = "left";
