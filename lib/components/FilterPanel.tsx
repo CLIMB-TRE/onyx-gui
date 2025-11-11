@@ -6,7 +6,7 @@ import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { MdClear, MdCreate, MdDelete } from "react-icons/md";
 import { DataProps } from "../interfaces";
-import { FilterConfig } from "../types";
+import { FieldType, FilterConfig } from "../types";
 import {
   formatField,
   formatLookup,
@@ -56,7 +56,7 @@ function FilterPanel(props: FilterPanelProps) {
       ...props.filterList.slice(0, index),
       {
         key: generateKey(),
-        type: "",
+        type: FieldType.NONE,
         field: "",
         lookup: "",
         value: "",

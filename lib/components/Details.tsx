@@ -35,7 +35,7 @@ function Field(props: FieldProps) {
       <Stack gap={1}>
         <b>{props.field}</b>
         <div className="text-muted">
-          {props.fields.get(props.field)?.description}
+          {props.fields.fields_map.get(props.field)?.description}
         </div>
       </Stack>
     </small>
@@ -91,11 +91,11 @@ function Details(props: DetailsProps) {
   // I'm drowning in hooks
   const choiceFields = useMemo(() => {
     const fields: string[] = [];
-    props.fields.forEach((value, key) => {
+    props.fields.fields_map.forEach((value, key) => {
       if (value.type === "choice") fields.push(key);
     });
     return fields;
-  }, [props.fields]);
+  }, [props.fields.fields_map]);
 
   const choiceDescriptionProps = useMemo(() => {
     return {
@@ -117,8 +117,8 @@ function Details(props: DetailsProps) {
     return Object.entries(props.data.data)
       .filter(
         ([key]) =>
-          props.fields.get(key)?.type !== "relation" &&
-          props.fields.get(key)?.type !== "structure" &&
+          props.fields.fields_map.get(key)?.type !== "relation" &&
+          props.fields.fields_map.get(key)?.type !== "structure" &&
           key !== "is_published"
       )
       .map(([key, value]) => ({
@@ -148,7 +148,7 @@ function Details(props: DetailsProps) {
               (row) =>
                 row.Field.toLowerCase().includes(debouncedSearch) ||
                 row.Value.toLowerCase().includes(debouncedSearch) ||
-                props.fields
+                props.fields.fields_map
                   .get(row.Field)
                   ?.description.toLowerCase()
                   .includes(debouncedSearch) ||

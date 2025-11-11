@@ -10,7 +10,7 @@ import { s3BucketsMessage } from "../utils/messages";
 import { SidebarButton } from "./Buttons";
 import {
   AnalysisIDCellRendererFactory,
-  ClimbIDCellRendererFactory,
+  RecordIDCellRendererFactory,
   S3ReportCellRendererFactory,
 } from "./CellRenderers";
 import ErrorModal from "./ErrorModal";
@@ -63,14 +63,16 @@ function ResultsPanel(props: ResultsPanelProps) {
     [props, handleErrorModalShow]
   );
 
-  const cellRenderers = new Map([
-    ["climb_id", ClimbIDCellRendererFactory(props)],
-    ["analysis_id", AnalysisIDCellRendererFactory(props)],
-    ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
-    ["report", S3ReportCellRendererFactory(errorModalProps)],
-  ]);
+  const cellRenderers = useMemo(() => {
+    return new Map([
+      [props.recordPrimaryID, RecordIDCellRendererFactory(props)],
+      [props.analysisPrimaryID, AnalysisIDCellRendererFactory(props)],
+      ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
+      ["report", S3ReportCellRendererFactory(errorModalProps)],
+    ]);
+  }, [props, errorModalProps]);
 
-  const fieldDescriptions = useFieldDescriptions(props.fields);
+  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
 
   const isSummarise = useMemo(() => {
     return props.searchParameters.includes("summarise=");
@@ -84,7 +86,7 @@ function ResultsPanel(props: ResultsPanelProps) {
           <span className="me-auto text-truncate">
             <PageTitle
               title={props.title}
-              description={props.projectDescription}
+              description={props.fields.description}
             />
           </span>
           <div

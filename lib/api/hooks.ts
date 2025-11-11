@@ -27,36 +27,34 @@ function flattenFields(fields: Record<string, Field>) {
   return flatFields;
 }
 
-const useFieldsInfo = (
+export const useFields = (
   data: DetailResponse<Fields> | ErrorResponse | undefined
 ) => {
   return useMemo(() => {
+    let fields: Fields;
+
     if (data?.status !== "success") {
-      return {
+      fields = {
         name: "",
         description: "",
-        fields: new Map<string, Field>(),
-        defaultFields: [] as string[],
+        object_type: "",
+        primary_id: "",
+        version: "",
+        fields: {},
+        fields_map: new Map<string, Field>(),
+        default_fields: [],
       };
+    } else {
+      fields = data.data;
+      fields.fields_map = new Map(Object.entries(flattenFields(fields.fields)));
+      fields.default_fields = fields.default_fields || [];
     }
 
-    // The name of the project
-    const name = data.data.name;
-
-    // The description of the project
-    const description = data.data.description;
-
-    // A map of field names to their type, description, actions, values and nested fields
-    const fields = new Map(Object.entries(flattenFields(data.data.fields)));
-
-    // The default GUI fields for the project
-    const defaultFields = data.data.default_fields || [];
-
-    return { name, description, fields, defaultFields };
+    return fields;
   }, [data]);
 };
 
-const useFieldDescriptions = (fields: Map<string, Field>) => {
+export const useFieldDescriptions = (fields: Map<string, Field>) => {
   return useMemo(() => {
     // Get a map of field names to their descriptions
     return new Map(
@@ -65,7 +63,7 @@ const useFieldDescriptions = (fields: Map<string, Field>) => {
   }, [fields]);
 };
 
-const useChoiceDescriptions = (
+export const useChoiceDescriptions = (
   data: DetailResponse<Choices> | ErrorResponse | undefined
 ) => {
   // Get a map of choices to their descriptions
@@ -80,7 +78,7 @@ const useChoiceDescriptions = (
   }, [data]);
 };
 
-const useChoicesDescriptions = (
+export const useChoicesDescriptions = (
   fields: string[],
   data: (DetailResponse<Choices> | ErrorResponse)[]
 ) => {
@@ -101,11 +99,4 @@ const useChoicesDescriptions = (
     }
     return descriptions;
   }, [fields, data]);
-};
-
-export {
-  useChoiceDescriptions,
-  useChoicesDescriptions,
-  useFieldsInfo,
-  useFieldDescriptions,
 };
