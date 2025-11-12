@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import { ExportStatus, TabState, Project, Field, Themes } from "./types";
+import { ExportStatus, TabState, Project, Fields, Theme } from "./types";
 
 export interface OnyxProps {
   enabled: boolean;
@@ -14,7 +14,7 @@ export interface OnyxProps {
 }
 
 export interface PageProps extends OnyxProps {
-  theme: Themes;
+  theme: Theme;
   tabState: TabState;
   setTabState: Dispatch<SetStateAction<TabState>>;
 }
@@ -24,8 +24,9 @@ export interface ProjectProps extends PageProps {
 }
 
 export interface DataProps extends ProjectProps {
-  fields: Map<string, Field>;
-  projectDescription: string;
+  fields: Fields;
+  recordPrimaryID: string;
+  analysisPrimaryID: string;
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
   handleProjectRecordShow: (recordID: string) => void;
@@ -38,7 +39,6 @@ export interface IDProps extends DataProps {
 }
 
 export interface ResultsProps extends DataProps {
-  defaultFields: string[];
   title: string;
   commandBase: string;
   searchPath: string;

@@ -11,7 +11,7 @@ import {
   useTypesQuery,
 } from "./api";
 import Fade from "react-bootstrap/Fade";
-import { useFieldsInfo } from "./api/hooks";
+import { useFields } from "./api/hooks";
 import Header from "./components/Header";
 import PageTitle from "./components/PageTitle";
 import QueryHandler from "./components/QueryHandler";
@@ -23,18 +23,19 @@ import Results from "./pages/Results";
 import Site from "./pages/Site";
 import User from "./pages/User";
 import {
-  AnalysisTabKeys,
-  AnalysisDetailTabKeys,
-  DataPanelTabKeys,
-  OnyxTabKeys,
+  AnalysisTabKey,
+  AnalysisDetailTabKey,
+  DataPanelTabKey,
+  OnyxTabKey,
   Project,
   ProjectPermissionGroup,
-  RecordTabKeys,
-  RecordDetailTabKeys,
+  RecordTabKey,
+  RecordDetailTabKey,
   TabState,
-  Themes,
+  Theme,
   RecentlyViewed,
   ObjectType,
+  DefaultPrimaryID,
 } from "./types";
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
 import { getTheme } from "./utils/functions";
@@ -51,18 +52,27 @@ interface ProjectPageProps extends ProjectProps {
 }
 
 function ProjectPage(props: ProjectPageProps) {
-  // Get project information
-  const { isFetching, error, data: fieldsResponse } = useFieldsQuery(props);
-  const { description, fields, defaultFields } = useFieldsInfo(fieldsResponse);
-
-  // Get project analyses information
+  // Get record fields for the project
   const {
-    isFetching: isAnalysisFetching,
-    error: analysisError,
+    isFetching: isRecordFieldsFetching,
+    error: recordFieldsError,
+    data: recordFieldsResponse,
+  } = useFieldsQuery(props);
+  const recordFields = useFields(recordFieldsResponse);
+  const recordPrimaryID = useMemo(() => {
+    return recordFields.primary_id ?? DefaultPrimaryID.RECORD;
+  }, [recordFields]);
+
+  // Get analyses fields for the project
+  const {
+    isFetching: isAnalysisFieldsFetching,
+    error: analysisFieldsError,
     data: analysisFieldsResponse,
   } = useAnalysisFieldsQuery(props);
-  const { fields: analysisFields, defaultFields: defaultAnalysisFields } =
-    useFieldsInfo(analysisFieldsResponse);
+  const analysisFields = useFields(analysisFieldsResponse);
+  const analysisPrimaryID = useMemo(() => {
+    return analysisFields.primary_id ?? DefaultPrimaryID.ANALYSIS;
+  }, [analysisFields]);
 
   return (
     <Tab.Container
@@ -71,43 +81,44 @@ function ProjectPage(props: ProjectPageProps) {
       transition={false}
     >
       <Tab.Content className="h-100">
-        <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
+        <Tab.Pane eventKey={OnyxTabKey.USER} className="h-100">
           <User {...props} />
         </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
+        <Tab.Pane eventKey={OnyxTabKey.SITE} className="h-100">
           <Site {...props} />
         </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
+        <Tab.Pane eventKey={OnyxTabKey.RECORDS} className="h-100">
           <QueryHandler
-            isFetching={isFetching}
-            error={error}
-            data={fieldsResponse}
+            isFetching={isRecordFieldsFetching}
+            error={recordFieldsError}
+            data={recordFieldsResponse}
           >
             <Tab.Container
               activeKey={props.tabState.recordTabKey}
               transition={false}
             >
               <Tab.Content className="h-100">
-                <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
+                <Tab.Pane eventKey={RecordTabKey.LIST} className="h-100">
                   <Results
                     {...props}
-                    fields={fields}
-                    defaultFields={defaultFields}
-                    projectDescription={description}
+                    fields={recordFields}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     title="Records"
                     commandBase={`onyx filter ${props.project.code}`}
                     searchPath={`projects/${props.project.code}`}
                   />
                 </Tab.Pane>
                 <Tab.Pane
-                  eventKey={RecordTabKeys.DETAIL}
+                  eventKey={RecordTabKey.DETAIL}
                   className="h-100"
                   unmountOnExit
                 >
                   <ProjectRecord
                     {...props}
-                    fields={fields}
-                    projectDescription={description}
+                    fields={recordFields}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     ID={props.tabState.recordID}
                     onHide={props.handleProjectRecordHide}
                   />
@@ -116,10 +127,10 @@ function ProjectPage(props: ProjectPageProps) {
             </Tab.Container>
           </QueryHandler>
         </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
+        <Tab.Pane eventKey={OnyxTabKey.ANALYSES} className="h-100">
           <QueryHandler
-            isFetching={isAnalysisFetching}
-            error={analysisError}
+            isFetching={isAnalysisFieldsFetching}
+            error={analysisFieldsError}
             data={analysisFieldsResponse}
           >
             <Tab.Container
@@ -127,26 +138,27 @@ function ProjectPage(props: ProjectPageProps) {
               transition={false}
             >
               <Tab.Content className="h-100">
-                <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
+                <Tab.Pane eventKey={AnalysisTabKey.LIST} className="h-100">
                   <Results
                     {...props}
                     fields={analysisFields}
-                    defaultFields={defaultAnalysisFields}
-                    projectDescription={description}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     title="Analyses"
                     commandBase={`onyx filter-analysis ${props.project.code}`}
                     searchPath={`projects/${props.project.code}/analysis`}
                   />
                 </Tab.Pane>
                 <Tab.Pane
-                  eventKey={AnalysisTabKeys.DETAIL}
+                  eventKey={AnalysisTabKey.DETAIL}
                   className="h-100"
                   unmountOnExit
                 >
                   <Analysis
                     {...props}
                     fields={analysisFields}
-                    projectDescription={description}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     ID={props.tabState.analysisID}
                     onHide={props.handleAnalysisHide}
                   />
@@ -155,8 +167,13 @@ function ProjectPage(props: ProjectPageProps) {
             </Tab.Container>
           </QueryHandler>
         </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
-          <Graphs {...props} fields={fields} projectDescription={description} />
+        <Tab.Pane eventKey={OnyxTabKey.GRAPHS} className="h-100">
+          <Graphs
+            {...props}
+            fields={recordFields}
+            recordPrimaryID={recordPrimaryID}
+            analysisPrimaryID={analysisPrimaryID}
+          />
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>
@@ -184,7 +201,7 @@ function App(props: OnyxProps) {
   // Theme state
   const extTheme = getTheme(props.extTheme);
   const localTheme = getTheme(localStorage.getItem("onyx-theme"));
-  const [theme, setTheme] = useState(extTheme ?? localTheme ?? Themes.LIGHT);
+  const [theme, setTheme] = useState(extTheme ?? localTheme ?? Theme.LIGHT);
 
   // Set the theme
   useEffect(() => {
@@ -193,20 +210,20 @@ function App(props: OnyxProps) {
   }, [theme]);
 
   const handleThemeChange = () => {
-    const updatedTheme = theme === Themes.LIGHT ? Themes.DARK : Themes.LIGHT;
+    const updatedTheme = theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT;
     setTheme(updatedTheme);
     localStorage.setItem("onyx-theme", updatedTheme);
   };
 
   const defaultTabState = {
-    tabKey: OnyxTabKeys.RECORDS,
-    recordTabKey: RecordTabKeys.LIST,
-    recordDetailTabKey: RecordDetailTabKeys.DATA,
-    recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
+    tabKey: OnyxTabKey.RECORDS,
+    recordTabKey: RecordTabKey.LIST,
+    recordDetailTabKey: RecordDetailTabKey.DATA,
+    recordDataPanelTabKey: DataPanelTabKey.DETAILS,
     recordID: "",
-    analysisTabKey: AnalysisTabKeys.LIST,
-    analysisDetailTabKey: AnalysisDetailTabKeys.DATA,
-    analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
+    analysisTabKey: AnalysisTabKey.LIST,
+    analysisDetailTabKey: AnalysisDetailTabKey.DATA,
+    analysisDataPanelTabKey: DataPanelTabKey.DETAILS,
     analysisID: "",
   };
 
@@ -240,29 +257,29 @@ function App(props: OnyxProps) {
     if (!setTitle || !project) return;
 
     switch (true) {
-      case tabState.tabKey === OnyxTabKeys.USER:
+      case tabState.tabKey === OnyxTabKey.USER:
         setTitle("Onyx | Profile");
         break;
-      case tabState.tabKey === OnyxTabKeys.SITE:
+      case tabState.tabKey === OnyxTabKey.SITE:
         setTitle("Onyx | Site");
         break;
-      case tabState.tabKey === OnyxTabKeys.RECORDS &&
-        tabState.recordTabKey === RecordTabKeys.LIST:
+      case tabState.tabKey === OnyxTabKey.RECORDS &&
+        tabState.recordTabKey === RecordTabKey.LIST:
         setTitle(`${project.name} | Records`);
         break;
-      case tabState.tabKey === OnyxTabKeys.RECORDS &&
-        tabState.recordTabKey === RecordTabKeys.DETAIL:
+      case tabState.tabKey === OnyxTabKey.RECORDS &&
+        tabState.recordTabKey === RecordTabKey.DETAIL:
         setTitle(`${project.name} | ${tabState.recordID}`);
         break;
-      case tabState.tabKey === OnyxTabKeys.ANALYSES &&
-        tabState.analysisTabKey === AnalysisTabKeys.LIST:
+      case tabState.tabKey === OnyxTabKey.ANALYSES &&
+        tabState.analysisTabKey === AnalysisTabKey.LIST:
         setTitle(`${project.name} | Analyses`);
         break;
-      case tabState.tabKey === OnyxTabKeys.ANALYSES &&
-        tabState.analysisTabKey === AnalysisTabKeys.DETAIL:
+      case tabState.tabKey === OnyxTabKey.ANALYSES &&
+        tabState.analysisTabKey === AnalysisTabKey.DETAIL:
         setTitle(`${project.name} | ${tabState.analysisID}`);
         break;
-      case tabState.tabKey === OnyxTabKeys.GRAPHS:
+      case tabState.tabKey === OnyxTabKey.GRAPHS:
         setTitle(`${project.name} | Graphs`);
         break;
       default:
@@ -345,16 +362,16 @@ function App(props: OnyxProps) {
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
   const handleProjectRecordShow = useCallback(
-    (climbID: string) => {
+    (recordID: string) => {
       setTabState((prevState) => ({
         ...prevState,
-        tabKey: OnyxTabKeys.RECORDS,
-        recordTabKey: RecordTabKeys.DETAIL,
-        recordDetailTabKey: RecordDetailTabKeys.DATA,
-        recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
-        recordID: climbID,
+        tabKey: OnyxTabKey.RECORDS,
+        recordTabKey: RecordTabKey.DETAIL,
+        recordDetailTabKey: RecordDetailTabKey.DATA,
+        recordDataPanelTabKey: DataPanelTabKey.DETAILS,
+        recordID: recordID,
       }));
-      handleRecentlyViewed("record", climbID);
+      handleRecentlyViewed(ObjectType.RECORD, recordID);
     },
     [handleRecentlyViewed, setTabState]
   );
@@ -362,8 +379,8 @@ function App(props: OnyxProps) {
   const handleProjectRecordHide = useCallback(() => {
     setTabState((prevState) => ({
       ...prevState,
-      tabKey: OnyxTabKeys.RECORDS,
-      recordTabKey: RecordTabKeys.LIST,
+      tabKey: OnyxTabKey.RECORDS,
+      recordTabKey: RecordTabKey.LIST,
     }));
   }, [setTabState]);
 
@@ -371,13 +388,13 @@ function App(props: OnyxProps) {
     (analysisID: string) => {
       setTabState((prevState) => ({
         ...prevState,
-        tabKey: OnyxTabKeys.ANALYSES,
-        analysisTabKey: AnalysisTabKeys.DETAIL,
-        analysisDetailTabKey: AnalysisDetailTabKeys.DATA,
-        analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
+        tabKey: OnyxTabKey.ANALYSES,
+        analysisTabKey: AnalysisTabKey.DETAIL,
+        analysisDetailTabKey: AnalysisDetailTabKey.DATA,
+        analysisDataPanelTabKey: DataPanelTabKey.DETAILS,
         analysisID: analysisID,
       }));
-      handleRecentlyViewed("analysis", analysisID);
+      handleRecentlyViewed(ObjectType.ANALYSIS, analysisID);
     },
     [handleRecentlyViewed, setTabState]
   );
@@ -385,8 +402,8 @@ function App(props: OnyxProps) {
   const handleAnalysisHide = useCallback(() => {
     setTabState((prevState) => ({
       ...prevState,
-      tabKey: OnyxTabKeys.ANALYSES,
-      analysisTabKey: AnalysisTabKeys.LIST,
+      tabKey: OnyxTabKey.ANALYSES,
+      analysisTabKey: AnalysisTabKey.LIST,
     }));
   }, [setTabState]);
 

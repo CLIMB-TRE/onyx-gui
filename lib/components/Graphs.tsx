@@ -4,13 +4,14 @@ import createPlotlyComponent from "react-plotly.js/factory";
 import { useGroupedSummaryQuery, useSummaryQuery } from "../api";
 import { DataProps } from "../interfaces";
 import {
-  Themes,
+  Theme,
   ErrorResponse,
   GraphConfig,
   Field,
+  Fields,
   SuccessResponse,
   Summary,
-  DarkModeColours,
+  DarkModeColour,
 } from "../types";
 import { useQueryRefresh } from "../utils/hooks";
 import { graphStyles } from "../utils/styles";
@@ -20,7 +21,7 @@ import QueryHandler from "./QueryHandler";
 const Plot = createPlotlyComponent(Plotly);
 
 interface BasePlotProps {
-  fields: Map<string, Field>;
+  fields: Fields;
   plotData: Plotly.Data[];
   title?: string;
   xTitle?: string;
@@ -28,7 +29,7 @@ interface BasePlotProps {
   yAxisType?: string;
   legendTitle?: string;
   layout?: Partial<Layout>;
-  theme: Themes;
+  theme: Theme;
   uirevision: string;
 }
 
@@ -199,7 +200,7 @@ function BasePlot(props: BasePlotProps) {
     ...props.layout,
     autosize: true,
     title: props.title,
-    titlefont: { size: 14, color: DarkModeColours.BS_GRAY_600 },
+    titlefont: { size: 14, color: DarkModeColour.BS_GRAY_600 },
     margin: {
       l: 60,
       r: 60,
@@ -207,7 +208,7 @@ function BasePlot(props: BasePlotProps) {
       t: 60,
       pad: 4,
     },
-    template: props.theme === Themes.DARK ? graphStyles : undefined,
+    template: props.theme === Theme.DARK ? graphStyles : undefined,
     xaxis: { title: props.xTitle },
     yaxis: {
       title: props.yTitle,
@@ -230,7 +231,9 @@ function BasePlot(props: BasePlotProps) {
     uirevision: props.uirevision,
   };
 
-  if (props.fields.get(props.xTitle || "")?.type.startsWith("date")) {
+  if (
+    props.fields.fields_map.get(props.xTitle || "")?.type.startsWith("date")
+  ) {
     layout.xaxis = {
       ...layout.xaxis,
       rangeselector: {
@@ -256,7 +259,7 @@ function BasePlot(props: BasePlotProps) {
           { step: "all" },
         ],
         bgcolor:
-          props.theme === Themes.DARK ? DarkModeColours.BS_GRAY_900 : undefined,
+          props.theme === Theme.DARK ? DarkModeColour.BS_GRAY_900 : undefined,
       },
     };
   }
@@ -308,7 +311,11 @@ function ScatterGraph(props: GraphProps) {
           mode: "lines+markers",
         },
       ]}
-      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
+      title={getNullCount(
+        props.fields.fields_map,
+        props.graphConfig.field,
+        plotData
+      )}
       xTitle={props.graphConfig.field}
       yTitle="count"
       yAxisType={props.graphConfig.yAxisType}
@@ -344,7 +351,11 @@ function BarGraph(props: GraphProps) {
           type: "bar",
         },
       ]}
-      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
+      title={getNullCount(
+        props.fields.fields_map,
+        props.graphConfig.field,
+        plotData
+      )}
       xTitle={props.graphConfig.field}
       yTitle={yTitle}
       yAxisType={props.graphConfig.yAxisType}
@@ -371,7 +382,11 @@ function PieGraph(props: GraphProps) {
           marker: { color: "#198754" },
         },
       ]}
-      title={getNullCount(props.fields, props.graphConfig.field, plotData)}
+      title={getNullCount(
+        props.fields.fields_map,
+        props.graphConfig.field,
+        plotData
+      )}
       legendTitle={props.graphConfig.field}
       uirevision={props.graphConfig.field}
     />
@@ -403,7 +418,7 @@ function GroupedScatterGraph(props: GraphProps) {
       data={data}
       plotData={scatterData}
       title={getGroupedNullCount(
-        props.fields,
+        props.fields.fields_map,
         props.graphConfig.field,
         plotData
       )}
@@ -451,7 +466,7 @@ function GroupedBarGraph(props: GraphProps) {
       data={data}
       plotData={barData}
       title={getGroupedNullCount(
-        props.fields,
+        props.fields.fields_map,
         props.graphConfig.field,
         plotData
       )}

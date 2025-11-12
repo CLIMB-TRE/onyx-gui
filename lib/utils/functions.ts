@@ -1,11 +1,12 @@
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
+  Field,
   RecordType,
   DetailResponse,
   ErrorResponse,
   ExportStatus,
   FilterConfig,
-  Themes,
+  Theme,
 } from "../types";
 
 /** Returns a random hexadecimal string. */
@@ -135,9 +136,25 @@ export function formatValue(value: string) {
   return values.join(", ");
 }
 
-/** Converts a string theme value to a Themes enum value, or null if invalid. */
-export function getTheme(theme: string | null | undefined): Themes | null {
-  if (theme === Themes.LIGHT) return Themes.LIGHT;
-  else if (theme === Themes.DARK) return Themes.DARK;
+/** Converts a string theme value to a Theme enum value, or null if invalid. */
+export function getTheme(theme: string | null | undefined): Theme | null {
+  if (theme === Theme.LIGHT) return Theme.LIGHT;
+  else if (theme === Theme.DARK) return Theme.DARK;
   else return null;
+}
+
+/** Set include/exclude columns based on includeList and columnOptions */
+export function getColumns(includeList: string[], columnOptions: Field[]) {
+  let columns;
+  let columnOperator;
+  if (includeList.length <= columnOptions.length - includeList.length) {
+    columnOperator = "include";
+    columns = includeList;
+  } else {
+    columnOperator = "exclude";
+    columns = columnOptions
+      .filter((field) => !includeList.includes(field.code))
+      .map((field) => field.code);
+  }
+  return { columnOperator, columns };
 }

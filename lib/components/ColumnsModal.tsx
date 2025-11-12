@@ -15,7 +15,6 @@ interface ColumnsModalProps extends DataProps {
   show: boolean;
   onHide: () => void;
   columns: Field[];
-  defaultColumns: string[];
   activeColumns: string[];
   setActiveColumns: (value: string[]) => void;
 }
@@ -132,7 +131,7 @@ function ColumnsModal(props: ColumnsModalProps) {
           className="me-auto"
           variant="secondary"
           onClick={() => {
-            setActiveColumns(new Set(props.defaultColumns));
+            setActiveColumns(new Set(props.fields.default_fields));
             setSelectAll(false);
             setSearch("");
           }}
