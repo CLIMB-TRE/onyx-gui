@@ -39,7 +39,7 @@ interface GraphQueryProps extends ProjectProps {
 }
 
 /** Fetch types */
-const useTypesQuery = (
+export const useTypesQuery = (
   props: OnyxProps
 ): UseQueryResult<ListResponse<TypeObject> | ErrorResponse, Error> => {
   return useQuery({
@@ -55,7 +55,7 @@ const useTypesQuery = (
 };
 
 /** Fetch lookups */
-const useLookupsQuery = (
+export const useLookupsQuery = (
   props: OnyxProps
 ): UseQueryResult<ListResponse<Lookup> | ErrorResponse, Error> => {
   return useQuery({
@@ -71,7 +71,7 @@ const useLookupsQuery = (
 };
 
 /** Fetch user profile */
-const useProfileQuery = (
+export const useProfileQuery = (
   props: OnyxProps
 ): UseQueryResult<DetailResponse<Profile> | ErrorResponse, Error> => {
   return useQuery({
@@ -87,7 +87,7 @@ const useProfileQuery = (
 };
 
 /** Fetch user project permissions */
-const useProjectPermissionsQuery = (
+export const useProjectPermissionsQuery = (
   props: OnyxProps
 ): UseQueryResult<
   ListResponse<ProjectPermissionGroup> | ErrorResponse,
@@ -106,7 +106,7 @@ const useProjectPermissionsQuery = (
 };
 
 /** Fetch project fields */
-const useFieldsQuery = (
+export const useFieldsQuery = (
   props: ProjectProps
 ): UseQueryResult<DetailResponse<Fields> | ErrorResponse, Error> => {
   return useQuery({
@@ -122,7 +122,7 @@ const useFieldsQuery = (
 };
 
 /** Fetch analysis fields */
-const useAnalysisFieldsQuery = (
+export const useAnalysisFieldsQuery = (
   props: ProjectProps
 ): UseQueryResult<DetailResponse<Fields> | ErrorResponse, Error> => {
   return useQuery({
@@ -138,7 +138,7 @@ const useAnalysisFieldsQuery = (
 };
 
 /** Fetch choices for a field */
-const useChoicesQuery = (
+export const useChoicesQuery = (
   props: ChoiceProps
 ): UseQueryResult<DetailResponse<Choices> | ErrorResponse, Error> => {
   return useQuery({
@@ -156,7 +156,7 @@ const useChoicesQuery = (
 };
 
 /** Fetch choices for multiple fields */
-const useChoicesQueries = (props: ChoicesProps) => {
+export const useChoicesQueries = (props: ChoicesProps) => {
   return useQueries({
     queries: props.fields.map((field) => ({
       queryKey: ["choices-detail", props.project.code, field],
@@ -172,7 +172,7 @@ const useChoicesQueries = (props: ChoicesProps) => {
 };
 
 /** Fetch user activity */
-const useActivityQuery = (
+export const useActivityQuery = (
   props: OnyxProps
 ): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -188,7 +188,7 @@ const useActivityQuery = (
 };
 
 /** Fetch site users */
-const useSiteUsersQuery = (
+export const useSiteUsersQuery = (
   props: OnyxProps
 ): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -204,7 +204,7 @@ const useSiteUsersQuery = (
 };
 
 /** Fetch history from ID */
-const useHistoryQuery = (
+export const useHistoryQuery = (
   props: IDProps
 ): UseQueryResult<DetailResponse<HistoricalEntries> | ErrorResponse, Error> => {
   return useQuery({
@@ -220,7 +220,7 @@ const useHistoryQuery = (
 };
 
 /** Fetch record from record ID */
-const useRecordQuery = (
+export const useRecordQuery = (
   props: IDProps
 ): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -236,7 +236,7 @@ const useRecordQuery = (
 };
 
 /** Fetch record analyses from record ID */
-const useRecordAnalysesQuery = (
+export const useRecordAnalysesQuery = (
   props: IDProps
 ): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -252,7 +252,7 @@ const useRecordAnalysesQuery = (
 };
 
 /** Fetch analysis from analysis ID */
-const useAnalysisQuery = (
+export const useAnalysisQuery = (
   props: IDProps
 ): UseQueryResult<DetailResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -268,7 +268,7 @@ const useAnalysisQuery = (
 };
 
 /** Fetch analysis records from analysis ID */
-const useAnalysisRecordsQuery = (
+export const useAnalysisRecordsQuery = (
   props: IDProps
 ): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -286,7 +286,7 @@ const useAnalysisRecordsQuery = (
 };
 
 /** Fetch upstream analyses from analysis ID */
-const useAnalysisUpstreamQuery = (
+export const useAnalysisUpstreamQuery = (
   props: IDProps
 ): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -304,7 +304,7 @@ const useAnalysisUpstreamQuery = (
 };
 
 /** Fetch downstream analyses from analysis ID */
-const useAnalysisDownstreamQuery = (
+export const useAnalysisDownstreamQuery = (
   props: IDProps
 ): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -322,7 +322,7 @@ const useAnalysisDownstreamQuery = (
 };
 
 /** Fetch results from path and search parameters */
-const useResultsQuery = (
+export const useResultsQuery = (
   props: QueryProps
 ): UseQueryResult<ListResponse<RecordType> | ErrorResponse, Error> => {
   return useQuery({
@@ -340,7 +340,7 @@ const useResultsQuery = (
 };
 
 /** Fetch count from path and search parameters */
-const useCountQuery = (props: QueryProps) => {
+export const useCountQuery = (props: QueryProps) => {
   return useQuery({
     queryKey: ["count-detail", props.searchPath, props.searchParameters],
     queryFn: async () => {
@@ -356,11 +356,12 @@ const useCountQuery = (props: QueryProps) => {
     },
     enabled: !!(props.enabled && props.project && props.searchPath),
     placeholderData: { data: {} },
+    refetchOnMount: true,
   });
 };
 
 /** Fetch summary from project and field */
-const useSummaryQuery = (props: GraphQueryProps) => {
+export const useSummaryQuery = (props: GraphQueryProps) => {
   const search = new URLSearchParams(formatFilters(props.graphConfig.filters));
   const filters = search.toString();
   if (props.graphConfig.field)
@@ -384,7 +385,7 @@ const useSummaryQuery = (props: GraphQueryProps) => {
 };
 
 /** Fetch grouped summary from project, field, and groupBy */
-const useGroupedSummaryQuery = (props: GraphQueryProps) => {
+export const useGroupedSummaryQuery = (props: GraphQueryProps) => {
   const search = new URLSearchParams(formatFilters(props.graphConfig.filters));
   const filters = search.toString();
   if (props.graphConfig.field)
@@ -408,28 +409,4 @@ const useGroupedSummaryQuery = (props: GraphQueryProps) => {
     enabled: !!(props.enabled && props.project),
     placeholderData: { data: [] },
   });
-};
-
-export {
-  useActivityQuery,
-  useAnalysisDownstreamQuery,
-  useAnalysisFieldsQuery,
-  useAnalysisQuery,
-  useAnalysisRecordsQuery,
-  useAnalysisUpstreamQuery,
-  useChoicesQueries,
-  useChoicesQuery,
-  useCountQuery,
-  useGroupedSummaryQuery,
-  useHistoryQuery,
-  useLookupsQuery,
-  useProfileQuery,
-  useFieldsQuery,
-  useProjectPermissionsQuery,
-  useRecordAnalysesQuery,
-  useRecordQuery,
-  useResultsQuery,
-  useSiteUsersQuery,
-  useSummaryQuery,
-  useTypesQuery,
 };
