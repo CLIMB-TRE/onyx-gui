@@ -11,6 +11,8 @@ import {
   MdJoinInner,
   MdLightMode,
   MdHistory,
+  MdArrowBackIos,
+  MdArrowForwardIos,
 } from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
@@ -27,6 +29,7 @@ import {
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
+import { Button } from "react-bootstrap";
 
 interface HeaderProps extends PageProps {
   project?: Project;
@@ -39,6 +42,10 @@ interface HeaderProps extends PageProps {
   handleProjectRecordHide: () => void;
   handleAnalysisHide: () => void;
   handleRecentlyViewed: (objectType: ObjectType, ID: string) => void;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  handleGoBack: () => void;
+  handleGoForward: () => void;
 }
 
 function HeaderText({
@@ -209,6 +216,24 @@ function Header(props: HeaderProps) {
             activeKey={props.project ? props.tabState.tabKey : undefined}
           >
             <Stack direction="horizontal" gap={3}>
+              <Button
+                className="onyx-transparent-button"
+                size="sm"
+                title="Go Back"
+                onClick={props.handleGoBack}
+                disabled={!props.canGoBack}
+              >
+                <MdArrowBackIos />
+              </Button>
+              <Button
+                className="onyx-transparent-button"
+                size="sm"
+                title="Go Forward"
+                onClick={props.handleGoForward}
+                disabled={!props.canGoForward}
+              >
+                <MdArrowForwardIos />
+              </Button>
               <Nav.Link
                 eventKey={OnyxTabKey.RECORDS}
                 className="fw-normal"

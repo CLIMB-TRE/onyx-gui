@@ -238,6 +238,67 @@ function App(props: OnyxProps) {
     "tabState",
     defaultTabState
   );
+  const [navHistory, setNavHistory] = useState<{
+    history: TabState[];
+    index: number;
+  }>({
+    history: [],
+    index: -1,
+  });
+  const pushToHistory = useCallback((newTabState: TabState) => {
+    setNavHistory((prev) => {
+      const newHistory = prev.history.slice(0, prev.index + 1);
+      const lastState = newHistory[newHistory.length - 1];
+      if (
+        lastState &&
+        JSON.stringify(lastState) === JSON.stringify(newTabState)
+      ) {
+        return prev;
+      }
+
+      const updatedHistory = [...newHistory, newTabState];
+      return {
+        history: updatedHistory,
+        index: updatedHistory.length - 1,
+      };
+    });
+  }, []); // No dependencies needed
+  const goBack = useCallback(() => {
+    if (navHistory.index > 0) {
+      const newIndex = navHistory.index - 1;
+      const targetState = navHistory.history[newIndex];
+
+      // Update history index first
+      setNavHistory((prev) => ({
+        ...prev,
+        index: newIndex,
+      }));
+
+      setTabState(targetState);
+    }
+  }, [navHistory, setTabState]);
+
+  const goForward = useCallback(() => {
+    if (navHistory.index < navHistory.history.length - 1) {
+      const newIndex = navHistory.index + 1;
+      const targetState = navHistory.history[newIndex];
+
+      // Update history index first
+      setNavHistory((prev) => ({
+        ...prev,
+        index: newIndex,
+      }));
+
+      setTabState(targetState);
+    }
+  }, [navHistory, setTabState]);
+  const canGoBack = navHistory.index > 0;
+  const canGoForward = navHistory.index < navHistory.history.length - 1;
+
+  useEffect(() => {
+    pushToHistory(tabState);
+  }, [tabState, pushToHistory]);
+
   const [recentlyViewed, setRecentlyViewed] = usePersistedState<
     RecentlyViewed[]
   >(props, "recentlyViewed", []);
@@ -247,6 +308,7 @@ function App(props: OnyxProps) {
     if (p !== project) {
       setProject(p);
       setTabState(defaultTabState);
+      setNavHistory({ history: [], index: -1 });
       setRecentlyViewed([]);
     }
   };
@@ -424,6 +486,10 @@ function App(props: OnyxProps) {
         handleProjectRecordHide={handleProjectRecordHide}
         handleAnalysisHide={handleAnalysisHide}
         handleRecentlyViewed={handleRecentlyViewed}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        handleGoBack={goBack}
+        handleGoForward={goForward}
       />
       <Container fluid className="onyx-content p-2">
         {!(props.enabled && project) ? (
