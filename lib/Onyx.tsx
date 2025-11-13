@@ -26,6 +26,7 @@ import {
   AnalysisTabKey,
   AnalysisDetailTabKey,
   DataPanelTabKey,
+  Navigation,
   OnyxTabKey,
   Project,
   ProjectPermissionGroup,
@@ -238,78 +239,72 @@ function App(props: OnyxProps) {
     "tabState",
     defaultTabState
   );
-  const [navHistory, setNavHistory] = useState<{
-    history: TabState[];
-    index: number;
-  }>({
+  const [navigation, setNavigation] = useState<Navigation>({
     history: [],
     index: -1,
   });
-  const pushToHistory = useCallback((newTabState: TabState) => {
-    setNavHistory((prev) => {
-      const newHistory = prev.history.slice(0, prev.index + 1);
-      const lastState = newHistory[newHistory.length - 1];
-      if (
-        lastState &&
-        JSON.stringify(lastState) === JSON.stringify(newTabState)
-      ) {
+  const [recentlyViewed, setRecentlyViewed] = usePersistedState<
+    RecentlyViewed[]
+  >(props, "recentlyViewed", []);
+
+  const updateNavigation = useCallback((newTabState: TabState) => {
+    setNavigation((prev) => {
+      const history = prev.history.slice(0, prev.index + 1);
+      const lastState = history[history.length - 1];
+      if (JSON.stringify(lastState) === JSON.stringify(newTabState)) {
         return prev;
       }
 
-      const updatedHistory = [...newHistory, newTabState];
+      const updatedHistory = [...history, newTabState].slice(-50);
       return {
         history: updatedHistory,
         index: updatedHistory.length - 1,
       };
     });
-  }, []); // No dependencies needed
-  const goBack = useCallback(() => {
-    if (navHistory.index > 0) {
-      const newIndex = navHistory.index - 1;
-      const targetState = navHistory.history[newIndex];
+  }, []);
 
-      // Update history index first
-      setNavHistory((prev) => ({
+  const handleNavigationBack = useCallback(() => {
+    if (navigation.index > 0) {
+      const newIndex = navigation.index - 1;
+      const targetState = navigation.history[newIndex];
+
+      setNavigation((prev) => ({
         ...prev,
         index: newIndex,
       }));
-
       setTabState(targetState);
     }
-  }, [navHistory, setTabState]);
+  }, [navigation, setTabState]);
 
-  const goForward = useCallback(() => {
-    if (navHistory.index < navHistory.history.length - 1) {
-      const newIndex = navHistory.index + 1;
-      const targetState = navHistory.history[newIndex];
+  const handleNavigationForward = useCallback(() => {
+    if (navigation.index < navigation.history.length - 1) {
+      const newIndex = navigation.index + 1;
+      const targetState = navigation.history[newIndex];
 
-      // Update history index first
-      setNavHistory((prev) => ({
+      setNavigation((prev) => ({
         ...prev,
         index: newIndex,
       }));
-
       setTabState(targetState);
     }
-  }, [navHistory, setTabState]);
-  const canGoBack = navHistory.index > 0;
-  const canGoForward = navHistory.index < navHistory.history.length - 1;
+  }, [navigation, setTabState]);
 
+  // Update navigation when tab state changes
   useEffect(() => {
-    pushToHistory(tabState);
-  }, [tabState, pushToHistory]);
+    updateNavigation(tabState);
+  }, [tabState, updateNavigation]);
 
-  const [recentlyViewed, setRecentlyViewed] = usePersistedState<
-    RecentlyViewed[]
-  >(props, "recentlyViewed", []);
+  const handleNavigationClear = () => {
+    setTabState(defaultTabState);
+    setNavigation({ history: [], index: -1 });
+    setRecentlyViewed([]);
+  };
 
   // Clear parameters when project changes
   const handleProjectChange = (p: Project) => {
     if (p !== project) {
       setProject(p);
-      setTabState(defaultTabState);
-      setNavHistory({ history: [], index: -1 });
-      setRecentlyViewed([]);
+      handleNavigationClear();
     }
   };
 
@@ -486,10 +481,9 @@ function App(props: OnyxProps) {
         handleProjectRecordHide={handleProjectRecordHide}
         handleAnalysisHide={handleAnalysisHide}
         handleRecentlyViewed={handleRecentlyViewed}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        handleGoBack={goBack}
-        handleGoForward={goForward}
+        navigation={navigation}
+        handleNavigateBack={handleNavigationBack}
+        handleNavigateForward={handleNavigationForward}
       />
       <Container fluid className="onyx-content p-2">
         {!(props.enabled && project) ? (

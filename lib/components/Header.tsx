@@ -19,6 +19,7 @@ import { PageProps } from "../interfaces";
 import {
   AnalysisTabKey,
   DarkModeColour,
+  Navigation,
   ObjectType,
   OnyxTabKey,
   Profile,
@@ -42,10 +43,9 @@ interface HeaderProps extends PageProps {
   handleProjectRecordHide: () => void;
   handleAnalysisHide: () => void;
   handleRecentlyViewed: (objectType: ObjectType, ID: string) => void;
-  canGoBack: boolean;
-  canGoForward: boolean;
-  handleGoBack: () => void;
-  handleGoForward: () => void;
+  navigation: Navigation;
+  handleNavigateBack: () => void;
+  handleNavigateForward: () => void;
 }
 
 function HeaderText({
@@ -131,6 +131,10 @@ function Header(props: HeaderProps) {
       );
     }
   };
+
+  const canNavigateBack = props.navigation.index > 0;
+  const canNavigateForward =
+    props.navigation.index < props.navigation.history.length - 1;
 
   return (
     <Navbar
@@ -219,18 +223,18 @@ function Header(props: HeaderProps) {
               <Button
                 className="onyx-transparent-button"
                 size="sm"
-                title="Go Back"
-                onClick={props.handleGoBack}
-                disabled={!props.canGoBack}
+                title="Go Back in Navigation"
+                onClick={props.handleNavigateBack}
+                disabled={!canNavigateBack}
               >
                 <MdArrowBackIosNew />
               </Button>
               <Button
                 className="onyx-transparent-button"
                 size="sm"
-                title="Go Forward"
-                onClick={props.handleGoForward}
-                disabled={!props.canGoForward}
+                title="Go Forward in Navigation"
+                onClick={props.handleNavigateForward}
+                disabled={!canNavigateForward}
               >
                 <MdArrowForwardIos />
               </Button>

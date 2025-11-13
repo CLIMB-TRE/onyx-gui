@@ -110,6 +110,11 @@ export type RecentlyViewed = {
   timestamp: string;
 };
 
+export type Navigation = {
+  history: TabState[];
+  index: number;
+};
+
 export type Profile = {
   username: string;
   site: string;
