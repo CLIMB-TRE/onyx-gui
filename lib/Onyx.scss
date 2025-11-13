@@ -105,13 +105,5 @@
     background: none !important;
     border: none !important;
     padding: 0 !important;
-    color: var(--bs-secondary) !important;
-    &:hover {
-      color: var(--bs-light) !important;
-      background: none !important;
-    }
-    &:focus {
-      box-shadow: none !important;
-    }
   }
 }

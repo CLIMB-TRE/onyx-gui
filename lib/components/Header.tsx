@@ -11,7 +11,7 @@ import {
   MdJoinInner,
   MdLightMode,
   MdHistory,
-  MdArrowBackIos,
+  MdArrowBackIosNew,
   MdArrowForwardIos,
 } from "react-icons/md";
 import { useProfileQuery } from "../api";
@@ -223,7 +223,7 @@ function Header(props: HeaderProps) {
                 onClick={props.handleGoBack}
                 disabled={!props.canGoBack}
               >
-                <MdArrowBackIos />
+                <MdArrowBackIosNew />
               </Button>
               <Button
                 className="onyx-transparent-button"
