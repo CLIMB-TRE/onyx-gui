@@ -273,7 +273,7 @@ function Header(props: HeaderProps) {
                     </span>
                   }
                   title={`Switch to ${
-                    props.theme === Theme.DARK ? "light mode" : "dark mode"
+                    props.theme === Theme.DARK ? "Light Mode" : "Dark Mode"
                   }`}
                   checked={props.theme === Theme.DARK}
                   onChange={props.handleThemeChange}
