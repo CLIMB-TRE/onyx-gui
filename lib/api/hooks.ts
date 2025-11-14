@@ -5,6 +5,11 @@ import {
   Choices,
   Field,
   Fields,
+  ListResponse,
+  TypeObject,
+  Lookup,
+  Project,
+  ProjectPermissionGroup,
 } from "../types";
 
 function flattenFields(fields: Record<string, Field>) {
@@ -26,6 +31,28 @@ function flattenFields(fields: Record<string, Field>) {
   flatten(fields);
   return flatFields;
 }
+
+export const useProjects = (
+  data: ListResponse<ProjectPermissionGroup> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    if (data?.status !== "success") return [];
+
+    // Map the project permissions to a list of projects
+    const ps = data.data
+      .map(
+        (projectPermission: ProjectPermissionGroup) =>
+          ({
+            code: projectPermission.project,
+            name: projectPermission.name,
+          } as Project)
+      )
+      .sort((a, b) => (a.code < b.code ? -1 : 1));
+
+    // Deduplicate the project list by code
+    return [...new Map(ps.map((p) => [p.code, p])).values()];
+  }, [data]);
+};
 
 export const useFields = (
   data: DetailResponse<Fields> | ErrorResponse | undefined
@@ -54,6 +81,17 @@ export const useFields = (
   }, [data]);
 };
 
+export const useTypeLookups = (
+  data: ListResponse<TypeObject> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    if (data?.status !== "success") return new Map<string, string[]>();
+    return new Map<string, string[]>(
+      data.data.map((type) => [type.type, type.lookups])
+    );
+  }, [data]);
+};
+
 export const useFieldDescriptions = (fields: Map<string, Field>) => {
   return useMemo(() => {
     // Get a map of field names to their descriptions
@@ -61,6 +99,17 @@ export const useFieldDescriptions = (fields: Map<string, Field>) => {
       Array.from(fields, ([field, options]) => [field, options.description])
     );
   }, [fields]);
+};
+
+export const useLookupDescriptions = (
+  data: ListResponse<Lookup> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    if (data?.status !== "success") return new Map<string, string>();
+    return new Map<string, string>(
+      data.data.map((lookup) => [lookup.lookup, lookup.description])
+    );
+  }, [data]);
 };
 
 export const useChoiceDescriptions = (

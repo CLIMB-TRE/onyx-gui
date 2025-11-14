@@ -11,7 +11,12 @@ import {
   useTypesQuery,
 } from "./api";
 import Fade from "react-bootstrap/Fade";
-import { useFields } from "./api/hooks";
+import {
+  useFields,
+  useLookupDescriptions,
+  useProjects,
+  useTypeLookups,
+} from "./api/hooks";
 import Header from "./components/Header";
 import PageTitle from "./components/PageTitle";
 import QueryHandler from "./components/QueryHandler";
@@ -29,7 +34,6 @@ import {
   Navigation,
   OnyxTabKey,
   Project,
-  ProjectPermissionGroup,
   RecordTabKey,
   RecordDetailTabKey,
   TabState,
@@ -344,46 +348,18 @@ function App(props: OnyxProps) {
     }
   }, [tabState, project, setTitle]);
 
-  // Query for types, lookups and project permissions
-  const { data: typesResponse } = useTypesQuery(props);
-  const { data: lookupsResponse } = useLookupsQuery(props);
-  const { data: projectPermissionsResponse } =
-    useProjectPermissionsQuery(props);
-
   // Get a map of types to their lookups
-  const typeLookups = useMemo(() => {
-    if (typesResponse?.status !== "success") return new Map<string, string[]>();
-    return new Map<string, string[]>(
-      typesResponse.data.map((type) => [type.type, type.lookups])
-    );
-  }, [typesResponse]);
+  const { data: typesResponse } = useTypesQuery(props);
+  const typeLookups = useTypeLookups(typesResponse);
 
   // Get a map of lookups to their descriptions
-  const lookupDescriptions = useMemo(() => {
-    if (lookupsResponse?.status !== "success") return new Map<string, string>();
-    return new Map<string, string>(
-      lookupsResponse.data.map((lookup) => [lookup.lookup, lookup.description])
-    );
-  }, [lookupsResponse]);
+  const { data: lookupsResponse } = useLookupsQuery(props);
+  const lookupDescriptions = useLookupDescriptions(lookupsResponse);
 
-  // Get the project list
-  const projects = useMemo(() => {
-    if (projectPermissionsResponse?.status !== "success") return [];
-
-    // Map the project permissions to a list of projects
-    // Each item in the list is an object with a code and name
-    const ps = projectPermissionsResponse.data
-      .map((projectPermission: ProjectPermissionGroup) => ({
-        code: projectPermission.project,
-        name: projectPermission.name,
-      }))
-      .sort((a: Project, b: Project) =>
-        a.code < b.code ? -1 : 1
-      ) as Project[];
-
-    // Deduplicate the project list by code
-    return [...new Map(ps.map((p) => [p.code, p])).values()];
-  }, [projectPermissionsResponse]);
+  // Get the projects from project permissions
+  const { data: projectPermissionsResponse } =
+    useProjectPermissionsQuery(props);
+  const projects = useProjects(projectPermissionsResponse);
 
   // Set the first project as the default
   useEffect(() => {
