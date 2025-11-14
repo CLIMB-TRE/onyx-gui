@@ -17,7 +17,6 @@ import {
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
 import {
-  AnalysisTabKey,
   DarkModeColour,
   Navigation,
   ObjectType,
@@ -25,7 +24,7 @@ import {
   Profile,
   Project,
   RecentlyViewed,
-  RecordTabKey,
+  TabState,
   Theme,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
@@ -37,12 +36,8 @@ interface HeaderProps extends PageProps {
   projects: Project[];
   recentlyViewed: RecentlyViewed[];
   handleThemeChange: () => void;
+  handleTabChange: (tabState: Partial<TabState>) => void;
   handleProjectChange: (p: Project) => void;
-  handleProjectRecordShow: (recordID: string) => void;
-  handleAnalysisShow: (analysisID: string) => void;
-  handleProjectRecordHide: () => void;
-  handleAnalysisHide: () => void;
-  handleRecentlyViewed: (objectType: ObjectType, ID: string) => void;
   navigation: Navigation;
   handleNavigateBack: () => void;
   handleNavigateForward: () => void;
@@ -96,42 +91,6 @@ function Header(props: HeaderProps) {
     return data.data;
   }, [data]);
 
-  const handleTabChange = (tabKey: string | null) => {
-    if (
-      props.tabState.tabKey === OnyxTabKey.RECORDS &&
-      tabKey === OnyxTabKey.RECORDS
-    )
-      props.handleProjectRecordHide();
-
-    if (
-      props.tabState.tabKey === OnyxTabKey.ANALYSES &&
-      tabKey === OnyxTabKey.ANALYSES
-    )
-      props.handleAnalysisHide();
-
-    props.setTabState((prevState) => ({
-      ...prevState,
-      tabKey: tabKey as OnyxTabKey,
-    }));
-
-    if (
-      tabKey === OnyxTabKey.RECORDS &&
-      props.tabState.recordTabKey === RecordTabKey.DETAIL
-    ) {
-      props.handleRecentlyViewed(ObjectType.RECORD, props.tabState.recordID);
-    }
-
-    if (
-      tabKey === OnyxTabKey.ANALYSES &&
-      props.tabState.analysisTabKey === AnalysisTabKey.DETAIL
-    ) {
-      props.handleRecentlyViewed(
-        ObjectType.ANALYSIS,
-        props.tabState.analysisID
-      );
-    }
-  };
-
   const canNavigateBack = props.navigation.index > 0;
   const canNavigateForward =
     props.navigation.index < props.navigation.history.length - 1;
@@ -144,12 +103,12 @@ function Header(props: HeaderProps) {
       className="border-bottom onyx-border"
       variant="dark"
       expand="lg"
-      onSelect={handleTabChange}
+      onSelect={(e) => e && props.handleTabChange({ tabKey: e as OnyxTabKey })}
     >
       <Container fluid>
         <Navbar.Brand
           title="Onyx | API for Pathogen Metadata"
-          onClick={props.handleProjectRecordHide}
+          onClick={() => props.handleObjectHide(ObjectType.RECORD)}
           style={{ cursor: "pointer" }}
         >
           <MdJoinInner color="var(--bs-pink)" size={30} /> Onyx
@@ -293,12 +252,9 @@ function Header(props: HeaderProps) {
                     <Dropdown.Item
                       key={item.ID}
                       title={item.ID + " - " + item.timestamp.toLocaleString()}
-                      onClick={() => {
-                        if (item.objectType === ObjectType.RECORD)
-                          props.handleProjectRecordShow(item.ID);
-                        else if (item.objectType === ObjectType.ANALYSIS)
-                          props.handleAnalysisShow(item.ID);
-                      }}
+                      onClick={() =>
+                        props.handleObjectShow(item.objectType, item.ID)
+                      }
                     >
                       {item.ID} -{" "}
                       <span className="text-muted">

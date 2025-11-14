@@ -1,5 +1,12 @@
 import { Dispatch, SetStateAction } from "react";
-import { ExportStatus, TabState, Project, Fields, Theme } from "./types";
+import {
+  ExportStatus,
+  TabState,
+  Project,
+  Fields,
+  Theme,
+  ObjectType,
+} from "./types";
 
 export interface OnyxProps {
   enabled: boolean;
@@ -17,6 +24,8 @@ export interface PageProps extends OnyxProps {
   theme: Theme;
   tabState: TabState;
   setTabState: Dispatch<SetStateAction<TabState>>;
+  handleObjectShow: (objectType: ObjectType, ID: string) => void;
+  handleObjectHide: (objectType: ObjectType) => void;
 }
 
 export interface ProjectProps extends PageProps {
@@ -29,8 +38,6 @@ export interface DataProps extends ProjectProps {
   analysisPrimaryID: string;
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
-  handleProjectRecordShow: (recordID: string) => void;
-  handleAnalysisShow: (analysisID: string) => void;
 }
 
 export interface IDProps extends DataProps {

@@ -50,10 +50,6 @@ import "./Onyx.scss";
 interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
-  handleProjectRecordShow: (recordID: string) => void;
-  handleAnalysisShow: (analysisID: string) => void;
-  handleProjectRecordHide: () => void;
-  handleAnalysisHide: () => void;
 }
 
 function ProjectPage(props: ProjectPageProps) {
@@ -125,7 +121,7 @@ function ProjectPage(props: ProjectPageProps) {
                     recordPrimaryID={recordPrimaryID}
                     analysisPrimaryID={analysisPrimaryID}
                     ID={props.tabState.recordID}
-                    onHide={props.handleProjectRecordHide}
+                    onHide={() => props.handleObjectHide(ObjectType.RECORD)}
                   />
                 </Tab.Pane>
               </Tab.Content>
@@ -165,7 +161,7 @@ function ProjectPage(props: ProjectPageProps) {
                     recordPrimaryID={recordPrimaryID}
                     analysisPrimaryID={analysisPrimaryID}
                     ID={props.tabState.analysisID}
-                    onHide={props.handleAnalysisHide}
+                    onHide={() => props.handleObjectHide(ObjectType.ANALYSIS)}
                   />
                 </Tab.Pane>
               </Tab.Content>
@@ -250,6 +246,39 @@ function App(props: OnyxProps) {
   const [recentlyViewed, setRecentlyViewed] = usePersistedState<
     RecentlyViewed[]
   >(props, "recentlyViewed", []);
+
+  const handleTabChange = (updatedTabState: Partial<TabState>) => {
+    if (
+      tabState.tabKey === OnyxTabKey.RECORDS &&
+      updatedTabState.tabKey === OnyxTabKey.RECORDS
+    )
+      handleObjectHide(ObjectType.RECORD);
+
+    if (
+      tabState.tabKey === OnyxTabKey.ANALYSES &&
+      updatedTabState.tabKey === OnyxTabKey.ANALYSES
+    )
+      handleObjectHide(ObjectType.ANALYSIS);
+
+    setTabState((prevState) => ({
+      ...prevState,
+      ...updatedTabState,
+    }));
+
+    if (
+      updatedTabState.tabKey === OnyxTabKey.RECORDS &&
+      tabState.recordTabKey === RecordTabKey.DETAIL
+    ) {
+      handleRecentlyViewed(ObjectType.RECORD, tabState.recordID);
+    }
+
+    if (
+      updatedTabState.tabKey === OnyxTabKey.ANALYSES &&
+      tabState.analysisTabKey === AnalysisTabKey.DETAIL
+    ) {
+      handleRecentlyViewed(ObjectType.ANALYSIS, tabState.analysisID);
+    }
+  };
 
   const updateNavigation = useCallback((newTabState: TabState) => {
     setNavigation((prev) => {
@@ -394,51 +423,50 @@ function App(props: OnyxProps) {
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
-  const handleProjectRecordShow = useCallback(
-    (recordID: string) => {
-      setTabState((prevState) => ({
-        ...prevState,
-        tabKey: OnyxTabKey.RECORDS,
-        recordTabKey: RecordTabKey.DETAIL,
-        recordDetailTabKey: RecordDetailTabKey.DATA,
-        recordDataPanelTabKey: DataPanelTabKey.DETAILS,
-        recordID: recordID,
-      }));
-      handleRecentlyViewed(ObjectType.RECORD, recordID);
+  const handleObjectShow = useCallback(
+    (objectType: ObjectType, ID: string) => {
+      if (objectType === ObjectType.RECORD) {
+        setTabState((prevState) => ({
+          ...prevState,
+          tabKey: OnyxTabKey.RECORDS,
+          recordTabKey: RecordTabKey.DETAIL,
+          recordDetailTabKey: RecordDetailTabKey.DATA,
+          recordDataPanelTabKey: DataPanelTabKey.DETAILS,
+          recordID: ID,
+        }));
+      } else if (objectType === ObjectType.ANALYSIS) {
+        setTabState((prevState) => ({
+          ...prevState,
+          tabKey: OnyxTabKey.ANALYSES,
+          analysisTabKey: AnalysisTabKey.DETAIL,
+          analysisDetailTabKey: AnalysisDetailTabKey.DATA,
+          analysisDataPanelTabKey: DataPanelTabKey.DETAILS,
+          analysisID: ID,
+        }));
+      }
+      handleRecentlyViewed(objectType, ID);
     },
     [handleRecentlyViewed, setTabState]
   );
 
-  const handleProjectRecordHide = useCallback(() => {
-    setTabState((prevState) => ({
-      ...prevState,
-      tabKey: OnyxTabKey.RECORDS,
-      recordTabKey: RecordTabKey.LIST,
-    }));
-  }, [setTabState]);
-
-  const handleAnalysisShow = useCallback(
-    (analysisID: string) => {
-      setTabState((prevState) => ({
-        ...prevState,
-        tabKey: OnyxTabKey.ANALYSES,
-        analysisTabKey: AnalysisTabKey.DETAIL,
-        analysisDetailTabKey: AnalysisDetailTabKey.DATA,
-        analysisDataPanelTabKey: DataPanelTabKey.DETAILS,
-        analysisID: analysisID,
-      }));
-      handleRecentlyViewed(ObjectType.ANALYSIS, analysisID);
+  const handleObjectHide = useCallback(
+    (objectType: ObjectType) => {
+      if (objectType === ObjectType.RECORD) {
+        setTabState((prevState) => ({
+          ...prevState,
+          tabKey: OnyxTabKey.RECORDS,
+          recordTabKey: RecordTabKey.LIST,
+        }));
+      } else if (objectType === ObjectType.ANALYSIS) {
+        setTabState((prevState) => ({
+          ...prevState,
+          tabKey: OnyxTabKey.ANALYSES,
+          analysisTabKey: AnalysisTabKey.LIST,
+        }));
+      }
     },
-    [handleRecentlyViewed, setTabState]
+    [setTabState]
   );
-
-  const handleAnalysisHide = useCallback(() => {
-    setTabState((prevState) => ({
-      ...prevState,
-      tabKey: OnyxTabKey.ANALYSES,
-      analysisTabKey: AnalysisTabKey.LIST,
-    }));
-  }, [setTabState]);
 
   return (
     <div className="climb-jupyter onyx h-100">
@@ -447,16 +475,14 @@ function App(props: OnyxProps) {
         theme={extTheme ?? theme}
         tabState={tabState}
         setTabState={setTabState}
+        handleThemeChange={handleThemeChange}
+        handleTabChange={handleTabChange}
+        handleObjectShow={handleObjectShow}
+        handleObjectHide={handleObjectHide}
         project={project}
         projects={projects}
         recentlyViewed={recentlyViewed}
-        handleThemeChange={handleThemeChange}
         handleProjectChange={handleProjectChange}
-        handleProjectRecordShow={handleProjectRecordShow}
-        handleAnalysisShow={handleAnalysisShow}
-        handleProjectRecordHide={handleProjectRecordHide}
-        handleAnalysisHide={handleAnalysisHide}
-        handleRecentlyViewed={handleRecentlyViewed}
         navigation={navigation}
         handleNavigateBack={handleNavigationBack}
         handleNavigateForward={handleNavigationForward}
@@ -479,13 +505,11 @@ function App(props: OnyxProps) {
                     theme={extTheme ?? theme}
                     tabState={tabState}
                     setTabState={setTabState}
+                    handleObjectShow={handleObjectShow}
+                    handleObjectHide={handleObjectHide}
                     project={p}
                     typeLookups={typeLookups}
                     lookupDescriptions={lookupDescriptions}
-                    handleProjectRecordShow={handleProjectRecordShow}
-                    handleAnalysisShow={handleAnalysisShow}
-                    handleProjectRecordHide={handleProjectRecordHide}
-                    handleAnalysisHide={handleAnalysisHide}
                   />
                 </Tab.Pane>
               ))}

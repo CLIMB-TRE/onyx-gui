@@ -4,15 +4,14 @@ import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import { MdArrowForward } from "react-icons/md";
 import { OnyxProps } from "../interfaces";
-import { RecordType } from "../types";
+import { ObjectType, RecordType } from "../types";
 
 interface ErrorModalProps extends OnyxProps {
   handleErrorModalShow: (error: Error) => void;
 }
 
 interface IDModalProps {
-  handleProjectRecordShow: (recordID: string) => void;
-  handleAnalysisShow: (analysisID: string) => void;
+  handleObjectShow: (objectType: ObjectType, ID: string) => void;
 }
 
 export function RecordIDCellRendererFactory(props: IDModalProps) {
@@ -22,7 +21,9 @@ export function RecordIDCellRendererFactory(props: IDModalProps) {
         className="p-0"
         size="sm"
         variant="link"
-        onClick={() => props.handleProjectRecordShow(cellRendererProps.value)}
+        onClick={() =>
+          props.handleObjectShow(ObjectType.RECORD, cellRendererProps.value)
+        }
       >
         {cellRendererProps.value}
       </Button>
@@ -37,7 +38,9 @@ export function AnalysisIDCellRendererFactory(props: IDModalProps) {
         className="p-0"
         size="sm"
         variant="link"
-        onClick={() => props.handleAnalysisShow(cellRendererProps.value)}
+        onClick={() =>
+          props.handleObjectShow(ObjectType.ANALYSIS, cellRendererProps.value)
+        }
       >
         {cellRendererProps.value}
       </Button>
