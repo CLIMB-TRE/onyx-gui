@@ -71,7 +71,6 @@ export default function Resizer(props: ResizerProps) {
         flexBasis: width,
         minWidth: props.minWidth,
         maxWidth: props.maxWidth,
-        flexShrink: 1,
       }}
     >
       {props.children}
