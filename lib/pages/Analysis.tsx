@@ -23,17 +23,17 @@ function Analysis(props: IDProps) {
   const [published, setPublished] = useState(true);
 
   const handleAnalysisDetailTabChange = (tabKey: string | null) => {
-    props.setTabState((prevState) => ({
-      ...prevState,
+    props.handleTabChange({
+      ...props.tabState,
       analysisDetailTabKey: tabKey as AnalysisDetailTabKey,
-    }));
+    });
   };
 
   const handleDataPanelTabChange = (tabKey: string | null) => {
-    props.setTabState((prevState) => ({
-      ...prevState,
+    props.handleTabChange({
+      ...props.tabState,
       analysisDataPanelTabKey: tabKey as DataPanelTabKey,
-    }));
+    });
   };
 
   return (

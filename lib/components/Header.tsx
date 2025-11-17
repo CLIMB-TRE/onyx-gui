@@ -11,34 +11,34 @@ import {
   MdJoinInner,
   MdLightMode,
   MdHistory,
+  MdArrowBackIosNew,
+  MdArrowForwardIos,
 } from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
 import {
-  AnalysisTabKey,
   DarkModeColour,
+  Navigation,
   ObjectType,
   OnyxTabKey,
   Profile,
   Project,
   RecentlyViewed,
-  RecordTabKey,
   Theme,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
+import { Button } from "react-bootstrap";
 
 interface HeaderProps extends PageProps {
+  handleThemeChange: () => void;
   project?: Project;
   projects: Project[];
-  recentlyViewed: RecentlyViewed[];
-  handleThemeChange: () => void;
   handleProjectChange: (p: Project) => void;
-  handleProjectRecordShow: (recordID: string) => void;
-  handleAnalysisShow: (analysisID: string) => void;
-  handleProjectRecordHide: () => void;
-  handleAnalysisHide: () => void;
-  handleRecentlyViewed: (objectType: ObjectType, ID: string) => void;
+  navigation: Navigation;
+  handleNavigateBack: () => void;
+  handleNavigateForward: () => void;
+  recentlyViewed: RecentlyViewed[];
 }
 
 function HeaderText({
@@ -89,41 +89,23 @@ function Header(props: HeaderProps) {
     return data.data;
   }, [data]);
 
-  const handleTabChange = (tabKey: string | null) => {
+  const handleTabChange = (tabKey: OnyxTabKey) => {
     if (
       props.tabState.tabKey === OnyxTabKey.RECORDS &&
       tabKey === OnyxTabKey.RECORDS
     )
-      props.handleProjectRecordHide();
-
-    if (
+      props.handleObjectHide(ObjectType.RECORD);
+    else if (
       props.tabState.tabKey === OnyxTabKey.ANALYSES &&
       tabKey === OnyxTabKey.ANALYSES
     )
-      props.handleAnalysisHide();
-
-    props.setTabState((prevState) => ({
-      ...prevState,
-      tabKey: tabKey as OnyxTabKey,
-    }));
-
-    if (
-      tabKey === OnyxTabKey.RECORDS &&
-      props.tabState.recordTabKey === RecordTabKey.DETAIL
-    ) {
-      props.handleRecentlyViewed(ObjectType.RECORD, props.tabState.recordID);
-    }
-
-    if (
-      tabKey === OnyxTabKey.ANALYSES &&
-      props.tabState.analysisTabKey === AnalysisTabKey.DETAIL
-    ) {
-      props.handleRecentlyViewed(
-        ObjectType.ANALYSIS,
-        props.tabState.analysisID
-      );
-    }
+      props.handleObjectHide(ObjectType.ANALYSIS);
+    else props.handleTabChange({ ...props.tabState, tabKey: tabKey });
   };
+
+  const canNavigateBack = props.navigation.index > 0;
+  const canNavigateForward =
+    props.navigation.index < props.navigation.history.length - 1;
 
   return (
     <Navbar
@@ -133,12 +115,14 @@ function Header(props: HeaderProps) {
       className="border-bottom onyx-border"
       variant="dark"
       expand="lg"
-      onSelect={handleTabChange}
+      onSelect={(e) => {
+        if (e) handleTabChange(e as OnyxTabKey);
+      }}
     >
       <Container fluid>
         <Navbar.Brand
           title="Onyx | API for Pathogen Metadata"
-          onClick={props.handleProjectRecordHide}
+          onClick={() => props.handleObjectHide(ObjectType.RECORD)}
           style={{ cursor: "pointer" }}
         >
           <MdJoinInner color="var(--bs-pink)" size={30} /> Onyx
@@ -209,6 +193,24 @@ function Header(props: HeaderProps) {
             activeKey={props.project ? props.tabState.tabKey : undefined}
           >
             <Stack direction="horizontal" gap={3}>
+              <Button
+                className="onyx-transparent-button"
+                size="sm"
+                title="Go Back in Navigation"
+                onClick={props.handleNavigateBack}
+                disabled={!canNavigateBack}
+              >
+                <MdArrowBackIosNew />
+              </Button>
+              <Button
+                className="onyx-transparent-button"
+                size="sm"
+                title="Go Forward in Navigation"
+                onClick={props.handleNavigateForward}
+                disabled={!canNavigateForward}
+              >
+                <MdArrowForwardIos />
+              </Button>
               <Nav.Link
                 eventKey={OnyxTabKey.RECORDS}
                 className="fw-normal"
@@ -244,7 +246,7 @@ function Header(props: HeaderProps) {
                     </span>
                   }
                   title={`Switch to ${
-                    props.theme === Theme.DARK ? "light mode" : "dark mode"
+                    props.theme === Theme.DARK ? "Light Mode" : "Dark Mode"
                   }`}
                   checked={props.theme === Theme.DARK}
                   onChange={props.handleThemeChange}
@@ -264,12 +266,9 @@ function Header(props: HeaderProps) {
                     <Dropdown.Item
                       key={item.ID}
                       title={item.ID + " - " + item.timestamp.toLocaleString()}
-                      onClick={() => {
-                        if (item.objectType === ObjectType.RECORD)
-                          props.handleProjectRecordShow(item.ID);
-                        else if (item.objectType === ObjectType.ANALYSIS)
-                          props.handleAnalysisShow(item.ID);
-                      }}
+                      onClick={() =>
+                        props.handleObjectShow(item.objectType, item.ID)
+                      }
                     >
                       {item.ID} -{" "}
                       <span className="text-muted">
