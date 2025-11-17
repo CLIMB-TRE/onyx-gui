@@ -116,19 +116,21 @@ function DataPanel(props: DataPanelProps) {
         <Row className="h-100">
           <Col xs={3} xl={2} className="h-100">
             <Stack gap={1}>
-              <hr />
-              {data?.status === "success" && (
-                <Container>
-                  {Array.from(props.dataFields).map(([field, name]) => (
-                    <DataField
-                      key={field}
-                      name={name}
-                      value={data.data[field]?.toString() || ""}
-                    />
-                  ))}
-                </Container>
-              )}
-              <hr />
+              <div className="d-none d-md-block">
+                <hr />
+                {data?.status === "success" && (
+                  <Container>
+                    {Array.from(props.dataFields).map(([field, name]) => (
+                      <DataField
+                        key={field}
+                        name={name}
+                        value={data.data[field]?.toString() || ""}
+                      />
+                    ))}
+                  </Container>
+                )}
+                <hr />
+              </div>
               <Nav variant="pills" className="flex-column">
                 <Nav.Item>
                   <Nav.Link eventKey={DataPanelTabKey.DETAILS}>
