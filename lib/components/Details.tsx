@@ -34,7 +34,7 @@ function Field(props: FieldProps) {
     <small>
       <Stack gap={1}>
         <b>{props.field}</b>
-        <div className="text-muted">
+        <div className="text-muted d-none d-md-block">
           {props.fields.fields_map.get(props.field)?.description}
         </div>
       </Stack>
@@ -68,7 +68,7 @@ function Value(props: ValueProps) {
           {props.choiceDescriptions
             .get(props.field)
             ?.get(props.value.toLowerCase()) && (
-            <div className="text-muted">
+            <div className="text-muted d-none d-md-block">
               {props.choiceDescriptions
                 .get(props.field)
                 ?.get(props.value.toLowerCase())}
@@ -133,7 +133,7 @@ function Details(props: DetailsProps) {
     <Container fluid className="h-100 p-0 pb-3">
       <Stack direction="horizontal" gap={2} className="pb-2">
         <h5 className="me-auto">Details</h5>
-        <div style={{ width: "300px" }}>
+        <div style={{ maxWidth: "300px" }}>
           <Input
             {...props}
             value={search}
@@ -164,10 +164,10 @@ function Details(props: DetailsProps) {
               <Card body key={index}>
                 <Container fluid>
                   <Row>
-                    <Col>
+                    <Col xs={12} md>
                       <Field {...props} field={row.Field} />
                     </Col>
-                    <Col>
+                    <Col xs={12} md>
                       <Value
                         {...props}
                         field={row.Field}
