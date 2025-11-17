@@ -5,6 +5,11 @@ import {
   Choices,
   Field,
   Fields,
+  ListResponse,
+  TypeObject,
+  Lookup,
+  Project,
+  ProjectPermissionGroup,
 } from "../types";
 
 function flattenFields(fields: Record<string, Field>) {
@@ -27,36 +32,67 @@ function flattenFields(fields: Record<string, Field>) {
   return flatFields;
 }
 
-const useFieldsInfo = (
-  data: DetailResponse<Fields> | ErrorResponse | undefined
+export const useProjects = (
+  data: ListResponse<ProjectPermissionGroup> | ErrorResponse | undefined
 ) => {
   return useMemo(() => {
-    if (data?.status !== "success") {
-      return {
-        name: "",
-        description: "",
-        fields: new Map<string, Field>(),
-        defaultFields: [] as string[],
-      };
-    }
+    if (data?.status !== "success") return [];
 
-    // The name of the project
-    const name = data.data.name;
+    // Map the project permissions to a list of projects
+    const ps = data.data
+      .map(
+        (projectPermission: ProjectPermissionGroup) =>
+          ({
+            code: projectPermission.project,
+            name: projectPermission.name,
+          } as Project)
+      )
+      .sort((a, b) => (a.code < b.code ? -1 : 1));
 
-    // The description of the project
-    const description = data.data.description;
-
-    // A map of field names to their type, description, actions, values and nested fields
-    const fields = new Map(Object.entries(flattenFields(data.data.fields)));
-
-    // The default GUI fields for the project
-    const defaultFields = data.data.default_fields || [];
-
-    return { name, description, fields, defaultFields };
+    // Deduplicate the project list by code
+    return [...new Map(ps.map((p) => [p.code, p])).values()];
   }, [data]);
 };
 
-const useFieldDescriptions = (fields: Map<string, Field>) => {
+export const useFields = (
+  data: DetailResponse<Fields> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    let fields: Fields;
+
+    if (data?.status !== "success") {
+      fields = {
+        name: "",
+        description: "",
+        object_type: "",
+        primary_id: "",
+        version: "",
+        fields: {},
+        fields_map: new Map<string, Field>(),
+        default_fields: [],
+      };
+    } else {
+      fields = data.data;
+      fields.fields_map = new Map(Object.entries(flattenFields(fields.fields)));
+      fields.default_fields = fields.default_fields || [];
+    }
+
+    return fields;
+  }, [data]);
+};
+
+export const useTypeLookups = (
+  data: ListResponse<TypeObject> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    if (data?.status !== "success") return new Map<string, string[]>();
+    return new Map<string, string[]>(
+      data.data.map((type) => [type.type, type.lookups])
+    );
+  }, [data]);
+};
+
+export const useFieldDescriptions = (fields: Map<string, Field>) => {
   return useMemo(() => {
     // Get a map of field names to their descriptions
     return new Map(
@@ -65,7 +101,18 @@ const useFieldDescriptions = (fields: Map<string, Field>) => {
   }, [fields]);
 };
 
-const useChoiceDescriptions = (
+export const useLookupDescriptions = (
+  data: ListResponse<Lookup> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    if (data?.status !== "success") return new Map<string, string>();
+    return new Map<string, string>(
+      data.data.map((lookup) => [lookup.lookup, lookup.description])
+    );
+  }, [data]);
+};
+
+export const useChoiceDescriptions = (
   data: DetailResponse<Choices> | ErrorResponse | undefined
 ) => {
   // Get a map of choices to their descriptions
@@ -80,7 +127,7 @@ const useChoiceDescriptions = (
   }, [data]);
 };
 
-const useChoicesDescriptions = (
+export const useChoicesDescriptions = (
   fields: string[],
   data: (DetailResponse<Choices> | ErrorResponse)[]
 ) => {
@@ -101,11 +148,4 @@ const useChoicesDescriptions = (
     }
     return descriptions;
   }, [fields, data]);
-};
-
-export {
-  useChoiceDescriptions,
-  useChoicesDescriptions,
-  useFieldsInfo,
-  useFieldDescriptions,
 };

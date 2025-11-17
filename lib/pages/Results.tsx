@@ -8,7 +8,7 @@ import SearchBar from "../components/SearchBar";
 import SummarisePanel from "../components/SummarisePanel";
 import { ResultsProps } from "../interfaces";
 import { FilterConfig } from "../types";
-import { formatFilters } from "../utils/functions";
+import { formatFilters, getColumns } from "../utils/functions";
 import { useDebouncedValue, usePersistedState } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
 import { CopyToClipboardButton } from "../components/Buttons";
@@ -34,7 +34,7 @@ function Results(props: ResultsProps) {
   const [includeList, setIncludeList] = usePersistedState<string[]>(
     props,
     `${props.project.code}${props.title}IncludeList`,
-    props.defaultFields
+    props.fields.default_fields || []
   );
 
   const defaultWidth = 300;
@@ -43,34 +43,22 @@ function Results(props: ResultsProps) {
 
   const filterOptions = useMemo(
     () =>
-      Array.from(props.fields.entries())
+      Array.from(props.fields.fields_map.entries())
         .filter(([, field]) => field.actions.includes("filter"))
         .map(([field]) => field),
-    [props.fields]
+    [props.fields.fields_map]
   );
 
   const columnOptions = useMemo(
     () =>
-      Array.from(props.fields.entries())
+      Array.from(props.fields.fields_map.entries())
         .filter(([, field]) => field.actions.includes("list"))
         .map(([, field]) => field),
-    [props.fields]
+    [props.fields.fields_map]
   );
 
   const searchParameters = useMemo(() => {
-    // Set include/exclude columns based on includeList
-    let columns;
-    let columnOperator;
-    if (includeList.length <= columnOptions.length - includeList.length) {
-      columnOperator = "include";
-      columns = includeList;
-    } else {
-      columnOperator = "exclude";
-      columns = columnOptions
-        .filter((field) => !includeList.includes(field.code))
-        .map((field) => field.code);
-    }
-
+    const { columnOperator, columns } = getColumns(includeList, columnOptions);
     return new URLSearchParams(
       [["page_size", pageSize.toString()]]
         .concat(
@@ -109,26 +97,34 @@ function Results(props: ResultsProps) {
   };
 
   const handleCopyCLICommand = () => {
+    const command = [props.commandBase];
+
     // Format filters
-    const filters = formatFilters(filterList)
-      .map(
-        ([filter, value]) =>
-          `--field ${filter.replace("__exact", "")}=${
-            value.includes(" ") ? `"${value}"` : value
-          }`
-      )
-      .join(" ");
+    const filters = formatFilters(filterList).map(
+      ([filter, value]) =>
+        `--field ${filter.replace("__exact", "")}=${
+          value.includes(" ") ? `"${value}"` : value
+        }`
+    );
+    if (filters.length > 0) command.push(filters.join(" "));
 
     // Format summarise
-    let summarise = "";
-    const summariseFields = summariseList.filter((field) => field);
-    if (summariseFields.length > 0)
-      summarise = `--summarise ${summariseFields.join(",")}`;
+    const summarise = summariseList.filter((field) => field);
+    if (summarise.length > 0)
+      command.push(`--summarise ${summarise.join(",")}`);
 
-    // Assemble the command
-    const command = [props.commandBase, filters, summarise].join(" ").trim();
+    // Format include/exclude columns
+    if (includeList.length > 0) {
+      const { columnOperator, columns } = getColumns(
+        includeList,
+        columnOptions
+      );
+      if (columns.length > 0)
+        command.push(`--${columnOperator} ${columns.join(",")}`);
+    }
 
-    navigator.clipboard.writeText(command);
+    // Assemble the command and write to clipboard
+    navigator.clipboard.writeText(command.join(" ").trim());
   };
 
   return (
@@ -138,7 +134,6 @@ function Results(props: ResultsProps) {
         show={columnsModalShow}
         onHide={() => setColumnsModalShow(false)}
         columns={columnOptions}
-        defaultColumns={props.defaultFields}
         activeColumns={includeList}
         setActiveColumns={setIncludeList}
       />
@@ -179,7 +174,7 @@ function Results(props: ResultsProps) {
             </Container>
           </Resizer>
         )}
-        <div className="h-100" style={{ flex: 1 }}>
+        <div className="h-100" style={{ minWidth: "50%", flex: 1 }}>
           <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}

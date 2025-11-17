@@ -11,7 +11,7 @@ import Stack from "react-bootstrap/Stack";
 import Tab from "react-bootstrap/Tab";
 import { IDProps } from "../interfaces";
 import {
-  DataPanelTabKeys,
+  DataPanelTabKey,
   DetailResponse,
   ErrorResponse,
   RecordType,
@@ -59,20 +59,20 @@ function DataPanel(props: DataPanelProps) {
   const relations = useMemo(() => {
     if (data?.status !== "success") return [];
     return Object.entries(data.data)
-      .filter(([key]) => props.fields.get(key)?.type === "relation")
+      .filter(([key]) => props.fields.fields_map.get(key)?.type === "relation")
       .sort(([key1], [key2]) => (key1 < key2 ? -1 : 1)) as [
       string,
       RecordType[]
     ][];
-  }, [data, props.fields]);
+  }, [data, props.fields.fields_map]);
 
   // Get the structure details
   const structures = useMemo(() => {
     if (data?.status !== "success") return [];
     return Object.entries(data.data).filter(
-      ([key]) => props.fields.get(key)?.type === "structure"
+      ([key]) => props.fields.fields_map.get(key)?.type === "structure"
     );
-  }, [data, props.fields]);
+  }, [data, props.fields.fields_map]);
 
   useEffect(() => {
     if (data?.status === "success" && data.data.is_published === false)
@@ -87,7 +87,7 @@ function DataPanel(props: DataPanelProps) {
     [props, data]
   );
 
-  const fieldDescriptions = useFieldDescriptions(props.fields);
+  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
 
   return (
     <QueryHandler isFetching={isFetching} error={error} data={data}>
@@ -95,7 +95,7 @@ function DataPanel(props: DataPanelProps) {
         id="data-panel-tabs"
         activeKey={props.dataPanelTabKey}
         onSelect={(key) =>
-          props.setDataPanelTabKey(key || DataPanelTabKeys.DETAILS)
+          props.setDataPanelTabKey(key || DataPanelTabKey.DETAILS)
         }
         transition={false}
       >
@@ -116,22 +116,24 @@ function DataPanel(props: DataPanelProps) {
         <Row className="h-100">
           <Col xs={3} xl={2} className="h-100">
             <Stack gap={1}>
-              <hr />
-              {data?.status === "success" && (
-                <Container>
-                  {Array.from(props.dataFields).map(([field, name]) => (
-                    <DataField
-                      key={field}
-                      name={name}
-                      value={data.data[field]?.toString() || ""}
-                    />
-                  ))}
-                </Container>
-              )}
-              <hr />
+              <div className="d-none d-md-block">
+                <hr />
+                {data?.status === "success" && (
+                  <Container>
+                    {Array.from(props.dataFields).map(([field, name]) => (
+                      <DataField
+                        key={field}
+                        name={name}
+                        value={data.data[field]?.toString() || ""}
+                      />
+                    ))}
+                  </Container>
+                )}
+                <hr />
+              </div>
               <Nav variant="pills" className="flex-column">
                 <Nav.Item>
-                  <Nav.Link eventKey={DataPanelTabKeys.DETAILS}>
+                  <Nav.Link eventKey={DataPanelTabKey.DETAILS}>
                     Details
                   </Nav.Link>
                 </Nav.Item>
@@ -162,7 +164,7 @@ function DataPanel(props: DataPanelProps) {
           </Col>
           <Col xs={9} xl={10} className="h-100">
             <Tab.Content className="h-100">
-              <Tab.Pane eventKey={DataPanelTabKeys.DETAILS} className="h-100">
+              <Tab.Pane eventKey={DataPanelTabKey.DETAILS} className="h-100">
                 <Details
                   {...props}
                   data={data}
@@ -183,7 +185,8 @@ function DataPanel(props: DataPanelProps) {
                     headerTooltips={fieldDescriptions}
                     headerTooltipPrefix={key + "__"}
                     footer={
-                      props.fields.get(key)?.description || "No Description."
+                      props.fields.fields_map.get(key)?.description ||
+                      "No Description."
                     }
                   />
                 </Tab.Pane>
@@ -204,7 +207,8 @@ function DataPanel(props: DataPanelProps) {
                       {...props}
                       data={structure as JsonData}
                       description={
-                        props.fields.get(key)?.description || "No Description."
+                        props.fields.fields_map.get(key)?.description ||
+                        "No Description."
                       }
                     />
                   </Card>

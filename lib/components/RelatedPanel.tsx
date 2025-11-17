@@ -2,7 +2,7 @@ import { UseQueryResult } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import {
   AnalysisIDCellRendererFactory,
-  ClimbIDCellRendererFactory,
+  RecordIDCellRendererFactory,
   S3ReportCellRendererFactory,
 } from "../components/CellRenderers";
 import ErrorModal from "../components/ErrorModal";
@@ -45,6 +45,15 @@ function RelatedPanel(props: RelatedPanelProps) {
     return data.data;
   }, [data]);
 
+  const cellRenderers = useMemo(() => {
+    return new Map([
+      [props.recordPrimaryID, RecordIDCellRendererFactory(props)],
+      [props.analysisPrimaryID, AnalysisIDCellRendererFactory(props)],
+      ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
+      ["report", S3ReportCellRendererFactory(errorModalProps)],
+    ]);
+  }, [props, errorModalProps]);
+
   return (
     <QueryHandler isFetching={isFetching} error={error} data={data}>
       <>
@@ -61,13 +70,7 @@ function RelatedPanel(props: RelatedPanelProps) {
           data={objects}
           defaultFileNamePrefix={props.defaultFileNamePrefix}
           footer={props.description}
-          cellRenderers={
-            new Map([
-              ["climb_id", ClimbIDCellRendererFactory(props)],
-              ["analysis_id", AnalysisIDCellRendererFactory(props)],
-              ["report", S3ReportCellRendererFactory(errorModalProps)],
-            ])
-          }
+          cellRenderers={cellRenderers}
         />
       </>
     </QueryHandler>

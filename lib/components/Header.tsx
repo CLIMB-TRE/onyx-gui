@@ -11,34 +11,34 @@ import {
   MdJoinInner,
   MdLightMode,
   MdHistory,
+  MdArrowBackIosNew,
+  MdArrowForwardIos,
 } from "react-icons/md";
 import { useProfileQuery } from "../api";
 import { PageProps } from "../interfaces";
 import {
-  AnalysisTabKeys,
-  DarkModeColours,
+  DarkModeColour,
+  Navigation,
   ObjectType,
-  OnyxTabKeys,
+  OnyxTabKey,
   Profile,
   Project,
   RecentlyViewed,
-  RecordTabKeys,
-  Themes,
+  Theme,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
+import { Button } from "react-bootstrap";
 
 interface HeaderProps extends PageProps {
+  handleThemeChange: () => void;
   project?: Project;
   projects: Project[];
-  recentlyViewed: RecentlyViewed[];
-  handleThemeChange: () => void;
   handleProjectChange: (p: Project) => void;
-  handleProjectRecordShow: (recordID: string) => void;
-  handleAnalysisShow: (analysisID: string) => void;
-  handleProjectRecordHide: () => void;
-  handleAnalysisHide: () => void;
-  handleRecentlyViewed: (objectType: ObjectType, ID: string) => void;
+  navigation: Navigation;
+  handleNavigateBack: () => void;
+  handleNavigateForward: () => void;
+  recentlyViewed: RecentlyViewed[];
 }
 
 function HeaderText({
@@ -89,53 +89,40 @@ function Header(props: HeaderProps) {
     return data.data;
   }, [data]);
 
-  const handleTabChange = (tabKey: string | null) => {
+  const handleTabChange = (tabKey: OnyxTabKey) => {
     if (
-      props.tabState.tabKey === OnyxTabKeys.RECORDS &&
-      tabKey === OnyxTabKeys.RECORDS
+      props.tabState.tabKey === OnyxTabKey.RECORDS &&
+      tabKey === OnyxTabKey.RECORDS
     )
-      props.handleProjectRecordHide();
-
-    if (
-      props.tabState.tabKey === OnyxTabKeys.ANALYSES &&
-      tabKey === OnyxTabKeys.ANALYSES
+      props.handleObjectHide(ObjectType.RECORD);
+    else if (
+      props.tabState.tabKey === OnyxTabKey.ANALYSES &&
+      tabKey === OnyxTabKey.ANALYSES
     )
-      props.handleAnalysisHide();
-
-    props.setTabState((prevState) => ({
-      ...prevState,
-      tabKey: tabKey as OnyxTabKeys,
-    }));
-
-    if (
-      tabKey === OnyxTabKeys.RECORDS &&
-      props.tabState.recordTabKey === RecordTabKeys.DETAIL
-    ) {
-      props.handleRecentlyViewed("record", props.tabState.recordID);
-    }
-
-    if (
-      tabKey === OnyxTabKeys.ANALYSES &&
-      props.tabState.analysisTabKey === AnalysisTabKeys.DETAIL
-    ) {
-      props.handleRecentlyViewed("analysis", props.tabState.analysisID);
-    }
+      props.handleObjectHide(ObjectType.ANALYSIS);
+    else props.handleTabChange({ ...props.tabState, tabKey: tabKey });
   };
+
+  const canNavigateBack = props.navigation.index > 0;
+  const canNavigateForward =
+    props.navigation.index < props.navigation.history.length - 1;
 
   return (
     <Navbar
       style={{
-        backgroundColor: DarkModeColours.BS_BODY_BG,
+        backgroundColor: DarkModeColour.BS_BODY_BG,
       }}
       className="border-bottom onyx-border"
       variant="dark"
       expand="lg"
-      onSelect={handleTabChange}
+      onSelect={(e) => {
+        if (e) handleTabChange(e as OnyxTabKey);
+      }}
     >
       <Container fluid>
         <Navbar.Brand
           title="Onyx | API for Pathogen Metadata"
-          onClick={props.handleProjectRecordHide}
+          onClick={() => props.handleObjectHide(ObjectType.RECORD)}
           style={{ cursor: "pointer" }}
         >
           <MdJoinInner color="var(--bs-pink)" size={30} /> Onyx
@@ -168,7 +155,7 @@ function Header(props: HeaderProps) {
             >
               <Stack direction="horizontal" gap={3}>
                 <Nav.Link
-                  eventKey={OnyxTabKeys.USER}
+                  eventKey={OnyxTabKey.USER}
                   className="fw-normal"
                   disabled={!props.project}
                 >
@@ -182,7 +169,7 @@ function Header(props: HeaderProps) {
                   />
                 </Nav.Link>
                 <Nav.Link
-                  eventKey={OnyxTabKeys.SITE}
+                  eventKey={OnyxTabKey.SITE}
                   className="fw-normal"
                   disabled={!props.project}
                 >
@@ -206,22 +193,40 @@ function Header(props: HeaderProps) {
             activeKey={props.project ? props.tabState.tabKey : undefined}
           >
             <Stack direction="horizontal" gap={3}>
+              <Button
+                className="onyx-transparent-button"
+                size="sm"
+                title="Go Back in Navigation"
+                onClick={props.handleNavigateBack}
+                disabled={!canNavigateBack}
+              >
+                <MdArrowBackIosNew />
+              </Button>
+              <Button
+                className="onyx-transparent-button"
+                size="sm"
+                title="Go Forward in Navigation"
+                onClick={props.handleNavigateForward}
+                disabled={!canNavigateForward}
+              >
+                <MdArrowForwardIos />
+              </Button>
               <Nav.Link
-                eventKey={OnyxTabKeys.RECORDS}
+                eventKey={OnyxTabKey.RECORDS}
                 className="fw-normal"
                 disabled={!props.project}
               >
                 Records
               </Nav.Link>
               <Nav.Link
-                eventKey={OnyxTabKeys.ANALYSES}
+                eventKey={OnyxTabKey.ANALYSES}
                 className="fw-normal"
                 disabled={!props.project}
               >
                 Analyses
               </Nav.Link>
               <Nav.Link
-                eventKey={OnyxTabKeys.GRAPHS}
+                eventKey={OnyxTabKey.GRAPHS}
                 className="fw-normal"
                 disabled={!props.project}
               >
@@ -233,7 +238,7 @@ function Header(props: HeaderProps) {
                   id="theme-switch"
                   label={
                     <span className="text-light">
-                      {props.theme === Themes.DARK ? (
+                      {props.theme === Theme.DARK ? (
                         <MdDarkMode />
                       ) : (
                         <MdLightMode />
@@ -241,9 +246,9 @@ function Header(props: HeaderProps) {
                     </span>
                   }
                   title={`Switch to ${
-                    props.theme === Themes.DARK ? "light mode" : "dark mode"
+                    props.theme === Theme.DARK ? "Light Mode" : "Dark Mode"
                   }`}
-                  checked={props.theme === Themes.DARK}
+                  checked={props.theme === Theme.DARK}
                   onChange={props.handleThemeChange}
                 />
               )}
@@ -261,12 +266,9 @@ function Header(props: HeaderProps) {
                     <Dropdown.Item
                       key={item.ID}
                       title={item.ID + " - " + item.timestamp.toLocaleString()}
-                      onClick={() => {
-                        if (item.objectType === "record")
-                          props.handleProjectRecordShow(item.ID);
-                        else if (item.objectType === "analysis")
-                          props.handleAnalysisShow(item.ID);
-                      }}
+                      onClick={() =>
+                        props.handleObjectShow(item.objectType, item.ID)
+                      }
                     >
                       {item.ID} -{" "}
                       <span className="text-muted">

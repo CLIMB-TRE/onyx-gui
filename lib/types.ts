@@ -1,16 +1,16 @@
-export enum Themes {
+export enum Theme {
   LIGHT = "light",
   DARK = "dark",
 }
 
-export enum DarkModeColours {
+export enum DarkModeColour {
   BS_BODY_COLOR = "#dee2e6", // Bootstrap body text color for dark mode
   BS_BODY_BG = "#121212", // Bootstrap body background color for dark mode
   BS_GRAY_600 = "#6c757d", // Bootstrap gray-600 for dark mode
   BS_GRAY_900 = "#212529", // Bootstrap gray-900 for dark mode
 }
 
-export enum OnyxTabKeys {
+export enum OnyxTabKey {
   USER = "user-tab",
   SITE = "site-tab",
   RECORDS = "records-tab",
@@ -18,23 +18,23 @@ export enum OnyxTabKeys {
   GRAPHS = "graphs-tab",
 }
 
-export enum RecordTabKeys {
+export enum RecordTabKey {
   LIST = "record-list-tab",
   DETAIL = "record-detail-tab",
 }
 
-export enum AnalysisTabKeys {
+export enum AnalysisTabKey {
   LIST = "analysis-list-tab",
   DETAIL = "analysis-detail-tab",
 }
 
-export enum RecordDetailTabKeys {
+export enum RecordDetailTabKey {
   DATA = "record-detail-data-tab",
   HISTORY = "record-detail-history-tab",
   ANALYSES = "record-detail-analyses-tab",
 }
 
-export enum AnalysisDetailTabKeys {
+export enum AnalysisDetailTabKey {
   DATA = "analysis-detail-data-tab",
   HISTORY = "analysis-detail-history-tab",
   RECORDS = "analysis-detail-records-tab",
@@ -42,11 +42,11 @@ export enum AnalysisDetailTabKeys {
   DOWNSTREAM = "analysis-detail-downstream-tab",
 }
 
-export enum DataPanelTabKeys {
+export enum DataPanelTabKey {
   DETAILS = "data-panel-details",
 }
 
-export enum GraphPanelTabKeys {
+export enum GraphPanelTabKey {
   GRAPH = "graph-panel-graph",
   FILTERS = "graph-panel-filters",
   DISPLAY = "graph-panel-display",
@@ -61,17 +61,46 @@ export enum ExportStatus {
   ERROR,
 }
 
-export type ObjectType = "record" | "analysis";
+export enum ObjectType {
+  RECORD = "record",
+  ANALYSIS = "analysis",
+}
+
+export enum DefaultPrimaryID {
+  RECORD = "climb_id",
+  ANALYSIS = "analysis_id",
+}
+
+export enum FieldType {
+  TEXT = "text",
+  CHOICE = "choice",
+  INTEGER = "integer",
+  DECIMAL = "decimal",
+  DATE = "date",
+  DATETIME = "datetime",
+  BOOL = "bool",
+  RELATION = "relation",
+  ARRAY = "array",
+  STRUCTURE = "structure",
+  NONE = "",
+}
+
+export enum GraphType {
+  LINE = "line",
+  BAR = "bar",
+  PIE = "pie",
+  NONE = "",
+}
 
 export type TabState = {
-  tabKey: OnyxTabKeys;
-  recordTabKey: RecordTabKeys;
-  recordDetailTabKey: RecordDetailTabKeys;
-  recordDataPanelTabKey: DataPanelTabKeys;
+  tabKey: OnyxTabKey;
+  recordTabKey: RecordTabKey;
+  recordDetailTabKey: RecordDetailTabKey;
+  recordDataPanelTabKey: DataPanelTabKey;
   recordID: string;
-  analysisTabKey: AnalysisTabKeys;
-  analysisDetailTabKey: AnalysisDetailTabKeys;
-  analysisDataPanelTabKey: DataPanelTabKeys;
+  analysisTabKey: AnalysisTabKey;
+  analysisDetailTabKey: AnalysisDetailTabKey;
+  analysisDataPanelTabKey: DataPanelTabKey;
   analysisID: string;
 };
 
@@ -81,20 +110,10 @@ export type RecentlyViewed = {
   timestamp: string;
 };
 
-export type FieldType =
-  | "text"
-  | "choice"
-  | "integer"
-  | "decimal"
-  | "date"
-  | "datetime"
-  | "bool"
-  | "relation"
-  | "array"
-  | "structure"
-  | "";
-
-export type GraphType = "line" | "bar" | "pie" | "";
+export type Navigation = {
+  history: TabState[];
+  index: number;
+};
 
 export type Profile = {
   username: string;
@@ -127,7 +146,11 @@ export type Field = {
 export type Fields = {
   name: string;
   description: string;
+  object_type: string; // TODO: Should be ObjectType
+  primary_id?: string;
+  version: string;
   fields: Record<string, Field>;
+  fields_map: Map<string, Field>;
   default_fields?: string[];
 };
 

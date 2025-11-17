@@ -11,7 +11,12 @@ import {
   useTypesQuery,
 } from "./api";
 import Fade from "react-bootstrap/Fade";
-import { useFieldsInfo } from "./api/hooks";
+import {
+  useFields,
+  useLookupDescriptions,
+  useProjects,
+  useTypeLookups,
+} from "./api/hooks";
 import Header from "./components/Header";
 import PageTitle from "./components/PageTitle";
 import QueryHandler from "./components/QueryHandler";
@@ -23,18 +28,19 @@ import Results from "./pages/Results";
 import Site from "./pages/Site";
 import User from "./pages/User";
 import {
-  AnalysisTabKeys,
-  AnalysisDetailTabKeys,
-  DataPanelTabKeys,
-  OnyxTabKeys,
+  AnalysisTabKey,
+  AnalysisDetailTabKey,
+  DataPanelTabKey,
+  Navigation,
+  OnyxTabKey,
   Project,
-  ProjectPermissionGroup,
-  RecordTabKeys,
-  RecordDetailTabKeys,
+  RecordTabKey,
+  RecordDetailTabKey,
   TabState,
-  Themes,
+  Theme,
   RecentlyViewed,
   ObjectType,
+  DefaultPrimaryID,
 } from "./types";
 import { useDelayedValue, usePersistedState } from "./utils/hooks";
 import { getTheme } from "./utils/functions";
@@ -44,25 +50,30 @@ import "./Onyx.scss";
 interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
   lookupDescriptions: Map<string, string>;
-  handleProjectRecordShow: (recordID: string) => void;
-  handleAnalysisShow: (analysisID: string) => void;
-  handleProjectRecordHide: () => void;
-  handleAnalysisHide: () => void;
 }
 
 function ProjectPage(props: ProjectPageProps) {
-  // Get project information
-  const { isFetching, error, data: fieldsResponse } = useFieldsQuery(props);
-  const { description, fields, defaultFields } = useFieldsInfo(fieldsResponse);
-
-  // Get project analyses information
+  // Get record fields for the project
   const {
-    isFetching: isAnalysisFetching,
-    error: analysisError,
+    isFetching: isRecordFieldsFetching,
+    error: recordFieldsError,
+    data: recordFieldsResponse,
+  } = useFieldsQuery(props);
+  const recordFields = useFields(recordFieldsResponse);
+  const recordPrimaryID = useMemo(() => {
+    return recordFields.primary_id ?? DefaultPrimaryID.RECORD;
+  }, [recordFields]);
+
+  // Get analyses fields for the project
+  const {
+    isFetching: isAnalysisFieldsFetching,
+    error: analysisFieldsError,
     data: analysisFieldsResponse,
   } = useAnalysisFieldsQuery(props);
-  const { fields: analysisFields, defaultFields: defaultAnalysisFields } =
-    useFieldsInfo(analysisFieldsResponse);
+  const analysisFields = useFields(analysisFieldsResponse);
+  const analysisPrimaryID = useMemo(() => {
+    return analysisFields.primary_id ?? DefaultPrimaryID.ANALYSIS;
+  }, [analysisFields]);
 
   return (
     <Tab.Container
@@ -71,55 +82,56 @@ function ProjectPage(props: ProjectPageProps) {
       transition={false}
     >
       <Tab.Content className="h-100">
-        <Tab.Pane eventKey={OnyxTabKeys.USER} className="h-100">
+        <Tab.Pane eventKey={OnyxTabKey.USER} className="h-100">
           <User {...props} />
         </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.SITE} className="h-100">
+        <Tab.Pane eventKey={OnyxTabKey.SITE} className="h-100">
           <Site {...props} />
         </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.RECORDS} className="h-100">
+        <Tab.Pane eventKey={OnyxTabKey.RECORDS} className="h-100">
           <QueryHandler
-            isFetching={isFetching}
-            error={error}
-            data={fieldsResponse}
+            isFetching={isRecordFieldsFetching}
+            error={recordFieldsError}
+            data={recordFieldsResponse}
           >
             <Tab.Container
               activeKey={props.tabState.recordTabKey}
               transition={false}
             >
               <Tab.Content className="h-100">
-                <Tab.Pane eventKey={RecordTabKeys.LIST} className="h-100">
+                <Tab.Pane eventKey={RecordTabKey.LIST} className="h-100">
                   <Results
                     {...props}
-                    fields={fields}
-                    defaultFields={defaultFields}
-                    projectDescription={description}
+                    fields={recordFields}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     title="Records"
                     commandBase={`onyx filter ${props.project.code}`}
                     searchPath={`projects/${props.project.code}`}
                   />
                 </Tab.Pane>
                 <Tab.Pane
-                  eventKey={RecordTabKeys.DETAIL}
+                  eventKey={RecordTabKey.DETAIL}
                   className="h-100"
                   unmountOnExit
                 >
                   <ProjectRecord
                     {...props}
-                    fields={fields}
-                    projectDescription={description}
+                    fields={recordFields}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     ID={props.tabState.recordID}
-                    onHide={props.handleProjectRecordHide}
+                    onHide={() => props.handleObjectHide(ObjectType.RECORD)}
                   />
                 </Tab.Pane>
               </Tab.Content>
             </Tab.Container>
           </QueryHandler>
         </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.ANALYSES} className="h-100">
+        <Tab.Pane eventKey={OnyxTabKey.ANALYSES} className="h-100">
           <QueryHandler
-            isFetching={isAnalysisFetching}
-            error={analysisError}
+            isFetching={isAnalysisFieldsFetching}
+            error={analysisFieldsError}
             data={analysisFieldsResponse}
           >
             <Tab.Container
@@ -127,36 +139,42 @@ function ProjectPage(props: ProjectPageProps) {
               transition={false}
             >
               <Tab.Content className="h-100">
-                <Tab.Pane eventKey={AnalysisTabKeys.LIST} className="h-100">
+                <Tab.Pane eventKey={AnalysisTabKey.LIST} className="h-100">
                   <Results
                     {...props}
                     fields={analysisFields}
-                    defaultFields={defaultAnalysisFields}
-                    projectDescription={description}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     title="Analyses"
                     commandBase={`onyx filter-analysis ${props.project.code}`}
                     searchPath={`projects/${props.project.code}/analysis`}
                   />
                 </Tab.Pane>
                 <Tab.Pane
-                  eventKey={AnalysisTabKeys.DETAIL}
+                  eventKey={AnalysisTabKey.DETAIL}
                   className="h-100"
                   unmountOnExit
                 >
                   <Analysis
                     {...props}
                     fields={analysisFields}
-                    projectDescription={description}
+                    recordPrimaryID={recordPrimaryID}
+                    analysisPrimaryID={analysisPrimaryID}
                     ID={props.tabState.analysisID}
-                    onHide={props.handleAnalysisHide}
+                    onHide={() => props.handleObjectHide(ObjectType.ANALYSIS)}
                   />
                 </Tab.Pane>
               </Tab.Content>
             </Tab.Container>
           </QueryHandler>
         </Tab.Pane>
-        <Tab.Pane eventKey={OnyxTabKeys.GRAPHS} className="h-100">
-          <Graphs {...props} fields={fields} projectDescription={description} />
+        <Tab.Pane eventKey={OnyxTabKey.GRAPHS} className="h-100">
+          <Graphs
+            {...props}
+            fields={recordFields}
+            recordPrimaryID={recordPrimaryID}
+            analysisPrimaryID={analysisPrimaryID}
+          />
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>
@@ -183,8 +201,9 @@ function LandingPage() {
 function App(props: OnyxProps) {
   // Theme state
   const extTheme = getTheme(props.extTheme);
-  const localTheme = getTheme(localStorage.getItem("onyx-theme"));
-  const [theme, setTheme] = useState(extTheme ?? localTheme ?? Themes.LIGHT);
+  const localThemeKey = "onyx-theme";
+  const localTheme = getTheme(localStorage.getItem(localThemeKey));
+  const [theme, setTheme] = useState(extTheme ?? localTheme ?? Theme.LIGHT);
 
   // Set the theme
   useEffect(() => {
@@ -193,24 +212,30 @@ function App(props: OnyxProps) {
   }, [theme]);
 
   const handleThemeChange = () => {
-    const updatedTheme = theme === Themes.LIGHT ? Themes.DARK : Themes.LIGHT;
+    const updatedTheme = theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT;
     setTheme(updatedTheme);
-    localStorage.setItem("onyx-theme", updatedTheme);
+    localStorage.setItem(localThemeKey, updatedTheme);
   };
 
-  const defaultTabState = {
-    tabKey: OnyxTabKeys.RECORDS,
-    recordTabKey: RecordTabKeys.LIST,
-    recordDetailTabKey: RecordDetailTabKeys.DATA,
-    recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
+  // Default application state
+  const defaultTabState: TabState = {
+    tabKey: OnyxTabKey.RECORDS,
+    recordTabKey: RecordTabKey.LIST,
+    recordDetailTabKey: RecordDetailTabKey.DATA,
+    recordDataPanelTabKey: DataPanelTabKey.DETAILS,
     recordID: "",
-    analysisTabKey: AnalysisTabKeys.LIST,
-    analysisDetailTabKey: AnalysisDetailTabKeys.DATA,
-    analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
+    analysisTabKey: AnalysisTabKey.LIST,
+    analysisDetailTabKey: AnalysisDetailTabKey.DATA,
+    analysisDataPanelTabKey: DataPanelTabKey.DETAILS,
     analysisID: "",
   };
+  const defaultNavigation: Navigation = {
+    history: [],
+    index: -1,
+  };
+  const defaultRecentlyViewed: RecentlyViewed[] = [];
 
-  // Project state
+  // Project and application state
   const [project, setProject] = usePersistedState<Project | undefined>(
     props,
     "project",
@@ -221,16 +246,18 @@ function App(props: OnyxProps) {
     "tabState",
     defaultTabState
   );
+  const [navigation, setNavigation] = useState<Navigation>(defaultNavigation);
   const [recentlyViewed, setRecentlyViewed] = usePersistedState<
     RecentlyViewed[]
-  >(props, "recentlyViewed", []);
+  >(props, "recentlyViewed", defaultRecentlyViewed);
 
   // Clear parameters when project changes
   const handleProjectChange = (p: Project) => {
     if (p !== project) {
       setProject(p);
       setTabState(defaultTabState);
-      setRecentlyViewed([]);
+      setNavigation(defaultNavigation);
+      setRecentlyViewed(defaultRecentlyViewed);
     }
   };
 
@@ -240,29 +267,29 @@ function App(props: OnyxProps) {
     if (!setTitle || !project) return;
 
     switch (true) {
-      case tabState.tabKey === OnyxTabKeys.USER:
+      case tabState.tabKey === OnyxTabKey.USER:
         setTitle("Onyx | Profile");
         break;
-      case tabState.tabKey === OnyxTabKeys.SITE:
+      case tabState.tabKey === OnyxTabKey.SITE:
         setTitle("Onyx | Site");
         break;
-      case tabState.tabKey === OnyxTabKeys.RECORDS &&
-        tabState.recordTabKey === RecordTabKeys.LIST:
+      case tabState.tabKey === OnyxTabKey.RECORDS &&
+        tabState.recordTabKey === RecordTabKey.LIST:
         setTitle(`${project.name} | Records`);
         break;
-      case tabState.tabKey === OnyxTabKeys.RECORDS &&
-        tabState.recordTabKey === RecordTabKeys.DETAIL:
+      case tabState.tabKey === OnyxTabKey.RECORDS &&
+        tabState.recordTabKey === RecordTabKey.DETAIL:
         setTitle(`${project.name} | ${tabState.recordID}`);
         break;
-      case tabState.tabKey === OnyxTabKeys.ANALYSES &&
-        tabState.analysisTabKey === AnalysisTabKeys.LIST:
+      case tabState.tabKey === OnyxTabKey.ANALYSES &&
+        tabState.analysisTabKey === AnalysisTabKey.LIST:
         setTitle(`${project.name} | Analyses`);
         break;
-      case tabState.tabKey === OnyxTabKeys.ANALYSES &&
-        tabState.analysisTabKey === AnalysisTabKeys.DETAIL:
+      case tabState.tabKey === OnyxTabKey.ANALYSES &&
+        tabState.analysisTabKey === AnalysisTabKey.DETAIL:
         setTitle(`${project.name} | ${tabState.analysisID}`);
         break;
-      case tabState.tabKey === OnyxTabKeys.GRAPHS:
+      case tabState.tabKey === OnyxTabKey.GRAPHS:
         setTitle(`${project.name} | Graphs`);
         break;
       default:
@@ -270,46 +297,18 @@ function App(props: OnyxProps) {
     }
   }, [tabState, project, setTitle]);
 
-  // Query for types, lookups and project permissions
-  const { data: typesResponse } = useTypesQuery(props);
-  const { data: lookupsResponse } = useLookupsQuery(props);
-  const { data: projectPermissionsResponse } =
-    useProjectPermissionsQuery(props);
-
   // Get a map of types to their lookups
-  const typeLookups = useMemo(() => {
-    if (typesResponse?.status !== "success") return new Map<string, string[]>();
-    return new Map<string, string[]>(
-      typesResponse.data.map((type) => [type.type, type.lookups])
-    );
-  }, [typesResponse]);
+  const { data: typesResponse } = useTypesQuery(props);
+  const typeLookups = useTypeLookups(typesResponse);
 
   // Get a map of lookups to their descriptions
-  const lookupDescriptions = useMemo(() => {
-    if (lookupsResponse?.status !== "success") return new Map<string, string>();
-    return new Map<string, string>(
-      lookupsResponse.data.map((lookup) => [lookup.lookup, lookup.description])
-    );
-  }, [lookupsResponse]);
+  const { data: lookupsResponse } = useLookupsQuery(props);
+  const lookupDescriptions = useLookupDescriptions(lookupsResponse);
 
-  // Get the project list
-  const projects = useMemo(() => {
-    if (projectPermissionsResponse?.status !== "success") return [];
-
-    // Map the project permissions to a list of projects
-    // Each item in the list is an object with a code and name
-    const ps = projectPermissionsResponse.data
-      .map((projectPermission: ProjectPermissionGroup) => ({
-        code: projectPermission.project,
-        name: projectPermission.name,
-      }))
-      .sort((a: Project, b: Project) =>
-        a.code < b.code ? -1 : 1
-      ) as Project[];
-
-    // Deduplicate the project list by code
-    return [...new Map(ps.map((p) => [p.code, p])).values()];
-  }, [projectPermissionsResponse]);
+  // Get the projects from project permissions
+  const { data: projectPermissionsResponse } =
+    useProjectPermissionsQuery(props);
+  const projects = useProjects(projectPermissionsResponse);
 
   // Set the first project as the default
   useEffect(() => {
@@ -318,8 +317,53 @@ function App(props: OnyxProps) {
     }
   }, [project, projects, setProject]);
 
-  const handleRecentlyViewed = useCallback(
-    (objectType: ObjectType, ID: string) => {
+  const handleNavigationChange = useCallback(
+    (tabState: TabState, updatedState: TabState) => {
+      setNavigation((prevState) => {
+        const history = prevState.history.slice(0, prevState.index + 1);
+        let lastState = history[history.length - 1];
+        if (!lastState) {
+          lastState = tabState;
+          history.push(lastState);
+        }
+
+        if (JSON.stringify(lastState) === JSON.stringify(updatedState)) {
+          return prevState;
+        }
+
+        const updatedHistory = [...history, updatedState].slice(-50);
+        const updatedIndex = updatedHistory.length - 1;
+
+        return {
+          history: updatedHistory,
+          index: updatedIndex,
+        };
+      });
+    },
+    []
+  );
+
+  const handleRecentlyViewedChange = useCallback(
+    (updatedState: TabState) => {
+      let objectType: ObjectType;
+      let ID: string;
+
+      if (
+        updatedState.tabKey === OnyxTabKey.RECORDS &&
+        updatedState.recordTabKey === RecordTabKey.DETAIL &&
+        updatedState.recordID
+      ) {
+        objectType = ObjectType.RECORD;
+        ID = updatedState.recordID;
+      } else if (
+        updatedState.tabKey === OnyxTabKey.ANALYSES &&
+        updatedState.analysisTabKey === AnalysisTabKey.DETAIL &&
+        updatedState.analysisID
+      ) {
+        objectType = ObjectType.ANALYSIS;
+        ID = updatedState.analysisID;
+      } else return;
+
       setRecentlyViewed((prevState) => {
         const updatedList = [...prevState];
 
@@ -341,54 +385,87 @@ function App(props: OnyxProps) {
     [setRecentlyViewed]
   );
 
+  const handleTabChange = useCallback(
+    (updatedState: TabState) => {
+      setTabState(updatedState);
+      handleNavigationChange(tabState, updatedState);
+      handleRecentlyViewedChange(updatedState);
+    },
+    [tabState, setTabState, handleNavigationChange, handleRecentlyViewedChange]
+  );
+
+  const handleNavigationBack = useCallback(() => {
+    if (navigation.index > 0) {
+      const updatedIndex = navigation.index - 1;
+      const updatedTabState = navigation.history[updatedIndex];
+      setTabState(updatedTabState);
+      setNavigation((prevState) => ({
+        ...prevState,
+        index: updatedIndex,
+      }));
+      handleRecentlyViewedChange(updatedTabState);
+    }
+  }, [navigation, setTabState, handleRecentlyViewedChange]);
+
+  const handleNavigationForward = useCallback(() => {
+    if (navigation.index < navigation.history.length - 1) {
+      const updatedIndex = navigation.index + 1;
+      const updatedTabState = navigation.history[updatedIndex];
+      setTabState(updatedTabState);
+      setNavigation((prevState) => ({
+        ...prevState,
+        index: updatedIndex,
+      }));
+      handleRecentlyViewedChange(updatedTabState);
+    }
+  }, [navigation, setTabState, handleRecentlyViewedChange]);
+
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
-  const handleProjectRecordShow = useCallback(
-    (climbID: string) => {
-      setTabState((prevState) => ({
-        ...prevState,
-        tabKey: OnyxTabKeys.RECORDS,
-        recordTabKey: RecordTabKeys.DETAIL,
-        recordDetailTabKey: RecordDetailTabKeys.DATA,
-        recordDataPanelTabKey: DataPanelTabKeys.DETAILS,
-        recordID: climbID,
-      }));
-      handleRecentlyViewed("record", climbID);
+  const handleObjectShow = useCallback(
+    (objectType: ObjectType, ID: string) => {
+      if (objectType === ObjectType.RECORD) {
+        handleTabChange({
+          ...tabState,
+          tabKey: OnyxTabKey.RECORDS,
+          recordTabKey: RecordTabKey.DETAIL,
+          recordDetailTabKey: RecordDetailTabKey.DATA,
+          recordDataPanelTabKey: DataPanelTabKey.DETAILS,
+          recordID: ID,
+        });
+      } else if (objectType === ObjectType.ANALYSIS) {
+        handleTabChange({
+          ...tabState,
+          tabKey: OnyxTabKey.ANALYSES,
+          analysisTabKey: AnalysisTabKey.DETAIL,
+          analysisDetailTabKey: AnalysisDetailTabKey.DATA,
+          analysisDataPanelTabKey: DataPanelTabKey.DETAILS,
+          analysisID: ID,
+        });
+      }
     },
-    [handleRecentlyViewed, setTabState]
+    [tabState, handleTabChange]
   );
 
-  const handleProjectRecordHide = useCallback(() => {
-    setTabState((prevState) => ({
-      ...prevState,
-      tabKey: OnyxTabKeys.RECORDS,
-      recordTabKey: RecordTabKeys.LIST,
-    }));
-  }, [setTabState]);
-
-  const handleAnalysisShow = useCallback(
-    (analysisID: string) => {
-      setTabState((prevState) => ({
-        ...prevState,
-        tabKey: OnyxTabKeys.ANALYSES,
-        analysisTabKey: AnalysisTabKeys.DETAIL,
-        analysisDetailTabKey: AnalysisDetailTabKeys.DATA,
-        analysisDataPanelTabKey: DataPanelTabKeys.DETAILS,
-        analysisID: analysisID,
-      }));
-      handleRecentlyViewed("analysis", analysisID);
+  const handleObjectHide = useCallback(
+    (objectType: ObjectType) => {
+      if (objectType === ObjectType.RECORD) {
+        handleTabChange({
+          ...tabState,
+          tabKey: OnyxTabKey.RECORDS,
+          recordTabKey: RecordTabKey.LIST,
+        });
+      } else if (objectType === ObjectType.ANALYSIS) {
+        handleTabChange({
+          ...tabState,
+          tabKey: OnyxTabKey.ANALYSES,
+          analysisTabKey: AnalysisTabKey.LIST,
+        });
+      }
     },
-    [handleRecentlyViewed, setTabState]
+    [tabState, handleTabChange]
   );
-
-  const handleAnalysisHide = useCallback(() => {
-    setTabState((prevState) => ({
-      ...prevState,
-      tabKey: OnyxTabKeys.ANALYSES,
-      analysisTabKey: AnalysisTabKeys.LIST,
-    }));
-  }, [setTabState]);
 
   return (
     <div className="climb-jupyter onyx h-100">
@@ -396,17 +473,17 @@ function App(props: OnyxProps) {
         {...props}
         theme={extTheme ?? theme}
         tabState={tabState}
-        setTabState={setTabState}
+        handleThemeChange={handleThemeChange}
+        handleTabChange={handleTabChange}
+        handleObjectShow={handleObjectShow}
+        handleObjectHide={handleObjectHide}
         project={project}
         projects={projects}
         recentlyViewed={recentlyViewed}
-        handleThemeChange={handleThemeChange}
         handleProjectChange={handleProjectChange}
-        handleProjectRecordShow={handleProjectRecordShow}
-        handleAnalysisShow={handleAnalysisShow}
-        handleProjectRecordHide={handleProjectRecordHide}
-        handleAnalysisHide={handleAnalysisHide}
-        handleRecentlyViewed={handleRecentlyViewed}
+        navigation={navigation}
+        handleNavigateBack={handleNavigationBack}
+        handleNavigateForward={handleNavigationForward}
       />
       <Container fluid className="onyx-content p-2">
         {!(props.enabled && project) ? (
@@ -425,14 +502,12 @@ function App(props: OnyxProps) {
                     {...props}
                     theme={extTheme ?? theme}
                     tabState={tabState}
-                    setTabState={setTabState}
+                    handleTabChange={handleTabChange}
+                    handleObjectShow={handleObjectShow}
+                    handleObjectHide={handleObjectHide}
                     project={p}
                     typeLookups={typeLookups}
                     lookupDescriptions={lookupDescriptions}
-                    handleProjectRecordShow={handleProjectRecordShow}
-                    handleAnalysisShow={handleAnalysisShow}
-                    handleProjectRecordHide={handleProjectRecordHide}
-                    handleAnalysisHide={handleAnalysisHide}
                   />
                 </Tab.Pane>
               ))}

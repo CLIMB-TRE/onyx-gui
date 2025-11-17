@@ -4,7 +4,7 @@ import CloseButton from "react-bootstrap/CloseButton";
 import Form from "react-bootstrap/Form";
 import Stack from "react-bootstrap/Stack";
 import { DataProps } from "../interfaces";
-import { FilterConfig } from "../types";
+import { FieldType, FilterConfig } from "../types";
 import { Choice, Dropdown, MultiChoice } from "./Dropdowns";
 import { Input, MultiInput, RangeInput } from "./Inputs";
 import { useFieldDescriptions } from "../api/hooks";
@@ -52,7 +52,8 @@ function Filter(props: FilterProps) {
     setFilter((prevState) => {
       const updatedFilter = { ...prevState };
 
-      updatedFilter.type = props.fields.get(e.target.value)?.type || "";
+      updatedFilter.type =
+        props.fields.fields_map.get(e.target.value)?.type || FieldType.NONE;
       updatedFilter.field = e.target.value;
       updatedFilter.lookup =
         props.typeLookups.get(updatedFilter.type)?.[0] || "";
@@ -135,7 +136,7 @@ function Filter(props: FilterProps) {
         <MultiChoice
           {...props}
           field={filter.field}
-          options={props.fields.get(filter.field)?.values || []}
+          options={props.fields.fields_map.get(filter.field)?.values || []}
           value={getValueList(filter.value)}
           onChange={handleValueChange}
         />
@@ -148,7 +149,7 @@ function Filter(props: FilterProps) {
           {...props}
           isClearable
           field={filter.field}
-          options={props.fields.get(filter.field)?.values || []}
+          options={props.fields.fields_map.get(filter.field)?.values || []}
           value={filter.value}
           onChange={handleValueChange}
         />
@@ -201,7 +202,7 @@ function Filter(props: FilterProps) {
       );
   }
 
-  const fieldDescriptions = useFieldDescriptions(props.fields);
+  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
 
   return (
     <Stack gap={2} className="p-1">

@@ -23,7 +23,12 @@ import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 import { useCountQuery } from "../api";
 import { ExportHandlerProps, OnyxProps, ProjectProps } from "../interfaces";
-import { ExportStatus, RecordType, ListResponse } from "../types";
+import {
+  ExportStatus,
+  RecordType,
+  ListResponse,
+  DefaultPrimaryID,
+} from "../types";
 import ExportModal from "./ExportModal";
 import { formatResponseStatus } from "../utils/functions";
 
@@ -65,6 +70,10 @@ interface BaseTableProps extends OnyxProps {
   };
 }
 
+interface TableCountProps extends BaseTableProps {
+  displayedRowCount: number;
+}
+
 interface TableOptionsProps extends BaseTableProps {
   gridRef: React.RefObject<AgGridReact<TableRow>>;
 }
@@ -80,6 +89,8 @@ interface TableProps extends OnyxProps {
   defaultSort?: Map<string, SortDirection>;
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
+  recordPrimaryID?: string;
+  analysisPrimaryID?: string;
 }
 
 interface ClientTableProps extends TableProps {
@@ -163,9 +174,13 @@ function getColDefs(
       if (props.cellRenderers?.get(key))
         colDef.cellRenderer = props.cellRenderers.get(key);
 
-      if (key === "climb_id" || key === "analysis_id") {
-        // 'climb_id' and 'analysis_id' fields are a special case
-        // where we want them pinned to the left
+      if (
+        key === DefaultPrimaryID.RECORD ||
+        key === DefaultPrimaryID.ANALYSIS ||
+        key === props.recordPrimaryID ||
+        key === props.analysisPrimaryID
+      ) {
+        // ID fields pinned to the left
         colDef.pinned = "left";
       } else if (key === "changes" || key === "error_messages") {
         // History 'changes' field is a special case
@@ -194,6 +209,21 @@ function getColDefs(
   return colDefs;
 }
 
+function TableCount(props: TableCountProps) {
+  return (
+    <Pagination size="sm" style={{ whiteSpace: "nowrap" }}>
+      <Pagination.Item as="span">
+        {props.isCountLoading
+          ? "Loading..."
+          : `${props.rowDisplayParams.from.toLocaleString()} to ${(props.isPaginated
+              ? props.rowDisplayParams.to
+              : props.displayedRowCount
+            ).toLocaleString()} of ${props.rowDisplayParams.of.toLocaleString()}`}
+      </Pagination.Item>
+    </Pagination>
+  );
+}
+
 function TablePagination(props: BaseTableProps) {
   return (
     <Pagination size="sm">
@@ -217,7 +247,7 @@ function TablePagination(props: BaseTableProps) {
       />
       <Pagination.Item
         as="span"
-        style={{ minWidth: "125px", textAlign: "center" }}
+        style={{ textAlign: "center", whiteSpace: "nowrap" }}
       >
         {props.paginationParams.pageCountMessage}
       </Pagination.Item>
@@ -448,37 +478,35 @@ function BaseTable(props: BaseTableProps) {
           loading={props.isDataLoading}
         />
       </div>
-      <div>
-        <i className="text-secondary">{props.footer || ""}</i>
-        <div style={{ float: "right" }}>
-          <Container>
-            <Row className="g-2">
-              <Col style={{ whiteSpace: "nowrap" }}>
-                <Pagination size="sm">
-                  <Pagination.Item as="span">
-                    {props.isCountLoading
-                      ? "Loading..."
-                      : `${props.rowDisplayParams.from.toLocaleString()} to ${(props.isPaginated
-                          ? props.rowDisplayParams.to
-                          : displayedRowCount
-                        ).toLocaleString()} of ${props.rowDisplayParams.of.toLocaleString()}`}
-                  </Pagination.Item>
-                </Pagination>
-              </Col>
-              <Col>
-                <TablePagination {...props} />
-              </Col>
-              <Col>
-                <TableOptions
-                  {...props}
-                  gridRef={gridRef}
-                  isFilterable={props.isFilterable}
-                />
-              </Col>
-            </Row>
-          </Container>
-        </div>
-      </div>
+      <Container fluid>
+        <Row className="g-2">
+          <Col lg>
+            <i className="text-secondary">{props.footer || ""}</i>
+          </Col>
+          <Col xs="auto">
+            <Container fluid>
+              <Row className="gx-2">
+                <Col>
+                  <TableCount
+                    {...props}
+                    displayedRowCount={displayedRowCount}
+                  />
+                </Col>
+                <Col>
+                  <TablePagination {...props} />
+                </Col>
+                <Col>
+                  <TableOptions
+                    {...props}
+                    gridRef={gridRef}
+                    isFilterable={props.isFilterable}
+                  />
+                </Col>
+              </Row>
+            </Container>
+          </Col>
+        </Row>
+      </Container>
     </Stack>
   );
 }
