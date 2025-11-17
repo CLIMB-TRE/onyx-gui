@@ -174,7 +174,7 @@ function Results(props: ResultsProps) {
             </Container>
           </Resizer>
         )}
-        <div className="h-100" style={{ flex: 1 }}>
+        <div className="h-100" style={{ flex: 1, minWidth: 220 }}>
           <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}

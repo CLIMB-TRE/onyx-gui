@@ -68,8 +68,10 @@ export default function Resizer(props: ResizerProps) {
       className="h-100"
       style={{
         position: "relative",
-        width: width,
-        minWidth: width,
+        flexBasis: width,
+        minWidth: props.minWidth,
+        maxWidth: props.maxWidth,
+        flexShrink: 1,
       }}
     >
       {props.children}
