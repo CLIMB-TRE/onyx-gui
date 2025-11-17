@@ -343,30 +343,27 @@ function App(props: OnyxProps) {
     []
   );
 
-  const handleNavigationBack = useCallback(() => {
-    if (navigation.index > 0) {
-      const updatedIndex = navigation.index - 1;
-      setNavigation((prevState) => ({
-        ...prevState,
-        index: updatedIndex,
-      }));
-      setTabState(navigation.history[updatedIndex]);
-    }
-  }, [navigation, setTabState]);
+  const handleRecentlyViewedChange = useCallback(
+    (updatedState: TabState) => {
+      let objectType: ObjectType;
+      let ID: string;
 
-  const handleNavigationForward = useCallback(() => {
-    if (navigation.index < navigation.history.length - 1) {
-      const updatedIndex = navigation.index + 1;
-      setNavigation((prevState) => ({
-        ...prevState,
-        index: updatedIndex,
-      }));
-      setTabState(navigation.history[updatedIndex]);
-    }
-  }, [navigation, setTabState]);
+      if (
+        updatedState.tabKey === OnyxTabKey.RECORDS &&
+        updatedState.recordTabKey === RecordTabKey.DETAIL &&
+        updatedState.recordID
+      ) {
+        objectType = ObjectType.RECORD;
+        ID = updatedState.recordID;
+      } else if (
+        updatedState.tabKey === OnyxTabKey.ANALYSES &&
+        updatedState.analysisTabKey === AnalysisTabKey.DETAIL &&
+        updatedState.analysisID
+      ) {
+        objectType = ObjectType.ANALYSIS;
+        ID = updatedState.analysisID;
+      } else return;
 
-  const handleRecentlyViewed = useCallback(
-    (objectType: ObjectType, ID: string) => {
       setRecentlyViewed((prevState) => {
         const updatedList = [...prevState];
 
@@ -392,21 +389,36 @@ function App(props: OnyxProps) {
     (updatedState: TabState) => {
       setTabState(updatedState);
       handleNavigationChange(tabState, updatedState);
-      if (
-        updatedState.tabKey === OnyxTabKey.RECORDS &&
-        updatedState.recordTabKey === RecordTabKey.DETAIL &&
-        updatedState.recordID
-      )
-        handleRecentlyViewed(ObjectType.RECORD, updatedState.recordID);
-      else if (
-        updatedState.tabKey === OnyxTabKey.ANALYSES &&
-        updatedState.analysisTabKey === AnalysisTabKey.DETAIL &&
-        updatedState.analysisID
-      )
-        handleRecentlyViewed(ObjectType.ANALYSIS, updatedState.analysisID);
+      handleRecentlyViewedChange(updatedState);
     },
-    [tabState, setTabState, handleNavigationChange, handleRecentlyViewed]
+    [tabState, setTabState, handleNavigationChange, handleRecentlyViewedChange]
   );
+
+  const handleNavigationBack = useCallback(() => {
+    if (navigation.index > 0) {
+      const updatedIndex = navigation.index - 1;
+      const updatedTabState = navigation.history[updatedIndex];
+      setTabState(updatedTabState);
+      setNavigation((prevState) => ({
+        ...prevState,
+        index: updatedIndex,
+      }));
+      handleRecentlyViewedChange(updatedTabState);
+    }
+  }, [navigation, setTabState, handleRecentlyViewedChange]);
+
+  const handleNavigationForward = useCallback(() => {
+    if (navigation.index < navigation.history.length - 1) {
+      const updatedIndex = navigation.index + 1;
+      const updatedTabState = navigation.history[updatedIndex];
+      setTabState(updatedTabState);
+      setNavigation((prevState) => ({
+        ...prevState,
+        index: updatedIndex,
+      }));
+      handleRecentlyViewedChange(updatedTabState);
+    }
+  }, [navigation, setTabState, handleRecentlyViewedChange]);
 
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
