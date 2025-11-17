@@ -24,8 +24,6 @@ import {
   Profile,
   Project,
   RecentlyViewed,
-  RecordTabKey,
-  AnalysisTabKey,
   Theme,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
@@ -91,6 +89,20 @@ function Header(props: HeaderProps) {
     return data.data;
   }, [data]);
 
+  const handleTabChange = (tabKey: OnyxTabKey) => {
+    if (
+      props.tabState.tabKey === OnyxTabKey.RECORDS &&
+      tabKey === OnyxTabKey.RECORDS
+    )
+      props.handleObjectHide(ObjectType.RECORD);
+    else if (
+      props.tabState.tabKey === OnyxTabKey.ANALYSES &&
+      tabKey === OnyxTabKey.ANALYSES
+    )
+      props.handleObjectHide(ObjectType.ANALYSIS);
+    else props.handleTabChange({ ...props.tabState, tabKey: tabKey });
+  };
+
   const canNavigateBack = props.navigation.index > 0;
   const canNavigateForward =
     props.navigation.index < props.navigation.history.length - 1;
@@ -104,30 +116,7 @@ function Header(props: HeaderProps) {
       variant="dark"
       expand="lg"
       onSelect={(e) => {
-        if (!e) return;
-
-        let updatedState = { ...props.tabState, tabKey: e as OnyxTabKey };
-
-        if (
-          JSON.stringify(props.tabState) === JSON.stringify(updatedState) &&
-          updatedState.tabKey === OnyxTabKey.RECORDS &&
-          updatedState.recordTabKey === RecordTabKey.DETAIL
-        ) {
-          updatedState = {
-            ...updatedState,
-            recordTabKey: RecordTabKey.LIST,
-          };
-        } else if (
-          JSON.stringify(props.tabState) === JSON.stringify(updatedState) &&
-          updatedState.tabKey === OnyxTabKey.ANALYSES &&
-          updatedState.analysisTabKey === AnalysisTabKey.DETAIL
-        )
-          updatedState = {
-            ...updatedState,
-            analysisTabKey: AnalysisTabKey.LIST,
-          };
-
-        props.handleTabChange(updatedState);
+        if (e) handleTabChange(e as OnyxTabKey);
       }}
     >
       <Container fluid>
