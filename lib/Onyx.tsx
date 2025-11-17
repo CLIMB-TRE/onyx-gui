@@ -201,7 +201,8 @@ function LandingPage() {
 function App(props: OnyxProps) {
   // Theme state
   const extTheme = getTheme(props.extTheme);
-  const localTheme = getTheme(localStorage.getItem("onyx-theme"));
+  const localThemeKey = "onyx-theme";
+  const localTheme = getTheme(localStorage.getItem(localThemeKey));
   const [theme, setTheme] = useState(extTheme ?? localTheme ?? Theme.LIGHT);
 
   // Set the theme
@@ -213,10 +214,11 @@ function App(props: OnyxProps) {
   const handleThemeChange = () => {
     const updatedTheme = theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT;
     setTheme(updatedTheme);
-    localStorage.setItem("onyx-theme", updatedTheme);
+    localStorage.setItem(localThemeKey, updatedTheme);
   };
 
-  const defaultTabState = {
+  // Default application state
+  const defaultTabState: TabState = {
     tabKey: OnyxTabKey.RECORDS,
     recordTabKey: RecordTabKey.LIST,
     recordDetailTabKey: RecordDetailTabKey.DATA,
@@ -227,8 +229,13 @@ function App(props: OnyxProps) {
     analysisDataPanelTabKey: DataPanelTabKey.DETAILS,
     analysisID: "",
   };
+  const defaultNavigation: Navigation = {
+    history: [],
+    index: -1,
+  };
+  const defaultRecentlyViewed: RecentlyViewed[] = [];
 
-  // Project state
+  // Project and application state
   const [project, setProject] = usePersistedState<Project | undefined>(
     props,
     "project",
@@ -239,105 +246,18 @@ function App(props: OnyxProps) {
     "tabState",
     defaultTabState
   );
-  const [navigation, setNavigation] = useState<Navigation>({
-    history: [],
-    index: -1,
-  });
+  const [navigation, setNavigation] = useState<Navigation>(defaultNavigation);
   const [recentlyViewed, setRecentlyViewed] = usePersistedState<
     RecentlyViewed[]
-  >(props, "recentlyViewed", []);
-
-  const handleTabChange = (updatedTabState: Partial<TabState>) => {
-    if (
-      tabState.tabKey === OnyxTabKey.RECORDS &&
-      updatedTabState.tabKey === OnyxTabKey.RECORDS
-    )
-      handleObjectHide(ObjectType.RECORD);
-
-    if (
-      tabState.tabKey === OnyxTabKey.ANALYSES &&
-      updatedTabState.tabKey === OnyxTabKey.ANALYSES
-    )
-      handleObjectHide(ObjectType.ANALYSIS);
-
-    setTabState((prevState) => ({
-      ...prevState,
-      ...updatedTabState,
-    }));
-
-    if (
-      updatedTabState.tabKey === OnyxTabKey.RECORDS &&
-      tabState.recordTabKey === RecordTabKey.DETAIL
-    ) {
-      handleRecentlyViewed(ObjectType.RECORD, tabState.recordID);
-    }
-
-    if (
-      updatedTabState.tabKey === OnyxTabKey.ANALYSES &&
-      tabState.analysisTabKey === AnalysisTabKey.DETAIL
-    ) {
-      handleRecentlyViewed(ObjectType.ANALYSIS, tabState.analysisID);
-    }
-  };
-
-  const updateNavigation = useCallback((newTabState: TabState) => {
-    setNavigation((prev) => {
-      const history = prev.history.slice(0, prev.index + 1);
-      const lastState = history[history.length - 1];
-      if (JSON.stringify(lastState) === JSON.stringify(newTabState)) {
-        return prev;
-      }
-
-      const updatedHistory = [...history, newTabState].slice(-50);
-      return {
-        history: updatedHistory,
-        index: updatedHistory.length - 1,
-      };
-    });
-  }, []);
-
-  const handleNavigationBack = useCallback(() => {
-    if (navigation.index > 0) {
-      const newIndex = navigation.index - 1;
-      const targetState = navigation.history[newIndex];
-
-      setNavigation((prev) => ({
-        ...prev,
-        index: newIndex,
-      }));
-      setTabState(targetState);
-    }
-  }, [navigation, setTabState]);
-
-  const handleNavigationForward = useCallback(() => {
-    if (navigation.index < navigation.history.length - 1) {
-      const newIndex = navigation.index + 1;
-      const targetState = navigation.history[newIndex];
-
-      setNavigation((prev) => ({
-        ...prev,
-        index: newIndex,
-      }));
-      setTabState(targetState);
-    }
-  }, [navigation, setTabState]);
-
-  // Update navigation when tab state changes
-  useEffect(() => {
-    updateNavigation(tabState);
-  }, [tabState, updateNavigation]);
-
-  const handleNavigationClear = () => {
-    setTabState(defaultTabState);
-    setNavigation({ history: [], index: -1 });
-    setRecentlyViewed([]);
-  };
+  >(props, "recentlyViewed", defaultRecentlyViewed);
 
   // Clear parameters when project changes
   const handleProjectChange = (p: Project) => {
     if (p !== project) {
       setProject(p);
-      handleNavigationClear();
+      setTabState(defaultTabState);
+      setNavigation(defaultNavigation);
+      setRecentlyViewed(defaultRecentlyViewed);
     }
   };
 
@@ -397,6 +317,54 @@ function App(props: OnyxProps) {
     }
   }, [project, projects, setProject]);
 
+  const handleNavigationChange = useCallback(
+    (tabState: TabState, updatedState: TabState) => {
+      setNavigation((prevState) => {
+        const history = prevState.history.slice(0, prevState.index + 1);
+        let lastState = history[history.length - 1];
+        if (!lastState) {
+          lastState = tabState;
+          history.push(lastState);
+        }
+
+        if (JSON.stringify(lastState) === JSON.stringify(updatedState)) {
+          return prevState;
+        }
+
+        const updatedHistory = [...history, updatedState].slice(-50);
+        const updatedIndex = updatedHistory.length - 1;
+
+        return {
+          history: updatedHistory,
+          index: updatedIndex,
+        };
+      });
+    },
+    []
+  );
+
+  const handleNavigationBack = useCallback(() => {
+    if (navigation.index > 0) {
+      const updatedIndex = navigation.index - 1;
+      setNavigation((prevState) => ({
+        ...prevState,
+        index: updatedIndex,
+      }));
+      setTabState(navigation.history[updatedIndex]);
+    }
+  }, [navigation, setTabState]);
+
+  const handleNavigationForward = useCallback(() => {
+    if (navigation.index < navigation.history.length - 1) {
+      const updatedIndex = navigation.index + 1;
+      setNavigation((prevState) => ({
+        ...prevState,
+        index: updatedIndex,
+      }));
+      setTabState(navigation.history[updatedIndex]);
+    }
+  }, [navigation, setTabState]);
+
   const handleRecentlyViewed = useCallback(
     (objectType: ObjectType, ID: string) => {
       setRecentlyViewed((prevState) => {
@@ -420,52 +388,71 @@ function App(props: OnyxProps) {
     [setRecentlyViewed]
   );
 
+  const handleTabChange = useCallback(
+    (updatedState: TabState) => {
+      setTabState(updatedState);
+      handleNavigationChange(tabState, updatedState);
+      if (
+        updatedState.tabKey === OnyxTabKey.RECORDS &&
+        updatedState.recordTabKey === RecordTabKey.DETAIL &&
+        updatedState.recordID
+      )
+        handleRecentlyViewed(ObjectType.RECORD, updatedState.recordID);
+      else if (
+        updatedState.tabKey === OnyxTabKey.ANALYSES &&
+        updatedState.analysisTabKey === AnalysisTabKey.DETAIL &&
+        updatedState.analysisID
+      )
+        handleRecentlyViewed(ObjectType.ANALYSIS, updatedState.analysisID);
+    },
+    [tabState, setTabState, handleNavigationChange, handleRecentlyViewed]
+  );
+
   // https://react.dev/reference/react/useCallback#skipping-re-rendering-of-components
   // Usage of useCallback here prevents excessive re-rendering of the ResultsPanel
   // This noticeably improves responsiveness for large datasets
   const handleObjectShow = useCallback(
     (objectType: ObjectType, ID: string) => {
       if (objectType === ObjectType.RECORD) {
-        setTabState((prevState) => ({
-          ...prevState,
+        handleTabChange({
+          ...tabState,
           tabKey: OnyxTabKey.RECORDS,
           recordTabKey: RecordTabKey.DETAIL,
           recordDetailTabKey: RecordDetailTabKey.DATA,
           recordDataPanelTabKey: DataPanelTabKey.DETAILS,
           recordID: ID,
-        }));
+        });
       } else if (objectType === ObjectType.ANALYSIS) {
-        setTabState((prevState) => ({
-          ...prevState,
+        handleTabChange({
+          ...tabState,
           tabKey: OnyxTabKey.ANALYSES,
           analysisTabKey: AnalysisTabKey.DETAIL,
           analysisDetailTabKey: AnalysisDetailTabKey.DATA,
           analysisDataPanelTabKey: DataPanelTabKey.DETAILS,
           analysisID: ID,
-        }));
+        });
       }
-      handleRecentlyViewed(objectType, ID);
     },
-    [handleRecentlyViewed, setTabState]
+    [tabState, handleTabChange]
   );
 
   const handleObjectHide = useCallback(
     (objectType: ObjectType) => {
       if (objectType === ObjectType.RECORD) {
-        setTabState((prevState) => ({
-          ...prevState,
+        handleTabChange({
+          ...tabState,
           tabKey: OnyxTabKey.RECORDS,
           recordTabKey: RecordTabKey.LIST,
-        }));
+        });
       } else if (objectType === ObjectType.ANALYSIS) {
-        setTabState((prevState) => ({
-          ...prevState,
+        handleTabChange({
+          ...tabState,
           tabKey: OnyxTabKey.ANALYSES,
           analysisTabKey: AnalysisTabKey.LIST,
-        }));
+        });
       }
     },
-    [setTabState]
+    [tabState, handleTabChange]
   );
 
   return (
@@ -474,7 +461,6 @@ function App(props: OnyxProps) {
         {...props}
         theme={extTheme ?? theme}
         tabState={tabState}
-        setTabState={setTabState}
         handleThemeChange={handleThemeChange}
         handleTabChange={handleTabChange}
         handleObjectShow={handleObjectShow}
@@ -504,7 +490,7 @@ function App(props: OnyxProps) {
                     {...props}
                     theme={extTheme ?? theme}
                     tabState={tabState}
-                    setTabState={setTabState}
+                    handleTabChange={handleTabChange}
                     handleObjectShow={handleObjectShow}
                     handleObjectHide={handleObjectHide}
                     project={p}

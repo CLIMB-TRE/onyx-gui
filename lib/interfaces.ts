@@ -1,4 +1,3 @@
-import { Dispatch, SetStateAction } from "react";
 import {
   ExportStatus,
   TabState,
@@ -23,7 +22,7 @@ export interface OnyxProps {
 export interface PageProps extends OnyxProps {
   theme: Theme;
   tabState: TabState;
-  setTabState: Dispatch<SetStateAction<TabState>>;
+  handleTabChange: (tabState: TabState) => void;
   handleObjectShow: (objectType: ObjectType, ID: string) => void;
   handleObjectHide: (objectType: ObjectType) => void;
 }

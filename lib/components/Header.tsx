@@ -24,7 +24,8 @@ import {
   Profile,
   Project,
   RecentlyViewed,
-  TabState,
+  RecordTabKey,
+  AnalysisTabKey,
   Theme,
 } from "../types";
 import { formatTimeAgo } from "../utils/functions";
@@ -32,15 +33,14 @@ import { TextQueryHandler } from "./QueryHandler";
 import { Button } from "react-bootstrap";
 
 interface HeaderProps extends PageProps {
+  handleThemeChange: () => void;
   project?: Project;
   projects: Project[];
-  recentlyViewed: RecentlyViewed[];
-  handleThemeChange: () => void;
-  handleTabChange: (tabState: Partial<TabState>) => void;
   handleProjectChange: (p: Project) => void;
   navigation: Navigation;
   handleNavigateBack: () => void;
   handleNavigateForward: () => void;
+  recentlyViewed: RecentlyViewed[];
 }
 
 function HeaderText({
@@ -103,7 +103,32 @@ function Header(props: HeaderProps) {
       className="border-bottom onyx-border"
       variant="dark"
       expand="lg"
-      onSelect={(e) => e && props.handleTabChange({ tabKey: e as OnyxTabKey })}
+      onSelect={(e) => {
+        if (!e) return;
+
+        let updatedState = { ...props.tabState, tabKey: e as OnyxTabKey };
+
+        if (
+          JSON.stringify(props.tabState) === JSON.stringify(updatedState) &&
+          updatedState.tabKey === OnyxTabKey.RECORDS &&
+          updatedState.recordTabKey === RecordTabKey.DETAIL
+        ) {
+          updatedState = {
+            ...updatedState,
+            recordTabKey: RecordTabKey.LIST,
+          };
+        } else if (
+          JSON.stringify(props.tabState) === JSON.stringify(updatedState) &&
+          updatedState.tabKey === OnyxTabKey.ANALYSES &&
+          updatedState.analysisTabKey === AnalysisTabKey.DETAIL
+        )
+          updatedState = {
+            ...updatedState,
+            analysisTabKey: AnalysisTabKey.LIST,
+          };
+
+        props.handleTabChange(updatedState);
+      }}
     >
       <Container fluid>
         <Navbar.Brand

@@ -18,17 +18,17 @@ function ProjectRecord(props: IDProps) {
   const [published, setPublished] = useState(true);
 
   const handleRecordDetailTabChange = (tabKey: string | null) => {
-    props.setTabState((prevState) => ({
-      ...prevState,
+    props.handleTabChange({
+      ...props.tabState,
       recordDetailTabKey: tabKey as RecordDetailTabKey,
-    }));
+    });
   };
 
   const handleDataPanelTabChange = (tabKey: string | null) => {
-    props.setTabState((prevState) => ({
-      ...prevState,
+    props.handleTabChange({
+      ...props.tabState,
       recordDataPanelTabKey: tabKey as DataPanelTabKey,
-    }));
+    });
   };
 
   return (
