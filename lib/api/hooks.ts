@@ -10,6 +10,7 @@ import {
   Lookup,
   Project,
   ProjectPermissionGroup,
+  Count,
 } from "../types";
 
 function flattenFields(fields: Record<string, Field>) {
@@ -148,4 +149,13 @@ export const useChoicesDescriptions = (
     }
     return descriptions;
   }, [fields, data]);
+};
+
+export const useCount = (
+  data: DetailResponse<Count> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    if (data?.status !== "success") return 0;
+    return data.data.count;
+  }, [data]);
 };

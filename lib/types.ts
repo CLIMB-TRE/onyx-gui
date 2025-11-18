@@ -13,6 +13,7 @@ export enum DarkModeColour {
 export enum OnyxTabKey {
   USER = "user-tab",
   SITE = "site-tab",
+  OVERVIEW = "overview-tab",
   RECORDS = "records-tab",
   ANALYSES = "analyses-tab",
   GRAPHS = "graphs-tab",
@@ -205,6 +206,10 @@ export type HistoricalEntry = {
 
 export type HistoricalEntries = {
   history: HistoricalEntry[];
+};
+
+export type Count = {
+  count: number;
 };
 
 export type Summary = Record<"count", number> &

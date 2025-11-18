@@ -23,6 +23,7 @@ import QueryHandler from "./components/QueryHandler";
 import { OnyxProps, ProjectProps } from "./interfaces";
 import Analysis from "./pages/Analysis";
 import Graphs from "./pages/Graphs";
+import Overview from "./pages/Overview";
 import ProjectRecord from "./pages/ProjectRecord";
 import Results from "./pages/Results";
 import Site from "./pages/Site";
@@ -87,6 +88,14 @@ function ProjectPage(props: ProjectPageProps) {
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKey.SITE} className="h-100">
           <Site {...props} />
+        </Tab.Pane>
+        <Tab.Pane eventKey={OnyxTabKey.OVERVIEW} className="h-100">
+          <Overview
+            {...props}
+            fields={recordFields}
+            recordPrimaryID={recordPrimaryID}
+            analysisPrimaryID={analysisPrimaryID}
+          />
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKey.RECORDS} className="h-100">
           <QueryHandler
@@ -219,7 +228,7 @@ function App(props: OnyxProps) {
 
   // Default application state
   const defaultTabState: TabState = {
-    tabKey: OnyxTabKey.RECORDS,
+    tabKey: OnyxTabKey.OVERVIEW,
     recordTabKey: RecordTabKey.LIST,
     recordDetailTabKey: RecordDetailTabKey.DATA,
     recordDataPanelTabKey: DataPanelTabKey.DETAILS,

@@ -13,6 +13,7 @@ import {
   Choices,
   Lookup,
   TypeObject,
+  Count,
 } from "../types";
 import { formatFilters } from "../utils/functions";
 
@@ -340,7 +341,9 @@ export const useResultsQuery = (
 };
 
 /** Fetch count from path and search parameters */
-export const useCountQuery = (props: QueryProps) => {
+export const useCountQuery = (
+  props: QueryProps
+): UseQueryResult<DetailResponse<Count> | ErrorResponse, Error> => {
   return useQuery({
     queryKey: ["count-detail", props.searchPath, props.searchParameters],
     queryFn: async () => {

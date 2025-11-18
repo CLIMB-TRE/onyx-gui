@@ -212,6 +212,13 @@ function Header(props: HeaderProps) {
                 <MdArrowForwardIos />
               </Button>
               <Nav.Link
+                eventKey={OnyxTabKey.OVERVIEW}
+                className="fw-normal"
+                disabled={!props.project}
+              >
+                Overview
+              </Nav.Link>
+              <Nav.Link
                 eventKey={OnyxTabKey.RECORDS}
                 className="fw-normal"
                 disabled={!props.project}
