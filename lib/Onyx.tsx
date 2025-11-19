@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Tab from "react-bootstrap/Tab";
+import Stack from "react-bootstrap/Stack";
 import { MdJoinInner } from "react-icons/md";
 import {
   useAnalysisFieldsQuery,
@@ -48,7 +49,6 @@ import { getTheme } from "./utils/functions";
 
 import "./Onyx.scss";
 import { OnyxDocsButton, OnyxGithubButton } from "./components/Buttons";
-import { Stack } from "react-bootstrap";
 
 interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
