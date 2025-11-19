@@ -1,12 +1,12 @@
 import { Card, Col, Container, Row, Stack } from "react-bootstrap";
-import { useCountQuery, useProfileQuery } from "../api";
+import { MdJoinInner } from "react-icons/md";
+import { OnyxDocsButton, OnyxGithubButton } from "../components/Buttons";
 import PageTitle from "../components/PageTitle";
 import QueryHandler from "../components/QueryHandler";
 import { DataProps } from "../interfaces";
-import { useCount, useProfile } from "../api/hooks";
 import { ObjectType, OnyxTabKey } from "../types";
-import { MdJoinInner } from "react-icons/md";
-import { OnyxDocsButton, OnyxGithubButton } from "../components/Buttons";
+import { useCountQuery, useProfileQuery } from "../api";
+import { useCount, useProfile } from "../api/hooks";
 
 interface StatCardProps extends DataProps {
   objectType: ObjectType;
