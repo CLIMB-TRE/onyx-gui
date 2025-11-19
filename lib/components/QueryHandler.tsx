@@ -26,15 +26,17 @@ export function BaseSpinner({
 }) {
   const showAlert = useDelayedValue(delay);
 
-  return showAlert ? (
+  return (
     <div className="h-100 d-flex justify-content-center align-items-center">
-      <Stack direction="horizontal" gap={2}>
+      <Stack
+        style={{ visibility: showAlert ? "visible" : "hidden" }}
+        direction="horizontal"
+        gap={2}
+      >
         <Spinner />
         {children}
       </Stack>
     </div>
-  ) : (
-    <></>
   );
 }
 
