@@ -47,6 +47,8 @@ import { useDelayedValue, usePersistedState } from "./utils/hooks";
 import { getTheme } from "./utils/functions";
 
 import "./Onyx.scss";
+import { OnyxDocsButton, OnyxGithubButton } from "./components/Buttons";
+import { Stack } from "react-bootstrap";
 
 interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
@@ -194,14 +196,24 @@ function LandingPage() {
   const showPage = useDelayedValue(1000);
 
   return showPage ? (
-    <div className="h-100 d-flex justify-content-center align-items-center">
-      <Fade in={showPage} appear>
-        <h1 className="text-center">
-          <MdJoinInner color="var(--bs-pink)" size={100} />{" "}
-          <PageTitle title="Onyx" description="API for Pathogen Metadata" />
-        </h1>
-      </Fade>
-    </div>
+    <Fade in={showPage} appear>
+      <Container className="h-100" style={{ paddingTop: "20vh" }}>
+        <Stack gap={2}>
+          <h1 className="text-center fw-light">
+            <MdJoinInner color="var(--bs-pink)" size={100} />{" "}
+            <PageTitle title="Onyx" description="API for Pathogen Metadata" />
+          </h1>
+          <Stack
+            className="justify-content-center"
+            direction="horizontal"
+            gap={2}
+          >
+            <OnyxGithubButton />
+            <OnyxDocsButton />
+          </Stack>
+        </Stack>
+      </Container>
+    </Fade>
   ) : (
     <></>
   );

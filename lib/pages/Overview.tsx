@@ -1,17 +1,78 @@
-import { Card, Col, Container, Row, Stack, Button } from "react-bootstrap";
-import { BsGithub, BsBook } from "react-icons/bs";
-import { useCountQuery } from "../api";
+import { Card, Col, Container, Row, Stack } from "react-bootstrap";
+import { useCountQuery, useProfileQuery } from "../api";
 import PageTitle from "../components/PageTitle";
 import QueryHandler from "../components/QueryHandler";
 import { DataProps } from "../interfaces";
-import { useCount } from "../api/hooks";
+import { useCount, useProfile } from "../api/hooks";
 import { ObjectType, OnyxTabKey } from "../types";
 import { MdJoinInner } from "react-icons/md";
+import { OnyxDocsButton, OnyxGithubButton } from "../components/Buttons";
 
 interface StatCardProps extends DataProps {
   objectType: ObjectType;
   title: string;
   searchPath: string;
+}
+
+function Details(props: DataProps) {
+  // Get the user profile
+  const { isFetching, error, data } = useProfileQuery(props);
+  const profile = useProfile(data);
+
+  return (
+    <Stack gap={2}>
+      <h1 className="display-1" style={{ fontSize: "5rem" }}>
+        <MdJoinInner color="var(--bs-pink)" /> Onyx
+      </h1>
+      <Stack direction="horizontal" gap={2}>
+        <OnyxGithubButton />
+        <OnyxDocsButton />
+      </Stack>
+      <QueryHandler isFetching={isFetching} error={error} data={data}>
+        <small className="text-muted">
+          Signed in as:{" "}
+          <span
+            className="onyx-text-pink"
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              props.handleTabChange({
+                ...props.tabState,
+                tabKey: OnyxTabKey.USER,
+              });
+            }}
+          >
+            {profile.username}
+          </span>
+        </small>
+      </QueryHandler>
+    </Stack>
+  );
+}
+
+function ProjectStats(props: DataProps) {
+  return (
+    <Stack gap={2}>
+      <h2 className="fw-light">
+        <PageTitle
+          title={props.project.name}
+          description={props.fields.description}
+          noTruncate
+        />
+      </h2>
+      <StatCard
+        {...props}
+        objectType={ObjectType.RECORD}
+        title="Records"
+        searchPath={`projects/${props.project.code}`}
+      />
+      <StatCard
+        {...props}
+        objectType={ObjectType.ANALYSIS}
+        title="Analyses"
+        searchPath={`projects/${props.project.code}/analysis`}
+      />
+    </Stack>
+  );
 }
 
 function StatCard(props: StatCardProps) {
@@ -75,7 +136,7 @@ function StatCard(props: StatCardProps) {
             >
               <span
                 className="onyx-text-pink fw-light"
-                style={{ fontSize: "0.7em" }}
+                style={{ fontSize: "0.6em" }}
               >
                 +{newCount.toLocaleString()} in last 7 days
               </span>
@@ -89,57 +150,13 @@ function StatCard(props: StatCardProps) {
 
 export default function Overview(props: DataProps) {
   return (
-    <Container
-      className="h-100 d-flex justify-content-center"
-      style={{ paddingTop: "10vh" }}
-    >
-      <Row className="justify-content-center">
-        <Col>
-          <Stack gap={3}>
-            <div className="display-2">
-              <MdJoinInner color="var(--bs-pink)" /> Onyx
-            </div>
-            <Stack direction="horizontal" gap={2}>
-              <Button
-                variant="outline-secondary"
-                href="https://github.com/CLIMB-TRE/onyx"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BsGithub /> GitHub
-              </Button>
-              <Button
-                variant="outline-secondary"
-                href="https://climb-tre.github.io/onyx/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BsBook /> Documentation
-              </Button>
-            </Stack>
-          </Stack>
+    <Container className="h-100" style={{ paddingTop: "20vh" }}>
+      <Row>
+        <Col className="m-5" xs="auto">
+          <Details {...props} />
         </Col>
         <Col>
-          <Stack gap={2}>
-            <div className="lead">
-              <PageTitle
-                title={props.project.name}
-                description={props.fields.description}
-              />
-            </div>
-            <StatCard
-              {...props}
-              objectType={ObjectType.RECORD}
-              title="Total Records"
-              searchPath={`projects/${props.project.code}`}
-            />
-            <StatCard
-              {...props}
-              objectType={ObjectType.ANALYSIS}
-              title="Total Analyses"
-              searchPath={`projects/${props.project.code}/analysis`}
-            />
-          </Stack>
+          <ProjectStats {...props} />
         </Col>
       </Row>
     </Container>

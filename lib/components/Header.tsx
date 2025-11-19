@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -21,7 +20,6 @@ import {
   Navigation,
   ObjectType,
   OnyxTabKey,
-  Profile,
   Project,
   RecentlyViewed,
   Theme,
@@ -29,6 +27,7 @@ import {
 import { formatTimeAgo } from "../utils/functions";
 import { TextQueryHandler } from "./QueryHandler";
 import { Button } from "react-bootstrap";
+import { useProfile } from "../api/hooks";
 
 interface HeaderProps extends PageProps {
   handleThemeChange: () => void;
@@ -75,19 +74,9 @@ function HeaderVersion({
 }
 
 function Header(props: HeaderProps) {
-  const { isFetching, error, data } = useProfileQuery(props);
-
   // Get the user profile
-  const profile = useMemo(() => {
-    if (data?.status !== "success")
-      return {
-        username: "",
-        site: "",
-        email: "",
-      } as Profile;
-
-    return data.data;
-  }, [data]);
+  const { isFetching, error, data } = useProfileQuery(props);
+  const profile = useProfile(data);
 
   const handleTabChange = (tabKey: OnyxTabKey) => {
     if (
@@ -122,7 +111,12 @@ function Header(props: HeaderProps) {
       <Container fluid>
         <Navbar.Brand
           title="Onyx | API for Pathogen Metadata"
-          onClick={() => props.handleObjectHide(ObjectType.RECORD)}
+          onClick={() =>
+            props.handleTabChange({
+              ...props.tabState,
+              tabKey: OnyxTabKey.OVERVIEW,
+            })
+          }
           style={{ cursor: "pointer" }}
         >
           <MdJoinInner color="var(--bs-pink)" size={30} /> Onyx

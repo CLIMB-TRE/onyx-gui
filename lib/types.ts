@@ -1,3 +1,8 @@
+export enum HyperLink {
+  ONYX_GITHUB = "https://github.com/CLIMB-TRE/onyx",
+  ONYX_DOCS = "https://climb-tre.github.io/onyx/",
+}
+
 export enum Theme {
   LIGHT = "light",
   DARK = "dark",
