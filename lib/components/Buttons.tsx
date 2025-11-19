@@ -17,7 +17,6 @@ interface CopyToClipboardButtonProps extends ButtonProps {
 export function SidebarButton(props: SidebarButtonProps) {
   return (
     <Button
-      {...props}
       size="sm"
       variant="secondary"
       title={props.sidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
@@ -54,7 +53,6 @@ export function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
 
   return (
     <Button
-      {...props}
       size="sm"
       variant="secondary"
       title={props.title || "Copy to Clipboard"}
@@ -66,10 +64,9 @@ export function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
   );
 }
 
-export function OnyxGithubButton(props: ButtonProps) {
+export function OnyxGithubButton() {
   return (
     <Button
-      {...props}
       variant="outline-secondary"
       href={HyperLink.ONYX_GITHUB}
       target="_blank"
@@ -80,10 +77,9 @@ export function OnyxGithubButton(props: ButtonProps) {
   );
 }
 
-export function OnyxDocsButton(props: ButtonProps) {
+export function OnyxDocsButton() {
   return (
     <Button
-      {...props}
       variant="outline-secondary"
       href={HyperLink.ONYX_DOCS}
       target="_blank"
