@@ -81,70 +81,66 @@ function StatCard(props: StatCardProps) {
   date.setDate(date.getDate() - 7);
   const sevenDaysAgo = date.toISOString().split("T")[0];
 
-  // Total object count
+  // Total count of objects
   const {
-    isFetching: isTotalFetching,
-    error: totalError,
-    data: totalResponse,
+    isFetching: isTotalCountFetching,
+    error: totalCountError,
+    data: totalCountResponse,
   } = useCountQuery({
     ...props,
     searchPath: props.searchPath,
     searchParameters: "",
   });
-  const totalCount = useCount(totalResponse);
+  const totalCount = useCount(totalCountResponse);
 
-  // New objects from the last 7 days
+  // Latest count of objects from the last 7 days
   const {
-    isFetching: isNewFetching,
-    error: newError,
-    data: newResponse,
+    isFetching: isLatestCountFetching,
+    error: latestCountError,
+    data: latestCountResponse,
   } = useCountQuery({
     ...props,
     searchPath: props.searchPath,
     searchParameters: `published_date__gte=${sevenDaysAgo}`,
   });
-  const newCount = useCount(newResponse);
+  const latestCount = useCount(latestCountResponse);
 
   return (
-    <QueryHandler
-      isFetching={isTotalFetching}
-      error={totalError}
-      data={totalResponse}
+    <Card
+      className="text-center"
+      style={{ cursor: "pointer" }}
+      onClick={() => {
+        props.handleTabChange({
+          ...props.tabState,
+          tabKey:
+            props.objectType === ObjectType.RECORD
+              ? OnyxTabKey.RECORDS
+              : OnyxTabKey.ANALYSES,
+        });
+      }}
     >
-      <Card
-        className="text-center"
-        style={{ cursor: "pointer" }}
-        onClick={() => {
-          props.handleTabChange({
-            ...props.tabState,
-            tabKey:
-              props.objectType === ObjectType.RECORD
-                ? OnyxTabKey.RECORDS
-                : OnyxTabKey.ANALYSES,
-          });
-        }}
-      >
-        <Card.Body>
-          <Card.Title className="text-truncate">{props.title}</Card.Title>
-          <Card.Text as="h2" className="mb-0">
-            {totalCount.toLocaleString()}
-            <br />
-            <QueryHandler
-              isFetching={isNewFetching}
-              error={newError}
-              data={newResponse}
-            >
-              <span
-                className="onyx-text-pink fw-light"
-                style={{ fontSize: "0.6em" }}
-              >
-                +{newCount.toLocaleString()} in last 7 days
+      <Card.Body>
+        <Card.Title>{props.title}</Card.Title>
+        <QueryHandler
+          isFetching={isTotalCountFetching}
+          error={totalCountError}
+          data={totalCountResponse}
+        >
+          <QueryHandler
+            isFetching={isLatestCountFetching}
+            error={latestCountError}
+            data={latestCountResponse}
+          >
+            <Stack gap={2}>
+              <h2 className="mb-0">{totalCount.toLocaleString()}</h2>
+              <span className="onyx-text-pink fw-light">
+                +{latestCount.toLocaleString()} in last 7 days
               </span>
-            </QueryHandler>
-          </Card.Text>
-        </Card.Body>
-      </Card>
-    </QueryHandler>
+            </Stack>
+          </QueryHandler>
+        </QueryHandler>
+      </Card.Body>
+    </Card>
   );
 }
 
