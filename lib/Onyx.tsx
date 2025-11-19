@@ -92,12 +92,18 @@ function ProjectPage(props: ProjectPageProps) {
           <Site {...props} />
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKey.OVERVIEW} className="h-100">
-          <Overview
-            {...props}
-            fields={recordFields}
-            recordPrimaryID={recordPrimaryID}
-            analysisPrimaryID={analysisPrimaryID}
-          />
+          <QueryHandler
+            isFetching={isRecordFieldsFetching}
+            error={recordFieldsError}
+            data={recordFieldsResponse}
+          >
+            <Overview
+              {...props}
+              fields={recordFields}
+              recordPrimaryID={recordPrimaryID}
+              analysisPrimaryID={analysisPrimaryID}
+            />
+          </QueryHandler>
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKey.RECORDS} className="h-100">
           <QueryHandler
@@ -180,12 +186,18 @@ function ProjectPage(props: ProjectPageProps) {
           </QueryHandler>
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKey.GRAPHS} className="h-100">
-          <Graphs
-            {...props}
-            fields={recordFields}
-            recordPrimaryID={recordPrimaryID}
-            analysisPrimaryID={analysisPrimaryID}
-          />
+          <QueryHandler
+            isFetching={isRecordFieldsFetching}
+            error={recordFieldsError}
+            data={recordFieldsResponse}
+          >
+            <Graphs
+              {...props}
+              fields={recordFields}
+              recordPrimaryID={recordPrimaryID}
+              analysisPrimaryID={analysisPrimaryID}
+            />
+          </QueryHandler>
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>
