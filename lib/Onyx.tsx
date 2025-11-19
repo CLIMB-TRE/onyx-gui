@@ -21,6 +21,7 @@ import {
 import Header from "./components/Header";
 import PageTitle from "./components/PageTitle";
 import QueryHandler from "./components/QueryHandler";
+import { OnyxDocsButton, OnyxGithubButton } from "./components/Buttons";
 import { OnyxProps, ProjectProps } from "./interfaces";
 import Analysis from "./pages/Analysis";
 import Graphs from "./pages/Graphs";
@@ -48,7 +49,6 @@ import { useDelayedValue, usePersistedState } from "./utils/hooks";
 import { getTheme } from "./utils/functions";
 
 import "./Onyx.scss";
-import { OnyxDocsButton, OnyxGithubButton } from "./components/Buttons";
 
 interface ProjectPageProps extends ProjectProps {
   typeLookups: Map<string, string[]>;
