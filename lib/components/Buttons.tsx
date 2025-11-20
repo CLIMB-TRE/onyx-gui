@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Button, { ButtonProps } from "react-bootstrap/Button";
 import { MdContentCopy } from "react-icons/md";
 import { VscLayoutSidebarLeft, VscLayoutSidebarLeftOff } from "react-icons/vsc";
+import { BsGithub, BsBook } from "react-icons/bs";
+import { HyperLink } from "../types";
 
 interface SidebarButtonProps extends ButtonProps {
   sidebarCollapsed: boolean;
@@ -12,7 +14,7 @@ interface CopyToClipboardButtonProps extends ButtonProps {
   showTitle?: boolean;
 }
 
-function SidebarButton(props: SidebarButtonProps) {
+export function SidebarButton(props: SidebarButtonProps) {
   return (
     <Button
       size="sm"
@@ -29,7 +31,7 @@ function SidebarButton(props: SidebarButtonProps) {
   );
 }
 
-function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
+export function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -62,4 +64,28 @@ function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
   );
 }
 
-export { CopyToClipboardButton, SidebarButton };
+export function OnyxGithubButton() {
+  return (
+    <Button
+      variant="outline-secondary"
+      href={HyperLink.ONYX_GITHUB}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <BsGithub /> GitHub
+    </Button>
+  );
+}
+
+export function OnyxDocsButton() {
+  return (
+    <Button
+      variant="outline-secondary"
+      href={HyperLink.ONYX_DOCS}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <BsBook /> Documentation
+    </Button>
+  );
+}

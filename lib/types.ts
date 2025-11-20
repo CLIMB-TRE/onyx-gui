@@ -1,3 +1,8 @@
+export enum HyperLink {
+  ONYX_GITHUB = "https://github.com/CLIMB-TRE/onyx",
+  ONYX_DOCS = "https://climb-tre.github.io/onyx/",
+}
+
 export enum Theme {
   LIGHT = "light",
   DARK = "dark",
@@ -13,6 +18,7 @@ export enum DarkModeColour {
 export enum OnyxTabKey {
   USER = "user-tab",
   SITE = "site-tab",
+  OVERVIEW = "overview-tab",
   RECORDS = "records-tab",
   ANALYSES = "analyses-tab",
   GRAPHS = "graphs-tab",
@@ -205,6 +211,10 @@ export type HistoricalEntry = {
 
 export type HistoricalEntries = {
   history: HistoricalEntry[];
+};
+
+export type Count = {
+  count: number;
 };
 
 export type Summary = Record<"count", number> &

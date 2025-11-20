@@ -10,6 +10,8 @@ import {
   Lookup,
   Project,
   ProjectPermissionGroup,
+  Count,
+  Profile,
 } from "../types";
 
 function flattenFields(fields: Record<string, Field>) {
@@ -31,6 +33,21 @@ function flattenFields(fields: Record<string, Field>) {
   flatten(fields);
   return flatFields;
 }
+
+export const useProfile = (
+  data: DetailResponse<Profile> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    if (data?.status !== "success")
+      return {
+        username: "",
+        site: "",
+        email: "",
+      } as Profile;
+
+    return data.data;
+  }, [data]);
+};
 
 export const useProjects = (
   data: ListResponse<ProjectPermissionGroup> | ErrorResponse | undefined
@@ -148,4 +165,13 @@ export const useChoicesDescriptions = (
     }
     return descriptions;
   }, [fields, data]);
+};
+
+export const useCount = (
+  data: DetailResponse<Count> | ErrorResponse | undefined
+) => {
+  return useMemo(() => {
+    if (data?.status !== "success") return 0;
+    return data.data.count;
+  }, [data]);
 };

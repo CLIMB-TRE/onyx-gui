@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Tab from "react-bootstrap/Tab";
+import Stack from "react-bootstrap/Stack";
 import { MdJoinInner } from "react-icons/md";
 import {
   useAnalysisFieldsQuery,
@@ -20,9 +21,11 @@ import {
 import Header from "./components/Header";
 import PageTitle from "./components/PageTitle";
 import QueryHandler from "./components/QueryHandler";
+import { OnyxDocsButton, OnyxGithubButton } from "./components/Buttons";
 import { OnyxProps, ProjectProps } from "./interfaces";
 import Analysis from "./pages/Analysis";
 import Graphs from "./pages/Graphs";
+import Overview from "./pages/Overview";
 import ProjectRecord from "./pages/ProjectRecord";
 import Results from "./pages/Results";
 import Site from "./pages/Site";
@@ -87,6 +90,20 @@ function ProjectPage(props: ProjectPageProps) {
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKey.SITE} className="h-100">
           <Site {...props} />
+        </Tab.Pane>
+        <Tab.Pane eventKey={OnyxTabKey.OVERVIEW} className="h-100">
+          <QueryHandler
+            isFetching={isRecordFieldsFetching}
+            error={recordFieldsError}
+            data={recordFieldsResponse}
+          >
+            <Overview
+              {...props}
+              fields={recordFields}
+              recordPrimaryID={recordPrimaryID}
+              analysisPrimaryID={analysisPrimaryID}
+            />
+          </QueryHandler>
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKey.RECORDS} className="h-100">
           <QueryHandler
@@ -169,12 +186,18 @@ function ProjectPage(props: ProjectPageProps) {
           </QueryHandler>
         </Tab.Pane>
         <Tab.Pane eventKey={OnyxTabKey.GRAPHS} className="h-100">
-          <Graphs
-            {...props}
-            fields={recordFields}
-            recordPrimaryID={recordPrimaryID}
-            analysisPrimaryID={analysisPrimaryID}
-          />
+          <QueryHandler
+            isFetching={isRecordFieldsFetching}
+            error={recordFieldsError}
+            data={recordFieldsResponse}
+          >
+            <Graphs
+              {...props}
+              fields={recordFields}
+              recordPrimaryID={recordPrimaryID}
+              analysisPrimaryID={analysisPrimaryID}
+            />
+          </QueryHandler>
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>
@@ -185,14 +208,24 @@ function LandingPage() {
   const showPage = useDelayedValue(1000);
 
   return showPage ? (
-    <div className="h-100 d-flex justify-content-center align-items-center">
-      <Fade in={showPage} appear>
-        <h1 className="text-center">
-          <MdJoinInner color="var(--bs-pink)" size={100} />{" "}
-          <PageTitle title="Onyx" description="API for Pathogen Metadata" />
-        </h1>
-      </Fade>
-    </div>
+    <Fade in={showPage} appear>
+      <Container className="h-100" style={{ paddingTop: "20vh" }}>
+        <Stack gap={2}>
+          <h1 className="text-center fw-light">
+            <MdJoinInner color="var(--bs-pink)" size={100} />{" "}
+            <PageTitle title="Onyx" description="API for Pathogen Metadata" />
+          </h1>
+          <Stack
+            className="justify-content-center"
+            direction="horizontal"
+            gap={2}
+          >
+            <OnyxGithubButton />
+            <OnyxDocsButton />
+          </Stack>
+        </Stack>
+      </Container>
+    </Fade>
   ) : (
     <></>
   );
@@ -219,7 +252,7 @@ function App(props: OnyxProps) {
 
   // Default application state
   const defaultTabState: TabState = {
-    tabKey: OnyxTabKey.RECORDS,
+    tabKey: OnyxTabKey.OVERVIEW,
     recordTabKey: RecordTabKey.LIST,
     recordDetailTabKey: RecordDetailTabKey.DATA,
     recordDataPanelTabKey: DataPanelTabKey.DETAILS,
