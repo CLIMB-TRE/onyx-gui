@@ -66,11 +66,10 @@
   },
   "peerDependencies": {
     "climb-jupyter-base-component": "^0.2.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react": "^17.0.1 || ^18.2.0",
+    "react-dom": "^17.0.1 || ^18.2.0"
   },
   "devDependencies": {
-    "climb-jupyter-base-component": "^0.2.1",
     "@types/node": "^20.12.12",
     "@types/plotly.js-basic-dist": "^1.54.4",
     "@types/react": "^17.0.83",
@@ -79,11 +78,12 @@
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
+    "climb-jupyter-base-component": "^0.2.1",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^17.0.1 || ^18.2.0",
+    "react-dom": "^17.0.1 || ^18.2.0",
     "sass-embedded": "^1.89.2",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
