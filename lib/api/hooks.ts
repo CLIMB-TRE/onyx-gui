@@ -12,6 +12,8 @@ import {
   ProjectPermissionGroup,
   Count,
   Profile,
+  RecordType,
+  TableRow,
 } from "../types";
 
 function flattenFields(fields: Record<string, Field>) {
@@ -173,5 +175,26 @@ export const useCount = (
   return useMemo(() => {
     if (data?.status !== "success") return 0;
     return data.data.count;
+  }, [data]);
+};
+
+export const useResults = (
+  data: ListResponse<RecordType> | ErrorResponse | undefined
+): TableRow[] => {
+  return useMemo(() => {
+    if (data?.status !== "success") return [];
+
+    return data.data.map((row) =>
+      Object.fromEntries(
+        Object.entries(row).map(([key, value]) => [
+          key,
+          typeof value === "string" || typeof value === "number"
+            ? value
+            : typeof value === "boolean" || value === null
+            ? value?.toString() || ""
+            : JSON.stringify(value),
+        ])
+      )
+    );
   }, [data]);
 };

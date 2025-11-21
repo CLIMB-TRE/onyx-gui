@@ -359,7 +359,6 @@ export const useCountQuery = (
     },
     enabled: !!(props.enabled && props.project && props.searchPath),
     placeholderData: { data: {} },
-    refetchOnMount: true,
   });
 };
 

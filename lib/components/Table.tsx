@@ -1,7 +1,6 @@
 import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
 import {
   ColDef,
-  GridOptions,
   ITooltipParams,
   ModuleRegistry,
   SortChangedEvent,
@@ -11,7 +10,6 @@ import { CsvExportModule } from "@ag-grid-community/csv-export";
 import { AgGridReact, CustomCellRendererProps } from "@ag-grid-community/react"; // React Data Grid Component
 import "@ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "@ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
-import { asString, generateCsv, mkConfig } from "export-to-csv";
 import { useCallback, useMemo, useRef, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -21,53 +19,42 @@ import DropdownDivider from "react-bootstrap/DropdownDivider";
 import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
-import { useCountQuery } from "../api";
-import { ExportHandlerProps, OnyxProps, ProjectProps } from "../interfaces";
+import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
   ExportStatus,
-  RecordType,
-  ListResponse,
   DefaultPrimaryID,
+  TableRow,
+  InputRow,
+  Fields,
+  Field,
 } from "../types";
 import ExportModal from "./ExportModal";
-import { formatResponseStatus } from "../utils/functions";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
-type InputData = Record<string, string | number | boolean | object | null>[];
-type TableRow = Record<string, string | number>;
-type TableData = TableRow[];
-
 interface BaseTableProps extends OnyxProps {
-  rowData: TableData;
+  rowData: TableRow[];
   columnDefs: ColDef[];
-  searchPath: string;
-  searchParameters: string;
   defaultFileNamePrefix: string;
-  gridOptions?: GridOptions;
-  onGridReady: () => void;
+  handleExportData: (
+    exportProps: ExportHandlerProps,
+    gridRef?: React.RefObject<AgGridReact<TableRow>>
+  ) => Promise<string>;
+  handlePageChange?: (page: number) => void;
+  handleSortChange?: (event: SortChangedEvent) => void;
   footer?: string;
-  isDataLoading?: boolean;
-  isCountLoading?: boolean;
+  isResultsFetching?: boolean;
+  isCountFetching?: boolean;
   isFilterable: boolean;
-  isPaginated: boolean;
   rowDisplayParams: {
     from: number;
     to: number;
     of: number;
   };
-  paginationParams: {
-    pageCountMessage: string;
-    pageNumber: number;
-    numPages: number;
-    prevPage: boolean;
-    nextPage: boolean;
-    prevParams: string;
-    nextParams: string;
-    userPageSize: number;
-    handleUserPageChange: (params: string, userPage: number) => void;
-    order: string;
-  };
+  pageNumber: number;
+  numPages: number;
+  isPrevPage?: boolean;
+  isNextPage?: boolean;
 }
 
 interface TableCountProps extends BaseTableProps {
@@ -79,6 +66,7 @@ interface TableOptionsProps extends BaseTableProps {
 }
 
 interface TableProps extends OnyxProps {
+  fields?: Fields;
   defaultFileNamePrefix: string;
   headerNames?: Map<string, string>;
   headerTooltips?: Map<string, string>;
@@ -94,18 +82,24 @@ interface TableProps extends OnyxProps {
 }
 
 interface ClientTableProps extends TableProps {
-  data: InputData;
+  data: InputRow[];
 }
 
-interface ServerPaginatedTableProps extends TableProps, ProjectProps {
-  response: ListResponse<RecordType>;
-  searchPath: string;
-  searchParameters: string;
+interface ServerTableProps extends TableProps {
+  columns: Field[];
+  isResultsFetching: boolean;
+  data: TableRow[];
+  count: number;
+  isCountFetching: boolean;
+  page: number;
   pageSize: number;
+  handleExportData: (exportProps: ExportHandlerProps) => Promise<string>;
+  handleSortChange: (event: SortChangedEvent) => void;
+  handlePageChange: (page: number) => void;
 }
 
-/** Converts InputData to TableData. All non-string/number values are converted to strings. */
-function formatData(data: InputData): TableData {
+/** Converts InputRow[] to TableRow[]. All non-string/number values are converted to strings. */
+function formatData(data: InputRow[]): TableRow[] {
   return data.map((row) =>
     Object.fromEntries(
       Object.entries(row).map(([key, value]) => [
@@ -120,31 +114,10 @@ function formatData(data: InputData): TableData {
   );
 }
 
-/** Sorts TableData in-place, on the specified field and direction. */
-function sortData(data: TableData, field: string, direction: string): void {
-  if (data.length > 0 && direction === "asc") {
-    if (typeof data[0][field] === "number") {
-      data.sort((a, b) => (a[field] as number) - (b[field] as number));
-    } else {
-      data.sort((a, b) =>
-        (a[field] as string) > (b[field] as string) ? 1 : -1
-      );
-    }
-  } else if (data.length > 0 && direction === "desc") {
-    if (typeof data[0][field] === "number") {
-      data.sort((a, b) => (b[field] as number) - (a[field] as number));
-    } else {
-      data.sort((a, b) =>
-        (a[field] as string) < (b[field] as string) ? 1 : -1
-      );
-    }
-  }
-}
-
 /** Generates column definitions for the table. */
 function getColDefs(
   props: TableProps,
-  data: InputData,
+  data: InputRow[],
   isServerPaginated: boolean
 ): ColDef[] {
   let colDefs: ColDef[];
@@ -190,9 +163,7 @@ function getColDefs(
       }
 
       // Apply default sorts
-      // TODO: Implement default sorts for server paginated tables
-      if (!isServerPaginated && props.defaultSort?.has(key))
-        colDef.sort = props.defaultSort.get(key);
+      if (props.defaultSort?.has(key)) colDef.sort = props.defaultSort.get(key);
 
       // Apply tooltip value getter for fields that should display tooltips
       if (props.tooltipFields?.includes(key))
@@ -213,9 +184,9 @@ function TableCount(props: TableCountProps) {
   return (
     <Pagination size="sm" style={{ whiteSpace: "nowrap" }}>
       <Pagination.Item as="span">
-        {props.isCountLoading
+        {props.isCountFetching
           ? "Loading..."
-          : `${props.rowDisplayParams.from.toLocaleString()} to ${(props.isPaginated
+          : `${props.rowDisplayParams.from.toLocaleString()} to ${(props.handlePageChange
               ? props.rowDisplayParams.to
               : props.displayedRowCount
             ).toLocaleString()} of ${props.rowDisplayParams.of.toLocaleString()}`}
@@ -228,45 +199,33 @@ function TablePagination(props: BaseTableProps) {
   return (
     <Pagination size="sm">
       <Pagination.First
-        disabled={!(props.isPaginated && props.paginationParams.prevPage)}
-        onClick={() =>
-          props.paginationParams.handleUserPageChange(
-            props.paginationParams.prevParams,
-            1
-          )
-        }
+        disabled={!(props.handlePageChange && props.isPrevPage)}
+        onClick={() => props.handlePageChange && props.handlePageChange(1)}
       />
       <Pagination.Prev
-        disabled={!(props.isPaginated && props.paginationParams.prevPage)}
+        disabled={!(props.handlePageChange && props.isPrevPage)}
         onClick={() =>
-          props.paginationParams.handleUserPageChange(
-            props.paginationParams.prevParams,
-            props.paginationParams.pageNumber - 1
-          )
+          props.handlePageChange && props.handlePageChange(props.pageNumber - 1)
         }
       />
       <Pagination.Item
         as="span"
         style={{ textAlign: "center", whiteSpace: "nowrap" }}
       >
-        {props.paginationParams.pageCountMessage}
+        {props.isCountFetching
+          ? "Loading..."
+          : `Page ${props.pageNumber.toLocaleString()} of ${props.numPages.toLocaleString()}`}
       </Pagination.Item>
       <Pagination.Next
-        disabled={!(props.isPaginated && props.paginationParams.nextPage)}
+        disabled={!(props.handlePageChange && props.isNextPage)}
         onClick={() =>
-          props.paginationParams.handleUserPageChange(
-            props.paginationParams.nextParams,
-            props.paginationParams.pageNumber + 1
-          )
+          props.handlePageChange && props.handlePageChange(props.pageNumber + 1)
         }
       />
       <Pagination.Last
-        disabled={!(props.isPaginated && props.paginationParams.nextPage)}
+        disabled={!(props.handlePageChange && props.isNextPage)}
         onClick={() =>
-          props.paginationParams.handleUserPageChange(
-            props.paginationParams.nextParams,
-            props.paginationParams.numPages
-          )
+          props.handlePageChange && props.handlePageChange(props.numPages)
         }
       />
     </Pagination>
@@ -296,83 +255,9 @@ function TableOptions(props: TableOptionsProps) {
     [props.gridRef]
   );
 
-  const getPaginatedData = async (exportProps: ExportHandlerProps) => {
-    exportProps.setExportStatus(ExportStatus.RUNNING);
-
-    const csvConfig = mkConfig({
-      useKeysAsHeaders: true,
-      fieldSeparator: exportProps.fileName.endsWith(".tsv") ? "\t" : ",",
-    });
-    const pages: TableData[] = [];
-    let nRows = 0;
-    let search: URLSearchParams | null = new URLSearchParams(
-      props.searchParameters
-    );
-    search.delete("page_size"); // Remove page_size from search parameters
-
-    // Fetch pages of data until the 'next' field is not present
-    while (search instanceof URLSearchParams) {
-      await props
-        .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
-        .then((response) => {
-          if (!response.ok) throw new Error(formatResponseStatus(response));
-          return response.json();
-        })
-        .then((response: ListResponse<RecordType>) => {
-          if (exportProps.statusToken.status === ExportStatus.CANCELLED)
-            throw new Error("export_cancelled");
-
-          const page = formatData(response.data);
-          pages.push(page);
-          nRows += page.length;
-          search = response.next
-            ? new URLSearchParams(response.next.split("?", 2)[1])
-            : null;
-
-          exportProps.setExportProgress(
-            (nRows / props.rowDisplayParams.of) * 100
-          );
-          exportProps.setExportProgressMessage(
-            `Fetched ${nRows.toLocaleString()}/${props.rowDisplayParams.of.toLocaleString()} items...`
-          );
-        });
-    }
-
-    // Concatenate all pages into a single array
-    const data: TableData = Array.prototype.concat.apply([], pages);
-
-    // If there is no data, return the empty string
-    if (data.length === 0) return "";
-    else {
-      // If an order is specified, sort the data
-      if (props.paginationParams.order) {
-        sortData(
-          data,
-          props.paginationParams.order.replace(/^-/, ""),
-          props.paginationParams.order.startsWith("-") ? "desc" : "asc"
-        );
-      }
-
-      // Convert the data to a CSV string
-      const csvData = asString(generateCsv(csvConfig)(data));
-      return csvData;
-    }
-  };
-
-  const getUnpaginatedData = async (exportProps: ExportHandlerProps) => {
-    const csvData = props.gridRef.current?.api.getDataAsCsv({
-      columnSeparator: exportProps.fileName.endsWith(".tsv") ? "\t" : ",",
-    });
-    return csvData || "";
-  };
-
   const handleCSVExport = (exportProps: ExportHandlerProps) => {
-    let getDataFunction: (exportProps: ExportHandlerProps) => Promise<string>;
-
-    if (props.isPaginated) getDataFunction = getPaginatedData;
-    else getDataFunction = getUnpaginatedData;
-
-    getDataFunction(exportProps)
+    props
+      .handleExportData(exportProps, props.gridRef)
       .then((data) => {
         exportProps.setExportStatus(ExportStatus.WRITING);
         props
@@ -448,9 +333,9 @@ function BaseTable(props: BaseTableProps) {
   const [displayedRowCount, setDisplayedRowCount] = useState(0);
 
   const updateDisplayedRowCount = useCallback(() => {
-    if (!props.isPaginated)
+    if (!props.handlePageChange)
       setDisplayedRowCount(gridRef.current?.api.getDisplayedRowCount() || 0);
-  }, [gridRef, props.isPaginated]);
+  }, [gridRef, props.handlePageChange]);
 
   return (
     <Stack gap={2} style={containerStyle}>
@@ -461,21 +346,18 @@ function BaseTable(props: BaseTableProps) {
           columnDefs={props.columnDefs}
           tooltipMouseTrack={true}
           tooltipHideDelay={5000}
-          gridOptions={{
-            ...props.gridOptions,
-            enableCellTextSelection: true,
-            defaultColDef: {
-              filter: props.isFilterable,
-            },
+          enableCellTextSelection={true}
+          defaultColDef={{
+            filter: props.isFilterable,
           }}
-          onGridReady={props.onGridReady}
+          onSortChanged={props.handleSortChange}
           onRowDataUpdated={updateDisplayedRowCount}
           onFilterChanged={updateDisplayedRowCount}
           suppressMultiSort={true}
           suppressColumnVirtualisation={true}
           suppressCellFocus={true}
           rowBuffer={50}
-          loading={props.isDataLoading}
+          loading={props.isResultsFetching}
         />
       </div>
       <Container fluid>
@@ -511,24 +393,32 @@ function BaseTable(props: BaseTableProps) {
   );
 }
 
-function Table(props: ClientTableProps) {
-  const [rowData, setRowData] = useState<TableData>([]);
-  const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
+export default function Table(props: ClientTableProps) {
+  const rowData = useMemo(() => {
+    return formatData(props.data);
+  }, [props.data]);
 
-  const onGridReady = useCallback(() => {
-    setRowData(formatData(props.data));
-    setColumnDefs(getColDefs(props, props.data, false));
+  const columnDefs = useMemo(() => {
+    return getColDefs(props, props.data, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [props.data]);
+
+  const handleExportData = async (
+    exportProps: ExportHandlerProps,
+    gridRef?: React.RefObject<AgGridReact<TableRow>>
+  ) => {
+    const csvData = gridRef?.current?.api.getDataAsCsv({
+      columnSeparator: exportProps.fileName.endsWith(".tsv") ? "\t" : ",",
+    });
+    return csvData || "";
+  };
 
   return (
     <BaseTable
       {...props}
       rowData={rowData}
       columnDefs={columnDefs}
-      searchPath=""
-      searchParameters=""
-      onGridReady={onGridReady}
+      handleExportData={handleExportData}
       rowDisplayParams={{
         from: rowData.length >= 1 ? 1 : 0,
         to: rowData.length,
@@ -536,185 +426,62 @@ function Table(props: ClientTableProps) {
       }}
       footer={props.footer}
       isFilterable
-      isPaginated={false}
-      paginationParams={{
-        pageNumber: 1,
-        numPages: 1,
-        pageCountMessage: "Page 1 of 1",
-        prevPage: false,
-        nextPage: false,
-        prevParams: "",
-        nextParams: "",
-        userPageSize: 0,
-        handleUserPageChange: () => {},
-        order: "",
-      }}
+      pageNumber={1}
+      numPages={1}
     />
   );
 }
 
-function ServerPaginatedTable(props: ServerPaginatedTableProps) {
-  const [resultData, setResultData] = useState<TableData>([]);
-  const [rowData, setRowData] = useState<TableData>([]);
-  const [columnDefs, setColumnDefs] = useState<ColDef[]>([]);
-  const [userPageNumber, setUserPageNumber] = useState(1);
-  const [serverPageNumber, setServerPageNumber] = useState(1);
-  const [prevParams, setPrevParams] = useState("");
-  const [nextParams, setNextParams] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [userRowCounts, setUserRowCounts] = useState({
-    fromCount: 0,
-    toCount: 0,
-  });
-  const [order, setOrder] = useState("");
+export function ServerTable(props: ServerTableProps) {
+  const columnDefs = useMemo(() => {
+    const fieldsRow: TableRow[] = [
+      Object.fromEntries(
+        props.columns.map((field) => [field.code, field.description])
+      ),
+    ];
 
-  const resultsPageSize = props.pageSize;
-  const userPageSize = 50;
-
-  const { isFetching: countPending, data: countResponse } =
-    useCountQuery(props);
-
-  //  Get count data
-  const countData = useMemo(() => {
-    if (countResponse?.status !== "success") return { count: 0, numPages: 0 };
-    return {
-      count: countResponse.data.count,
-      numPages: countResponse.data.count
-        ? Math.ceil(countResponse.data.count / userPageSize)
-        : 1,
-    };
-  }, [countResponse]);
-
-  const prevPage = !!(prevParams || userPageNumber > 1);
-  const nextPage = !!(nextParams || userPageNumber < countData.numPages);
-
-  const getRowData = (resultData: TableData, resultsPage: number) => {
-    return resultData.slice(
-      (resultsPage - 1) * userPageSize,
-      resultsPage * userPageSize
-    );
-  };
-
-  const getPageNumbers = (userPage: number) => {
-    const numResultsPages = resultsPageSize / userPageSize;
-
-    return {
-      resultsPage: userPage % numResultsPages || numResultsPages,
-      serverPage: Math.ceil((userPage * userPageSize) / resultsPageSize),
-    };
-  };
-
-  const handleRowData = (rowData: TableData, userPage: number) => {
-    setRowData(rowData);
-    setUserRowCounts({
-      fromCount: (userPage - 1) * userPageSize + (rowData.length >= 1 ? 1 : 0),
-      toCount: (userPage - 1) * userPageSize + rowData.length,
-    });
-  };
-
-  const handleResponse = (
-    response: ListResponse<RecordType>,
-    resultsPage: number,
-    userPage: number
-  ) => {
-    const formattedResultData = formatData(response.data);
-    setResultData(formattedResultData);
-    handleRowData(getRowData(formattedResultData, resultsPage), userPage);
-    setPrevParams(response.previous?.split("?", 2)[1] || "");
-    setNextParams(response.next?.split("?", 2)[1] || "");
-  };
-
-  const handleSortColumn = (event: SortChangedEvent) => {
-    const search = new URLSearchParams(props.searchParameters);
-
-    if (event.columns && event.columns.length > 0) {
-      const field = event.columns[event.columns.length - 1].getId();
-      const direction = event.columns[event.columns.length - 1].getSort() || "";
-
-      if (direction === "asc") {
-        search.set("order", field);
-        setOrder(field);
-      } else if (direction === "desc") {
-        search.set("order", `-${field}`);
-        setOrder(`-${field}`);
-      } else {
-        setOrder("");
-      }
-    }
-
-    handleUserPageChange(search.toString(), 1, true);
-  };
-
-  const handleUserPageChange = (
-    params: string,
-    userPage: number,
-    refresh = false
-  ) => {
-    const { resultsPage, serverPage } = getPageNumbers(userPage);
-    setUserPageNumber(userPage);
-    setServerPageNumber(serverPage);
-
-    if (!loading && (refresh || serverPage !== serverPageNumber)) {
-      setLoading(true);
-      const search = new URLSearchParams(params);
-      search.set("page", serverPage.toString());
-      search.delete("cursor");
-
-      props
-        .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
-        .then((response) => {
-          if (!response.ok) throw new Error(formatResponseStatus(response));
-          return response.json();
-        })
-        .then((response) => handleResponse(response, resultsPage, userPage))
-        .finally(() => setLoading(false));
-    } else {
-      handleRowData(getRowData(resultData, resultsPage), userPage);
-    }
-  };
-
-  const onGridReady = useCallback(() => {
-    handleResponse(props.response, 1, 1);
-    setColumnDefs(getColDefs(props, props.response.data, true));
+    return getColDefs(props, fieldsRow, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [props.columns]);
+
+  // Calculate number of pages
+  const numPages = useMemo(() => {
+    return Math.ceil(props.count / props.pageSize);
+  }, [props.count, props.pageSize]);
+
+  const isPrevPage = !!(props.page > 1);
+  const isNextPage = !!(props.page < numPages);
+
+  const rowDisplayParams = useMemo(() => {
+    const from = props.count === 0 ? 0 : (props.page - 1) * props.pageSize + 1;
+    const to =
+      props.page * props.pageSize > props.count
+        ? props.count
+        : props.page * props.pageSize;
+    return {
+      from: from,
+      to: to,
+      of: props.count,
+    };
+  }, [props.page, props.pageSize, props.count]);
 
   return (
     <BaseTable
       {...props}
-      rowData={rowData}
+      rowData={props.data}
       columnDefs={columnDefs}
-      gridOptions={{
-        onSortChanged: handleSortColumn,
-      }}
-      onGridReady={onGridReady}
-      rowDisplayParams={{
-        from: userRowCounts.fromCount,
-        to: userRowCounts.toCount,
-        of: countData.count,
-      }}
+      handleExportData={props.handleExportData}
+      handlePageChange={props.handlePageChange}
+      handleSortChange={props.handleSortChange}
+      rowDisplayParams={rowDisplayParams}
       footer={props.footer}
-      isDataLoading={loading}
-      isCountLoading={countPending}
+      isResultsFetching={props.isResultsFetching}
+      isCountFetching={props.isCountFetching}
       isFilterable={false}
-      isPaginated
-      paginationParams={{
-        pageCountMessage: countPending
-          ? "Loading..."
-          : `Page ${userPageNumber.toLocaleString()} of ${countData.numPages.toLocaleString()}`,
-        pageNumber: userPageNumber,
-        numPages: countData.numPages,
-        prevPage,
-        nextPage,
-        prevParams,
-        nextParams,
-        userPageSize,
-        handleUserPageChange,
-        order,
-      }}
+      pageNumber={props.page}
+      numPages={numPages}
+      isPrevPage={isPrevPage}
+      isNextPage={isNextPage}
     />
   );
 }
-
-export default Table;
-export { ServerPaginatedTable };

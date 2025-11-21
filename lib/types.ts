@@ -202,6 +202,12 @@ export type RecordType = Record<
   string | number | boolean | object | null | RecordType[]
 >;
 
+export type InputRow = Record<
+  string,
+  string | number | boolean | object | null
+>;
+export type TableRow = Record<string, string | number>;
+
 export type HistoricalEntry = {
   username?: string;
   timestamp: string;

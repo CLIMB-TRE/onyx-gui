@@ -1,21 +1,68 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { SortChangedEvent } from "@ag-grid-community/core";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import { useResultsQuery } from "../api";
+import { useCountQuery, useResultsQuery } from "../api";
 import FilterPanel from "../components/FilterPanel";
 import ResultsPanel from "../components/ResultsPanel";
 import SearchBar from "../components/SearchBar";
 import SummarisePanel from "../components/SummarisePanel";
-import { ResultsProps } from "../interfaces";
-import { FilterConfig } from "../types";
+import { ExportHandlerProps, ResultsProps } from "../interfaces";
+import {
+  ExportStatus,
+  FilterConfig,
+  InputRow,
+  ListResponse,
+  RecordType,
+  TableRow,
+} from "../types";
 import { formatFilters, getColumns } from "../utils/functions";
 import { useDebouncedValue, usePersistedState } from "../utils/hooks";
 import ColumnsModal from "../components/ColumnsModal";
 import { CopyToClipboardButton } from "../components/Buttons";
 import Resizer from "../components/Resizer";
+import { useCount, useResults } from "../api/hooks";
+import { asString, generateCsv, mkConfig } from "export-to-csv";
+import { formatResponseStatus } from "../utils/functions";
+
+/** Converts InputRow[] to TableRow[]. All non-string/number values are converted to strings. */
+function formatData(data: InputRow[]): TableRow[] {
+  return data.map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [
+        key,
+        typeof value === "string" || typeof value === "number"
+          ? value
+          : typeof value === "boolean" || value === null
+          ? value?.toString() || ""
+          : JSON.stringify(value),
+      ])
+    )
+  );
+}
+
+/** Sorts TableData in-place, on the specified field and direction. */
+function sortData(data: TableRow[], field: string, direction: string): void {
+  if (data.length > 0 && direction === "asc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (a[field] as number) - (b[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) > (b[field] as string) ? 1 : -1
+      );
+    }
+  } else if (data.length > 0 && direction === "desc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (b[field] as number) - (a[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) < (b[field] as string) ? 1 : -1
+      );
+    }
+  }
+}
 
 function Results(props: ResultsProps) {
-  const pageSize = 100; // Pagination page size
   const [searchInput, setSearchInput] = usePersistedState(
     props,
     `${props.project.code}${props.title}SearchInput`,
@@ -36,6 +83,9 @@ function Results(props: ResultsProps) {
     `${props.project.code}${props.title}IncludeList`,
     props.fields.default_fields || []
   );
+  const [order, setOrder] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 50; // Pagination page size
 
   const defaultWidth = 300;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -60,13 +110,10 @@ function Results(props: ResultsProps) {
   const searchParameters = useMemo(() => {
     const { columnOperator, columns } = getColumns(includeList, columnOptions);
     return new URLSearchParams(
-      [["page_size", pageSize.toString()]]
-        .concat(
-          [searchInput]
-            .map((search) => search.trim())
-            .filter((search) => search)
-            .map((search) => ["search", search])
-        )
+      [searchInput]
+        .map((search) => search.trim())
+        .filter((search) => search)
+        .map((search) => ["search", search])
         .concat(formatFilters(filterList))
         .concat(
           summariseList
@@ -79,22 +126,16 @@ function Results(props: ResultsProps) {
 
   const debouncedSearchParams = useDebouncedValue(searchParameters, 500);
 
-  const paginatedQueryProps = useMemo(
-    () => ({
+  const paginatedQueryProps = useMemo(() => {
+    const params = new URLSearchParams(debouncedSearchParams);
+    params.set("page", page.toString());
+    params.set("page_size", pageSize.toString());
+    params.set("order", order);
+    return {
       ...props,
-      searchParameters: debouncedSearchParams,
-    }),
-    [props, debouncedSearchParams]
-  );
-
-  const { isFetching, error, data, refetch } =
-    useResultsQuery(paginatedQueryProps);
-
-  // If search parameters have not changed and nothing is pending
-  // Then trigger a refetch
-  const handleSearch = () => {
-    if (!isFetching) refetch();
-  };
+      searchParameters: params.toString(),
+    };
+  }, [props, debouncedSearchParams, page, pageSize, order]);
 
   const handleCopyCLICommand = () => {
     const command = [props.commandBase];
@@ -125,6 +166,131 @@ function Results(props: ResultsProps) {
 
     // Assemble the command and write to clipboard
     navigator.clipboard.writeText(command.join(" ").trim());
+  };
+
+  // This effect resets the page to 1 when the search criteria change.
+  useEffect(() => setPage(1), [debouncedSearchParams]);
+
+  // This ref tracks the previous search params to detect when a new search happens.
+  const prevSearchParamsRef = useRef<string>();
+  const isNewSearch = debouncedSearchParams !== prevSearchParamsRef.current;
+
+  // After every render, update the ref for the next render cycle.
+  useEffect(() => {
+    prevSearchParamsRef.current = debouncedSearchParams;
+  });
+
+  const {
+    isFetching: isResultsFetching,
+    error: resultsError,
+    data: resultsResponse,
+    refetch: resultsRefetch,
+  } = useResultsQuery({
+    ...paginatedQueryProps,
+    enabled: !isNewSearch || page === 1,
+  });
+  const results = useResults(resultsResponse);
+
+  const {
+    isFetching: isCountFetching,
+    data: countResponse,
+    refetch: countRefetch,
+  } = useCountQuery({
+    ...props,
+    searchParameters: debouncedSearchParams,
+    enabled: !isNewSearch || page === 1,
+  });
+  const count = useCount(countResponse);
+
+  // If search parameters have not changed and nothing is pending
+  // Then trigger a refetch
+  const handleSearch = () => {
+    if (!isResultsFetching && !isCountFetching) {
+      resultsRefetch();
+      countRefetch();
+    }
+  };
+
+  const handleSortChange = (event: SortChangedEvent) => {
+    if (event.columns && event.columns.length > 0) {
+      const field = event.columns[event.columns.length - 1].getId();
+      const direction = event.columns[event.columns.length - 1].getSort() || "";
+
+      if (direction === "asc") {
+        setOrder(field);
+      } else if (direction === "desc") {
+        setOrder(`-${field}`);
+      } else {
+        setOrder("");
+      }
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setPage(page);
+  };
+
+  const handleExportData = async (exportProps: ExportHandlerProps) => {
+    exportProps.setExportStatus(ExportStatus.RUNNING);
+
+    const csvConfig = mkConfig({
+      useKeysAsHeaders: true,
+      fieldSeparator: exportProps.fileName.endsWith(".tsv") ? "\t" : ",",
+    });
+    const pages: TableRow[][] = [];
+    let nRows = 0;
+    let search: URLSearchParams | null = new URLSearchParams(searchParameters);
+
+    // Remove order and pagination parameters for export
+    search.delete("order");
+    search.delete("page");
+    search.delete("page_size");
+
+    // Fetch pages of data until the 'next' field is not present
+    while (search instanceof URLSearchParams) {
+      await props
+        .httpPathHandler(`${props.searchPath}/?${search.toString()}`)
+        .then((response) => {
+          if (!response.ok) throw new Error(formatResponseStatus(response));
+          return response.json();
+        })
+        .then((response: ListResponse<RecordType>) => {
+          if (exportProps.statusToken.status === ExportStatus.CANCELLED)
+            throw new Error("export_cancelled");
+
+          const page = formatData(response.data);
+          pages.push(page);
+          nRows += page.length;
+          search = response.next
+            ? new URLSearchParams(response.next.split("?", 2)[1])
+            : null;
+
+          exportProps.setExportProgress((nRows / count) * 100);
+          exportProps.setExportProgressMessage(
+            `Fetched ${nRows.toLocaleString()}/${count.toLocaleString()} items...`
+          );
+        });
+    }
+
+    // Concatenate all pages into a single array
+    const data: TableRow[] = Array.prototype.concat.apply([], pages);
+
+    // If there is no data, return the empty string
+    if (data.length === 0) return "";
+    else {
+      // If an order is specified, sort the data
+      if (order) {
+        sortData(
+          data,
+          order.replace(/^-/, ""),
+          order.startsWith("-") ? "desc" : "asc"
+        );
+      }
+
+      // Convert the data to a CSV string
+      const csvData = asString(generateCsv(csvConfig)(data));
+      return csvData;
+    }
   };
 
   return (
@@ -180,12 +346,21 @@ function Results(props: ResultsProps) {
               {...props}
               searchParameters={debouncedSearchParams}
               pageSize={pageSize}
-              isFetching={isFetching}
-              error={error}
-              data={data}
+              data={resultsResponse}
               sidebarCollapsed={sidebarCollapsed}
               setSidebarCollapsed={setSidebarCollapsed}
               setColumnsModalShow={setColumnsModalShow}
+              columns={columnOptions}
+              isResultsFetching={isResultsFetching}
+              resultsError={resultsError}
+              results={results}
+              isCountFetching={isCountFetching}
+              count={count}
+              page={page}
+              order={order}
+              handleExportData={handleExportData}
+              handleSortChange={handleSortChange}
+              handlePageChange={handlePageChange}
             />
           </Container>
         </div>

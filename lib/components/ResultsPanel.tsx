@@ -3,8 +3,14 @@ import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import { MdTableRows } from "react-icons/md";
-import { ResultsProps } from "../interfaces";
-import { ErrorResponse, ListResponse, RecordType } from "../types";
+import { ExportHandlerProps, ResultsProps } from "../interfaces";
+import {
+  ErrorResponse,
+  Field,
+  ListResponse,
+  RecordType,
+  TableRow,
+} from "../types";
 import { getDefaultFileNamePrefix } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
 import { SidebarButton } from "./Buttons";
@@ -16,18 +22,28 @@ import {
 import ErrorModal from "./ErrorModal";
 import PageTitle from "./PageTitle";
 import QueryHandler from "./QueryHandler";
-import Table, { ServerPaginatedTable } from "./Table";
+import Table, { ServerTable } from "./Table";
 import { useFieldDescriptions } from "../api/hooks";
+import { SortChangedEvent } from "@ag-grid-community/core";
 
 interface ResultsPanelProps extends ResultsProps {
   searchParameters: string;
   pageSize: number;
-  isFetching: boolean;
-  error: Error | null;
   data: ListResponse<RecordType> | ErrorResponse | undefined;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
   setColumnsModalShow: (show: boolean) => void;
+  columns: Field[];
+  isResultsFetching: boolean;
+  resultsError: Error | null;
+  results: TableRow[];
+  isCountFetching: boolean;
+  count: number;
+  page: number;
+  order: string;
+  handleExportData: (exportProps: ExportHandlerProps) => Promise<string>;
+  handleSortChange: (event: SortChangedEvent) => void;
+  handlePageChange: (page: number) => void;
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
@@ -42,13 +58,6 @@ function ResultsPanel(props: ResultsPanelProps) {
       ),
     [props.project, props.title, props.searchParameters]
   );
-
-  // Get the result data
-  const results = useMemo(() => {
-    if (props.data?.status !== "success")
-      return { data: [] as RecordType[] } as ListResponse<RecordType>;
-    return props.data;
-  }, [props.data]);
 
   const handleErrorModalShow = useCallback((error: Error) => {
     setS3ReportError(error);
@@ -82,7 +91,10 @@ function ResultsPanel(props: ResultsPanelProps) {
     <Card className="h-100 overflow-y-auto">
       <Card.Header>
         <Stack gap={2} direction="horizontal">
-          <SidebarButton {...props} />
+          <SidebarButton
+            sidebarCollapsed={props.sidebarCollapsed}
+            setSidebarCollapsed={props.setSidebarCollapsed}
+          />
           <span className="me-auto text-truncate">
             <PageTitle
               title={props.title}
@@ -117,22 +129,37 @@ function ResultsPanel(props: ResultsPanelProps) {
           onHide={() => setErrorModalShow(false)}
         />
         <QueryHandler
-          isFetching={props.isFetching}
-          error={props.error}
+          isFetching={false}
+          error={props.resultsError}
           data={props.data}
         >
           {!props.searchParameters.includes("summarise=") ? (
-            <ServerPaginatedTable
+            <ServerTable
               {...props}
-              response={results}
               defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={fieldDescriptions}
               cellRenderers={cellRenderers}
+              data={props.results}
+              columns={props.columns}
+              isResultsFetching={props.isResultsFetching}
+              count={props.count}
+              isCountFetching={props.isCountFetching}
+              page={props.page}
+              defaultSort={
+                new Map<string, "asc" | "desc">([
+                  props.order.startsWith("-")
+                    ? [props.order.slice(1), "desc"]
+                    : [props.order, "asc"],
+                ])
+              }
+              handleExportData={props.handleExportData}
+              handleSortChange={props.handleSortChange}
+              handlePageChange={props.handlePageChange}
             />
           ) : (
             <Table
               {...props}
-              data={results.data}
+              data={props.results}
               defaultFileNamePrefix={defaultFileNamePrefix}
               headerTooltips={fieldDescriptions}
               cellRenderers={cellRenderers}
