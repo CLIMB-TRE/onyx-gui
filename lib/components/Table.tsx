@@ -46,19 +46,14 @@ interface BaseTableProps extends OnyxProps {
   isResultsFetching?: boolean;
   isCountFetching?: boolean;
   isFilterable: boolean;
-  rowDisplayParams: {
-    from: number;
-    to: number;
-    of: number;
-  };
+  count: number;
+  fromCount: number;
+  toCount: number;
+  setToCount?: (toCount: number) => void;
   pageNumber: number;
   numPages: number;
   isPrevPage?: boolean;
   isNextPage?: boolean;
-}
-
-interface TableCountProps extends BaseTableProps {
-  displayedRowCount: number;
 }
 
 interface TableOptionsProps extends BaseTableProps {
@@ -180,16 +175,13 @@ function getColDefs(
   return colDefs;
 }
 
-function TableCount(props: TableCountProps) {
+function TableCount(props: BaseTableProps) {
   return (
     <Pagination size="sm" style={{ whiteSpace: "nowrap" }}>
       <Pagination.Item as="span">
         {props.isCountFetching
           ? "Loading..."
-          : `${props.rowDisplayParams.from.toLocaleString()} to ${(props.handlePageChange
-              ? props.rowDisplayParams.to
-              : props.displayedRowCount
-            ).toLocaleString()} of ${props.rowDisplayParams.of.toLocaleString()}`}
+          : `${props.fromCount.toLocaleString()} to ${props.toCount.toLocaleString()} of ${props.count.toLocaleString()}`}
       </Pagination.Item>
     </Pagination>
   );
@@ -330,12 +322,11 @@ function BaseTable(props: BaseTableProps) {
   const gridRef = useRef<AgGridReact<TableRow>>(null);
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
-  const [displayedRowCount, setDisplayedRowCount] = useState(0);
 
   const updateDisplayedRowCount = useCallback(() => {
-    if (!props.handlePageChange)
-      setDisplayedRowCount(gridRef.current?.api.getDisplayedRowCount() || 0);
-  }, [gridRef, props.handlePageChange]);
+    if (!props.handlePageChange && props.setToCount)
+      props.setToCount(gridRef.current?.api.getDisplayedRowCount() || 0);
+  }, [gridRef, props]);
 
   return (
     <Stack gap={2} style={containerStyle}>
@@ -369,10 +360,7 @@ function BaseTable(props: BaseTableProps) {
             <Container fluid>
               <Row className="gx-2">
                 <Col>
-                  <TableCount
-                    {...props}
-                    displayedRowCount={displayedRowCount}
-                  />
+                  <TableCount {...props} />
                 </Col>
                 <Col>
                   <TablePagination {...props} />
@@ -394,6 +382,8 @@ function BaseTable(props: BaseTableProps) {
 }
 
 export default function Table(props: ClientTableProps) {
+  const [toCount, setToCount] = useState(0);
+
   const rowData = useMemo(() => {
     return formatData(props.data);
   }, [props.data]);
@@ -419,11 +409,10 @@ export default function Table(props: ClientTableProps) {
       rowData={rowData}
       columnDefs={columnDefs}
       handleExportData={handleExportData}
-      rowDisplayParams={{
-        from: rowData.length >= 1 ? 1 : 0,
-        to: rowData.length,
-        of: rowData.length,
-      }}
+      count={rowData.length}
+      fromCount={toCount >= 1 ? 1 : 0}
+      toCount={toCount}
+      setToCount={setToCount}
       footer={props.footer}
       isFilterable
       pageNumber={1}
@@ -451,19 +440,8 @@ export function ServerTable(props: ServerTableProps) {
 
   const isPrevPage = !!(props.page > 1);
   const isNextPage = !!(props.page < numPages);
-
-  const rowDisplayParams = useMemo(() => {
-    const from = props.count === 0 ? 0 : (props.page - 1) * props.pageSize + 1;
-    const to =
-      props.page * props.pageSize > props.count
-        ? props.count
-        : props.page * props.pageSize;
-    return {
-      from: from,
-      to: to,
-      of: props.count,
-    };
-  }, [props.page, props.pageSize, props.count]);
+  const fromCount = (props.page - 1) * props.pageSize + 1;
+  const toCount = Math.min(props.page * props.pageSize, props.count);
 
   return (
     <BaseTable
@@ -473,10 +451,12 @@ export function ServerTable(props: ServerTableProps) {
       handleExportData={props.handleExportData}
       handlePageChange={props.handlePageChange}
       handleSortChange={props.handleSortChange}
-      rowDisplayParams={rowDisplayParams}
       footer={props.footer}
       isResultsFetching={props.isResultsFetching}
       isCountFetching={props.isCountFetching}
+      count={props.count}
+      fromCount={fromCount}
+      toCount={toCount}
       isFilterable={false}
       pageNumber={props.page}
       numPages={numPages}
