@@ -40,7 +40,10 @@ const Option = (props: OptionProps) => {
           {splitLabel.length > 0 && <div>{splitLabel[0]}</div>}
           {splitLabel.length > 1 && (
             <div
-              style={{ color: "var(--onyx-dropdown-option-description-color)" }}
+              style={{
+                color: "var(--onyx-dropdown-option-description-color)",
+                fontSize: "0.75rem",
+              }}
             >
               {splitLabel[1]}
             </div>
@@ -57,6 +60,7 @@ const getLabel = (option: string, titles?: Map<string, string>) =>
 function Dropdown(props: DropdownProps) {
   return (
     <Select
+      classNames={{ menuPortal: () => "onyx" }}
       menuPosition="fixed"
       isClearable={props.isClearable}
       minMenuHeight={250}
@@ -97,6 +101,7 @@ function Dropdown(props: DropdownProps) {
 function MultiDropdown(props: MultiDropdownProps) {
   return (
     <Select
+      classNames={{ menuPortal: () => "onyx" }}
       isMulti
       menuPosition="fixed"
       minMenuHeight={250}
