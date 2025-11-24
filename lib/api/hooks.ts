@@ -13,7 +13,7 @@ import {
   Count,
   Profile,
   RecordType,
-  TableRow,
+  InputRow,
 } from "../types";
 
 function flattenFields(fields: Record<string, Field>) {
@@ -180,21 +180,10 @@ export const useCount = (
 
 export const useResults = (
   data: ListResponse<RecordType> | ErrorResponse | undefined
-): TableRow[] => {
+): InputRow[] => {
   return useMemo(() => {
     if (data?.status !== "success") return [];
 
-    return data.data.map((row) =>
-      Object.fromEntries(
-        Object.entries(row).map(([key, value]) => [
-          key,
-          typeof value === "string" || typeof value === "number"
-            ? value
-            : typeof value === "boolean" || value === null
-            ? value?.toString() || ""
-            : JSON.stringify(value),
-        ])
-      )
-    );
+    return data.data;
   }, [data]);
 };

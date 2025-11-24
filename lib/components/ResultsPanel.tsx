@@ -7,9 +7,9 @@ import { ExportHandlerProps, ResultsProps } from "../interfaces";
 import {
   ErrorResponse,
   Field,
+  InputRow,
   ListResponse,
   RecordType,
-  TableRow,
 } from "../types";
 import { getDefaultFileNamePrefix } from "../utils/functions";
 import { s3BucketsMessage } from "../utils/messages";
@@ -36,7 +36,7 @@ interface ResultsPanelProps extends ResultsProps {
   columns: Field[];
   isResultsFetching: boolean;
   resultsError: Error | null;
-  results: TableRow[];
+  results: InputRow[];
   isCountFetching: boolean;
   count: number;
   page: number;

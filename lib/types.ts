@@ -59,12 +59,12 @@ export enum GraphPanelTabKey {
 }
 
 export enum ExportStatus {
-  READY,
-  RUNNING,
-  WRITING,
-  FINISHED,
-  CANCELLED,
-  ERROR,
+  READY = "export-ready",
+  RUNNING = "export-running",
+  WRITING = "export-writing",
+  FINISHED = "export-finished",
+  CANCELLED = "export-cancelled",
+  ERROR = "export-error",
 }
 
 export enum ObjectType {

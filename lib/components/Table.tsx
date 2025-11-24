@@ -7,9 +7,9 @@ import {
   SortDirection,
 } from "@ag-grid-community/core";
 import { CsvExportModule } from "@ag-grid-community/csv-export";
-import { AgGridReact, CustomCellRendererProps } from "@ag-grid-community/react"; // React Data Grid Component
-import "@ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
-import "@ag-grid-community/styles/ag-theme-quartz.min.css"; // Optional Theme applied to the Data Grid
+import { AgGridReact, CustomCellRendererProps } from "@ag-grid-community/react";
+import "@ag-grid-community/styles/ag-grid.css";
+import "@ag-grid-community/styles/ag-theme-quartz.min.css";
 import { useCallback, useMemo, useRef, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -29,10 +29,12 @@ import {
   Field,
 } from "../types";
 import ExportModal from "./ExportModal";
+import { formatData } from "../utils/functions";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
 interface BaseTableProps extends OnyxProps {
+  gridRef: React.RefObject<AgGridReact<TableRow>>;
   rowData: TableRow[];
   columnDefs: ColDef[];
   defaultFileNamePrefix: string;
@@ -42,15 +44,15 @@ interface BaseTableProps extends OnyxProps {
   ) => Promise<string>;
   handlePageChange?: (page: number) => void;
   handleSortChange?: (event: SortChangedEvent) => void;
+  handleRowDataChange?: () => void;
   footer?: string;
   isResultsFetching?: boolean;
-  isCountFetching?: boolean;
   isFilterable: boolean;
+  isCountFetching?: boolean;
   count: number;
   fromCount: number;
   toCount: number;
-  setToCount?: (toCount: number) => void;
-  pageNumber: number;
+  page: number;
   numPages: number;
   isPrevPage?: boolean;
   isNextPage?: boolean;
@@ -61,6 +63,7 @@ interface TableOptionsProps extends BaseTableProps {
 }
 
 interface TableProps extends OnyxProps {
+  data: InputRow[];
   fields?: Fields;
   defaultFileNamePrefix: string;
   headerNames?: Map<string, string>;
@@ -76,37 +79,16 @@ interface TableProps extends OnyxProps {
   analysisPrimaryID?: string;
 }
 
-interface ClientTableProps extends TableProps {
-  data: InputRow[];
-}
-
 interface ServerTableProps extends TableProps {
   columns: Field[];
   isResultsFetching: boolean;
-  data: TableRow[];
-  count: number;
   isCountFetching: boolean;
+  count: number;
   page: number;
   pageSize: number;
   handleExportData: (exportProps: ExportHandlerProps) => Promise<string>;
   handleSortChange: (event: SortChangedEvent) => void;
   handlePageChange: (page: number) => void;
-}
-
-/** Converts InputRow[] to TableRow[]. All non-string/number values are converted to strings. */
-function formatData(data: InputRow[]): TableRow[] {
-  return data.map((row) =>
-    Object.fromEntries(
-      Object.entries(row).map(([key, value]) => [
-        key,
-        typeof value === "string" || typeof value === "number"
-          ? value
-          : typeof value === "boolean" || value === null
-          ? value?.toString() || ""
-          : JSON.stringify(value),
-      ])
-    )
-  );
 }
 
 /** Generates column definitions for the table. */
@@ -197,7 +179,7 @@ function TablePagination(props: BaseTableProps) {
       <Pagination.Prev
         disabled={!(props.handlePageChange && props.isPrevPage)}
         onClick={() =>
-          props.handlePageChange && props.handlePageChange(props.pageNumber - 1)
+          props.handlePageChange && props.handlePageChange(props.page - 1)
         }
       />
       <Pagination.Item
@@ -206,12 +188,12 @@ function TablePagination(props: BaseTableProps) {
       >
         {props.isCountFetching
           ? "Loading..."
-          : `Page ${props.pageNumber.toLocaleString()} of ${props.numPages.toLocaleString()}`}
+          : `Page ${props.page.toLocaleString()} of ${props.numPages.toLocaleString()}`}
       </Pagination.Item>
       <Pagination.Next
         disabled={!(props.handlePageChange && props.isNextPage)}
         onClick={() =>
-          props.handlePageChange && props.handlePageChange(props.pageNumber + 1)
+          props.handlePageChange && props.handlePageChange(props.page + 1)
         }
       />
       <Pagination.Last
@@ -262,7 +244,7 @@ function TableOptions(props: TableOptionsProps) {
           });
       })
       .catch((error: Error) => {
-        if (error.message === "export_cancelled")
+        if (error.message === ExportStatus.CANCELLED)
           // Display cancel message
           exportProps.setExportStatus(ExportStatus.CANCELLED);
         else {
@@ -319,20 +301,14 @@ function TableOptions(props: TableOptionsProps) {
 }
 
 function BaseTable(props: BaseTableProps) {
-  const gridRef = useRef<AgGridReact<TableRow>>(null);
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
-
-  const updateDisplayedRowCount = useCallback(() => {
-    if (!props.handlePageChange && props.setToCount)
-      props.setToCount(gridRef.current?.api.getDisplayedRowCount() || 0);
-  }, [gridRef, props]);
 
   return (
     <Stack gap={2} style={containerStyle}>
       <div className="ag-theme-quartz" style={gridStyle}>
         <AgGridReact
-          ref={gridRef}
+          ref={props.gridRef}
           rowData={props.rowData}
           columnDefs={props.columnDefs}
           tooltipMouseTrack={true}
@@ -342,8 +318,8 @@ function BaseTable(props: BaseTableProps) {
             filter: props.isFilterable,
           }}
           onSortChanged={props.handleSortChange}
-          onRowDataUpdated={updateDisplayedRowCount}
-          onFilterChanged={updateDisplayedRowCount}
+          onRowDataUpdated={props.handleRowDataChange}
+          onFilterChanged={props.handleRowDataChange}
           suppressMultiSort={true}
           suppressColumnVirtualisation={true}
           suppressCellFocus={true}
@@ -368,7 +344,7 @@ function BaseTable(props: BaseTableProps) {
                 <Col>
                   <TableOptions
                     {...props}
-                    gridRef={gridRef}
+                    gridRef={props.gridRef}
                     isFilterable={props.isFilterable}
                   />
                 </Col>
@@ -381,8 +357,13 @@ function BaseTable(props: BaseTableProps) {
   );
 }
 
-export default function Table(props: ClientTableProps) {
+export default function Table(props: TableProps) {
+  const gridRef = useRef<AgGridReact<TableRow>>(null);
   const [toCount, setToCount] = useState(0);
+
+  const handleRowDataChange = useCallback(() => {
+    setToCount(gridRef.current?.api.getDisplayedRowCount() || 0);
+  }, [gridRef]);
 
   const rowData = useMemo(() => {
     return formatData(props.data);
@@ -406,22 +387,28 @@ export default function Table(props: ClientTableProps) {
   return (
     <BaseTable
       {...props}
+      gridRef={gridRef}
       rowData={rowData}
       columnDefs={columnDefs}
       handleExportData={handleExportData}
+      handleRowDataChange={handleRowDataChange}
       count={rowData.length}
       fromCount={toCount >= 1 ? 1 : 0}
       toCount={toCount}
-      setToCount={setToCount}
-      footer={props.footer}
       isFilterable
-      pageNumber={1}
+      page={1}
       numPages={1}
     />
   );
 }
 
 export function ServerTable(props: ServerTableProps) {
+  const gridRef = useRef<AgGridReact<TableRow>>(null);
+
+  const rowData = useMemo(() => {
+    return formatData(props.data);
+  }, [props.data]);
+
   const columnDefs = useMemo(() => {
     const fieldsRow: TableRow[] = [
       Object.fromEntries(
@@ -446,19 +433,12 @@ export function ServerTable(props: ServerTableProps) {
   return (
     <BaseTable
       {...props}
-      rowData={props.data}
+      gridRef={gridRef}
+      rowData={rowData}
       columnDefs={columnDefs}
-      handleExportData={props.handleExportData}
-      handlePageChange={props.handlePageChange}
-      handleSortChange={props.handleSortChange}
-      footer={props.footer}
-      isResultsFetching={props.isResultsFetching}
-      isCountFetching={props.isCountFetching}
-      count={props.count}
       fromCount={fromCount}
       toCount={toCount}
       isFilterable={false}
-      pageNumber={props.page}
       numPages={numPages}
       isPrevPage={isPrevPage}
       isNextPage={isNextPage}

@@ -7,6 +7,8 @@ import {
   ExportStatus,
   FilterConfig,
   Theme,
+  TableRow,
+  InputRow,
 } from "../types";
 
 /** Returns a random hexadecimal string. */
@@ -157,4 +159,45 @@ export function getColumns(includeList: string[], columnOptions: Field[]) {
       .map((field) => field.code);
   }
   return { columnOperator, columns };
+}
+
+/** Converts InputRow[] to TableRow[]. All non-string/number values are converted to strings. */
+export function formatData(data: InputRow[]): TableRow[] {
+  return data.map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [
+        key,
+        typeof value === "string" || typeof value === "number"
+          ? value
+          : typeof value === "boolean" || value === null
+          ? value?.toString() || ""
+          : JSON.stringify(value),
+      ])
+    )
+  );
+}
+
+/** Sorts TableData in-place, on the specified field and direction. */
+export function sortData(
+  data: TableRow[],
+  field: string,
+  direction: string
+): void {
+  if (data.length > 0 && direction === "asc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (a[field] as number) - (b[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) > (b[field] as string) ? 1 : -1
+      );
+    }
+  } else if (data.length > 0 && direction === "desc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (b[field] as number) - (a[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) < (b[field] as string) ? 1 : -1
+      );
+    }
+  }
 }
