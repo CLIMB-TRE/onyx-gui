@@ -1,12 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SortChangedEvent } from "@ag-grid-community/core";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
+import { asString, generateCsv, mkConfig } from "export-to-csv";
 import { useCountQuery, useResultsQuery } from "../api";
+import { useCount, useResults } from "../api/hooks";
 import FilterPanel from "../components/FilterPanel";
 import ResultsPanel from "../components/ResultsPanel";
 import SearchBar from "../components/SearchBar";
 import SummarisePanel from "../components/SummarisePanel";
+import ColumnsModal from "../components/ColumnsModal";
+import { CopyToClipboardButton } from "../components/Buttons";
+import Resizer from "../components/Resizer";
+import {
+  AnalysisIDCellRendererFactory,
+  RecordIDCellRendererFactory,
+  S3ReportCellRendererFactory,
+} from "../components/CellRenderers";
+import ErrorModal from "../components/ErrorModal";
 import { ExportHandlerProps, ResultsProps } from "../interfaces";
 import {
   ExportStatus,
@@ -18,15 +29,13 @@ import {
 import {
   formatData,
   formatFilters,
+  getColDefs,
   getColumns,
+  getDefaultFileNamePrefix,
   sortData,
 } from "../utils/functions";
 import { useDebouncedValue, usePersistedState } from "../utils/hooks";
-import ColumnsModal from "../components/ColumnsModal";
-import { CopyToClipboardButton } from "../components/Buttons";
-import Resizer from "../components/Resizer";
-import { useCount, useResults } from "../api/hooks";
-import { asString, generateCsv, mkConfig } from "export-to-csv";
+import { s3BucketsMessage } from "../utils/messages";
 import { formatResponseStatus } from "../utils/functions";
 
 function Results(props: ResultsProps) {
@@ -54,7 +63,7 @@ function Results(props: ResultsProps) {
   const [page, setPage] = useState<number>(1);
   const pageSize = 50; // Pagination page size
 
-  const defaultWidth = 300;
+  const defaultWidth = 300; // Default sidebar width
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [columnsModalShow, setColumnsModalShow] = useState(false);
 
@@ -75,7 +84,6 @@ function Results(props: ResultsProps) {
   );
 
   const searchParameters = useMemo(() => {
-    const { columnOperator, columns } = getColumns(includeList, columnOptions);
     return new URLSearchParams(
       [searchInput]
         .map((search) => search.trim())
@@ -87,53 +95,39 @@ function Results(props: ResultsProps) {
             .filter((field) => field)
             .map((field) => ["summarise", field])
         )
-        .concat(columns.map((field) => [columnOperator, field]))
     ).toString();
-  }, [searchInput, filterList, summariseList, includeList, columnOptions]);
-
+  }, [searchInput, filterList, summariseList]);
   const debouncedSearchParams = useDebouncedValue(searchParameters, 500);
 
-  const paginatedQueryProps = useMemo(() => {
+  const resultsQueryProps = useMemo(() => {
     const params = new URLSearchParams(debouncedSearchParams);
     params.set("page", page.toString());
     params.set("page_size", pageSize.toString());
-    params.set("order", order);
+    if (order) params.set("order", order);
+    const { columnOperator, columns } = getColumns(includeList, columnOptions);
+    columns.forEach((col) => params.append(columnOperator, col));
+
     return {
       ...props,
       searchParameters: params.toString(),
     };
-  }, [props, debouncedSearchParams, page, pageSize, order]);
+  }, [
+    props,
+    debouncedSearchParams,
+    page,
+    pageSize,
+    order,
+    includeList,
+    columnOptions,
+  ]);
 
-  const handleCopyCLICommand = () => {
-    const command = [props.commandBase];
-
-    // Format filters
-    const filters = formatFilters(filterList).map(
-      ([filter, value]) =>
-        `--field ${filter.replace("__exact", "")}=${
-          value.includes(" ") ? `"${value}"` : value
-        }`
-    );
-    if (filters.length > 0) command.push(filters.join(" "));
-
-    // Format summarise
-    const summarise = summariseList.filter((field) => field);
-    if (summarise.length > 0)
-      command.push(`--summarise ${summarise.join(",")}`);
-
-    // Format include/exclude columns
-    if (includeList.length > 0) {
-      const { columnOperator, columns } = getColumns(
-        includeList,
-        columnOptions
-      );
-      if (columns.length > 0)
-        command.push(`--${columnOperator} ${columns.join(",")}`);
-    }
-
-    // Assemble the command and write to clipboard
-    navigator.clipboard.writeText(command.join(" ").trim());
-  };
+  const countQueryProps = useMemo(() => {
+    return {
+      ...props,
+      searchParameters: debouncedSearchParams,
+      enabled: !debouncedSearchParams.includes("summarise="),
+    };
+  }, [props, debouncedSearchParams]);
 
   // This effect resets the page to 1 when the search criteria change.
   useEffect(() => setPage(1), [debouncedSearchParams]);
@@ -153,7 +147,7 @@ function Results(props: ResultsProps) {
     data: resultsResponse,
     refetch: resultsRefetch,
   } = useResultsQuery({
-    ...paginatedQueryProps,
+    ...resultsQueryProps,
     enabled: !isNewSearch || page === 1,
   });
   const results = useResults(resultsResponse);
@@ -162,11 +156,7 @@ function Results(props: ResultsProps) {
     isFetching: isCountFetching,
     data: countResponse,
     refetch: countRefetch,
-  } = useCountQuery({
-    ...props,
-    searchParameters: debouncedSearchParams,
-    enabled: !isNewSearch || page === 1,
-  });
+  } = useCountQuery(countQueryProps);
   const count = useCount(countResponse);
 
   // If search parameters have not changed and nothing is pending
@@ -191,10 +181,6 @@ function Results(props: ResultsProps) {
         setOrder("");
       }
     }
-  };
-
-  const handlePageChange = (page: number) => {
-    setPage(page);
   };
 
   const handleExportData = async (exportProps: ExportHandlerProps) => {
@@ -260,6 +246,119 @@ function Results(props: ResultsProps) {
     }
   };
 
+  const defaultFileNamePrefix = useMemo(
+    () =>
+      getDefaultFileNamePrefix(
+        `${props.project.code}_${props.title.toLowerCase()}`,
+        searchParameters
+      ),
+    [props.project, props.title, searchParameters]
+  );
+
+  const [errorModalShow, setErrorModalShow] = useState(false);
+  const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
+
+  const handleErrorModalShow = useCallback((error: Error) => {
+    setS3ReportError(error);
+    setErrorModalShow(true);
+  }, []);
+
+  const errorModalProps = useMemo(
+    () => ({
+      ...props,
+      handleErrorModalShow,
+    }),
+    [props, handleErrorModalShow]
+  );
+
+  const cellRenderers = useMemo(() => {
+    return new Map([
+      [props.recordPrimaryID, RecordIDCellRendererFactory(props)],
+      [props.analysisPrimaryID, AnalysisIDCellRendererFactory(props)],
+      ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
+      ["report", S3ReportCellRendererFactory(errorModalProps)],
+    ]);
+  }, [props, errorModalProps]);
+
+  const [colDefs, setColDefs] = useState(() => {
+    let fieldsRow: TableRow[];
+    if (includeList.length > 0) {
+      fieldsRow = [Object.fromEntries(includeList.map((code) => [code, ""]))];
+    } else {
+      fieldsRow = [
+        Object.fromEntries(
+          columnOptions.map((field) => [field.code, field.description])
+        ),
+      ];
+    }
+
+    return getColDefs({
+      ...props,
+      data: fieldsRow,
+      isServerTable: true,
+      cellRenderers,
+    });
+  });
+
+  const handleActiveColumnsChange = (activeColumns: string[]) => {
+    let cols: string[];
+    if (activeColumns.length === 0)
+      cols = columnOptions.map((field) => field.code);
+    else
+      cols = columnOptions
+        .filter((field) => activeColumns.includes(field.code))
+        .map((field) => field.code);
+
+    const fieldsRow: TableRow[] = [
+      Object.fromEntries(cols.map((fieldCode) => [fieldCode, ""])),
+    ];
+
+    setColDefs(
+      getColDefs({
+        ...props,
+        data: fieldsRow,
+        isServerTable: true,
+        cellRenderers,
+      })
+    );
+    setIncludeList(activeColumns);
+  };
+
+  const isServerTable = useMemo(() => {
+    return !debouncedSearchParams.includes("summarise=");
+  }, [debouncedSearchParams]);
+
+  const handleCopyCLICommand = () => {
+    const command = [props.commandBase];
+
+    // Format filters
+    const filters = formatFilters(filterList).map(
+      ([filter, value]) =>
+        `--field ${filter.replace("__exact", "")}=${
+          value.includes(" ") ? `"${value}"` : value
+        }`
+    );
+    if (filters.length > 0) command.push(filters.join(" "));
+
+    // Format summarise
+    const summarise = summariseList.filter((field) => field);
+    if (summarise.length > 0)
+      command.push(`--summarise ${summarise.join(",")}`);
+
+    // Format include/exclude columns
+    if (includeList.length > 0) {
+      const { columnOperator, columns } = getColumns(
+        includeList,
+        columnOptions
+      );
+      if (columns.length > 0)
+        command.push(`--${columnOperator} ${columns.join(",")}`);
+    }
+
+    // Assemble the command and write to clipboard
+    navigator.clipboard.writeText(command.join(" ").trim());
+  };
+
   return (
     <Container fluid className="g-0 h-100">
       <ColumnsModal
@@ -268,7 +367,14 @@ function Results(props: ResultsProps) {
         onHide={() => setColumnsModalShow(false)}
         columns={columnOptions}
         activeColumns={includeList}
-        setActiveColumns={setIncludeList}
+        setActiveColumns={handleActiveColumnsChange}
+      />
+      <ErrorModal
+        title="S3 Reports"
+        message={s3BucketsMessage}
+        error={s3ReportError}
+        show={errorModalShow}
+        onHide={() => setErrorModalShow(false)}
       />
       <Stack gap={2} direction="horizontal" className="h-100">
         {!sidebarCollapsed && (
@@ -311,23 +417,25 @@ function Results(props: ResultsProps) {
           <Container fluid className="h-100 g-0">
             <ResultsPanel
               {...props}
-              searchParameters={debouncedSearchParams}
+              defaultFileNamePrefix={defaultFileNamePrefix}
               pageSize={pageSize}
-              data={resultsResponse}
               sidebarCollapsed={sidebarCollapsed}
               setSidebarCollapsed={setSidebarCollapsed}
               setColumnsModalShow={setColumnsModalShow}
-              columns={columnOptions}
+              colDefs={colDefs}
               isResultsFetching={isResultsFetching}
               resultsError={resultsError}
-              results={results}
+              resultsResponse={resultsResponse}
+              data={results}
               isCountFetching={isCountFetching}
               count={count}
               page={page}
               order={order}
               handleExportData={handleExportData}
               handleSortChange={handleSortChange}
-              handlePageChange={handlePageChange}
+              handlePageChange={setPage}
+              cellRenderers={cellRenderers}
+              isServerTable={isServerTable}
             />
           </Container>
         </div>

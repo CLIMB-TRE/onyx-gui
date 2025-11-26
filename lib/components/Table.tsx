@@ -1,10 +1,8 @@
 import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
 import {
   ColDef,
-  ITooltipParams,
   ModuleRegistry,
   SortChangedEvent,
-  SortDirection,
 } from "@ag-grid-community/core";
 import { CsvExportModule } from "@ag-grid-community/csv-export";
 import { AgGridReact, CustomCellRendererProps } from "@ag-grid-community/react";
@@ -20,23 +18,16 @@ import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
-import {
-  ExportStatus,
-  DefaultPrimaryID,
-  TableRow,
-  InputRow,
-  Fields,
-  Field,
-} from "../types";
+import { ExportStatus, TableRow, InputRow } from "../types";
 import ExportModal from "./ExportModal";
-import { formatData } from "../utils/functions";
+import { formatData, getColDefs } from "../utils/functions";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
 interface BaseTableProps extends OnyxProps {
   gridRef: React.RefObject<AgGridReact<TableRow>>;
   rowData: TableRow[];
-  columnDefs: ColDef[];
+  colDefs: ColDef[];
   defaultFileNamePrefix: string;
   handleExportData: (
     exportProps: ExportHandlerProps,
@@ -47,7 +38,6 @@ interface BaseTableProps extends OnyxProps {
   handleRowDataChange?: () => void;
   footer?: string;
   isResultsFetching?: boolean;
-  isFilterable: boolean;
   isCountFetching?: boolean;
   count: number;
   fromCount: number;
@@ -56,6 +46,7 @@ interface BaseTableProps extends OnyxProps {
   numPages: number;
   isPrevPage?: boolean;
   isNextPage?: boolean;
+  isFilterable?: boolean;
 }
 
 interface TableOptionsProps extends BaseTableProps {
@@ -64,7 +55,6 @@ interface TableOptionsProps extends BaseTableProps {
 
 interface TableProps extends OnyxProps {
   data: InputRow[];
-  fields?: Fields;
   defaultFileNamePrefix: string;
   headerNames?: Map<string, string>;
   headerTooltips?: Map<string, string>;
@@ -72,7 +62,7 @@ interface TableProps extends OnyxProps {
   tooltipFields?: string[];
   flexOnly?: string[];
   includeOnly?: string[];
-  defaultSort?: Map<string, SortDirection>;
+  order?: string;
   footer?: string;
   cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
   recordPrimaryID?: string;
@@ -80,7 +70,7 @@ interface TableProps extends OnyxProps {
 }
 
 interface ServerTableProps extends TableProps {
-  columns: Field[];
+  colDefs: ColDef[];
   isResultsFetching: boolean;
   isCountFetching: boolean;
   count: number;
@@ -89,72 +79,6 @@ interface ServerTableProps extends TableProps {
   handleExportData: (exportProps: ExportHandlerProps) => Promise<string>;
   handleSortChange: (event: SortChangedEvent) => void;
   handlePageChange: (page: number) => void;
-}
-
-/** Generates column definitions for the table. */
-function getColDefs(
-  props: TableProps,
-  data: InputRow[],
-  isServerPaginated: boolean
-): ColDef[] {
-  let colDefs: ColDef[];
-
-  if (data && data.length > 0) {
-    let keys: string[];
-    if (props.includeOnly) keys = props.includeOnly;
-    else keys = Object.keys(data[0]);
-
-    colDefs = keys.map((key) => {
-      const width = 100 + 20 * Math.round(Math.log(key.length));
-      const colDef: ColDef = {
-        field: key,
-        headerName: props.headerNames?.get(key) || key,
-        minWidth: width,
-        width: isServerPaginated ? width : undefined,
-        headerTooltip: props.headerTooltips?.get(
-          (props.headerTooltipPrefix || "") + key
-        ),
-        unSortIcon: true,
-      };
-
-      // Disable AGGrid sorting for server paginated tables
-      if (isServerPaginated) colDef.comparator = () => 0;
-
-      // Apply custom cell renderers
-      if (props.cellRenderers?.get(key))
-        colDef.cellRenderer = props.cellRenderers.get(key);
-
-      if (
-        key === DefaultPrimaryID.RECORD ||
-        key === DefaultPrimaryID.ANALYSIS ||
-        key === props.recordPrimaryID ||
-        key === props.analysisPrimaryID
-      ) {
-        // ID fields pinned to the left
-        colDef.pinned = "left";
-      } else if (key === "changes" || key === "error_messages") {
-        // History 'changes' field is a special case
-        // where we want variable height and wrapped text
-        colDef.autoHeight = true;
-        colDef.wrapText = true;
-      }
-
-      // Apply default sorts
-      if (props.defaultSort?.has(key)) colDef.sort = props.defaultSort.get(key);
-
-      // Apply tooltip value getter for fields that should display tooltips
-      if (props.tooltipFields?.includes(key))
-        colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
-
-      // Apply flex to all fields unless the table is server paginated
-      // or there is a list of flex-only fields
-      if (!props.flexOnly || props.flexOnly.includes(key)) colDef.flex = 1;
-
-      return colDef;
-    });
-  } else colDefs = [];
-
-  return colDefs;
 }
 
 function TableCount(props: BaseTableProps) {
@@ -310,7 +234,7 @@ function BaseTable(props: BaseTableProps) {
         <AgGridReact
           ref={props.gridRef}
           rowData={props.rowData}
-          columnDefs={props.columnDefs}
+          columnDefs={props.colDefs}
           tooltipMouseTrack={true}
           tooltipHideDelay={5000}
           enableCellTextSelection={true}
@@ -369,8 +293,8 @@ export default function Table(props: TableProps) {
     return formatData(props.data);
   }, [props.data]);
 
-  const columnDefs = useMemo(() => {
-    return getColDefs(props, props.data, false);
+  const colDefs = useMemo(() => {
+    return getColDefs({ ...props, isServerTable: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.data]);
 
@@ -389,56 +313,40 @@ export default function Table(props: TableProps) {
       {...props}
       gridRef={gridRef}
       rowData={rowData}
-      columnDefs={columnDefs}
+      colDefs={colDefs}
       handleExportData={handleExportData}
       handleRowDataChange={handleRowDataChange}
-      count={rowData.length}
       fromCount={toCount >= 1 ? 1 : 0}
       toCount={toCount}
-      isFilterable
+      count={rowData.length}
       page={1}
       numPages={1}
+      isFilterable
     />
   );
 }
 
 export function ServerTable(props: ServerTableProps) {
   const gridRef = useRef<AgGridReact<TableRow>>(null);
-
   const rowData = useMemo(() => {
     return formatData(props.data);
   }, [props.data]);
 
-  const columnDefs = useMemo(() => {
-    const fieldsRow: TableRow[] = [
-      Object.fromEntries(
-        props.columns.map((field) => [field.code, field.description])
-      ),
-    ];
-
-    return getColDefs(props, fieldsRow, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.columns]);
-
-  // Calculate number of pages
+  const fromCount = (props.page - 1) * props.pageSize + 1;
+  const toCount = Math.min(props.page * props.pageSize, props.count);
   const numPages = useMemo(() => {
     return Math.ceil(props.count / props.pageSize);
   }, [props.count, props.pageSize]);
-
   const isPrevPage = !!(props.page > 1);
   const isNextPage = !!(props.page < numPages);
-  const fromCount = (props.page - 1) * props.pageSize + 1;
-  const toCount = Math.min(props.page * props.pageSize, props.count);
 
   return (
     <BaseTable
       {...props}
       gridRef={gridRef}
       rowData={rowData}
-      columnDefs={columnDefs}
       fromCount={fromCount}
       toCount={toCount}
-      isFilterable={false}
       numPages={numPages}
       isPrevPage={isPrevPage}
       isNextPage={isNextPage}

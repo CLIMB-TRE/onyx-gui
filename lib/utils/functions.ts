@@ -1,3 +1,4 @@
+import { CustomCellRendererProps } from "@ag-grid-community/react";
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
   Field,
@@ -9,7 +10,9 @@ import {
   Theme,
   TableRow,
   InputRow,
+  DefaultPrimaryID,
 } from "../types";
+import { ColDef, ITooltipParams } from "@ag-grid-community/core";
 
 /** Returns a random hexadecimal string. */
 export function generateKey() {
@@ -200,4 +203,87 @@ export function sortData(
       );
     }
   }
+}
+
+interface ColDefProps {
+  data: InputRow[];
+  isServerTable: boolean;
+  includeOnly?: string[];
+  flexOnly?: string[];
+  headerNames?: Map<string, string>;
+  headerTooltips?: Map<string, string>;
+  headerTooltipPrefix?: string;
+  cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
+  order?: string;
+  recordPrimaryID?: string;
+  analysisPrimaryID?: string;
+  tooltipFields?: string[];
+}
+
+/** Generates column definitions for the table. */
+export function getColDefs(props: ColDefProps): ColDef[] {
+  let colDefs: ColDef[];
+
+  if (props.data && props.data.length > 0) {
+    let keys: string[];
+    if (props.includeOnly) keys = props.includeOnly;
+    else keys = Object.keys(props.data[0]);
+
+    colDefs = keys.map((key) => {
+      const width = 100 + 20 * Math.round(Math.log(key.length));
+      const colDef: ColDef = {
+        field: key,
+        headerName: props.headerNames?.get(key) || key,
+        minWidth: width,
+        width: props.isServerTable ? width : undefined,
+        headerTooltip: props.headerTooltips?.get(
+          (props.headerTooltipPrefix || "") + key
+        ),
+        unSortIcon: true,
+      };
+
+      // Disable AGGrid sorting for server tables
+      if (props.isServerTable) colDef.comparator = () => 0;
+
+      // Apply custom cell renderers
+      if (props.cellRenderers?.get(key))
+        colDef.cellRenderer = props.cellRenderers.get(key);
+
+      if (
+        key === DefaultPrimaryID.RECORD ||
+        key === DefaultPrimaryID.ANALYSIS ||
+        key === props.recordPrimaryID ||
+        key === props.analysisPrimaryID
+      ) {
+        // ID fields pinned to the left
+        colDef.pinned = "left";
+      } else if (key === "changes" || key === "error_messages") {
+        // History 'changes' field is a special case
+        // where we want variable height and wrapped text
+        colDef.autoHeight = true;
+        colDef.wrapText = true;
+      }
+
+      // Apply default sorts
+      if (props.order) {
+        const sortKey = props.order.startsWith("-")
+          ? props.order.slice(1)
+          : props.order;
+        if (key === sortKey)
+          colDef.sort = props.order.startsWith("-") ? "desc" : "asc";
+      }
+
+      // Apply tooltip value getter for fields that should display tooltips
+      if (props.tooltipFields?.includes(key))
+        colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
+
+      // Apply flex to all fields unless the table is server paginated
+      // or there is a list of flex-only fields
+      if (!props.flexOnly || props.flexOnly.includes(key)) colDef.flex = 1;
+
+      return colDef;
+    });
+  } else colDefs = [];
+
+  return colDefs;
 }
