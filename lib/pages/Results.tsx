@@ -31,8 +31,10 @@ import {
   formatFilters,
   getColDefs,
   getColumns,
+  getIncludeExclude,
   getDefaultFileNamePrefix,
   sortData,
+  getTableColumns,
 } from "../utils/functions";
 import { useDebouncedValue, usePersistedState } from "../utils/hooks";
 import { s3BucketsMessage } from "../utils/messages";
@@ -99,13 +101,23 @@ function Results(props: ResultsProps) {
   }, [searchInput, filterList, summariseList]);
   const debouncedSearchParams = useDebouncedValue(searchParameters, 500);
 
+  const isServerTable = useMemo(() => {
+    return !debouncedSearchParams.includes("summarise=");
+  }, [debouncedSearchParams]);
+
   const resultsQueryProps = useMemo(() => {
     const params = new URLSearchParams(debouncedSearchParams);
-    params.set("page", page.toString());
-    params.set("page_size", pageSize.toString());
-    if (order) params.set("order", order);
-    const { columnOperator, columns } = getColumns(includeList, columnOptions);
-    columns.forEach((col) => params.append(columnOperator, col));
+
+    if (isServerTable) {
+      params.set("page", page.toString());
+      params.set("page_size", pageSize.toString());
+      if (order) params.set("order", order);
+      const { operator, fields } = getIncludeExclude(
+        includeList,
+        columnOptions
+      );
+      fields.forEach((field) => params.append(operator, field));
+    }
 
     return {
       ...props,
@@ -114,6 +126,7 @@ function Results(props: ResultsProps) {
   }, [
     props,
     debouncedSearchParams,
+    isServerTable,
     page,
     pageSize,
     order,
@@ -125,9 +138,9 @@ function Results(props: ResultsProps) {
     return {
       ...props,
       searchParameters: debouncedSearchParams,
-      enabled: !debouncedSearchParams.includes("summarise="),
+      enabled: isServerTable,
     };
-  }, [props, debouncedSearchParams]);
+  }, [props, debouncedSearchParams, isServerTable]);
 
   // This effect resets the page to 1 when the search criteria change.
   useEffect(() => setPage(1), [debouncedSearchParams]);
@@ -194,10 +207,10 @@ function Results(props: ResultsProps) {
     let nRows = 0;
     let search: URLSearchParams | null = new URLSearchParams(searchParameters);
 
-    // Remove order and pagination parameters for export
-    search.delete("order");
+    // Remove pagination and order parameters for export
     search.delete("page");
     search.delete("page_size");
+    search.delete("order");
 
     // Fetch pages of data until the 'next' field is not present
     while (search instanceof URLSearchParams) {
@@ -281,52 +294,25 @@ function Results(props: ResultsProps) {
   }, [props, errorModalProps]);
 
   const [colDefs, setColDefs] = useState(() => {
-    let fieldsRow: TableRow[];
-    if (includeList.length > 0) {
-      fieldsRow = [Object.fromEntries(includeList.map((code) => [code, ""]))];
-    } else {
-      fieldsRow = [
-        Object.fromEntries(
-          columnOptions.map((field) => [field.code, field.description])
-        ),
-      ];
-    }
-
     return getColDefs({
       ...props,
-      data: fieldsRow,
-      isServerTable: true,
+      data: getTableColumns(includeList, columnOptions),
       cellRenderers,
+      isServerTable: true,
     });
   });
 
-  const handleActiveColumnsChange = (activeColumns: string[]) => {
-    let cols: string[];
-    if (activeColumns.length === 0)
-      cols = columnOptions.map((field) => field.code);
-    else
-      cols = columnOptions
-        .filter((field) => activeColumns.includes(field.code))
-        .map((field) => field.code);
-
-    const fieldsRow: TableRow[] = [
-      Object.fromEntries(cols.map((fieldCode) => [fieldCode, ""])),
-    ];
-
+  const handleActiveColumnsChange = (columns: string[]) => {
     setColDefs(
       getColDefs({
         ...props,
-        data: fieldsRow,
-        isServerTable: true,
+        data: getTableColumns(columns, columnOptions),
         cellRenderers,
+        isServerTable: true,
       })
     );
-    setIncludeList(activeColumns);
+    setIncludeList(getColumns(columns, columnOptions));
   };
-
-  const isServerTable = useMemo(() => {
-    return !debouncedSearchParams.includes("summarise=");
-  }, [debouncedSearchParams]);
 
   const handleCopyCLICommand = () => {
     const command = [props.commandBase];
@@ -346,14 +332,8 @@ function Results(props: ResultsProps) {
       command.push(`--summarise ${summarise.join(",")}`);
 
     // Format include/exclude columns
-    if (includeList.length > 0) {
-      const { columnOperator, columns } = getColumns(
-        includeList,
-        columnOptions
-      );
-      if (columns.length > 0)
-        command.push(`--${columnOperator} ${columns.join(",")}`);
-    }
+    const { operator, fields } = getIncludeExclude(includeList, columnOptions);
+    if (fields.length > 0) command.push(`--${operator} ${fields.join(",")}`);
 
     // Assemble the command and write to clipboard
     navigator.clipboard.writeText(command.join(" ").trim());

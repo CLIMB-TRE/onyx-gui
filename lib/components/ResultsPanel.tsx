@@ -1,3 +1,5 @@
+import { ColDef, SortChangedEvent } from "@ag-grid-community/core";
+import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
@@ -9,8 +11,6 @@ import PageTitle from "./PageTitle";
 import QueryHandler from "./QueryHandler";
 import Table, { ServerTable } from "./Table";
 import { useFieldDescriptions } from "../api/hooks";
-import { ColDef, SortChangedEvent } from "@ag-grid-community/core";
-import { CustomCellRendererProps } from "@ag-grid-community/react";
 
 interface ResultsPanelProps extends ResultsProps {
   defaultFileNamePrefix: string;

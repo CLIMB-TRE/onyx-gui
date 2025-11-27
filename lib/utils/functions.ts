@@ -148,20 +148,44 @@ export function getTheme(theme: string | null | undefined): Theme | null {
   else return null;
 }
 
-/** Set include/exclude columns based on includeList and columnOptions */
-export function getColumns(includeList: string[], columnOptions: Field[]) {
-  let columns;
-  let columnOperator;
+/** Set include/exclude fields based on includeList and columnOptions */
+export function getIncludeExclude(
+  includeList: string[],
+  columnOptions: Field[]
+) {
+  let fields;
+  let operator;
   if (includeList.length <= columnOptions.length - includeList.length) {
-    columnOperator = "include";
-    columns = includeList;
+    operator = "include";
+    fields = includeList;
   } else {
-    columnOperator = "exclude";
-    columns = columnOptions
+    operator = "exclude";
+    fields = columnOptions
       .filter((field) => !includeList.includes(field.code))
       .map((field) => field.code);
   }
-  return { columnOperator, columns };
+  return { operator, fields };
+}
+
+export function getColumns(
+  fieldList: string[],
+  columnOptions: Field[]
+): string[] {
+  if (fieldList.length === 0) {
+    return columnOptions.map((field) => field.code);
+  } else {
+    return columnOptions
+      .filter((field) => fieldList.includes(field.code))
+      .map((field) => field.code);
+  }
+}
+
+export function getTableColumns(
+  fieldList: string[],
+  columnOptions: Field[]
+): TableRow[] {
+  const columns = getColumns(fieldList, columnOptions);
+  return [Object.fromEntries(columns.map((code) => [code, ""]))];
 }
 
 /** Converts InputRow[] to TableRow[]. All non-string/number values are converted to strings. */
