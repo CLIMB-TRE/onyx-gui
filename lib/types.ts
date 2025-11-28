@@ -59,12 +59,12 @@ export enum GraphPanelTabKey {
 }
 
 export enum ExportStatus {
-  READY,
-  RUNNING,
-  WRITING,
-  FINISHED,
-  CANCELLED,
-  ERROR,
+  READY = "export-ready",
+  RUNNING = "export-running",
+  WRITING = "export-writing",
+  FINISHED = "export-finished",
+  CANCELLED = "export-cancelled",
+  ERROR = "export-error",
 }
 
 export enum ObjectType {
@@ -201,6 +201,12 @@ export type RecordType = Record<
   string,
   string | number | boolean | object | null | RecordType[]
 >;
+
+export type InputRow = Record<
+  string,
+  string | number | boolean | object | null
+>;
+export type TableRow = Record<string, string | number>;
 
 export type HistoricalEntry = {
   username?: string;
