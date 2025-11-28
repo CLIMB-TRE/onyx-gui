@@ -334,8 +334,9 @@ export function ServerTable(props: ServerTableProps) {
     return formatData(props.data);
   }, [props.data]);
 
-  const fromCount = (props.page - 1) * props.pageSize + 1;
   const toCount = Math.min(props.page * props.pageSize, props.count);
+  const fromCount = toCount >= 1 ? (props.page - 1) * props.pageSize + 1 : 0;
+
   const numPages = useMemo(() => {
     return Math.ceil(props.count / props.pageSize);
   }, [props.count, props.pageSize]);
