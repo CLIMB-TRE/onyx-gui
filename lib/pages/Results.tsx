@@ -4,7 +4,7 @@ import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { asString, generateCsv, mkConfig } from "export-to-csv";
 import { useCountQuery, useResultsQuery } from "../api";
-import { useCount, useResults } from "../api/hooks";
+import { useCount, useFieldDescriptions, useResults } from "../api/hooks";
 import FilterPanel from "../components/FilterPanel";
 import ResultsPanel from "../components/ResultsPanel";
 import SearchBar from "../components/SearchBar";
@@ -105,13 +105,18 @@ function Results(props: ResultsProps) {
     return !debouncedSearchParams.includes("summarise=");
   }, [debouncedSearchParams]);
 
-  const resultsQueryProps = useMemo(() => {
+  const queryParams = useMemo(() => {
     const params = new URLSearchParams(debouncedSearchParams);
+    if (isServerTable && order) params.set("order", order);
+    return params.toString();
+  }, [debouncedSearchParams, isServerTable, order]);
+
+  const resultsQueryProps = useMemo(() => {
+    const params = new URLSearchParams(queryParams);
 
     if (isServerTable) {
       params.set("page", page.toString());
       params.set("page_size", pageSize.toString());
-      if (order) params.set("order", order);
       const { operator, fields } = getIncludeExclude(
         includeList,
         columnOptions
@@ -125,11 +130,10 @@ function Results(props: ResultsProps) {
     };
   }, [
     props,
-    debouncedSearchParams,
+    queryParams,
     isServerTable,
     page,
     pageSize,
-    order,
     includeList,
     columnOptions,
   ]);
@@ -142,16 +146,16 @@ function Results(props: ResultsProps) {
     };
   }, [props, debouncedSearchParams, isServerTable]);
 
-  // This effect resets the page to 1 when the search criteria change.
-  useEffect(() => setPage(1), [debouncedSearchParams]);
+  // This effect resets the page to 1 when the query criteria change.
+  useEffect(() => setPage(1), [queryParams]);
 
   // This ref tracks the previous search params to detect when a new search happens.
-  const prevSearchParamsRef = useRef<string>();
-  const isNewSearch = debouncedSearchParams !== prevSearchParamsRef.current;
+  const prevQueryParamsRef = useRef<string>();
+  const isNewQuery = queryParams !== prevQueryParamsRef.current;
 
   // After every render, update the ref for the next render cycle.
   useEffect(() => {
-    prevSearchParamsRef.current = debouncedSearchParams;
+    prevQueryParamsRef.current = queryParams;
   });
 
   const {
@@ -161,7 +165,7 @@ function Results(props: ResultsProps) {
     refetch: resultsRefetch,
   } = useResultsQuery({
     ...resultsQueryProps,
-    enabled: !isNewSearch || page === 1,
+    enabled: !isNewQuery || page === 1,
   });
   const results = useResults(resultsResponse);
 
@@ -293,24 +297,20 @@ function Results(props: ResultsProps) {
     ]);
   }, [props, errorModalProps]);
 
-  const [colDefs, setColDefs] = useState(() => {
+  const headerTooltips = useFieldDescriptions(props.fields.fields_map);
+
+  const colDefs = useMemo(() => {
     return getColDefs({
       ...props,
       data: getTableColumns(includeList, columnOptions),
       cellRenderers,
       isServerTable: true,
+      headerTooltips,
+      order,
     });
-  });
+  }, [props, includeList, columnOptions, cellRenderers, headerTooltips, order]);
 
   const handleActiveColumnsChange = (columns: string[]) => {
-    setColDefs(
-      getColDefs({
-        ...props,
-        data: getTableColumns(columns, columnOptions),
-        cellRenderers,
-        isServerTable: true,
-      })
-    );
     setIncludeList(getColumns(columns, columnOptions));
   };
 
@@ -416,6 +416,7 @@ function Results(props: ResultsProps) {
               handlePageChange={setPage}
               cellRenderers={cellRenderers}
               isServerTable={isServerTable}
+              headerTooltips={headerTooltips}
             />
           </Container>
         </div>

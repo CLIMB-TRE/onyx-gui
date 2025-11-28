@@ -17,14 +17,15 @@ import DropdownDivider from "react-bootstrap/DropdownDivider";
 import Pagination from "react-bootstrap/Pagination";
 import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
-import { ExportHandlerProps, OnyxProps } from "../interfaces";
+import { ExportHandlerProps } from "../interfaces";
 import { ExportStatus, TableRow, InputRow } from "../types";
 import ExportModal from "./ExportModal";
 import { formatData, getColDefs } from "../utils/functions";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, CsvExportModule]);
 
-interface BaseTableProps extends OnyxProps {
+interface BaseTableProps {
+  fileWriter: (fileName: string, data: string) => Promise<void>;
   gridRef: React.RefObject<AgGridReact<TableRow>>;
   rowData: TableRow[];
   colDefs: ColDef[];
@@ -37,7 +38,7 @@ interface BaseTableProps extends OnyxProps {
   handleSortChange?: (event: SortChangedEvent) => void;
   handleRowDataChange?: () => void;
   footer?: string;
-  isResultsFetching?: boolean;
+  isDataFetching?: boolean;
   isCountFetching?: boolean;
   count: number;
   fromCount: number;
@@ -53,26 +54,27 @@ interface TableOptionsProps extends BaseTableProps {
   gridRef: React.RefObject<AgGridReact<TableRow>>;
 }
 
-interface TableProps extends OnyxProps {
+interface TableProps {
   data: InputRow[];
-  defaultFileNamePrefix: string;
+  isDataFetching?: boolean;
+  isCountFetching?: boolean;
+  cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
   headerNames?: Map<string, string>;
   headerTooltips?: Map<string, string>;
   headerTooltipPrefix?: string;
   tooltipFields?: string[];
+  fileWriter: (fileName: string, data: string) => Promise<void>;
+  defaultFileNamePrefix: string;
   flexOnly?: string[];
   includeOnly?: string[];
   order?: string;
   footer?: string;
-  cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
   recordPrimaryID?: string;
   analysisPrimaryID?: string;
 }
 
 interface ServerTableProps extends TableProps {
   colDefs: ColDef[];
-  isResultsFetching: boolean;
-  isCountFetching: boolean;
   count: number;
   page: number;
   pageSize: number;
@@ -133,7 +135,7 @@ function TablePagination(props: BaseTableProps) {
 function TableOptions(props: TableOptionsProps) {
   const [exportModalShow, setExportModalShow] = useState(false);
 
-  const resetAllColumns = useCallback(() => {
+  const rearrangeColumns = useCallback(() => {
     props.gridRef.current?.api.resetColumnState();
     props.gridRef.current?.api.sizeColumnsToFit();
   }, [props.gridRef]);
@@ -196,8 +198,8 @@ function TableOptions(props: TableOptionsProps) {
         variant="secondary"
       >
         <Dropdown.Header>Column Controls</Dropdown.Header>
-        <Dropdown.Item key="resetAllColumns" onClick={resetAllColumns}>
-          Reset All Columns
+        <Dropdown.Item key="rearrangeColumns" onClick={rearrangeColumns}>
+          Rearrange Columns
         </Dropdown.Item>
         <Dropdown.Item key="unpinAllColumns" onClick={unpinAllColumns}>
           Unpin All Columns
@@ -248,7 +250,7 @@ function BaseTable(props: BaseTableProps) {
           suppressColumnVirtualisation={true}
           suppressCellFocus={true}
           rowBuffer={50}
-          loading={props.isResultsFetching}
+          loading={props.isDataFetching}
         />
       </div>
       <Container fluid>

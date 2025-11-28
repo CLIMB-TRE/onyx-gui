@@ -10,33 +10,31 @@ import { SidebarButton } from "./Buttons";
 import PageTitle from "./PageTitle";
 import QueryHandler from "./QueryHandler";
 import Table, { ServerTable } from "./Table";
-import { useFieldDescriptions } from "../api/hooks";
 
 interface ResultsPanelProps extends ResultsProps {
-  defaultFileNamePrefix: string;
-  pageSize: number;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
   setColumnsModalShow: (show: boolean) => void;
-  colDefs: ColDef[];
+  isServerTable: boolean;
+  data: InputRow[];
+  cellRenderers: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
+  headerTooltips: Map<string, string>;
+  defaultFileNamePrefix: string;
   isResultsFetching: boolean;
   resultsError: Error | null;
   resultsResponse: ListResponse<RecordType> | ErrorResponse | undefined;
-  data: InputRow[];
   isCountFetching: boolean;
   count: number;
   page: number;
+  pageSize: number;
   order: string;
-  isServerTable: boolean;
   handleExportData: (exportProps: ExportHandlerProps) => Promise<string>;
   handleSortChange: (event: SortChangedEvent) => void;
   handlePageChange: (page: number) => void;
-  cellRenderers: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
+  colDefs: ColDef[];
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
-  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
-
   return (
     <Card className="h-100 overflow-y-auto">
       <Card.Header>
@@ -77,9 +75,33 @@ function ResultsPanel(props: ResultsPanelProps) {
           data={props.resultsResponse}
         >
           {props.isServerTable ? (
-            <ServerTable {...props} headerTooltips={fieldDescriptions} />
+            <ServerTable
+              data={props.data}
+              isDataFetching={props.isResultsFetching}
+              isCountFetching={props.isCountFetching}
+              cellRenderers={props.cellRenderers}
+              headerTooltips={props.headerTooltips}
+              fileWriter={props.fileWriter}
+              defaultFileNamePrefix={props.defaultFileNamePrefix}
+              colDefs={props.colDefs}
+              count={props.count}
+              page={props.page}
+              pageSize={props.pageSize}
+              order={props.order}
+              handleExportData={props.handleExportData}
+              handleSortChange={props.handleSortChange}
+              handlePageChange={props.handlePageChange}
+            />
           ) : (
-            <Table {...props} headerTooltips={fieldDescriptions} />
+            <Table
+              data={props.data}
+              isDataFetching={props.isResultsFetching}
+              isCountFetching={props.isResultsFetching}
+              cellRenderers={props.cellRenderers}
+              headerTooltips={props.headerTooltips}
+              fileWriter={props.fileWriter}
+              defaultFileNamePrefix={props.defaultFileNamePrefix}
+            />
           )}
         </QueryHandler>
       </Card.Body>
