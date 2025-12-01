@@ -337,6 +337,7 @@ export const useResultsQuery = (
     },
     enabled: !!(props.enabled && props.project && props.searchPath),
     placeholderData: { data: [] },
+    keepPreviousData: true,
   });
 };
 
