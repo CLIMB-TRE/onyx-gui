@@ -6,6 +6,7 @@ import {
   useGroupedSummaryQuery,
   useSummaryQuery,
 } from "../api";
+import { useChoiceColours } from "../api/hooks";
 import { DataProps } from "../interfaces";
 import {
   Theme,
@@ -21,7 +22,6 @@ import {
 import { useQueryRefresh } from "../utils/hooks";
 import { dark24Palette, graphStyles } from "../utils/styles";
 import QueryHandler from "./QueryHandler";
-import { useChoiceColours } from "../api/hooks";
 
 // Create Plotly component using basic plotly distribution
 const Plot = createPlotlyComponent(Plotly);
