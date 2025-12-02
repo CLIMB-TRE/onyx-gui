@@ -1,4 +1,5 @@
 import { CustomCellRendererProps } from "@ag-grid-community/react";
+import { ColDef, ITooltipParams } from "@ag-grid-community/core";
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
   Field,
@@ -12,7 +13,6 @@ import {
   InputRow,
   DefaultPrimaryID,
 } from "../types";
-import { ColDef, ITooltipParams } from "@ag-grid-community/core";
 
 /** Returns a random hexadecimal string. */
 export function generateKey() {
