@@ -148,7 +148,7 @@ export function getTheme(theme: string | null | undefined): Theme | null {
   else return null;
 }
 
-/** Set include/exclude fields based on includeList and columnOptions */
+/** Get optimal fields, alongside their `include`/`exclude` operator, to match a set of requested fields. */
 export function getIncludeExclude(
   includeList: string[],
   columnOptions: Field[]
@@ -167,6 +167,7 @@ export function getIncludeExclude(
   return { operator, fields };
 }
 
+/** Get an array of string fields corresponding to the column names in a results table. */
 export function getColumns(
   fieldList: string[],
   columnOptions: Field[]
@@ -180,6 +181,7 @@ export function getColumns(
   }
 }
 
+/** Get the columns for a table in the (current) accepted format for `getColDefs`. */
 export function getTableColumns(
   fieldList: string[],
   columnOptions: Field[]
@@ -204,7 +206,7 @@ export function formatData(data: InputRow[]): TableRow[] {
   );
 }
 
-/** Sorts TableData in-place, on the specified field and direction. */
+/** Sorts TableRow[] in-place, on the specified field and direction. */
 export function sortData(
   data: TableRow[],
   field: string,
@@ -244,7 +246,7 @@ interface ColDefProps {
   tooltipFields?: string[];
 }
 
-/** Generates column definitions for the table. */
+/** Generates column definitions for a table. */
 export function getColDefs(props: ColDefProps): ColDef[] {
   let colDefs: ColDef[];
 
