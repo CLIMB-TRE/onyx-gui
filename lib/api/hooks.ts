@@ -12,6 +12,8 @@ import {
   ProjectPermissionGroup,
   Count,
   Profile,
+  RecordType,
+  InputRow,
 } from "../types";
 import { dark24Palette } from "../utils/styles";
 
@@ -190,5 +192,15 @@ export const useCount = (
   return useMemo(() => {
     if (data?.status !== "success") return 0;
     return data.data.count;
+  }, [data]);
+};
+
+export const useResults = (
+  data: ListResponse<RecordType> | ErrorResponse | undefined
+): InputRow[] => {
+  return useMemo(() => {
+    if (data?.status !== "success") return [];
+
+    return data.data;
   }, [data]);
 };

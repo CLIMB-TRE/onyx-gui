@@ -1,3 +1,5 @@
+import { CustomCellRendererProps } from "@ag-grid-community/react";
+import { ColDef, ITooltipParams } from "@ag-grid-community/core";
 import { ExportHandlerProps, OnyxProps } from "../interfaces";
 import {
   Field,
@@ -7,6 +9,9 @@ import {
   ExportStatus,
   FilterConfig,
   Theme,
+  TableRow,
+  InputRow,
+  DefaultPrimaryID,
 } from "../types";
 
 /** Returns a random hexadecimal string. */
@@ -143,18 +148,168 @@ export function getTheme(theme: string | null | undefined): Theme | null {
   else return null;
 }
 
-/** Set include/exclude columns based on includeList and columnOptions */
-export function getColumns(includeList: string[], columnOptions: Field[]) {
-  let columns;
-  let columnOperator;
+/** Get optimal fields, alongside their `include`/`exclude` operator, to match a set of requested fields. */
+export function getIncludeExclude(
+  includeList: string[],
+  columnOptions: Field[]
+) {
+  let fields;
+  let operator;
   if (includeList.length <= columnOptions.length - includeList.length) {
-    columnOperator = "include";
-    columns = includeList;
+    operator = "include";
+    fields = includeList;
   } else {
-    columnOperator = "exclude";
-    columns = columnOptions
+    operator = "exclude";
+    fields = columnOptions
       .filter((field) => !includeList.includes(field.code))
       .map((field) => field.code);
   }
-  return { columnOperator, columns };
+  return { operator, fields };
+}
+
+/** Get an array of string fields corresponding to the column names in a results table. */
+export function getColumns(
+  fieldList: string[],
+  columnOptions: Field[]
+): string[] {
+  if (fieldList.length === 0) {
+    return columnOptions.map((field) => field.code);
+  } else {
+    return columnOptions
+      .filter((field) => fieldList.includes(field.code))
+      .map((field) => field.code);
+  }
+}
+
+/** Get the columns for a table in the (current) accepted format for `getColDefs`. */
+export function getTableColumns(
+  fieldList: string[],
+  columnOptions: Field[]
+): TableRow[] {
+  const columns = getColumns(fieldList, columnOptions);
+  return [Object.fromEntries(columns.map((code) => [code, ""]))];
+}
+
+/** Converts InputRow[] to TableRow[]. All non-string/number values are converted to strings. */
+export function formatData(data: InputRow[]): TableRow[] {
+  return data.map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [
+        key,
+        typeof value === "string" || typeof value === "number"
+          ? value
+          : typeof value === "boolean" || value === null
+          ? value?.toString() || ""
+          : JSON.stringify(value),
+      ])
+    )
+  );
+}
+
+/** Sorts TableRow[] in-place, on the specified field and direction. */
+export function sortData(
+  data: TableRow[],
+  field: string,
+  direction: string
+): void {
+  if (data.length > 0 && direction === "asc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (a[field] as number) - (b[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) > (b[field] as string) ? 1 : -1
+      );
+    }
+  } else if (data.length > 0 && direction === "desc") {
+    if (typeof data[0][field] === "number") {
+      data.sort((a, b) => (b[field] as number) - (a[field] as number));
+    } else {
+      data.sort((a, b) =>
+        (a[field] as string) < (b[field] as string) ? 1 : -1
+      );
+    }
+  }
+}
+
+interface ColDefProps {
+  data: InputRow[];
+  isServerTable: boolean;
+  includeOnly?: string[];
+  flexOnly?: string[];
+  headerNames?: Map<string, string>;
+  headerTooltips?: Map<string, string>;
+  headerTooltipPrefix?: string;
+  cellRenderers?: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
+  order?: string;
+  recordPrimaryID?: string;
+  analysisPrimaryID?: string;
+  tooltipFields?: string[];
+}
+
+/** Generates column definitions for a table. */
+export function getColDefs(props: ColDefProps): ColDef[] {
+  let colDefs: ColDef[];
+
+  if (props.data && props.data.length > 0) {
+    let keys: string[];
+    if (props.includeOnly) keys = props.includeOnly;
+    else keys = Object.keys(props.data[0]);
+
+    colDefs = keys.map((key) => {
+      const width = 100 + 20 * Math.round(Math.log(key.length));
+      const colDef: ColDef = {
+        field: key,
+        headerName: props.headerNames?.get(key) || key,
+        minWidth: width,
+        width: props.isServerTable ? width : undefined,
+        headerTooltip: props.headerTooltips?.get(
+          (props.headerTooltipPrefix || "") + key
+        ),
+        unSortIcon: true,
+      };
+
+      // Disable AGGrid sorting for server tables
+      if (props.isServerTable) colDef.comparator = () => 0;
+
+      // Apply custom cell renderers
+      if (props.cellRenderers?.get(key))
+        colDef.cellRenderer = props.cellRenderers.get(key);
+
+      if (
+        key === DefaultPrimaryID.RECORD ||
+        key === DefaultPrimaryID.ANALYSIS ||
+        key === props.recordPrimaryID ||
+        key === props.analysisPrimaryID
+      ) {
+        // ID fields pinned to the left
+        colDef.pinned = "left";
+      } else if (key === "changes" || key === "error_messages") {
+        // History 'changes' field is a special case
+        // where we want variable height and wrapped text
+        colDef.autoHeight = true;
+        colDef.wrapText = true;
+      }
+
+      // Apply default sorts
+      if (props.order) {
+        const sortKey = props.order.startsWith("-")
+          ? props.order.slice(1)
+          : props.order;
+        if (key === sortKey)
+          colDef.sort = props.order.startsWith("-") ? "desc" : "asc";
+      }
+
+      // Apply tooltip value getter for fields that should display tooltips
+      if (props.tooltipFields?.includes(key))
+        colDef.tooltipValueGetter = (p: ITooltipParams) => p.value.toString();
+
+      // Apply flex to all fields unless the table is server paginated
+      // or there is a list of flex-only fields
+      if (!props.flexOnly || props.flexOnly.includes(key)) colDef.flex = 1;
+
+      return colDef;
+    });
+  } else colDefs = [];
+
+  return colDefs;
 }

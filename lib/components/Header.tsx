@@ -103,7 +103,7 @@ function Header(props: HeaderProps) {
       }}
       className="border-bottom onyx-border"
       variant="dark"
-      expand="lg"
+      expand="xl"
       onSelect={(e) => {
         if (e) handleTabChange(e as OnyxTabKey);
       }}

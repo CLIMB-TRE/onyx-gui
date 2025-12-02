@@ -139,7 +139,7 @@ function Activity(props: ProjectProps) {
                 "exec_time",
                 "error_messages",
               ]}
-              defaultSort={new Map([["date", "desc"]])}
+              order="-date"
             />
           </Stack>
         </QueryHandler>
