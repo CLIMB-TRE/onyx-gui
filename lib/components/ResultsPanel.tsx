@@ -1,88 +1,48 @@
-import { useCallback, useMemo, useState } from "react";
+import { ColDef, SortChangedEvent } from "@ag-grid-community/core";
+import { CustomCellRendererProps } from "@ag-grid-community/react";
 import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
 import { MdTableRows } from "react-icons/md";
-import { ResultsProps } from "../interfaces";
-import { ErrorResponse, ListResponse, RecordType } from "../types";
-import { getDefaultFileNamePrefix } from "../utils/functions";
-import { s3BucketsMessage } from "../utils/messages";
+import { ExportHandlerProps, ResultsProps } from "../interfaces";
+import { ErrorResponse, InputRow, ListResponse, RecordType } from "../types";
 import { SidebarButton } from "./Buttons";
-import {
-  AnalysisIDCellRendererFactory,
-  RecordIDCellRendererFactory,
-  S3ReportCellRendererFactory,
-} from "./CellRenderers";
-import ErrorModal from "./ErrorModal";
 import PageTitle from "./PageTitle";
 import QueryHandler from "./QueryHandler";
-import Table, { ServerPaginatedTable } from "./Table";
-import { useFieldDescriptions } from "../api/hooks";
+import Table, { ServerTable } from "./Table";
 
 interface ResultsPanelProps extends ResultsProps {
-  searchParameters: string;
-  pageSize: number;
-  isFetching: boolean;
-  error: Error | null;
-  data: ListResponse<RecordType> | ErrorResponse | undefined;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (sideBarCollapsed: boolean) => void;
   setColumnsModalShow: (show: boolean) => void;
+  isServerTable: boolean;
+  data: InputRow[];
+  cellRenderers: Map<string, (params: CustomCellRendererProps) => JSX.Element>;
+  headerTooltips: Map<string, string>;
+  defaultFileNamePrefix: string;
+  isResultsFetching: boolean;
+  resultsError: Error | null;
+  resultsResponse: ListResponse<RecordType> | ErrorResponse | undefined;
+  isCountFetching: boolean;
+  count: number;
+  page: number;
+  pageSize: number;
+  order: string;
+  handleExportData: (exportProps: ExportHandlerProps) => Promise<string>;
+  handleSortChange: (event: SortChangedEvent) => void;
+  handlePageChange: (page: number) => void;
+  colDefs: ColDef[];
 }
 
 function ResultsPanel(props: ResultsPanelProps) {
-  const [errorModalShow, setErrorModalShow] = useState(false);
-  const [s3ReportError, setS3ReportError] = useState<Error | null>(null);
-
-  const defaultFileNamePrefix = useMemo(
-    () =>
-      getDefaultFileNamePrefix(
-        `${props.project.code}_${props.title.toLowerCase()}`,
-        props.searchParameters
-      ),
-    [props.project, props.title, props.searchParameters]
-  );
-
-  // Get the result data
-  const results = useMemo(() => {
-    if (props.data?.status !== "success")
-      return { data: [] as RecordType[] } as ListResponse<RecordType>;
-    return props.data;
-  }, [props.data]);
-
-  const handleErrorModalShow = useCallback((error: Error) => {
-    setS3ReportError(error);
-    setErrorModalShow(true);
-  }, []);
-
-  const errorModalProps = useMemo(
-    () => ({
-      ...props,
-      handleErrorModalShow,
-    }),
-    [props, handleErrorModalShow]
-  );
-
-  const cellRenderers = useMemo(() => {
-    return new Map([
-      [props.recordPrimaryID, RecordIDCellRendererFactory(props)],
-      [props.analysisPrimaryID, AnalysisIDCellRendererFactory(props)],
-      ["ingest_report", S3ReportCellRendererFactory(errorModalProps)],
-      ["report", S3ReportCellRendererFactory(errorModalProps)],
-    ]);
-  }, [props, errorModalProps]);
-
-  const fieldDescriptions = useFieldDescriptions(props.fields.fields_map);
-
-  const isSummarise = useMemo(() => {
-    return props.searchParameters.includes("summarise=");
-  }, [props.searchParameters]);
-
   return (
     <Card className="h-100 overflow-y-auto">
       <Card.Header>
         <Stack gap={2} direction="horizontal">
-          <SidebarButton {...props} />
+          <SidebarButton
+            sidebarCollapsed={props.sidebarCollapsed}
+            setSidebarCollapsed={props.setSidebarCollapsed}
+          />
           <span className="me-auto text-truncate">
             <PageTitle
               title={props.title}
@@ -91,13 +51,13 @@ function ResultsPanel(props: ResultsPanelProps) {
           </span>
           <div
             title={
-              isSummarise
-                ? "Columns cannot be edited in summarised results"
-                : "Edit Columns"
+              props.isServerTable
+                ? "Edit Columns"
+                : "Columns cannot be edited in summarised results"
             }
           >
             <Button
-              disabled={isSummarise}
+              disabled={!props.isServerTable}
               size="sm"
               variant="secondary"
               title="Edit Columns"
@@ -109,33 +69,38 @@ function ResultsPanel(props: ResultsPanelProps) {
         </Stack>
       </Card.Header>
       <Card.Body className="h-100 p-2 overflow-y-auto">
-        <ErrorModal
-          title="S3 Reports"
-          message={s3BucketsMessage}
-          error={s3ReportError}
-          show={errorModalShow}
-          onHide={() => setErrorModalShow(false)}
-        />
         <QueryHandler
-          isFetching={props.isFetching}
-          error={props.error}
-          data={props.data}
+          isFetching={false}
+          error={props.resultsError}
+          data={props.resultsResponse}
         >
-          {!props.searchParameters.includes("summarise=") ? (
-            <ServerPaginatedTable
-              {...props}
-              response={results}
-              defaultFileNamePrefix={defaultFileNamePrefix}
-              headerTooltips={fieldDescriptions}
-              cellRenderers={cellRenderers}
+          {props.isServerTable ? (
+            <ServerTable
+              data={props.data}
+              isDataFetching={props.isResultsFetching}
+              isCountFetching={props.isCountFetching}
+              cellRenderers={props.cellRenderers}
+              headerTooltips={props.headerTooltips}
+              fileWriter={props.fileWriter}
+              defaultFileNamePrefix={props.defaultFileNamePrefix}
+              colDefs={props.colDefs}
+              count={props.count}
+              page={props.page}
+              pageSize={props.pageSize}
+              order={props.order}
+              handleExportData={props.handleExportData}
+              handleSortChange={props.handleSortChange}
+              handlePageChange={props.handlePageChange}
             />
           ) : (
             <Table
-              {...props}
-              data={results.data}
-              defaultFileNamePrefix={defaultFileNamePrefix}
-              headerTooltips={fieldDescriptions}
-              cellRenderers={cellRenderers}
+              data={props.data}
+              isDataFetching={props.isResultsFetching}
+              isCountFetching={props.isResultsFetching}
+              cellRenderers={props.cellRenderers}
+              headerTooltips={props.headerTooltips}
+              fileWriter={props.fileWriter}
+              defaultFileNamePrefix={props.defaultFileNamePrefix}
             />
           )}
         </QueryHandler>

@@ -12,7 +12,10 @@ import {
   ProjectPermissionGroup,
   Count,
   Profile,
+  RecordType,
+  InputRow,
 } from "../types";
+import { dark24Palette } from "../utils/styles";
 
 function flattenFields(fields: Record<string, Field>) {
   const flatFields: Record<string, Field> = {};
@@ -129,6 +132,22 @@ export const useLookupDescriptions = (
   }, [data]);
 };
 
+export const useChoiceColours = (
+  data: DetailResponse<Choices> | ErrorResponse | undefined
+) => {
+  // Get a map of choices to their colours
+  return useMemo(() => {
+    if (data?.status !== "success") return new Map<string, string>();
+
+    return new Map(
+      Object.entries(data.data).map(([choice], index) => [
+        choice,
+        dark24Palette[index % dark24Palette.length],
+      ])
+    );
+  }, [data]);
+};
+
 export const useChoiceDescriptions = (
   data: DetailResponse<Choices> | ErrorResponse | undefined
 ) => {
@@ -173,5 +192,15 @@ export const useCount = (
   return useMemo(() => {
     if (data?.status !== "success") return 0;
     return data.data.count;
+  }, [data]);
+};
+
+export const useResults = (
+  data: ListResponse<RecordType> | ErrorResponse | undefined
+): InputRow[] => {
+  return useMemo(() => {
+    if (data?.status !== "success") return [];
+
+    return data.data;
   }, [data]);
 };

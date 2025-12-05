@@ -1,7 +1,12 @@
 import Plotly, { AxisType, Layout } from "plotly.js-basic-dist";
 import { useMemo } from "react";
 import createPlotlyComponent from "react-plotly.js/factory";
-import { useGroupedSummaryQuery, useSummaryQuery } from "../api";
+import {
+  useChoicesQuery,
+  useGroupedSummaryQuery,
+  useSummaryQuery,
+} from "../api";
+import { useChoiceColours } from "../api/hooks";
 import { DataProps } from "../interfaces";
 import {
   Theme,
@@ -12,9 +17,10 @@ import {
   SuccessResponse,
   Summary,
   DarkModeColour,
+  FieldType,
 } from "../types";
 import { useQueryRefresh } from "../utils/hooks";
-import { graphStyles } from "../utils/styles";
+import { dark24Palette, graphStyles } from "../utils/styles";
 import QueryHandler from "./QueryHandler";
 
 // Create Plotly component using basic plotly distribution
@@ -216,18 +222,7 @@ function BasePlot(props: BasePlotProps) {
     },
     legend: { title: { text: props.legendTitle } },
     showlegend: props.legendTitle ? true : false,
-    colorway: [
-      "#00cc96",
-      "#636efa",
-      "#EF553B",
-      "#ab63fa",
-      "#FFA15A",
-      "#19d3f3",
-      "#FF6692",
-      "#B6E880",
-      "#FF97FF",
-      "#FECB52",
-    ],
+    colorway: dark24Palette,
     uirevision: props.uirevision,
   };
 
@@ -367,6 +362,14 @@ function BarGraph(props: GraphProps) {
 
 function PieGraph(props: GraphProps) {
   const { isFetching, error, data, plotData } = useSummaryData(props);
+  const { data: choicesResponse } = useChoicesQuery({
+    ...props,
+    field: props.graphConfig.field,
+    enabled:
+      props.fields.fields_map.get(props.graphConfig.field)?.type ===
+      FieldType.CHOICE,
+  });
+  const colours = useChoiceColours(choicesResponse);
 
   return (
     <BaseGraph
@@ -379,7 +382,11 @@ function PieGraph(props: GraphProps) {
           labels: plotData.field_data,
           values: plotData.count_data,
           type: "pie",
-          marker: { color: "#198754" },
+          marker: {
+            colors: plotData.field_data.map((label: string) =>
+              colours.get(label)
+            ),
+          },
         },
       ]}
       title={getNullCount(
@@ -395,6 +402,14 @@ function PieGraph(props: GraphProps) {
 
 function GroupedScatterGraph(props: GraphProps) {
   const { isFetching, error, data, plotData } = useGroupedDataQuery(props);
+  const { data: choicesResponse } = useChoicesQuery({
+    ...props,
+    field: props.graphConfig.groupBy,
+    enabled:
+      props.fields.fields_map.get(props.graphConfig.groupBy)?.type ===
+      FieldType.CHOICE,
+  });
+  const colours = useChoiceColours(choicesResponse);
 
   const scatterData = useMemo(
     () =>
@@ -405,9 +420,10 @@ function GroupedScatterGraph(props: GraphProps) {
           name: group,
           type: "scatter",
           mode: "lines+markers",
+          marker: { color: colours.get(group) },
         })
       ) as Plotly.Data[],
-    [plotData]
+    [plotData, colours]
   );
 
   return (
@@ -433,6 +449,14 @@ function GroupedScatterGraph(props: GraphProps) {
 
 function GroupedBarGraph(props: GraphProps) {
   const { isFetching, error, data, plotData } = useGroupedDataQuery(props);
+  const { data: choicesResponse } = useChoicesQuery({
+    ...props,
+    field: props.graphConfig.groupBy,
+    enabled:
+      props.fields.fields_map.get(props.graphConfig.groupBy)?.type ===
+      FieldType.CHOICE,
+  });
+  const colours = useChoiceColours(choicesResponse);
 
   const barData = useMemo(
     () =>
@@ -442,9 +466,10 @@ function GroupedBarGraph(props: GraphProps) {
           y: count_data,
           name: group,
           type: "bar",
+          marker: { color: colours.get(group) },
         })
       ) as Plotly.Data[],
-    [plotData]
+    [plotData, colours]
   );
 
   let layout: Record<string, string> = {};
