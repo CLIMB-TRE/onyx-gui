@@ -211,10 +211,9 @@ function Results(props: ResultsProps) {
     let nRows = 0;
     let search: URLSearchParams | null = new URLSearchParams(searchParameters);
 
-    // Remove pagination and order parameters for export
-    search.delete("page");
-    search.delete("page_size");
-    search.delete("order");
+    // Add include/exclude columns
+    const { operator, fields } = getIncludeExclude(includeList, columnOptions);
+    fields.forEach((field) => search?.append(operator, field));
 
     // Fetch pages of data until the 'next' field is not present
     while (search instanceof URLSearchParams) {
