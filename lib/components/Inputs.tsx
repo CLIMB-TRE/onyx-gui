@@ -40,6 +40,7 @@ function MultiInput({
 }) {
   return (
     <Creatable
+      classNames={{ menuPortal: () => "onyx" }}
       isMulti
       menuPosition="fixed"
       menuPortalTarget={document.body}
