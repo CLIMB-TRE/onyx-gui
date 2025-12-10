@@ -141,10 +141,12 @@ function ExportModal(props: ExportModalProps) {
             ) : (
               <InputGroup.Text>{fileExtension}</InputGroup.Text>
             )}
-            <Form.Control.Feedback type="invalid">
-              Prefix must be 5 to 50 alphanumeric, underscore or dash
-              characters.
-            </Form.Control.Feedback>
+            {fileNameIsInvalid && (
+              <Form.Text className="text-danger">
+                Prefix must be 5 to 50 alphanumeric, underscore or dash
+                characters.
+              </Form.Text>
+            )}
             <Form.Text muted>
               <span>
                 <b>Warning:</b> If the file already exists, it will be
