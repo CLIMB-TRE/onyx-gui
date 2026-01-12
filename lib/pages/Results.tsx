@@ -61,7 +61,11 @@ function Results(props: ResultsProps) {
     `${props.project.code}${props.title}IncludeList`,
     props.fields.default_fields || []
   );
-  const [order, setOrder] = useState<string>("");
+  const [order, setOrder] = usePersistedState<string>(
+    props,
+    `${props.project.code}${props.title}Order`,
+    props.fields.fields_map.has("published_date") ? "-published_date" : ""
+  );
   const [page, setPage] = useState<number>(1);
   const pageSize = 50; // Pagination page size
 
